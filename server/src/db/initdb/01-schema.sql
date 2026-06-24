@@ -12,6 +12,8 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Limpieza idempotente (orden inverso por dependencias)
+DROP TABLE IF EXISTS pretest_respuestas  CASCADE;
+DROP TABLE IF EXISTS consultas_ia        CASCADE;
 DROP TABLE IF EXISTS diagnostico_inicial CASCADE;
 DROP TABLE IF EXISTS logros_usuario      CASCADE;
 DROP TABLE IF EXISTS logros              CASCADE;
@@ -38,12 +40,18 @@ CREATE TYPE dificultad_ej AS ENUM ('facil', 'media', 'dificil');
 CREATE TABLE usuarios (
   id            SERIAL PRIMARY KEY,
   nombre        TEXT        NOT NULL,
-  email         TEXT        NOT NULL UNIQUE,
+  email         TEXT        NOT NULL UNIQUE,            -- debe ser @upea.edu.bo
+  cedula        TEXT        UNIQUE,
   rol           rol_usuario NOT NULL DEFAULT 'estudiante',
   carrera       TEXT,
   password_hash TEXT        NOT NULL,
-  -- Cuestionario diagnóstico inicial (solo aplica a estudiantes nuevos).
+  -- Diagnóstico/pretest inicial (solo aplica a estudiantes nuevos).
   diagnostico_completado BOOLEAN NOT NULL DEFAULT FALSE,
+  pretest_completado     BOOLEAN NOT NULL DEFAULT FALSE,
+  nivel_inicial          SMALLINT NOT NULL DEFAULT 1,   -- nivel desde el que arranca su ruta
+  -- Seguridad de acceso (bloqueo tras intentos fallidos).
+  failed_login_count     SMALLINT NOT NULL DEFAULT 0,
+  locked_until           TIMESTAMPTZ,
   creado_en     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -74,20 +82,27 @@ CREATE TABLE niveles (
 CREATE TABLE ejercicios (
   id                 SERIAL PRIMARY KEY,
   titulo             TEXT          NOT NULL,
-  categoria          TEXT          NOT NULL,       -- Lógica, Algoritmos, Estructuras, POO, Redes
+  categoria          TEXT          NOT NULL,       -- Fundamentos, Condicionales, Bucles, Funciones, Estructuras
   nivel_id           INTEGER       NOT NULL REFERENCES niveles(id) ON DELETE CASCADE,
-  dificultad         dificultad_ej NOT NULL DEFAULT 'media',
+  dificultad         dificultad_ej NOT NULL DEFAULT 'media',   -- compat motor adaptativo
+  estrellas          SMALLINT      NOT NULL DEFAULT 3 CHECK (estrellas BETWEEN 1 AND 5),
+  tipo               TEXT          NOT NULL DEFAULT 'opcion_multiple', -- opcion_multiple | completar_codigo | predecir_salida
   enunciado          TEXT          NOT NULL,
-  pseudocodigo       TEXT,
-  opciones           JSONB         NOT NULL DEFAULT '[]',   -- [{ id:"A", texto:"11" }, ...]
+  pseudocodigo       TEXT,                                  -- (legado, sin uso en Python)
+  codigo_python      TEXT,                                  -- snippet Python a mostrar
+  opciones           JSONB         NOT NULL DEFAULT '[]',   -- [{ id:"A", texto:"15" }, ...]
   respuesta_correcta TEXT          NOT NULL,                -- "B"
   xp                 INTEGER       NOT NULL DEFAULT 50,
-  explicacion_ia     TEXT,                                  -- explicación base opcional
+  explicacion_ia     TEXT,                                  -- explicación base para retroalimentación
   max_pistas         INTEGER       NOT NULL DEFAULT 3,
+  -- Banco al que pertenece: práctica (niveles), pretest o postest.
+  banco              TEXT          NOT NULL DEFAULT 'practica'
+                     CHECK (banco IN ('practica', 'pretest', 'postest')),
   creado_en          TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_ejercicios_nivel     ON ejercicios(nivel_id);
 CREATE INDEX idx_ejercicios_categoria ON ejercicios(categoria);
+CREATE INDEX idx_ejercicios_banco     ON ejercicios(banco);
 
 -- ── Intentos ────────────────────────────────────────────────
 CREATE TABLE intentos (
@@ -125,6 +140,17 @@ CREATE TABLE pretest_postest (
 );
 CREATE INDEX idx_pretest_usuario ON pretest_postest(usuario_id);
 
+-- ── Respuestas del pretest (autosave por pregunta) ──────────
+CREATE TABLE pretest_respuestas (
+  usuario_id   INTEGER NOT NULL REFERENCES usuarios(id)   ON DELETE CASCADE,
+  ejercicio_id INTEGER NOT NULL REFERENCES ejercicios(id) ON DELETE CASCADE,
+  opcion_dada  TEXT    NOT NULL,
+  correcto     BOOLEAN NOT NULL,
+  categoria    TEXT    NOT NULL,
+  fecha        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (usuario_id, ejercicio_id)
+);
+
 -- ── Ranking (XP, racha, posición) ───────────────────────────
 CREATE TABLE ranking (
   usuario_id  INTEGER PRIMARY KEY REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -155,19 +181,20 @@ CREATE TABLE configuracion_sistema (
   id                SMALLINT PRIMARY KEY DEFAULT 1,
   xp_por_ejercicio  INTEGER NOT NULL DEFAULT 50,
   umbral_nivel      INTEGER NOT NULL DEFAULT 8,
+  umbral_porcentaje SMALLINT NOT NULL DEFAULT 80,   -- % del nivel para desbloquear el siguiente
   max_pistas_ia     INTEGER NOT NULL DEFAULT 3,
   modelo_ia         TEXT    NOT NULL DEFAULT 'gemini-2.0-flash',
   CONSTRAINT fila_unica CHECK (id = 1)
 );
 
--- ── Soporte IA: uso (rate limit) y caché ────────────────────
-CREATE TABLE ia_uso (
+-- ── Soporte IA: consultas (rate limit/auditoría) y caché ────
+CREATE TABLE consultas_ia (
   id         SERIAL PRIMARY KEY,
   usuario_id INTEGER     NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
   endpoint   TEXT        NOT NULL,
   fecha      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_ia_uso_usuario_fecha ON ia_uso(usuario_id, fecha);
+CREATE INDEX idx_consultas_ia_usuario_fecha ON consultas_ia(usuario_id, fecha);
 
 CREATE TABLE ia_cache (
   clave      TEXT PRIMARY KEY,        -- hash del prompt

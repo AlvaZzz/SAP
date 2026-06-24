@@ -9,8 +9,9 @@ import { Ejercicio } from '../types';
 export const ejerciciosRouter = Router();
 
 const SELECT_FULL = `
-  id, titulo, categoria, nivel_id, dificultad, enunciado, pseudocodigo,
-  opciones, respuesta_correcta, xp, explicacion_ia, max_pistas`;
+  id, titulo, categoria, nivel_id, dificultad, estrellas, tipo, enunciado,
+  pseudocodigo, codigo_python, opciones, respuesta_correcta, xp, explicacion_ia,
+  max_pistas, banco`;
 
 /** Quita la respuesta correcta para entregar al estudiante. */
 function sanitizar(e: Ejercicio) {
@@ -38,7 +39,8 @@ ejerciciosRouter.get(
   requireAuth,
   asyncHandler(async (req, res) => {
     const { nivel, categoria, dificultad } = req.query;
-    const filtros: string[] = [];
+    // Solo ejercicios de práctica (los bancos pretest/postest se excluyen).
+    const filtros: string[] = [`banco = 'practica'`];
     const params: unknown[] = [];
 
     if (nivel) { params.push(Number(nivel)); filtros.push(`nivel_id = $${params.length}`); }

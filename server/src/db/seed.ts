@@ -1,23 +1,616 @@
 import fs from 'fs';
 import path from 'path';
-import { pool } from '../config/db';
+import bcrypt from 'bcryptjs';
+import { pool, withTransaction } from '../config/db';
 
-// Reutiliza el mismo seed SQL que ejecuta Postgres en su initdb.
-// Requiere la extensión pgcrypto (creada por 01-schema.sql) para hashear
-// las contraseñas con crypt()/gen_salt(). Contraseña por defecto: Prexi123*
-const SEED = path.resolve(__dirname, 'initdb/02-seed.sql');
+/**
+ * Seed de PREXI UPEA — contenido 100% Python.
+ *
+ * Banco de ejercicios provisto y curado por el equipo (categorías alineadas a la
+ * tesis), separado en tres bancos mediante la columna `banco`:
+ *   practica  → 69 ejercicios de los 5 niveles (12+15+15+12+15)
+ *   pretest   → 20 preguntas exclusivas del diagnóstico inicial
+ *   postest   → 20 preguntas distintas para la medición final (comparabilidad)
+ *
+ * Cada opción se guarda como [{id:"A",texto}], y respuesta_correcta como letra.
+ * Ejecutar con: npm run seed
+ */
+
+const DEFAULT_PASSWORD = 'Prexi123*';
+
+type Tipo = 'opcion_multiple' | 'predecir_salida' | 'completar_codigo';
+interface Def {
+  nivel?: number;
+  categoria: string;
+  dificultad: 1 | 2 | 3 | 4 | 5;
+  tipo: Tipo;
+  enunciado: string;
+  codigo_python: string;
+  opciones: string[];
+  respuesta_correcta: number; // índice 0-3
+  xp?: number;
+  expl?: string;
+}
+
+// ════════════ NIVEL 1 — Fundamentos (12) ════════════
+const NIVEL1: Def[] = [
+  { nivel: 1, categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime el siguiente código?',
+    codigo_python: `x = 10\ny = "5"\nresultado = x + int(y)\nprint(resultado)`,
+    opciones: ['15', '"105"', 'Error de tipo', '10.5'], respuesta_correcta: 0, xp: 10,
+    expl: 'int(y) convierte el string "5" en el entero 5, por lo que 10 + 5 = 15.' },
+  { nivel: 1, categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Cuál es el resultado de ejecutar este código?',
+    codigo_python: `nombre = "Ana"\nedad = 20\nprint(nombre + " tiene " + str(edad) + " años")`,
+    opciones: ['Ana tiene 20 años', 'Error: no se puede concatenar str con int', 'nombre tiene edad años', 'Ana tiene str(20) años'],
+    respuesta_correcta: 0, xp: 10,
+    expl: 'str(edad) convierte el entero 20 en texto "20", permitiendo concatenarlo con + .' },
+  { nivel: 1, categoria: 'Tipos de datos', dificultad: 1, tipo: 'opcion_multiple',
+    enunciado: '¿Qué tipo de dato resulta de la expresión type(7 / 2)?',
+    codigo_python: `resultado = 7 / 2\nprint(type(resultado))`,
+    opciones: [`<class 'int'>`, `<class 'float'>`, `<class 'str'>`, `<class 'bool'>`], respuesta_correcta: 1, xp: 10,
+    expl: 'En Python el operador / siempre devuelve float, aun si la división es exacta. Para entera usa //.' },
+  { nivel: 1, categoria: 'Operadores', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: "¿Qué valor tiene 'resultado' al final?",
+    codigo_python: `a = 17\nb = 5\nresultado = a // b\nprint(resultado)`,
+    opciones: ['3', '3.4', '2', 'Error'], respuesta_correcta: 0, xp: 10,
+    expl: '// realiza división entera (floor division), descartando la parte decimal: 17 // 5 = 3.' },
+  { nivel: 1, categoria: 'Operadores', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Cuál es el resultado de este cálculo con el operador módulo?',
+    codigo_python: `numero = 23\nresiduo = numero % 5\nprint(residuo)`,
+    opciones: ['4', '3', '4.6', '0'], respuesta_correcta: 1, xp: 10,
+    expl: 'El operador % devuelve el resto de la división: 23 = 5*4 + 3, por lo que el residuo es 3.' },
+  { nivel: 1, categoria: 'Conversión de tipos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué ocurre al ejecutar este código?',
+    codigo_python: `edad = input("Ingresa tu edad: ")\nedad_doble = edad * 2\nprint(edad_doble)`,
+    opciones: ['Si el usuario ingresa 20, imprime 40', 'Si el usuario ingresa 20, imprime 2020 (el string se repite)', 'Lanza un error porque input() no puede multiplicarse', 'Imprime 40.0'],
+    respuesta_correcta: 1, xp: 15,
+    expl: "input() siempre devuelve un string. '20' * 2 = '2020' (repite el texto). Debes usar int(input(...)) para obtener un número." },
+  { nivel: 1, categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código de intercambio de variables?',
+    codigo_python: `a = 3\nb = 7\na, b = b, a\nprint(a, b)`,
+    opciones: ['3 7', '7 3', '7 7', 'Error de sintaxis'], respuesta_correcta: 1, xp: 15,
+    expl: 'Python permite asignación múltiple: a, b = b, a intercambia los valores sin variable temporal.' },
+  { nivel: 1, categoria: 'Tipos de datos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta comparación entre tipos?',
+    codigo_python: `print(5 == "5")\nprint(5 == 5.0)`,
+    opciones: ['True\nTrue', 'False\nTrue', 'True\nFalse', 'False\nFalse'], respuesta_correcta: 1, xp: 15,
+    expl: '5 (int) no es igual a "5" (str) → False. Pero 5 == 5.0 compara el valor numérico → True.' },
+  { nivel: 1, categoria: 'Operadores', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Cuál es el resultado de la siguiente operación?',
+    codigo_python: `x = 2\ny = 3\nresultado = x ** y\nprint(resultado)`,
+    opciones: ['6', '8', '9', '5'], respuesta_correcta: 1, xp: 10,
+    expl: '** es potenciación: 2 ** 3 = 2*2*2 = 8.' },
+  { nivel: 1, categoria: 'Variables', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código?',
+    codigo_python: `precio = 19.99\ncantidad = 3\ntotal = precio * cantidad\nprint(f"Total: {total}")`,
+    opciones: ['Total: 59.97', 'Total: {total}', 'Error: no se puede usar f-string con float', 'Total: precio * cantidad'],
+    respuesta_correcta: 0, xp: 15,
+    expl: 'Los f-strings insertan el valor de la variable con {}. 19.99 * 3 = 59.97.' },
+  { nivel: 1, categoria: 'Tipos de datos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué valor booleano imprime este código?',
+    codigo_python: `texto = ""\nprint(bool(texto))\nprint(bool("Hola"))`,
+    opciones: ['True\nTrue', 'False\nFalse', 'False\nTrue', 'True\nFalse'], respuesta_correcta: 2, xp: 15,
+    expl: 'Un string vacío "" es False; cualquier string con contenido es True (igual aplica a listas/dicts vacíos).' },
+  { nivel: 1, categoria: 'Operadores', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Cuál es la salida de este código que combina operadores?',
+    codigo_python: `a = 10\nb = 3\nprint(a / b)\nprint(a // b)\nprint(a % b)`,
+    opciones: ['3.33...\n3\n1', '3\n3.33...\n1', '3.33...\n1\n3', '3\n1\n3.33...'], respuesta_correcta: 0, xp: 15,
+    expl: 'a/b da 3.333..., a//b da 3 (entera) y a%b da 1 (resto).' },
+];
+
+// ════════════ NIVEL 2 — Condicionales (15) ════════════
+const NIVEL2: Def[] = [
+  { nivel: 2, categoria: 'Condicionales', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código?',
+    codigo_python: `edad = 17\nif edad >= 18:\n    print("Mayor de edad")\nelif edad >= 13:\n    print("Adolescente")\nelse:\n    print("Niño")`,
+    opciones: ['Mayor de edad', 'Adolescente', 'Niño', 'No imprime nada'], respuesta_correcta: 1, xp: 15,
+    expl: '17 no cumple >=18 pero sí >=13, se ejecuta el elif: "Adolescente".' },
+  { nivel: 2, categoria: 'Operadores lógicos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Cuál es el resultado de esta condición compuesta?',
+    codigo_python: `nota = 65\nasistencia = 80\nif nota >= 51 and asistencia >= 75:\n    print("Aprobado")\nelse:\n    print("Reprobado")`,
+    opciones: ['Aprobado', 'Reprobado', 'Error de sintaxis', 'True'], respuesta_correcta: 0, xp: 15,
+    expl: "'and' requiere ambas verdaderas: nota>=51 (True) y asistencia>=75 (True) → 'Aprobado'." },
+  { nivel: 2, categoria: 'Operadores lógicos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: "¿Qué imprime este código con el operador 'or'?",
+    codigo_python: `tiene_descuento = False\nes_estudiante = True\nif tiene_descuento or es_estudiante:\n    print("Aplica descuento")\nelse:\n    print("Precio normal")`,
+    opciones: ['Aplica descuento', 'Precio normal', 'Error', 'False'], respuesta_correcta: 0, xp: 15,
+    expl: "'or' solo necesita una verdadera: es_estudiante es True → 'Aplica descuento'." },
+  { nivel: 2, categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué se imprime al ejecutar este código?',
+    codigo_python: `numero = -5\nif numero > 0:\n    print("Positivo")\nelif numero < 0:\n    print("Negativo")\nelif numero == 0:\n    print("Cero")`,
+    opciones: ['Positivo', 'Negativo', 'Cero', 'No imprime nada'], respuesta_correcta: 1, xp: 10,
+    expl: '-5 no es > 0, pero -5 < 0 es True → "Negativo".' },
+  { nivel: 2, categoria: 'Condicionales anidadas', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Cuál es la salida de este condicional anidado?',
+    codigo_python: `usuario = "admin"\nclave = "1234"\nif usuario == "admin":\n    if clave == "1234":\n        print("Acceso concedido")\n    else:\n        print("Clave incorrecta")\nelse:\n    print("Usuario no existe")`,
+    opciones: ['Acceso concedido', 'Clave incorrecta', 'Usuario no existe', 'Error de sintaxis por indentación'], respuesta_correcta: 0, xp: 20,
+    expl: 'El usuario es "admin" y la clave "1234": ambos coinciden → "Acceso concedido".' },
+  { nivel: 2, categoria: 'Operadores lógicos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: "¿Qué imprime esta condición con 'not'?",
+    codigo_python: `esta_lloviendo = False\nif not esta_lloviendo:\n    print("Llevar paraguas: No")\nelse:\n    print("Llevar paraguas: Sí")`,
+    opciones: ['Llevar paraguas: No', 'Llevar paraguas: Sí', 'Error', 'False'], respuesta_correcta: 0, xp: 15,
+    expl: "'not' invierte el booleano: not False es True → primer bloque." },
+  { nivel: 2, categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué clasificación de IMC imprime este código?',
+    codigo_python: `imc = 23.5\nif imc < 18.5:\n    print("Bajo peso")\nelif imc < 25:\n    print("Normal")\nelif imc < 30:\n    print("Sobrepeso")\nelse:\n    print("Obesidad")`,
+    opciones: ['Bajo peso', 'Normal', 'Sobrepeso', 'Obesidad'], respuesta_correcta: 1, xp: 15,
+    expl: '23.5 no es < 18.5 pero sí < 25 → "Normal" (los elif se evalúan en orden).' },
+  { nivel: 2, categoria: 'Operadores de comparación', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta comparación de strings?',
+    codigo_python: `clave_correcta = "python123"\nclave_ingresada = "Python123"\nif clave_correcta == clave_ingresada:\n    print("Coinciden")\nelse:\n    print("No coinciden")`,
+    opciones: ['Coinciden', 'No coinciden', 'Error', 'True'], respuesta_correcta: 1, xp: 15,
+    expl: 'Python distingue mayúsculas/minúsculas: "python123" ≠ "Python123".' },
+  { nivel: 2, categoria: 'Condicionales', dificultad: 2, tipo: 'completar_codigo',
+    enunciado: 'Completa el código para clasificar un número como par o impar.',
+    codigo_python: `numero = 8\nif numero __ 2 == 0:\n    print("Par")\nelse:\n    print("Impar")`,
+    opciones: ['%', '//', '/', '*'], respuesta_correcta: 0, xp: 15,
+    expl: 'Para verificar paridad se usa el módulo (%): si el resto entre 2 es 0, es par.' },
+  { nivel: 2, categoria: 'Condicionales anidadas', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué letra de calificación imprime este código?',
+    codigo_python: `puntaje = 85\nif puntaje >= 90:\n    letra = "A"\nelif puntaje >= 80:\n    letra = "B"\nelif puntaje >= 70:\n    letra = "C"\nelse:\n    letra = "F"\nprint(letra)`,
+    opciones: ['A', 'B', 'C', 'F'], respuesta_correcta: 1, xp: 15,
+    expl: '85 no es >= 90 pero sí >= 80 → "B".' },
+  { nivel: 2, categoria: 'Operadores lógicos', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: "¿Cuál es el resultado de esta combinación de 'and' y 'or'?",
+    codigo_python: `edad = 16\ntiene_permiso = True\nif (edad >= 18) or (edad >= 16 and tiene_permiso):\n    print("Puede ingresar")\nelse:\n    print("No puede ingresar")`,
+    opciones: ['Puede ingresar', 'No puede ingresar', 'Error de sintaxis', 'True'], respuesta_correcta: 0, xp: 20,
+    expl: 'edad>=18 es False, pero (edad>=16 and tiene_permiso) es True → el or final es True.' },
+  { nivel: 2, categoria: 'Condicionales', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que valida un rango?',
+    codigo_python: `temperatura = 36.5\nif 36 <= temperatura <= 37.5:\n    print("Temperatura normal")\nelse:\n    print("Revisar temperatura")`,
+    opciones: ['Temperatura normal', 'Revisar temperatura', 'Error de sintaxis', 'True'], respuesta_correcta: 0, xp: 15,
+    expl: 'Python permite comparaciones encadenadas: 36.5 está en el rango → "Temperatura normal".' },
+  { nivel: 2, categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué descuento se imprime según el monto de la compra?',
+    codigo_python: `monto = 150\nif monto >= 200:\n    descuento = 0.20\nelif monto >= 100:\n    descuento = 0.10\nelse:\n    descuento = 0\nprint(descuento)`,
+    opciones: ['0.20', '0.10', '0', 'Error'], respuesta_correcta: 1, xp: 15,
+    expl: '150 no llega a 200 pero supera 100 → descuento = 0.10.' },
+  { nivel: 2, categoria: 'Operadores lógicos', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código de validación de contraseña?',
+    codigo_python: `longitud = 5\ntiene_numero = True\nif longitud >= 8 and tiene_numero:\n    print("Contraseña válida")\nelse:\n    print("Contraseña débil")`,
+    opciones: ['Contraseña válida', 'Contraseña débil', 'Error', 'False'], respuesta_correcta: 1, xp: 15,
+    expl: 'longitud (5) no cumple >=8; con "and" basta una falsa → "Contraseña débil".' },
+  { nivel: 2, categoria: 'Condicionales anidadas', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué categoría de envío imprime este código?',
+    codigo_python: `peso = 12\nes_fragil = True\nif peso <= 5:\n    categoria = "Liviano"\nelse:\n    if es_fragil:\n        categoria = "Pesado-Frágil"\n    else:\n        categoria = "Pesado-Normal"\nprint(categoria)`,
+    opciones: ['Liviano', 'Pesado-Frágil', 'Pesado-Normal', 'Error de indentación'], respuesta_correcta: 1, xp: 20,
+    expl: 'peso (12) no es <= 5 → else; como es_fragil es True → "Pesado-Frágil".' },
+];
+
+// ════════════ NIVEL 3 — Bucles (15) ════════════
+const NIVEL3: Def[] = [
+  { nivel: 3, categoria: 'Bucles for', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este bucle for con range()?',
+    codigo_python: `total = 0\nfor i in range(1, 6):\n    total += i\nprint(total)`,
+    opciones: ['15', '10', '21', '6'], respuesta_correcta: 0, xp: 15,
+    expl: 'range(1, 6) genera 1..5. Suma 1+2+3+4+5 = 15.' },
+  { nivel: 3, categoria: 'Bucles while', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Cuántas veces se ejecuta este bucle while?',
+    codigo_python: `contador = 0\nwhile contador < 5:\n    print(contador)\n    contador += 1`,
+    opciones: ['4 veces (0,1,2,3)', '5 veces (0,1,2,3,4)', '6 veces', 'Bucle infinito'], respuesta_correcta: 1, xp: 15,
+    expl: 'Imprime 0,1,2,3,4 y se detiene al llegar a 5: cinco iteraciones.' },
+  { nivel: 3, categoria: 'Bucles for', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que itera sobre una lista?',
+    codigo_python: `frutas = ["manzana", "pera", "uva"]\nfor fruta in frutas:\n    print(fruta.upper())`,
+    opciones: ['manzana\npera\nuva', 'MANZANA\nPERA\nUVA', "['MANZANA', 'PERA', 'UVA']", 'Error: las listas no se pueden iterar'],
+    respuesta_correcta: 1, xp: 15, expl: '.upper() convierte cada string a mayúsculas antes de imprimirlo.' },
+  { nivel: 3, categoria: 'break y continue', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: "¿Qué números imprime este bucle con 'break'?",
+    codigo_python: `for numero in range(1, 10):\n    if numero == 5:\n        break\n    print(numero)`,
+    opciones: ['1 2 3 4', '1 2 3 4 5', '1 2 3 4 5 6 7 8 9', '5 6 7 8 9'], respuesta_correcta: 0, xp: 20,
+    expl: "'break' detiene el bucle al llegar a 5 sin imprimirlo: 1,2,3,4." },
+  { nivel: 3, categoria: 'break y continue', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: "¿Qué imprime este bucle con 'continue'?",
+    codigo_python: `for numero in range(1, 6):\n    if numero % 2 == 0:\n        continue\n    print(numero)`,
+    opciones: ['1 3 5', '2 4', '1 2 3 4 5', 'Nada'], respuesta_correcta: 0, xp: 20,
+    expl: "'continue' salta los pares: solo se imprimen los impares 1,3,5." },
+  { nivel: 3, categoria: 'Bucles anidados', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Cuántas veces se ejecuta print("*") en total?',
+    codigo_python: `for i in range(3):\n    for j in range(2):\n        print("*")`,
+    opciones: ['3 veces', '2 veces', '5 veces', '6 veces'], respuesta_correcta: 3, xp: 20,
+    expl: 'Bucle anidado: 3 * 2 = 6 impresiones.' },
+  { nivel: 3, categoria: 'Acumuladores', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: "¿Qué valor final tiene 'producto'?",
+    codigo_python: `producto = 1\nfor numero in range(1, 5):\n    producto *= numero\nprint(producto)`,
+    opciones: ['10', '24', '20', '120'], respuesta_correcta: 1, xp: 20,
+    expl: 'Factorial de 4: 1*1*2*3*4 = 24.' },
+  { nivel: 3, categoria: 'Bucles while', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código?',
+    codigo_python: `saldo = 100\nwhile saldo > 0:\n    saldo -= 30\nprint(saldo)`,
+    opciones: ['0', '-20', '10', '20'], respuesta_correcta: 1, xp: 20,
+    expl: '100→70→40→10→-20; en la última resta saldo era 10 (>0) → termina en -20.' },
+  { nivel: 3, categoria: 'Bucles for', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que usa range() con paso?',
+    codigo_python: `for numero in range(0, 10, 2):\n    print(numero, end=" ")`,
+    opciones: ['0 1 2 3 4 5 6 7 8 9', '0 2 4 6 8', '2 4 6 8 10', '0 2 4 6 8 10'], respuesta_correcta: 1, xp: 15,
+    expl: 'range(0, 10, 2) → 0,2,4,6,8 (antes de 10, paso 2).' },
+  { nivel: 3, categoria: 'Iteración sobre strings', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: "¿Cuántas vocales cuenta este código en 'programacion'?",
+    codigo_python: `palabra = "programacion"\nvocales = "aeiou"\ncontador = 0\nfor letra in palabra:\n    if letra in vocales:\n        contador += 1\nprint(contador)`,
+    opciones: ['5', '6', '4', '7'], respuesta_correcta: 0, xp: 20,
+    expl: 'Vocales en "programacion": o, a, a, i, o = 5.' },
+  { nivel: 3, categoria: 'Acumuladores', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué promedio imprime este código?',
+    codigo_python: `notas = [80, 90, 70, 100]\nsuma = 0\nfor nota in notas:\n    suma += nota\npromedio = suma / len(notas)\nprint(promedio)`,
+    opciones: ['85.0', '340', '84.0', '86.5'], respuesta_correcta: 0, xp: 20,
+    expl: 'suma = 340, len = 4, 340/4 = 85.0 (float).' },
+  { nivel: 3, categoria: 'Bucles while', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que busca el primer múltiplo?',
+    codigo_python: `numero = 1\nwhile numero % 7 != 0:\n    numero += 1\nprint(numero)`,
+    opciones: ['7', '1', '14', 'Bucle infinito'], respuesta_correcta: 0, xp: 20,
+    expl: 'Incrementa desde 1 hasta el primer divisible entre 7: el 7.' },
+  { nivel: 3, categoria: 'Bucles anidados', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que construye un patrón?',
+    codigo_python: `for fila in range(1, 4):\n    for columna in range(fila):\n        print("#", end="")\n    print()`,
+    opciones: ['#\n##\n###', '###\n###\n###', '#\n#\n#', '###'], respuesta_correcta: 0, xp: 20,
+    expl: 'Cada fila imprime tantos # como su número, generando un triángulo creciente.' },
+  { nivel: 3, categoria: 'Bucles for', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que usa enumerate()?',
+    codigo_python: `colores = ["rojo", "verde", "azul"]\nfor indice, color in enumerate(colores):\n    print(indice, color)`,
+    opciones: ['0 rojo\n1 verde\n2 azul', '1 rojo\n2 verde\n3 azul', 'rojo 0\nverde 1\nazul 2', 'Error: enumerate no existe'],
+    respuesta_correcta: 0, xp: 15, expl: 'enumerate() devuelve (índice, elemento) comenzando el índice en 0.' },
+  { nivel: 3, categoria: 'Acumuladores', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que cuenta números pares?',
+    codigo_python: `numeros = [4, 7, 8, 11, 12, 15, 16]\npares = 0\nfor n in numeros:\n    if n % 2 == 0:\n        pares += 1\nprint(pares)`,
+    opciones: ['3', '4', '7', '2'], respuesta_correcta: 1, xp: 20,
+    expl: 'Pares: 4, 8, 12, 16 = 4.' },
+];
+
+// ════════════ NIVEL 4 — Funciones (12) ════════════
+const NIVEL4: Def[] = [
+  { nivel: 4, categoria: 'Funciones básicas', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código?',
+    codigo_python: `def es_par(n):\n    return n % 2 == 0\n\nprint(es_par(7))`,
+    opciones: ['True', 'False', '7', 'Error'], respuesta_correcta: 1, xp: 15,
+    expl: '7 % 2 es 1 (no 0) → la comparación retorna False.' },
+  { nivel: 4, categoria: 'Parámetros por defecto', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código con parámetro por defecto?',
+    codigo_python: `def saludar(nombre, saludo="Hola"):\n    return f"{saludo}, {nombre}!"\n\nprint(saludar("Marco"))\nprint(saludar("Luisa", "Buenos días"))`,
+    opciones: ['Hola, Marco!\nBuenos días, Luisa!', 'Hola, Marco!\nHola, Luisa!', 'Error: falta el segundo argumento', 'Buenos días, Marco!\nBuenos días, Luisa!'],
+    respuesta_correcta: 0, xp: 15, expl: 'Sin segundo argumento usa el default "Hola"; si se pasa, lo sobrescribe.' },
+  { nivel: 4, categoria: 'Alcance de variables', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código sobre alcance de variables?',
+    codigo_python: `contador = 10\n\ndef incrementar():\n    contador = 20\n    return contador\n\nincrementar()\nprint(contador)`,
+    opciones: ['20', '10', '30', 'Error de variable no definida'], respuesta_correcta: 1, xp: 25,
+    expl: 'El "contador" dentro de la función es local; la variable global sigue en 10.' },
+  { nivel: 4, categoria: 'Funciones recursivas', dificultad: 4, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta función recursiva?',
+    codigo_python: `def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(4))`,
+    opciones: ['4', '10', '24', '16'], respuesta_correcta: 2, xp: 25,
+    expl: 'factorial(4) = 4*3*2*1 = 24.' },
+  { nivel: 4, categoria: 'Funciones básicas', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que usa return múltiple?',
+    codigo_python: `def operaciones(a, b):\n    return a + b, a - b, a * b\n\nsuma, resta, mult = operaciones(8, 3)\nprint(suma, resta, mult)`,
+    opciones: ['11 5 24', '11 -5 24', '8 3 11', 'Error'], respuesta_correcta: 0, xp: 20,
+    expl: 'Retorna la tupla (11, 5, 24) que se desempaqueta en tres variables.' },
+  { nivel: 4, categoria: '*args', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta función con argumentos variables (*args)?',
+    codigo_python: `def sumar_todo(*numeros):\n    total = 0\n    for n in numeros:\n        total += n\n    return total\n\nprint(sumar_todo(1, 2, 3, 4))`,
+    opciones: ['10', '(1, 2, 3, 4)', 'Error: demasiados argumentos', '4'], respuesta_correcta: 0, xp: 20,
+    expl: '*numeros agrupa los argumentos como tupla; el bucle suma 1+2+3+4 = 10.' },
+  { nivel: 4, categoria: 'Funciones básicas', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: "¿Qué imprime este código si la función no tiene 'return'?",
+    codigo_python: `def imprimir_mensaje():\n    print("Hola desde la función")\n\nresultado = imprimir_mensaje()\nprint(resultado)`,
+    opciones: ['Hola desde la función\nNone', 'Hola desde la función\nHola desde la función', 'None\nHola desde la función', 'Error: la función debe tener return'],
+    respuesta_correcta: 0, xp: 20, expl: 'Sin return explícito la función devuelve None; primero imprime el mensaje, luego None.' },
+  { nivel: 4, categoria: 'Parámetros por defecto', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código con argumentos por nombre (keyword arguments)?',
+    codigo_python: `def crear_perfil(nombre, edad, carrera="Sin definir"):\n    return f"{nombre}, {edad} años, {carrera}"\n\nprint(crear_perfil(edad=19, nombre="Sofía"))`,
+    opciones: ['Sofía, 19 años, Sin definir', '19, Sofía años, Sin definir', 'Error: el orden de los argumentos es incorrecto', 'Sofía, 19 años, None'],
+    respuesta_correcta: 0, xp: 20, expl: 'Con argumentos por nombre el orden no importa; carrera usa su default.' },
+  { nivel: 4, categoria: 'Funciones recursivas', dificultad: 4, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta función recursiva que calcula Fibonacci?',
+    codigo_python: `def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nprint(fibonacci(5))`,
+    opciones: ['5', '8', '3', '13'], respuesta_correcta: 0, xp: 25,
+    expl: 'Fibonacci: 0,1,1,2,3,5... fibonacci(5) = 3 + 2 = 5.' },
+  { nivel: 4, categoria: 'Alcance de variables', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: "¿Qué imprime este código usando la palabra clave 'global'?",
+    codigo_python: `total = 0\n\ndef agregar(monto):\n    global total\n    total += monto\n\nagregar(50)\nagregar(30)\nprint(total)`,
+    opciones: ['0', '50', '80', 'Error: total no está definida'], respuesta_correcta: 2, xp: 25,
+    expl: "'global' permite modificar la variable global; tras 50 y 30, total = 80." },
+  { nivel: 4, categoria: 'Funciones básicas', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que valida un parámetro?',
+    codigo_python: `def calcular_descuento(precio, porcentaje):\n    if porcentaje > 100 or porcentaje < 0:\n        return None\n    return precio - (precio * porcentaje / 100)\n\nprint(calcular_descuento(200, 150))`,
+    opciones: ['None', '100.0', '300.0', 'Error'], respuesta_correcta: 0, xp: 20,
+    expl: 'porcentaje (150) > 100 → retorna None antes de calcular.' },
+  { nivel: 4, categoria: '*args', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta función que encuentra el máximo sin usar max()?',
+    codigo_python: `def encontrar_mayor(*numeros):\n    mayor = numeros[0]\n    for n in numeros:\n        if n > mayor:\n            mayor = n\n    return mayor\n\nprint(encontrar_mayor(4, 9, 2, 15, 6))`,
+    opciones: ['4', '15', '9', '6'], respuesta_correcta: 1, xp: 25,
+    expl: 'Compara cada número con el mayor actual; el más grande es 15.' },
+];
+
+// ════════════ NIVEL 5 — Estructuras de datos (15) ════════════
+const NIVEL5: Def[] = [
+  { nivel: 5, categoria: 'Listas', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código?',
+    codigo_python: `notas = [85, 90, 78, 91]\npromedio = sum(notas) / len(notas)\nprint(round(promedio, 1))`,
+    opciones: ['86.3', '86.0', '344', '86.25'], respuesta_correcta: 1, xp: 15,
+    expl: 'sum(notas) = 344, len = 4, 344/4 = 86.0, round(86.0, 1) = 86.0.' },
+  { nivel: 5, categoria: 'Listas', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código tras modificar la lista?',
+    codigo_python: `numeros = [1, 2, 3]\nnumeros.append(4)\nnumeros.pop(0)\nprint(numeros)`,
+    opciones: ['[1, 2, 3, 4]', '[2, 3, 4]', '[4, 1, 2, 3]', '[2, 3]'], respuesta_correcta: 1, xp: 20,
+    expl: '.append(4) → [1,2,3,4]; .pop(0) elimina el índice 0 (el 1) → [2,3,4].' },
+  { nivel: 5, categoria: 'Slicing', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código de slicing (rebanado) de listas?',
+    codigo_python: `letras = ["a", "b", "c", "d", "e"]\nprint(letras[1:4])`,
+    opciones: ["['a', 'b', 'c', 'd']", "['b', 'c', 'd']", "['b', 'c', 'd', 'e']", "['a', 'b', 'c']"], respuesta_correcta: 1, xp: 20,
+    expl: 'letras[1:4] toma índices 1,2,3 (el 4 no se incluye): b, c, d.' },
+  { nivel: 5, categoria: 'Diccionarios', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que usa diccionarios?',
+    codigo_python: `estudiante = {"nombre": "Carlos", "edad": 19, "carrera": "Sistemas"}\nprint(estudiante["edad"])\nprint(estudiante.get("semestre", "No definido"))`,
+    opciones: ['19\nNo definido', 'edad\nsemestre', '19\nError', 'Error: semestre no existe'], respuesta_correcta: 0, xp: 20,
+    expl: '["edad"] da 19; .get("semestre", ...) no existe → retorna el default "No definido".' },
+  { nivel: 5, categoria: 'Comprensión de listas', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta comprensión de listas (list comprehension)?',
+    codigo_python: `numeros = [1, 2, 3, 4, 5]\ncuadrados = [n ** 2 for n in numeros if n % 2 == 0]\nprint(cuadrados)`,
+    opciones: ['[1, 4, 9, 16, 25]', '[4, 16]', '[2, 4]', '[1, 9, 25]'], respuesta_correcta: 1, xp: 25,
+    expl: 'Filtra pares (2,4) y los eleva al cuadrado: 4 y 16.' },
+  { nivel: 5, categoria: 'Tuplas', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué ocurre al ejecutar este código con una tupla?',
+    codigo_python: `coordenadas = (10, 20)\ncoordenadas[0] = 15\nprint(coordenadas)`,
+    opciones: ['(15, 20)', '(10, 20)', 'TypeError: las tuplas no se pueden modificar', '[15, 20]'], respuesta_correcta: 2, xp: 20,
+    expl: 'Las tuplas son inmutables: asignar a coordenadas[0] lanza TypeError.' },
+  { nivel: 5, categoria: 'Diccionarios', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que itera sobre un diccionario?',
+    codigo_python: `precios = {"pan": 5, "leche": 8, "huevo": 12}\nfor producto, precio in precios.items():\n    if precio > 7:\n        print(producto)`,
+    opciones: ['pan\nleche\nhuevo', 'leche\nhuevo', 'pan', 'Error'], respuesta_correcta: 1, xp: 25,
+    expl: '.items() recorre pares clave-valor; solo leche (8) y huevo (12) superan 7.' },
+  { nivel: 5, categoria: 'Listas', dificultad: 1, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que verifica pertenencia?',
+    codigo_python: `frutas = ["manzana", "pera", "uva"]\nprint("pera" in frutas)\nprint("sandía" in frutas)`,
+    opciones: ['True\nFalse', 'False\nTrue', 'True\nTrue', 'False\nFalse'], respuesta_correcta: 0, xp: 15,
+    expl: "'in' verifica pertenencia: 'pera' está (True), 'sandía' no (False)." },
+  { nivel: 5, categoria: 'Conjuntos', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que usa conjuntos (sets)?',
+    codigo_python: `numeros = [1, 2, 2, 3, 3, 3, 4]\nunicos = set(numeros)\nprint(len(unicos))`,
+    opciones: ['7', '4', '3', '1'], respuesta_correcta: 1, xp: 20,
+    expl: 'set() elimina duplicados: {1,2,3,4} → 4 elementos.' },
+  { nivel: 5, categoria: 'Listas', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que ordena una lista?',
+    codigo_python: `puntajes = [45, 12, 89, 33, 67]\npuntajes.sort(reverse=True)\nprint(puntajes)`,
+    opciones: ['[12, 33, 45, 67, 89]', '[89, 67, 45, 33, 12]', '[45, 12, 89, 33, 67]', 'Error: sort no acepta reverse'],
+    respuesta_correcta: 1, xp: 20, expl: '.sort(reverse=True) ordena de mayor a menor in-place.' },
+  { nivel: 5, categoria: 'Diccionarios', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código al actualizar un diccionario?',
+    codigo_python: `inventario = {"lapiz": 50, "borrador": 30}\ninventario["lapiz"] -= 5\ninventario["cuaderno"] = 20\nprint(inventario)`,
+    opciones: ["{'lapiz': 45, 'borrador': 30, 'cuaderno': 20}", "{'lapiz': 50, 'borrador': 30}", 'Error: no se puede restar a un valor de diccionario', "{'lapiz': 5, 'borrador': 30, 'cuaderno': 20}"],
+    respuesta_correcta: 0, xp: 20, expl: '["lapiz"] -= 5 → 45; se agrega la clave "cuaderno" con 20.' },
+  { nivel: 5, categoria: 'Slicing', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código de slicing con paso negativo?',
+    codigo_python: `numeros = [10, 20, 30, 40, 50]\nprint(numeros[::-1])`,
+    opciones: ['[10, 20, 30, 40, 50]', '[50, 40, 30, 20, 10]', '[]', 'Error de sintaxis'], respuesta_correcta: 1, xp: 25,
+    expl: '[::-1] recorre con paso -1, invirtiendo el orden.' },
+  { nivel: 5, categoria: 'Comprensión de listas', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime esta comprensión de listas con strings?',
+    codigo_python: `nombres = ["ana", "Luis", "MARIA", "Pedro"]\nmayusculas = [n.upper() for n in nombres if len(n) > 4]\nprint(mayusculas)`,
+    opciones: ["['ANA', 'LUIS', 'MARIA', 'PEDRO']", "['MARIA', 'PEDRO']", "['ana', 'Luis', 'MARIA', 'Pedro']", "['LUIS', 'MARIA']"],
+    respuesta_correcta: 1, xp: 25, expl: 'Solo MARIA (5) y Pedro (5) tienen len > 4; se convierten a mayúsculas.' },
+  { nivel: 5, categoria: 'Listas', dificultad: 2, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que combina dos listas?',
+    codigo_python: `lista_a = [1, 2, 3]\nlista_b = [4, 5, 6]\ncombinada = lista_a + lista_b\nprint(combinada)`,
+    opciones: ['[1, 2, 3, 4, 5, 6]', '[5, 7, 9]', '[[1, 2, 3], [4, 5, 6]]', 'Error: no se pueden sumar listas'], respuesta_correcta: 0, xp: 15,
+    expl: '+ concatena listas (las une), no suma elemento a elemento.' },
+  { nivel: 5, categoria: 'Diccionarios', dificultad: 3, tipo: 'predecir_salida',
+    enunciado: '¿Qué imprime este código que encuentra el valor máximo en un diccionario?',
+    codigo_python: `ventas = {"enero": 1200, "febrero": 950, "marzo": 1500}\nmejor_mes = max(ventas, key=ventas.get)\nprint(mejor_mes)`,
+    opciones: ['1500', 'marzo', 'enero', 'Error: max no funciona con diccionarios'], respuesta_correcta: 1, xp: 25,
+    expl: 'max(..., key=ventas.get) devuelve la CLAVE con mayor valor: "marzo" (1500).' },
+];
+
+// ════════════ Banco PRETEST (20) ════════════
+const PRETEST: Def[] = [
+  { categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `x = 8\ny = "2"\nprint(x + int(y))`, opciones: ['10', '82', 'Error', '8.2'], respuesta_correcta: 0 },
+  { categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `nombre = "Luis"\nprint("Hola " + nombre)`, opciones: ['Hola Luis', 'Hola nombre', 'Error', 'Hola + Luis'], respuesta_correcta: 0 },
+  { categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `nota = 55\nif nota >= 51:\n    print("Aprobado")\nelse:\n    print("Reprobado")`, opciones: ['Aprobado', 'Reprobado', 'Error', '55'], respuesta_correcta: 0 },
+  { categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `x = 10\ny = 20\nif x > y:\n    print("x mayor")\nelse:\n    print("y mayor")`, opciones: ['x mayor', 'y mayor', 'Error', 'Igual'], respuesta_correcta: 1 },
+  { categoria: 'Bucles', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `total = 0\nfor i in range(1, 4):\n    total += i\nprint(total)`, opciones: ['6', '3', '10', '4'], respuesta_correcta: 0 },
+  { categoria: 'Bucles', dificultad: 2, tipo: 'predecir_salida', enunciado: "¿Cuántas veces imprime 'Hola' este bucle?", codigo_python: `for i in range(4):\n    print("Hola")`, opciones: ['3 veces', '4 veces', '5 veces', '0 veces'], respuesta_correcta: 1 },
+  { categoria: 'Bucles', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este bucle while?', codigo_python: `n = 3\nwhile n > 0:\n    print(n)\n    n -= 1`, opciones: ['3 2 1', '3 2 1 0', '1 2 3', 'Bucle infinito'], respuesta_correcta: 0 },
+  { categoria: 'Funciones', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `def cuadrado(n):\n    return n * n\n\nprint(cuadrado(5))`, opciones: ['10', '25', '5', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Funciones', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `def saludo(nombre="Invitado"):\n    return "Hola " + nombre\n\nprint(saludo())`, opciones: ['Hola Invitado', 'Hola', 'Error', 'Hola nombre'], respuesta_correcta: 0 },
+  { categoria: 'Funciones', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime esta función recursiva?', codigo_python: `def suma_hasta(n):\n    if n == 0:\n        return 0\n    return n + suma_hasta(n - 1)\n\nprint(suma_hasta(3))`, opciones: ['3', '6', '0', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Arreglos', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `lista = [10, 20, 30]\nprint(lista[1])`, opciones: ['10', '20', '30', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Arreglos', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código tras agregar un elemento?', codigo_python: `numeros = [1, 2, 3]\nnumeros.append(4)\nprint(numeros)`, opciones: ['[1, 2, 3]', '[1, 2, 3, 4]', '[4, 1, 2, 3]', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Arreglos', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código de diccionarios?', codigo_python: `persona = {"nombre": "Eva", "edad": 22}\nprint(persona["nombre"])`, opciones: ['nombre', 'Eva', '22', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'General', dificultad: 1, tipo: 'predecir_salida', enunciado: '¿Qué tipo de dato es el resultado de 5 / 2 en Python?', codigo_python: `print(type(5 / 2))`, opciones: ['int', 'float', 'str', 'bool'], respuesta_correcta: 1 },
+  { categoria: 'General', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `print(10 % 3)`, opciones: ['3', '1', '0', '3.33'], respuesta_correcta: 1 },
+  { categoria: 'General', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código con operadores lógicos?', codigo_python: `a = True\nb = False\nprint(a and b)`, opciones: ['True', 'False', 'Error', 'None'], respuesta_correcta: 1 },
+  { categoria: 'General', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `texto = "Python"\nprint(texto[0:3])`, opciones: ['Pyt', 'yth', 'Python', 'Error'], respuesta_correcta: 0 },
+  { categoria: 'General', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código combinando bucle y condicional?', codigo_python: `for i in range(1, 6):\n    if i % 2 == 0:\n        print(i)`, opciones: ['1 3 5', '2 4', '1 2 3 4 5', 'Nada'], respuesta_correcta: 1 },
+  { categoria: 'General', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código que usa len()?', codigo_python: `palabra = "algoritmo"\nprint(len(palabra))`, opciones: ['8', '9', '10', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `n = 7\nif n % 2 == 0:\n    print("Par")\nelse:\n    print("Impar")`, opciones: ['Par', 'Impar', 'Error', '1'], respuesta_correcta: 1 },
+];
+
+// ════════════ Banco POSTEST (20) ════════════
+const POSTEST: Def[] = [
+  { categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `a = 12\nb = "3"\nprint(a + int(b))`, opciones: ['15', '123', 'Error', '12.3'], respuesta_correcta: 0 },
+  { categoria: 'Variables', dificultad: 1, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `ciudad = "La Paz"\nprint("Vivo en " + ciudad)`, opciones: ['Vivo en La Paz', 'Vivo en ciudad', 'Error', 'La Paz Vivo en'], respuesta_correcta: 0 },
+  { categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `nota = 45\nif nota >= 51:\n    print("Aprobado")\nelse:\n    print("Reprobado")`, opciones: ['Aprobado', 'Reprobado', 'Error', '45'], respuesta_correcta: 1 },
+  { categoria: 'Condicionales', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `x = 30\ny = 15\nif x > y:\n    print("x mayor")\nelse:\n    print("y mayor")`, opciones: ['x mayor', 'y mayor', 'Error', 'Igual'], respuesta_correcta: 0 },
+  { categoria: 'Bucles', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)`, opciones: ['10', '6', '15', '4'], respuesta_correcta: 0 },
+  { categoria: 'Bucles', dificultad: 2, tipo: 'predecir_salida', enunciado: "¿Cuántas veces imprime 'Hola' este bucle?", codigo_python: `for i in range(6):\n    print("Hola")`, opciones: ['5 veces', '6 veces', '7 veces', '0 veces'], respuesta_correcta: 1 },
+  { categoria: 'Bucles', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este bucle while?', codigo_python: `n = 4\nwhile n > 0:\n    print(n)\n    n -= 1`, opciones: ['4 3 2 1', '4 3 2 1 0', '1 2 3 4', 'Bucle infinito'], respuesta_correcta: 0 },
+  { categoria: 'Funciones', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `def cubo(n):\n    return n * n * n\n\nprint(cubo(3))`, opciones: ['9', '27', '6', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Funciones', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `def despedida(nombre="Amigo"):\n    return "Adiós " + nombre\n\nprint(despedida())`, opciones: ['Adiós Amigo', 'Adiós', 'Error', 'Adiós nombre'], respuesta_correcta: 0 },
+  { categoria: 'Funciones', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime esta función recursiva?', codigo_python: `def producto_hasta(n):\n    if n == 1:\n        return 1\n    return n * producto_hasta(n - 1)\n\nprint(producto_hasta(4))`, opciones: ['4', '24', '10', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Arreglos', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `lista = [5, 15, 25]\nprint(lista[2])`, opciones: ['5', '15', '25', 'Error'], respuesta_correcta: 2 },
+  { categoria: 'Arreglos', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código tras eliminar un elemento?', codigo_python: `numeros = [1, 2, 3, 4]\nnumeros.pop()\nprint(numeros)`, opciones: ['[1, 2, 3, 4]', '[1, 2, 3]', '[2, 3, 4]', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Arreglos', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código de diccionarios?', codigo_python: `producto = {"nombre": "Mouse", "precio": 45}\nprint(producto["precio"])`, opciones: ['nombre', 'Mouse', '45', 'Error'], respuesta_correcta: 2 },
+  { categoria: 'General', dificultad: 1, tipo: 'predecir_salida', enunciado: '¿Qué tipo de dato es el resultado de 9 // 2 en Python?', codigo_python: `print(type(9 // 2))`, opciones: ['int', 'float', 'str', 'bool'], respuesta_correcta: 0 },
+  { categoria: 'General', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `print(14 % 4)`, opciones: ['2', '3', '0', '3.5'], respuesta_correcta: 0 },
+  { categoria: 'General', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código con operadores lógicos?', codigo_python: `a = False\nb = True\nprint(a or b)`, opciones: ['True', 'False', 'Error', 'None'], respuesta_correcta: 0 },
+  { categoria: 'General', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `texto = "Algoritmo"\nprint(texto[0:4])`, opciones: ['Algo', 'lgor', 'Algoritmo', 'Error'], respuesta_correcta: 0 },
+  { categoria: 'General', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código combinando bucle y condicional?', codigo_python: `for i in range(1, 7):\n    if i % 2 == 0:\n        print(i)`, opciones: ['1 3 5', '2 4 6', '1 2 3 4 5 6', 'Nada'], respuesta_correcta: 1 },
+  { categoria: 'General', dificultad: 3, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código que usa len()?', codigo_python: `palabra = "diccionario"\nprint(len(palabra))`, opciones: ['10', '11', '12', 'Error'], respuesta_correcta: 1 },
+  { categoria: 'Funciones', dificultad: 2, tipo: 'predecir_salida', enunciado: '¿Qué imprime este código?', codigo_python: `def doble(n):\n    return n + n\n\nprint(doble(7))`, opciones: ['14', '49', '7', 'Error'], respuesta_correcta: 0 },
+];
+
+// ── Mapeos auxiliares ───────────────────────────────────────
+const LETRAS = ['A', 'B', 'C', 'D'];
+const dificultadDe = (e: number) => (e <= 2 ? 'facil' : e === 3 ? 'media' : 'dificil');
+const CAT_A_NIVEL: Record<string, number> = {
+  Variables: 1, Condicionales: 2, Bucles: 3, Funciones: 4, Arreglos: 5, General: 1,
+};
+const tituloDe = (codigo: string, enun: string) => {
+  const linea = codigo.split('\n').find((l) => l.trim()) ?? enun;
+  return linea.length > 46 ? linea.slice(0, 45) + '…' : linea;
+};
 
 async function main() {
-  const seed = fs.readFileSync(SEED, 'utf-8');
-  console.log('[db:seed] Sembrando datos (initdb/02-seed.sql)...');
-  await pool.query(seed);
-  console.log('[db:seed] ✅ Datos sembrados.');
-  console.log('[db:seed] Usuarios: juan/ana/carlos/maria@upea.bo, docente@upea.bo, admin@upea.bo');
-  console.log('[db:seed] Contraseña por defecto: Prexi123*');
+  const schema = fs.readFileSync(path.resolve(__dirname, 'initdb/01-schema.sql'), 'utf-8');
+  const hash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+
+  console.log('[seed] Aplicando esquema...');
+  await pool.query(schema);
+
+  await withTransaction(async (c) => {
+    await c.query(
+      `INSERT INTO configuracion_sistema (id, xp_por_ejercicio, umbral_nivel, umbral_porcentaje, max_pistas_ia, modelo_ia)
+       VALUES (1, 50, 8, 80, 3, 'gemini-2.0-flash')`,
+    );
+
+    // ── Usuarios (@upea.edu.bo) ──
+    const usuarios: Array<[string, string, string, string, string]> = [
+      ['Juan Mamani',   'juan@upea.edu.bo',   '8001001', 'estudiante', 'Ingeniería de Sistemas'],
+      ['Ana Quispe',    'ana@upea.edu.bo',    '8001002', 'estudiante', 'Ingeniería de Sistemas'],
+      ['Carlos Mamani', 'carlos@upea.edu.bo', '8001003', 'estudiante', 'Ingeniería de Sistemas'],
+      ['Maria Vera',    'maria@upea.edu.bo',  '8001004', 'estudiante', 'Ingeniería de Sistemas'],
+      ['Docente Demo',  'docente@upea.edu.bo','8002001', 'docente',    'Ingeniería de Sistemas'],
+      ['Admin PREXI',   'admin@upea.edu.bo',  '8003001', 'admin',      'Ingeniería de Sistemas'],
+    ];
+    const uid: Record<string, number> = {};
+    for (const [nombre, email, cedula, rol, carrera] of usuarios) {
+      const { rows } = await c.query<{ id: number }>(
+        `INSERT INTO usuarios (nombre, email, cedula, rol, carrera, password_hash, diagnostico_completado, pretest_completado)
+         VALUES ($1,$2,$3,$4,$5,$6,true,true) RETURNING id`,
+        [nombre, email, cedula, rol, carrera, hash],
+      );
+      uid[email] = rows[0].id;
+    }
+
+    // ── Niveles ──
+    const niveles: Array<[number, string, string, number]> = [
+      [1, 'Fundamentos de Python', 'Variables, tipos de datos, operadores y conversión de tipos.', 12],
+      [2, 'Estructuras condicionales', 'if / elif / else, comparaciones y operadores lógicos.', 15],
+      [3, 'Bucles e iteraciones', 'for, while, range(), break, continue y acumuladores.', 15],
+      [4, 'Funciones', 'def, parámetros, return, *args, alcance y recursividad.', 12],
+      [5, 'Estructuras de datos', 'Listas, tuplas, diccionarios, conjuntos y comprensiones.', 15],
+    ];
+    const nid: Record<number, number> = {};
+    for (const [numero, titulo, desc, umbral] of niveles) {
+      const { rows } = await c.query<{ id: number }>(
+        `INSERT INTO niveles (numero, titulo, descripcion, umbral) VALUES ($1,$2,$3,$4) RETURNING id`,
+        [numero, titulo, desc, umbral],
+      );
+      nid[numero] = rows[0].id;
+    }
+
+    // ── Inserción de ejercicios ──
+    const idsPorNivel: Record<number, number[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    async function insertar(d: Def, banco: 'practica' | 'pretest' | 'postest'): Promise<number> {
+      const numeroNivel = d.nivel ?? CAT_A_NIVEL[d.categoria] ?? 1;
+      const ops = d.opciones.map((t, i) => ({ id: LETRAS[i], texto: t }));
+      const { rows } = await c.query<{ id: number }>(
+        `INSERT INTO ejercicios
+          (titulo, categoria, nivel_id, dificultad, estrellas, tipo, enunciado, codigo_python,
+           opciones, respuesta_correcta, xp, explicacion_ia, max_pistas, banco)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,3,$13) RETURNING id`,
+        [
+          tituloDe(d.codigo_python, d.enunciado), d.categoria, nid[numeroNivel],
+          dificultadDe(d.dificultad), d.dificultad, d.tipo, d.enunciado, d.codigo_python,
+          JSON.stringify(ops), LETRAS[d.respuesta_correcta], d.xp ?? d.dificultad * 5,
+          d.expl ?? 'Analiza paso a paso la ejecución del código.', banco,
+        ],
+      );
+      return rows[0].id;
+    }
+
+    for (const banco of [NIVEL1, NIVEL2, NIVEL3, NIVEL4, NIVEL5]) {
+      for (const d of banco) {
+        const id = await insertar(d, 'practica');
+        idsPorNivel[d.nivel!].push(id);
+      }
+    }
+    for (const d of PRETEST) await insertar(d, 'pretest');
+    for (const d of POSTEST) await insertar(d, 'postest');
+
+    const practica = NIVEL1.length + NIVEL2.length + NIVEL3.length + NIVEL4.length + NIVEL5.length;
+    console.log(`[seed] práctica=${practica} | pretest=${PRETEST.length} | postest=${POSTEST.length}`);
+
+    // ── Logros ──
+    const logros: Array<[string, string, string, string]> = [
+      ['primer_acierto',   'Primer Acierto',    'Responde correctamente tu primer ejercicio', '🎯'],
+      ['nivel_completado', 'Nivel Conquistado', 'Completa un nivel al 80%',                   '🏆'],
+      ['top_5',            'Top 5',             'Entra al top 5 del ranking',                 '⭐'],
+      ['racha_7',          'Racha de Fuego',    'Mantén una racha de 7 días',                 '🔥'],
+      ['sin_pistas',       'Mente Brillante',   'Acierta 5 ejercicios sin usar pistas',       '💡'],
+      ['funciones_5',      'Funcional',         'Resuelve 5 ejercicios de Funciones',         '🧩'],
+    ];
+    for (const [clave, nombre, condicion, icono] of logros) {
+      await c.query(`INSERT INTO logros (clave, nombre, condicion, icono) VALUES ($1,$2,$3,$4)`, [clave, nombre, condicion, icono]);
+    }
+
+    // ── Demo: progreso real de Juan ──
+    const juan = uid['juan@upea.edu.bo'];
+    let xpJuan = 0;
+    const resolver = async (ids: number[], cuantos: number) => {
+      for (const id of ids.slice(0, cuantos)) {
+        const { rows } = await c.query<{ xp: number }>(`SELECT xp FROM ejercicios WHERE id = $1`, [id]);
+        xpJuan += rows[0].xp;
+        await c.query(
+          `INSERT INTO intentos (usuario_id, ejercicio_id, respuesta_dada, correcto, tiempo_seg, xp_otorgado, fecha)
+           VALUES ($1,$2,'A',true,45,$3, now() - (random() * interval '6 days'))`,
+          [juan, id, rows[0].xp],
+        );
+      }
+    };
+    await resolver(idsPorNivel[1], idsPorNivel[1].length);
+    await resolver(idsPorNivel[2], 6);
+
+    const progreso: Array<[number, number, boolean]> = [
+      [1, idsPorNivel[1].length, true], [2, 6, true], [3, 0, true], [4, 0, false], [5, 0, false],
+    ];
+    for (const [numero, comp, desbloqueado] of progreso) {
+      await c.query(
+        `INSERT INTO progreso_niveles (usuario_id, nivel_id, ejercicios_completados, desbloqueado) VALUES ($1,$2,$3,$4)`,
+        [juan, nid[numero], comp, desbloqueado],
+      );
+    }
+
+    // ── Ranking ──
+    const rankingSeed: Array<[string, number, number]> = [
+      ['ana@upea.edu.bo', 1240, 7], ['carlos@upea.edu.bo', 1105, 4], ['maria@upea.edu.bo', 920, 3],
+    ];
+    await c.query(`INSERT INTO ranking (usuario_id, xp_total, racha_dias, ultima_actividad) VALUES ($1,$2,$3,CURRENT_DATE)`, [juan, xpJuan, 5]);
+    for (const [email, xp, racha] of rankingSeed) {
+      await c.query(`INSERT INTO ranking (usuario_id, xp_total, racha_dias, ultima_actividad) VALUES ($1,$2,$3,CURRENT_DATE)`, [uid[email], xp, racha]);
+    }
+    await c.query(`INSERT INTO ranking (usuario_id, xp_total, racha_dias) SELECT id, 0, 0 FROM usuarios WHERE rol <> 'estudiante'`);
+    await c.query(`
+      WITH ord AS (SELECT usuario_id, ROW_NUMBER() OVER (ORDER BY xp_total DESC, usuario_id) AS pos FROM ranking)
+      UPDATE ranking r SET posicion = o.pos FROM ord o WHERE o.usuario_id = r.usuario_id`);
+
+    // ── Pretest/postest demo de Juan ──
+    const cats = ['Variables', 'Condicionales', 'Bucles', 'Funciones', 'Arreglos'];
+    const pre = [60, 55, 40, 50, 35];
+    const post = [90, 85, 75, 80, 70];
+    for (let i = 0; i < cats.length; i++) {
+      await c.query(`INSERT INTO pretest_postest (usuario_id, tipo, categoria, puntaje) VALUES ($1,'pre',$2,$3)`, [juan, cats[i], pre[i]]);
+      await c.query(`INSERT INTO pretest_postest (usuario_id, tipo, categoria, puntaje) VALUES ($1,'post',$2,$3)`, [juan, cats[i], post[i]]);
+    }
+
+    console.log(`[seed] Juan XP=${xpJuan}; ranking y progreso demo listos.`);
+  });
+
+  console.log('[seed] ✅ Seed completado.');
+  console.log(`[seed] Usuarios @upea.edu.bo (clave ${DEFAULT_PASSWORD}): juan, ana, carlos, maria, docente, admin`);
   await pool.end();
 }
 
 main().catch((err) => {
-  console.error('[db:seed] ❌ Error:', err);
+  console.error('[seed] ❌ Error:', err);
   process.exit(1);
 });

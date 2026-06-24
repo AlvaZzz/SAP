@@ -16,19 +16,25 @@ export interface OpcionEjercicio {
   texto: string;
 }
 
+export type TipoEjercicio = 'opcion_multiple' | 'completar_codigo' | 'predecir_salida';
+
 export interface Ejercicio {
   id: number;
   titulo: string;
   categoria: string;
   nivel_id: number;
   dificultad: Dificultad;
+  estrellas: number;
+  tipo: TipoEjercicio;
   enunciado: string;
   pseudocodigo: string | null;
+  codigo_python: string | null;
   opciones: OpcionEjercicio[];
   respuesta_correcta: string;
   xp: number;
   explicacion_ia: string | null;
   max_pistas: number;
+  banco: 'practica' | 'pretest' | 'postest';
 }
 
 export interface JwtPayload {

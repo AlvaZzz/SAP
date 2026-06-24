@@ -5,7 +5,7 @@ import { tooMany, unauthorized } from '../utils/httpError';
 
 /**
  * Limita las llamadas a la IA por estudiante: máx. N por hora (configurable
- * vía AI_RATE_LIMIT_PER_HOUR). Registra cada uso en la tabla ia_uso, que
+ * vía AI_RATE_LIMIT_PER_HOUR). Registra cada uso en la tabla consultas_ia, que
  * además sirve de auditoría de costos. Los roles docente/admin no se limitan.
  */
 export function rateLimitAI(req: Request, _res: Response, next: NextFunction) {
@@ -18,7 +18,7 @@ export function rateLimitAI(req: Request, _res: Response, next: NextFunction) {
   const limite = env.aiRateLimitPerHour;
 
   queryOne<{ usados: number }>(
-    `SELECT COUNT(*)::int AS usados FROM ia_uso
+    `SELECT COUNT(*)::int AS usados FROM consultas_ia
       WHERE usuario_id = $1 AND fecha > now() - interval '1 hour'`,
     [usuarioId],
   )
@@ -31,7 +31,7 @@ export function rateLimitAI(req: Request, _res: Response, next: NextFunction) {
       }
       // Registra el uso ANTES de llamar a Gemini (cuenta también intentos fallidos).
       await query(
-        `INSERT INTO ia_uso (usuario_id, endpoint) VALUES ($1, $2)`,
+        `INSERT INTO consultas_ia (usuario_id, endpoint) VALUES ($1, $2)`,
         [usuarioId, req.path],
       );
       next();

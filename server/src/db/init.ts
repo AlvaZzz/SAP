@@ -22,9 +22,9 @@ async function main() {
     return;
   }
 
-  console.log('[db:init] Base vacía → aplicando schema y seed...');
-  execSync('npm run db:setup', { stdio: 'inherit' });
-  execSync('npm run db:seed', { stdio: 'inherit' });
+  console.log('[db:init] Base vacía → aplicando schema y seed (Python)...');
+  // seed.ts aplica el esquema (initdb/01-schema.sql) y luego inserta los datos.
+  execSync('npm run seed', { stdio: 'inherit' });
   console.log('[db:init] ✅ Listo.');
 }
 

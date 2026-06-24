@@ -42,7 +42,7 @@ adminRouter.get(
               COUNT(*)::int AS llamadas_total,
               COUNT(*) FILTER (WHERE iu.fecha > now() - interval '1 hour')::int AS ultima_hora,
               COUNT(*) FILTER (WHERE iu.fecha > now() - interval '24 hours')::int AS ultimo_dia
-         FROM ia_uso iu JOIN usuarios u ON u.id = iu.usuario_id
+         FROM consultas_ia iu JOIN usuarios u ON u.id = iu.usuario_id
         GROUP BY u.id ORDER BY llamadas_total DESC`,
     );
     res.json({ uso: porUsuario });

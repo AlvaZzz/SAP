@@ -52,9 +52,9 @@ services:
     volumes:
       - ./server:/app
       - server_node_modules:/app/node_modules
-    # La BD ya viene inicializada por los scripts SQL de initdb (ver servicio db).
-    # depends_on: service_healthy garantiza que el seed terminó antes de arrancar.
-    command: npm run dev
+    # initdb crea el esquema; db:init siembra el contenido Python solo si la BD
+    # está vacía (idempotente). depends_on: service_healthy asegura el orden.
+    command: sh -c "npm run db:init && npm run dev"
 
   client:
     build: ./client
