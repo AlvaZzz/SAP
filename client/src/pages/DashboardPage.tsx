@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { DashboardData, EjercicioPublico } from '../lib/types';
+import { DashboardData } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
 import { Star, Trophy, CheckCircle, Flame, Sparkles, ArrowRight, Play } from '../components/icons';
@@ -9,29 +9,26 @@ import { Star, Trophy, CheckCircle, Flame, Sparkles, ArrowRight, Play } from '..
 interface Comparativa {
   comparativa: { categoria: string; pretest: number | null; postest: number | null }[];
 }
-interface Intento { ejercicio_id: number; correcto: boolean }
+interface Recomendado { id: number; titulo: string; categoria: string; estrellas: number; xp: number }
+interface DiaActividad { dia: string; intentos: number; aciertos: number }
 
 export default function DashboardPage() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [comp, setComp] = useState<Comparativa['comparativa']>([]);
-  const [recomendados, setRecomendados] = useState<EjercicioPublico[]>([]);
+  const [recomendados, setRecomendados] = useState<Recomendado[]>([]);
+  const [actividad, setActividad] = useState<DiaActividad[]>([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    api.get<DashboardData>('/dashboard').then(setData).catch(() => undefined);
-    api.get<Comparativa>('/pretest/comparativa').then((r) => setComp(r.comparativa)).catch(() => undefined);
-
-    // Recomendados por la IA: ejercicios que aún no ha resuelto correctamente.
     Promise.all([
-      api.get<{ ejercicios: EjercicioPublico[] }>('/ejercicios'),
-      api.get<{ intentos: Intento[] }>('/intentos/mios'),
-    ])
-      .then(([ej, it]) => {
-        const resueltos = new Set(it.intentos.filter((i) => i.correcto).map((i) => i.ejercicio_id));
-        setRecomendados(ej.ejercicios.filter((e) => !resueltos.has(e.id)).slice(0, 3));
-      })
-      .catch(() => undefined);
+      api.get<DashboardData>('/dashboard').then(setData).catch(() => undefined),
+      api.get<Comparativa>('/pretest/comparativa').then((r) => setComp(r.comparativa)).catch(() => undefined),
+      // Recomendados: seleccionados por el backend según el nivel actual.
+      api.get<{ recomendados: Recomendado[] }>('/dashboard/recomendados').then((r) => setRecomendados(r.recomendados)).catch(() => undefined),
+      api.get<{ actividad: DiaActividad[] }>('/dashboard/actividad').then((r) => setActividad(r.actividad)).catch(() => undefined),
+    ]).finally(() => setCargando(false));
   }, []);
 
   const faltan = data ? Math.max(0, data.ejercicios.total - data.ejercicios.completados) : null;
@@ -49,17 +46,24 @@ export default function DashboardPage() {
           : 'Sigue tu ruta de aprendizaje en programación.'}
       </p>
 
-      {/* Stat cards */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={<Star className="h-6 w-6" />} accent="blue" label="Puntos XP"
-          value={data ? data.puntos.toLocaleString() : '—'} />
-        <StatCard icon={<Trophy className="h-6 w-6" />} accent="amber" label="Posición"
-          value={data?.posicion ? `#${data.posicion}` : '—'} />
-        <StatCard icon={<CheckCircle className="h-6 w-6" />} accent="green" label="Ejercicios"
-          value={data ? `${data.ejercicios.completados}/${data.ejercicios.total}` : '—'} />
-        <StatCard icon={<Flame className="h-6 w-6" />} accent="orange" label="Racha"
-          value={data ? `${data.racha_dias} días` : '—'} />
-      </div>
+      {/* Stat cards (con skeleton mientras carga) */}
+      {cargando && !data ? (
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="card flex items-center gap-4 !p-4">
+              <div className="h-12 w-12 shrink-0 animate-pulse rounded-xl bg-slate-200" />
+              <div className="flex-1 space-y-2"><div className="h-3 w-16 animate-pulse rounded bg-slate-200" /><div className="h-5 w-12 animate-pulse rounded bg-slate-200" /></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard icon={<Star className="h-6 w-6" />} accent="blue" label="Puntos XP" value={data ? data.puntos.toLocaleString() : '—'} />
+          <StatCard icon={<Trophy className="h-6 w-6" />} accent="amber" label="Posición" value={data?.posicion ? `#${data.posicion}` : '—'} />
+          <StatCard icon={<CheckCircle className="h-6 w-6" />} accent="green" label="Ejercicios" value={data ? `${data.ejercicios.completados}/${data.ejercicios.total}` : '—'} />
+          <StatCard icon={<Flame className="h-6 w-6" />} accent="orange" label="Racha" value={data ? `${data.racha_dias} días` : '—'} />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Progreso académico */}
@@ -124,6 +128,36 @@ export default function DashboardPage() {
           <Play className="h-4 w-4" /> Continuar
         </Link>
       </div>
+
+      {/* Actividad de la semana */}
+      <div className="card mt-6">
+        <h3 className="mb-4 font-bold text-prexi-navy">Actividad de la semana</h3>
+        <ActividadSemanal dias={actividad} />
+      </div>
+    </div>
+  );
+}
+
+// ── Mini gráfico de actividad (intentos por día) ────────────
+function ActividadSemanal({ dias }: { dias: DiaActividad[] }) {
+  if (!dias.length) return <p className="py-6 text-center text-sm text-slate-400">Aún no registras actividad esta semana.</p>;
+  const max = Math.max(1, ...dias.map((d) => d.intentos));
+  const nombres = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  return (
+    <div className="flex items-end justify-between gap-2" style={{ height: 120 }}>
+      {dias.map((d) => {
+        const h = Math.round((d.intentos / max) * 90);
+        const dow = nombres[new Date(d.dia + 'T00:00:00').getDay()];
+        return (
+          <div key={d.dia} className="flex flex-1 flex-col items-center gap-1">
+            <span className="text-[10px] font-semibold text-slate-400">{d.intentos || ''}</span>
+            <div className="flex w-full max-w-[34px] flex-1 items-end">
+              <div className="w-full rounded-t-md bg-gradient-to-t from-prexi-blue to-blue-400" style={{ height: `${Math.max(4, h)}px` }} title={`${d.intentos} intentos, ${d.aciertos} aciertos`} />
+            </div>
+            <span className="text-[11px] text-slate-500">{dow}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }

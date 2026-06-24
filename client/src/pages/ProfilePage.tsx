@@ -1,19 +1,49 @@
-import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { FormEvent, useEffect, useState } from 'react';
+import { api, ApiError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { DashboardData, DiagnosticoResultado } from '../lib/types';
-import { Award, Flame, Star, Trophy, Target } from '../components/icons';
+import { DashboardData } from '../lib/types';
+import { Award, Flame, Star, Trophy, Target, User as UserIcon } from '../components/icons';
+
+const CARRERAS = [
+  'Ingeniería de Sistemas', 'Ingeniería de Software', 'Ingeniería Informática',
+  'Ingeniería Electrónica', 'Ingeniería Industrial', 'Otra',
+];
 
 export default function ProfilePage() {
-  const { usuario } = useAuth();
+  const { usuario, actualizarUsuario } = useAuth();
   const [dash, setDash] = useState<DashboardData | null>(null);
-  const [diag, setDiag] = useState<DiagnosticoResultado | null>(null);
+  const [nivel, setNivel] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({ nombre: '', carrera: '' });
+  const [guardando, setGuardando] = useState(false);
+  const [msg, setMsg] = useState('');
 
   useEffect(() => {
     api.get<DashboardData>('/dashboard').then(setDash).catch(() => undefined);
-    api.get<{ resultado: DiagnosticoResultado | null }>('/diagnostico/estado')
-      .then((r) => setDiag(r.resultado)).catch(() => undefined);
+    api.get<{ resultado: { nivel: string } | null }>('/pretest/estado')
+      .then((r) => setNivel(r.resultado?.nivel ?? null)).catch(() => undefined);
   }, []);
+
+  function abrirEdicion() {
+    setForm({ nombre: usuario?.nombre ?? '', carrera: usuario?.carrera ?? '' });
+    setMsg('');
+    setEditando(true);
+  }
+
+  async function guardar(e: FormEvent) {
+    e.preventDefault();
+    if (form.nombre.trim().length < 2 || form.carrera.trim().length < 2) { setMsg('Completa nombre y carrera.'); return; }
+    setGuardando(true);
+    try {
+      await api.put('/auth/perfil', { nombre: form.nombre, carrera: form.carrera });
+      await actualizarUsuario();
+      setEditando(false);
+    } catch (err) {
+      setMsg(err instanceof ApiError ? err.message : 'No se pudo guardar');
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   const inicial = usuario?.nombre.charAt(0).toUpperCase() ?? '?';
 
@@ -31,16 +61,43 @@ export default function ProfilePage() {
               <h1 className="text-xl font-extrabold text-prexi-navy">{usuario?.nombre}</h1>
               <p className="text-sm text-slate-500">{usuario?.email}</p>
             </div>
-            {diag && (
-              <span className="mb-2 ml-auto rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-prexi-blue">
-                Nivel {diag.nivel}
-              </span>
-            )}
+            <div className="mb-1 ml-auto flex items-center gap-2">
+              {nivel && (
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-prexi-blue">Nivel {nivel}</span>
+              )}
+              {!editando && (
+                <button onClick={abrirEdicion} className="btn-ghost !py-1.5 !px-3 text-sm">
+                  <UserIcon className="h-4 w-4" /> Editar
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2 text-sm text-slate-500">
-            <span className="rounded-lg bg-slate-100 px-3 py-1 capitalize">{usuario?.rol}</span>
-            {usuario?.carrera && <span className="rounded-lg bg-slate-100 px-3 py-1">{usuario.carrera}</span>}
-          </div>
+
+          {editando ? (
+            <form onSubmit={guardar} className="mt-2 grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-slate-700">Nombre completo</span>
+                <input className="input" value={form.nombre} onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-sm font-medium text-slate-700">Carrera</span>
+                <select className="input" value={form.carrera} onChange={(e) => setForm((f) => ({ ...f, carrera: e.target.value }))}>
+                  <option value="">Selecciona…</option>
+                  {CARRERAS.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+              {msg && <p className="text-sm text-red-500 sm:col-span-2">{msg}</p>}
+              <div className="flex gap-2 sm:col-span-2">
+                <button className="btn-primary" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</button>
+                <button type="button" onClick={() => setEditando(false)} className="btn-ghost">Cancelar</button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex flex-wrap gap-2 text-sm text-slate-500">
+              <span className="rounded-lg bg-slate-100 px-3 py-1 capitalize">{usuario?.rol}</span>
+              {usuario?.carrera && <span className="rounded-lg bg-slate-100 px-3 py-1">{usuario.carrera}</span>}
+            </div>
+          )}
         </div>
       </div>
 
