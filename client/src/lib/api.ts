@@ -25,6 +25,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const res = await fetch(`/api${path}`, {
     method,
     headers,
+    credentials: 'include', // envía/recibe la cookie httpOnly del JWT
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 

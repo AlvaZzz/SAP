@@ -2,11 +2,19 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { api, tokenStore } from '../lib/api';
 import { Usuario } from '../lib/types';
 
+export interface RegistroData {
+  nombre: string;
+  email: string;
+  password: string;
+  cedula: string;
+  carrera: string;
+}
+
 interface AuthState {
   usuario: Usuario | null;
   cargando: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (nombre: string, email: string, password: string, carrera?: string) => Promise<void>;
+  register: (data: RegistroData) => Promise<void>;
   actualizarUsuario: () => Promise<void>;
   logout: () => void;
 }
@@ -35,10 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUsuario(r.usuario);
   }
 
-  async function register(nombre: string, email: string, password: string, carrera?: string) {
-    const r = await api.post<{ token: string; usuario: Usuario }>('/auth/register', {
-      nombre, email, password, carrera,
-    });
+  async function register(data: RegistroData) {
+    const r = await api.post<{ token: string; usuario: Usuario }>('/auth/register', data);
     tokenStore.set(r.token);
     setUsuario(r.usuario);
   }
@@ -50,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    api.post('/auth/logout').catch(() => undefined);
     tokenStore.clear();
     setUsuario(null);
   }
