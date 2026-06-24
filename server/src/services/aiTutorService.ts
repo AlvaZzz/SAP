@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerationConfig, SchemaType } from '@google/generative-ai';
 import { env } from '../config/env';
 import { queryOne, query } from '../config/db';
 import { getConfig } from './configService';
@@ -30,15 +30,20 @@ Algoritmo / Definir / Si-Sino / Para / Mientras / Fin.
 Usa un tono cercano y de apoyo, sin sermonear.`;
 
 /** Llamada interna a Gemini. Devuelve el texto plano de la respuesta. */
-async function pedirAyudaIA(systemPrompt: string, mensajeUsuario: string): Promise<string> {
+async function pedirAyudaIA(
+  systemPrompt: string,
+  mensajeUsuario: string,
+  generationConfig?: GenerationConfig,
+): Promise<string> {
   const cfg = await getConfig();
-  const model = getClient().getGenerativeModel({ model: cfg.modelo_ia || env.geminiModel });
+  const model = getClient().getGenerativeModel({
+    model: cfg.modelo_ia || env.geminiModel,
+    systemInstruction: systemPrompt,
+    generationConfig,
+  });
 
   try {
-    const result = await model.generateContent([
-      { text: systemPrompt },
-      { text: mensajeUsuario },
-    ]);
+    const result = await model.generateContent(mensajeUsuario);
     return result.response.text().trim();
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -75,8 +80,12 @@ async function pedirAyudaIA(systemPrompt: string, mensajeUsuario: string): Promi
  * Generación genérica de texto con Gemini, reutilizable por otros servicios
  * (p. ej. el diagnóstico inicial). Mantiene el manejo de errores 429/503.
  */
-export async function generarTexto(systemPrompt: string, mensaje: string): Promise<string> {
-  return pedirAyudaIA(systemPrompt, mensaje);
+export async function generarTexto(
+  systemPrompt: string,
+  mensaje: string,
+  generationConfig?: GenerationConfig,
+): Promise<string> {
+  return pedirAyudaIA(systemPrompt, mensaje, generationConfig);
 }
 
 // ── Caché simple en BD (para preguntas frecuentes) ──────────
@@ -136,23 +145,45 @@ export interface RetroOutput {
 export async function retroalimentacion(input: RetroInput): Promise<RetroOutput> {
   const system = `${PERSONA_BASE}
 El estudiante respondió "${input.respuestaEstudiante}" y la respuesta correcta es
-"${input.respuestaCorrecta}". Explica el error específico en 2-3 frases, en tono de
-apoyo, SIN sermonear y SIN repetir la respuesta correcta literalmente al inicio.
-Al final, en una línea aparte, escribe exactamente:
-AREA_DEBIL: <concepto puntual a reforzar en pocas palabras>`;
+"${input.respuestaCorrecta}". Explica el error específico de forma constructiva, SIN sermonear y SIN repetir la respuesta correcta literalmente al inicio.`;
 
   const mensaje = input.codigoPseudocodigo
     ? `Pseudocódigo del ejercicio:\n${input.codigoPseudocodigo}`
     : `Ejercicio #${input.ejercicioId}`;
 
-  const texto = await pedirAyudaIA(system, mensaje);
+  const schema = {
+    type: SchemaType.OBJECT,
+    properties: {
+      explicacion: {
+        type: SchemaType.STRING,
+        description: 'Explicación específica del error cometido por el estudiante, en 2-3 frases, tono de apoyo, sin repetir la respuesta correcta literalmente.',
+      },
+      area_debil: {
+        type: SchemaType.STRING,
+        description: 'Concepto puntual a reforzar en pocas palabras (ej. "Bucle While", "Paso por referencia").',
+      },
+    },
+    required: ['explicacion', 'area_debil'],
+  };
 
-  // Extrae el marcador AREA_DEBIL del final.
-  const match = texto.match(/AREA_DEBIL:\s*(.+)\s*$/i);
-  const areaDebil = match?.[1]?.trim() ?? 'concepto general del ejercicio';
-  const explicacion = texto.replace(/AREA_DEBIL:.*$/i, '').trim();
+  const textoJson = await pedirAyudaIA(system, mensaje, {
+    responseMimeType: 'application/json',
+    responseSchema: schema,
+  });
 
-  return { explicacion, area_debil: areaDebil };
+  try {
+    const data = JSON.parse(textoJson) as RetroOutput;
+    return {
+      explicacion: data.explicacion ?? 'Intenta revisar el problema con calma.',
+      area_debil: data.area_debil ?? 'concepto general del ejercicio',
+    };
+  } catch (parseErr) {
+    console.error('[retroalimentacion] Error al parsear JSON estructurado:', parseErr);
+    return {
+      explicacion: 'No se pudo generar la retroalimentación en este momento.',
+      area_debil: 'concepto general del ejercicio',
+    };
+  }
 }
 
 // ════════════════════════════════════════════════════════════

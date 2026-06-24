@@ -1,3 +1,4 @@
+import { SchemaType } from '@google/generative-ai';
 import { query, queryOne, withTransaction } from '../config/db';
 import { generarTexto } from './aiTutorService';
 
@@ -195,21 +196,6 @@ function bancoFallback(): PreguntaInterna[] {
   return BANCO.map((p, i) => ({ ...p, id: i + 1 }));
 }
 
-/** Extrae el primer bloque JSON de la respuesta del modelo (tolera ```json). */
-function extraerJSON<T>(texto: string): T | null {
-  const limpio = texto.replace(/```json/gi, '').replace(/```/g, '').trim();
-  const inicio = limpio.search(/[[{]/);
-  if (inicio === -1) return null;
-  // Busca el cierre balanceado desde el final.
-  const fin = Math.max(limpio.lastIndexOf(']'), limpio.lastIndexOf('}'));
-  if (fin <= inicio) return null;
-  try {
-    return JSON.parse(limpio.slice(inicio, fin + 1)) as T;
-  } catch {
-    return null;
-  }
-}
-
 // ════════════════════════════════════════════════════════════
 //  1) Generar preguntas
 // ════════════════════════════════════════════════════════════
@@ -220,13 +206,58 @@ export async function generarPreguntas(usuarioId: number): Promise<PreguntaPubli
 primer semestre de Ingeniería de Sistemas (UPEA, Bolivia). Genera EXACTAMENTE ${NUM_PREGUNTAS}
 preguntas de opción múltiple (${POR_CATEGORIA} por cada categoría), en español, de dificultad
 creciente. Categorías: ${CATEGORIAS.map((c) => c.key).join(', ')}.
-Cuando uses lógica, escribe pseudocódigo en español (Algoritmo/Definir/Si-Sino/Para/Mientras).
-Responde SOLO con un arreglo JSON válido, sin texto adicional, con esta forma:
-[{"categoria":"...","enunciado":"...","pseudocodigo":"... (opcional)","opciones":[{"id":"A","texto":"..."},{"id":"B","texto":"..."},{"id":"C","texto":"..."},{"id":"D","texto":"..."}],"correcta":"A"}]`;
+Cuando uses lógica, escribe pseudocódigo en español (Algoritmo/Definir/Si-Sino/Para/Mientras).`;
+
+  const schema = {
+    type: SchemaType.ARRAY,
+    description: `Lista de exactamente ${NUM_PREGUNTAS} preguntas de opción múltiple de diagnóstico.`,
+    items: {
+      type: SchemaType.OBJECT,
+      properties: {
+        categoria: {
+          type: SchemaType.STRING,
+          description: 'Categoría de la pregunta.',
+        },
+        enunciado: {
+          type: SchemaType.STRING,
+          description: 'Pregunta o enunciado a responder.',
+        },
+        pseudocodigo: {
+          type: SchemaType.STRING,
+          description: 'Pseudocódigo del ejercicio (opcional).',
+        },
+        opciones: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              id: { type: SchemaType.STRING },
+              texto: { type: SchemaType.STRING },
+            },
+            required: ['id', 'texto'],
+          },
+        },
+        correcta: {
+          type: SchemaType.STRING,
+          description: 'La letra de la opción correcta (A, B, C o D).',
+        },
+      },
+      required: ['categoria', 'enunciado', 'opciones', 'correcta'],
+    },
+  };
 
   try {
-    const texto = await generarTexto(system, 'Genera el cuestionario de diagnóstico ahora.');
-    const parsed = extraerJSON<Array<Omit<PreguntaInterna, 'id'>>>(texto);
+    const texto = await generarTexto(
+      system,
+      'Genera el cuestionario de diagnóstico ahora.',
+      {
+        temperature: 0.2, // Temperatura baja para respuestas estructuradas más precisas
+        responseMimeType: 'application/json',
+        responseSchema: schema,
+      },
+    );
+
+    const parsed = JSON.parse(texto) as Array<Omit<PreguntaInterna, 'id'>>;
     if (parsed && Array.isArray(parsed) && parsed.length >= 4) {
       preguntas = parsed.slice(0, NUM_PREGUNTAS).map((p, i) => ({
         id: i + 1,
@@ -240,7 +271,8 @@ Responde SOLO con un arreglo JSON válido, sin texto adicional, con esta forma:
         correcta: String(p.correcta ?? 'A').toUpperCase(),
       }));
     }
-  } catch {
+  } catch (error) {
+    console.error('[diagnostico] Error al generar preguntas con Gemini:', error);
     // Gemini sin cuota / sin clave → respaldo silencioso.
   }
 
