@@ -1,80 +1,169 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { DashboardData } from '../lib/types';
+import { DashboardData, EjercicioPublico } from '../lib/types';
 import { useAuth } from '../context/AuthContext';
 import { StatCard } from '../components/StatCard';
-import { ProgressBar } from '../components/ProgressBar';
+import { Star, Trophy, CheckCircle, Flame, Sparkles, ArrowRight, Play } from '../components/icons';
+
+interface Comparativa {
+  comparativa: { categoria: string; pretest: number | null; postest: number | null }[];
+}
+interface Intento { ejercicio_id: number; correcto: boolean }
 
 export default function DashboardPage() {
   const { usuario } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [comp, setComp] = useState<Comparativa['comparativa']>([]);
+  const [recomendados, setRecomendados] = useState<EjercicioPublico[]>([]);
 
   useEffect(() => {
-    api.get<DashboardData>('/dashboard').then(setData).catch(() => setData(null));
+    api.get<DashboardData>('/dashboard').then(setData).catch(() => undefined);
+    api.get<Comparativa>('/pretest/comparativa').then((r) => setComp(r.comparativa)).catch(() => undefined);
+
+    // Recomendados por la IA: ejercicios que aún no ha resuelto correctamente.
+    Promise.all([
+      api.get<{ ejercicios: EjercicioPublico[] }>('/ejercicios'),
+      api.get<{ intentos: Intento[] }>('/intentos/mios'),
+    ])
+      .then(([ej, it]) => {
+        const resueltos = new Set(it.intentos.filter((i) => i.correcto).map((i) => i.ejercicio_id));
+        setRecomendados(ej.ejercicios.filter((e) => !resueltos.has(e.id)).slice(0, 3));
+      })
+      .catch(() => undefined);
   }, []);
+
+  const faltan = data ? Math.max(0, data.ejercicios.total - data.ejercicios.completados) : null;
+  const metaPct = data && data.ejercicios.total
+    ? Math.round((data.ejercicios.completados / data.ejercicios.total) * 100) : 0;
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h1 className="text-3xl font-extrabold text-prexi-navy">
+      <h1 className="text-3xl font-extrabold tracking-tight text-prexi-navy">
         ¡Bienvenido de nuevo, {usuario?.nombre.split(' ')[0]}!
       </h1>
-      <p className="mb-6 text-slate-500">Continúa tu ruta de aprendizaje en programación.</p>
+      <p className="mb-6 text-slate-500">
+        {faltan != null && faltan > 0
+          ? `Estás a ${Math.min(faltan, 5)} ejercicios de seguir avanzando en tu ruta.`
+          : 'Sigue tu ruta de aprendizaje en programación.'}
+      </p>
 
+      {/* Stat cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon="⭐" label="Puntos XP" value={data?.puntos ?? '—'} accent="blue" />
-        <StatCard icon="🏆" label="Posición" value={data?.posicion ? `#${data.posicion}` : '—'} accent="amber" />
-        <StatCard
-          icon="✓"
-          label="Ejercicios"
-          value={data ? `${data.ejercicios.completados}/${data.ejercicios.total}` : '—'}
-          accent="green"
-        />
-        <StatCard icon="🔥" label="Racha" value={data ? `${data.racha_dias} días` : '—'} accent="navy" />
+        <StatCard icon={<Star className="h-6 w-6" />} accent="blue" label="Puntos XP"
+          value={data ? data.puntos.toLocaleString() : '—'} />
+        <StatCard icon={<Trophy className="h-6 w-6" />} accent="amber" label="Posición"
+          value={data?.posicion ? `#${data.posicion}` : '—'} />
+        <StatCard icon={<CheckCircle className="h-6 w-6" />} accent="green" label="Ejercicios"
+          value={data ? `${data.ejercicios.completados}/${data.ejercicios.total}` : '—'} />
+        <StatCard icon={<Flame className="h-6 w-6" />} accent="orange" label="Racha"
+          value={data ? `${data.racha_dias} días` : '—'} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Desempeño por categoría */}
+        {/* Progreso académico */}
         <div className="card lg:col-span-2">
-          <h2 className="mb-4 text-lg font-bold text-prexi-navy">Desempeño por categoría</h2>
-          {!data?.desempeno_categorias.length && (
-            <p className="text-sm text-slate-400">Aún no tienes intentos registrados. ¡Empieza a practicar!</p>
-          )}
-          <div className="space-y-4">
-            {data?.desempeno_categorias.map((c) => (
-              <div key={c.categoria}>
-                <div className="mb-1 flex justify-between text-sm">
-                  <span className="font-medium text-slate-700">{c.categoria}</span>
-                  <span className="font-semibold text-prexi-navy">{c.porcentaje}%</span>
-                </div>
-                <ProgressBar
-                  value={c.porcentaje}
-                  color={c.porcentaje >= 80 ? '#16a34a' : c.porcentaje >= 60 ? '#2563eb' : '#f59e0b'}
-                />
-              </div>
-            ))}
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-prexi-navy">Mi progreso académico</h2>
+            <div className="flex items-center gap-4 text-xs text-slate-500">
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-slate-300" /> Pretest</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-prexi-blue" /> Postest</span>
+            </div>
           </div>
-
-          <Link to="/ejercicios" className="btn-primary mt-6">
-            Continuar aprendiendo →
-          </Link>
+          <ChartProgreso datos={comp} />
         </div>
 
-        {/* Insignias */}
-        <div className="card bg-prexi-navy text-white">
-          <h2 className="mb-1 text-lg font-bold">Tus insignias</h2>
-          <p className="mb-4 text-sm text-blue-200">Logros desbloqueados por tu progreso.</p>
-          {!data?.logros.length && <p className="text-sm text-blue-200">Aún sin insignias. ¡Acierta tu primer ejercicio!</p>}
+        {/* Recomendado por la IA */}
+        <div className="card border-0 bg-gradient-to-b from-prexi-navy to-[#16335a] text-white">
+          <div className="mb-1 flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-blue-300" />
+            <h2 className="text-lg font-bold">Recomendado por la IA</h2>
+          </div>
+          <p className="mb-4 text-sm text-blue-100/80">Basado en tu desempeño, estos retos te ayudarán a subir de nivel.</p>
+
           <div className="space-y-3">
-            {data?.logros.map((l) => (
-              <div key={l.clave} className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-2">
-                <span className="text-2xl">{l.icono}</span>
-                <span className="text-sm font-medium">{l.nombre}</span>
+            {recomendados.map((e) => (
+              <div key={e.id} className="rounded-xl bg-white/10 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold">{e.titulo}</p>
+                  <span className="shrink-0 rounded-md bg-prexi-amber/20 px-2 py-0.5 text-xs font-bold text-prexi-amber">+{e.xp} XP</span>
+                </div>
+                <button
+                  onClick={() => navigate(`/ejercicios/${e.id}`)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-prexi-blue py-2 text-sm font-semibold transition hover:bg-blue-600"
+                >
+                  Resolver <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             ))}
+            {recomendados.length === 0 && (
+              <p className="rounded-xl bg-white/10 p-3 text-sm text-blue-100/80">
+                ¡Has resuelto todo lo disponible! Vuelve pronto por más retos. 🎉
+              </p>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Meta semanal */}
+      <div className="card mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex-1">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="font-bold text-prexi-navy">Meta semanal</h3>
+            <span className="text-sm font-bold text-prexi-blue">{metaPct}%</span>
+          </div>
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+            <div className="h-full rounded-full bg-gradient-to-r from-prexi-blue to-blue-400 transition-all" style={{ width: `${metaPct}%` }} />
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            {faltan != null ? `Te faltan ${faltan} ejercicios para completar el curso.` : 'Cargando progreso…'}
+          </p>
+        </div>
+        <Link to="/ejercicios" className="btn-primary shrink-0">
+          <Play className="h-4 w-4" /> Continuar
+        </Link>
+      </div>
     </div>
+  );
+}
+
+// ── Gráfico de barras agrupadas (pretest vs postest) ────────
+function ChartProgreso({ datos }: { datos: Comparativa['comparativa'] }) {
+  if (!datos.length) {
+    return <p className="py-12 text-center text-sm text-slate-400">Aún no hay datos de pre/postest para graficar.</p>;
+  }
+  const W = 560, H = 220, padX = 16, padB = 34, padT = 10;
+  const innerW = W - padX * 2;
+  const innerH = H - padB - padT;
+  const grupos = datos.slice(0, 6);
+  const stepX = innerW / grupos.length;
+  const bw = Math.min(20, stepX / 3.4);
+  const y = (v: number) => padT + innerH - (v / 100) * innerH;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+      {/* Rejilla */}
+      {[0, 25, 50, 75, 100].map((g) => (
+        <g key={g}>
+          <line x1={padX} x2={W - padX} y1={y(g)} y2={y(g)} stroke="#eef2f7" strokeWidth={1} />
+          <text x={padX} y={y(g) - 3} fontSize={9} fill="#cbd5e1">{g}</text>
+        </g>
+      ))}
+      {grupos.map((d, i) => {
+        const cx = padX + stepX * i + stepX / 2;
+        const pre = d.pretest ?? 0;
+        const post = d.postest ?? 0;
+        return (
+          <g key={d.categoria}>
+            <rect x={cx - bw - 2} y={y(pre)} width={bw} height={innerH - (y(pre) - padT)} rx={3} fill="#cbd5e1" />
+            <rect x={cx + 2} y={y(post)} width={bw} height={innerH - (y(post) - padT)} rx={3} fill="#2563eb" />
+            <text x={cx} y={H - 14} fontSize={10} fill="#64748b" textAnchor="middle">
+              {d.categoria.length > 12 ? d.categoria.slice(0, 11) + '…' : d.categoria}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
   );
 }

@@ -10,6 +10,7 @@ import RankingPage from './pages/RankingPage';
 import TeacherPage from './pages/TeacherPage';
 import AdminPage from './pages/AdminPage';
 import DiagnosticoPage from './pages/DiagnosticoPage';
+import ProfilePage from './pages/ProfilePage';
 
 /** Exige sesión iniciada. */
 function Protected({ children }: { children: JSX.Element }) {
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="ejercicios/:id" element={<PlayPage />} />
         <Route path="progreso" element={<ProgressPage />} />
         <Route path="ranking" element={<RankingPage />} />
+        <Route path="perfil" element={<ProfilePage />} />
         <Route path="docente" element={<TeacherPage />} />
         <Route path="admin" element={<AdminPage />} />
       </Route>
