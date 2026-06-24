@@ -1,0 +1,76 @@
+# ════════════════════════════════════════════════════════════
+#  PREXI UPEA — Orquestación completa (db + backend + frontend)
+#
+#  Uso:
+#    cp .env.docker.example .env   # define GEMINI_API_KEY y JWT_SECRET
+#    docker compose up --build
+#
+#  Frontend:  http://localhost:5173
+#  Backend:   http://localhost:4000/api/health
+#  Postgres:  localhost:5432  (usuario/clave: prexi/prexi)
+# ════════════════════════════════════════════════════════════
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: prexi-db
+    environment:
+      POSTGRES_USER: prexi
+      POSTGRES_PASSWORD: prexi
+      POSTGRES_DB: prexi
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Postgres ejecuta estos .sql EN ORDEN la primera vez que el volumen
+      # está vacío: 01-schema.sql crea la base, 02-seed.sql siembra los datos.
+      - ./server/src/db/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prexi -d prexi"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  server:
+    build: ./server
+    container_name: prexi-server
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://prexi:prexi@db:5432/prexi
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_cambia_en_produccion}
+      JWT_EXPIRES_IN: 7d
+      CLIENT_ORIGIN: http://localhost:5173
+      # La clave de Gemini se inyecta solo aquí (servidor). Nunca al cliente.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - server_node_modules:/app/node_modules
+    # La BD ya viene inicializada por los scripts SQL de initdb (ver servicio db).
+    # depends_on: service_healthy garantiza que el seed terminó antes de arrancar.
+    command: npm run dev
+
+  client:
+    build: ./client
+    container_name: prexi-client
+    environment:
+      # El proxy /api del dev server apunta al backend dentro de la red de Docker.
+      VITE_PROXY_TARGET: http://server:4000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
+
+volumes:
+  pgdata:
+  server_node_modules:
+  client_node_modules:
