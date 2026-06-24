@@ -102,11 +102,14 @@ export default function PlayPage() {
         <div className="lg:col-span-2">
           <div className="card">
             <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-prexi-blue">
-              <Code className="h-4 w-4" /> {ej.categoria} · Lógica
+              <Code className="h-4 w-4" /> {ej.categoria} · Python
+              <span className="text-prexi-amber">{'★'.repeat(ej.estrellas)}</span>
             </div>
             <h1 className="mb-5 text-xl font-bold text-prexi-navy">{ej.enunciado}</h1>
 
-            {ej.pseudocodigo && <div className="mb-5"><CodeBlock code={ej.pseudocodigo} /></div>}
+            {(ej.codigo_python ?? ej.pseudocodigo) && (
+              <div className="mb-5"><CodeBlock code={(ej.codigo_python ?? ej.pseudocodigo)!} /></div>
+            )}
 
             <div className="grid gap-3 sm:grid-cols-2">
               {ej.opciones.map((o) => {
@@ -129,7 +132,7 @@ export default function PlayPage() {
                       esCorrecta ? 'bg-prexi-green text-white'
                       : elegido ? 'bg-prexi-blue text-white' : 'bg-slate-100 text-slate-500'
                     }`}>{o.id}</span>
-                    <span className="font-medium text-slate-700">{o.texto}</span>
+                    <span className="whitespace-pre-line font-medium text-slate-700">{o.texto}</span>
                   </button>
                 );
               })}

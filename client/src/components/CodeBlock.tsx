@@ -1,18 +1,29 @@
 import { Fragment } from 'react';
 
-// Palabras clave (pseudocódigo en español + algo de C++).
+// Palabras clave de Python.
 const KEYWORDS = new Set([
-  'INICIO', 'FIN', 'SI', 'SINO', 'ENTONCES', 'VAR', 'PARA', 'DESDE', 'HASTA',
-  'HACER', 'MIENTRAS', 'ESCRIBIR', 'LEER', 'ALGORITMO', 'DEFINIR', 'DEVOLVER',
-  'INT', 'COUT', 'CIN', 'FOR', 'WHILE', 'IF', 'ELSE', 'RETURN', 'FLOAT', 'BOOL',
+  'def', 'return', 'if', 'elif', 'else', 'for', 'while', 'in', 'and', 'or', 'not',
+  'break', 'continue', 'pass', 'import', 'from', 'as', 'class', 'try', 'except',
+  'finally', 'with', 'lambda', 'global', 'nonlocal', 'yield', 'is', 'del', 'assert',
 ]);
+// Constantes y funciones integradas frecuentes.
+const BUILTINS = new Set([
+  'print', 'input', 'int', 'str', 'float', 'bool', 'len', 'range', 'sum', 'round',
+  'type', 'set', 'list', 'dict', 'tuple', 'max', 'min', 'abs', 'sorted', 'enumerate',
+  'append', 'pop', 'sort', 'get', 'items', 'keys', 'values', 'upper', 'lower',
+]);
+const CONST = new Set(['True', 'False', 'None']);
 
 function clase(token: string): string {
-  if (/^".*"$/.test(token)) return 'text-emerald-300';           // strings
+  if (/^(["']).*\1$/.test(token)) return 'text-emerald-300';       // strings
   if (/^\d+(\.\d+)?$/.test(token)) return 'text-amber-300';        // números
-  if (/^[A-Za-zÁ-ÿ_][A-Za-zÁ-ÿ0-9_]*$/.test(token)) {
-    return KEYWORDS.has(token.toUpperCase()) ? 'text-blue-300 font-semibold' : 'text-slate-100';
+  if (/^[A-Za-z_]\w*$/.test(token)) {
+    if (KEYWORDS.has(token)) return 'text-violet-300 font-semibold';
+    if (CONST.has(token)) return 'text-amber-300';
+    if (BUILTINS.has(token)) return 'text-sky-300';
+    return 'text-slate-100';
   }
+  if (/^#/.test(token)) return 'text-slate-500 italic';            // comentarios
   if (/^[%=+\-*/<>!&|]+$/.test(token)) return 'text-pink-300';     // operadores
   return 'text-slate-400';                                         // puntuación
 }

@@ -37,11 +37,15 @@ export interface EjercicioPublico {
   categoria: string;
   nivel_id: number;
   dificultad: 'facil' | 'media' | 'dificil';
+  estrellas: number;
+  tipo: 'opcion_multiple' | 'predecir_salida' | 'completar_codigo';
   enunciado: string;
   pseudocodigo: string | null;
+  codigo_python: string | null;
   opciones: Opcion[];
   xp: number;
   max_pistas: number;
+  banco?: 'practica' | 'pretest' | 'postest';
   respuesta_correcta?: string; // solo presente para docente/admin
 }
 

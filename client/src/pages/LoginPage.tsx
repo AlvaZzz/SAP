@@ -5,7 +5,7 @@ export default function LoginPage() {
   const { login, register } = useAuth();
   const [modo, setModo] = useState<'login' | 'registro'>('login');
   const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('juan@upea.bo');
+  const [email, setEmail] = useState('juan@upea.edu.bo');
   const [password, setPassword] = useState('Prexi123*');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -89,7 +89,7 @@ export default function LoginPage() {
           </p>
 
           <p className="mt-6 rounded-lg bg-slate-50 px-3 py-2 text-center text-xs text-slate-400">
-            Demo: juan@upea.bo · docente@upea.bo · admin@upea.bo — contraseña Prexi123*
+            Demo: juan@upea.edu.bo · docente@upea.edu.bo · admin@upea.edu.bo — contraseña Prexi123*
           </p>
         </form>
       </div>
