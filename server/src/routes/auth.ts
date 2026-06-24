@@ -12,17 +12,14 @@ import { JwtPayload, Rol } from '../types';
 
 export const authRouter = Router();
 
-const DOMINIO = '@upea.edu.bo';
 const MAX_FALLIDOS = 5;
 const BLOQUEO_MIN = 15;
 
-const emailUpea = z.string().email().refine((e) => e.toLowerCase().endsWith(DOMINIO), {
-  message: `El correo debe ser institucional (${DOMINIO})`,
-});
-
+// Nota: por ahora se acepta cualquier correo válido (p. ej. Gmail). La
+// restricción al dominio institucional @upea.edu.bo está deshabilitada.
 const registerSchema = z.object({
   nombre: z.string().min(2).max(120),
-  email: emailUpea,
+  email: z.string().email(),
   password: z.string().min(6).max(100),
   cedula: z.string().min(4).max(20),
   carrera: z.string().min(2).max(120),

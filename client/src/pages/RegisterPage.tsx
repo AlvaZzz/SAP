@@ -5,7 +5,6 @@ import { ApiError } from '../lib/api';
 import { Eye, EyeOff, AlertCircle } from '../components/icons';
 import { Marca } from './LoginPage';
 
-const DOMINIO = '@upea.edu.bo';
 const CARRERAS = [
   'Ingeniería de Sistemas', 'Ingeniería de Software', 'Ingeniería Informática',
   'Ingeniería Electrónica', 'Ingeniería Industrial', 'Otra',
@@ -40,8 +39,7 @@ export default function RegisterPage() {
   const fz = fuerza(f.password);
   const errores = {
     nombre: f.nombre.trim().length < 2 ? 'Ingresa tu nombre completo.' : '',
-    email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? 'Correo inválido.'
-      : !f.email.toLowerCase().endsWith(DOMINIO) ? `Debe ser ${DOMINIO}.` : '',
+    email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? 'Correo inválido.' : '',
     cedula: f.cedula.trim().length < 4 ? 'Cédula inválida.' : '',
     carrera: !f.carrera ? 'Selecciona tu carrera.' : '',
     password: f.password.length < 6 ? 'Mínimo 6 caracteres.' : '',
@@ -103,7 +101,7 @@ export default function RegisterPage() {
             <input value={f.nombre} onChange={set('nombre')} className={inputCls(tocado && !!errores.nombre)} />
           </Campo>
           <Campo label="Correo institucional" error={tocado ? errores.email : ''}>
-            <input type="email" value={f.email} onChange={set('email')} placeholder={`tucorreo${DOMINIO}`} className={inputCls(tocado && !!errores.email)} />
+            <input type="email" value={f.email} onChange={set('email')} placeholder="tucorreo@gmail.com" className={inputCls(tocado && !!errores.email)} />
           </Campo>
           <Campo label="Cédula de identidad" error={tocado ? errores.cedula : ''}>
             <input value={f.cedula} onChange={set('cedula')} className={inputCls(tocado && !!errores.cedula)} />

@@ -4,8 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../lib/api';
 import { GraduationCap, Eye, EyeOff, AlertCircle } from '../components/icons';
 
-const DOMINIO = '@upea.edu.bo';
-
 export default function LoginPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState('juan@upea.edu.bo');
@@ -16,10 +14,8 @@ export default function LoginPage() {
   const [cargando, setCargando] = useState(false);
 
   const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const emailDominio = email.toLowerCase().endsWith(DOMINIO);
   const emailError = !email ? 'Ingresa tu correo.'
-    : !emailValido ? 'Formato de correo inválido.'
-    : !emailDominio ? `Usa tu correo institucional (${DOMINIO}).` : '';
+    : !emailValido ? 'Formato de correo inválido.' : '';
   const passError = !password ? 'Ingresa tu contraseña.' : '';
   const formOk = !emailError && !passError;
 
@@ -56,7 +52,7 @@ export default function LoginPage() {
             <input
               type="email" autoComplete="email" value={email}
               onChange={(e) => setEmail(e.target.value)} onBlur={() => setTocado((t) => ({ ...t, email: true }))}
-              className={inputCls(!!tocado.email && !!emailError)} placeholder={`tucorreo${DOMINIO}`}
+              className={inputCls(!!tocado.email && !!emailError)} placeholder="tucorreo@gmail.com"
             />
           </Campo>
 
