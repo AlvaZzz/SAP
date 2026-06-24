@@ -7,6 +7,8 @@ export interface Usuario {
   rol: Rol;
   carrera: string | null;
   diagnostico_completado: boolean;
+  pretest_completado: boolean;
+  nivel_inicial: number;
 }
 
 export interface DiagnosticoPregunta {

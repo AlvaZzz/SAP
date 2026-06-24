@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { withTransaction, query } from '../config/db';
 import { asyncHandler } from '../utils/asyncHandler';
-import { notFound } from '../utils/httpError';
+import { notFound, forbidden } from '../utils/httpError';
 import { requireAuth } from '../middleware/auth';
 import { Ejercicio } from '../types';
 import { otorgarXP, recalcularPosiciones, evaluarLogros } from '../services/gamificationService';
@@ -26,13 +26,24 @@ intentosRouter.post(
     const usuarioId = req.user!.sub;
 
     const resultado = await withTransaction(async (client) => {
-      const { rows } = await client.query<Ejercicio>(
-        `SELECT id, nivel_id, dificultad, respuesta_correcta, xp, explicacion_ia
-           FROM ejercicios WHERE id = $1`,
+      const { rows } = await client.query<Ejercicio & { nivel_numero: number }>(
+        `SELECT e.id, e.nivel_id, e.dificultad, e.respuesta_correcta, e.xp, e.explicacion_ia, n.numero AS nivel_numero
+           FROM ejercicios e JOIN niveles n ON n.id = e.nivel_id WHERE e.id = $1`,
         [d.ejercicio_id],
       );
       const ej = rows[0];
       if (!ej) throw notFound('Ejercicio no encontrado');
+
+      // Seguridad: no se puede resolver un ejercicio de un nivel bloqueado.
+      if (ej.nivel_numero > 1) {
+        const desbloqueado = await client.query(
+          `SELECT 1 FROM progreso_niveles WHERE usuario_id = $1 AND nivel_id = $2 AND desbloqueado = true`,
+          [usuarioId, ej.nivel_id],
+        );
+        if (desbloqueado.rows.length === 0) {
+          throw forbidden('Este nivel aún está bloqueado. Completa el nivel anterior primero.');
+        }
+      }
 
       const correcto = d.respuesta_dada.trim().toUpperCase() === ej.respuesta_correcta.trim().toUpperCase();
 

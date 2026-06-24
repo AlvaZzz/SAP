@@ -52,6 +52,53 @@ dashboardRouter.get(
   }),
 );
 
+// ── Recomendados por la IA (3 ejercicios reales del nivel actual) ──
+dashboardRouter.get(
+  '/recomendados',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.sub;
+    // Nivel actual: el más bajo desbloqueado que aún no está completo (umbral 80%).
+    const nivel = await queryOne<{ nivel_id: number }>(
+      `SELECT n.id AS nivel_id
+         FROM niveles n
+         JOIN progreso_niveles pn ON pn.nivel_id = n.id AND pn.usuario_id = $1
+        WHERE pn.desbloqueado = true
+          AND pn.ejercicios_completados < CEIL(n.umbral * 0.8)
+        ORDER BY n.numero LIMIT 1`,
+      [userId],
+    );
+    const recomendados = await query(
+      `SELECT e.id, e.titulo, e.categoria, e.estrellas, e.xp, e.enunciado
+         FROM ejercicios e
+        WHERE e.banco = 'practica'
+          AND ($2::int IS NULL OR e.nivel_id = $2)
+          AND e.id NOT IN (SELECT ejercicio_id FROM intentos WHERE usuario_id = $1 AND correcto)
+        ORDER BY e.estrellas, e.id LIMIT 3`,
+      [userId, nivel?.nivel_id ?? null],
+    );
+    res.json({ recomendados });
+  }),
+);
+
+// ── Actividad semanal (intentos reales por día) ─────────────
+dashboardRouter.get(
+  '/actividad',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const dias = await query<{ dia: string; intentos: number; aciertos: number }>(
+      `SELECT to_char(d::date, 'YYYY-MM-DD') AS dia,
+              COUNT(i.id)::int AS intentos,
+              COUNT(i.id) FILTER (WHERE i.correcto)::int AS aciertos
+         FROM generate_series(CURRENT_DATE - 6, CURRENT_DATE, interval '1 day') d
+         LEFT JOIN intentos i ON i.usuario_id = $1 AND i.fecha::date = d::date
+        GROUP BY d ORDER BY d`,
+      [req.user!.sub],
+    );
+    res.json({ actividad: dias });
+  }),
+);
+
 // ── Logros del usuario ──────────────────────────────────────
 dashboardRouter.get(
   '/logros',
