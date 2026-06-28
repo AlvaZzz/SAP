@@ -20,6 +20,7 @@ export default function PerfilPage() {
   const [nivelLabel, setNivelLabel] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({ nombre: '', carrera: '' });
+  const [pass, setPass] = useState({ actual: '', nueva: '' });
   const [guardando, setGuardando] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -44,13 +45,18 @@ export default function PerfilPage() {
     return { nivelActual: num, faltan: falt, progresoNivel: pct };
   }, [niveles]);
 
-  function abrir() { setForm({ nombre: usuario?.nombre ?? '', carrera: usuario?.carrera ?? '' }); setMsg(''); setEditando(true); }
+  function abrir() { setForm({ nombre: usuario?.nombre ?? '', carrera: usuario?.carrera ?? '' }); setPass({ actual: '', nueva: '' }); setMsg(''); setEditando(true); }
   async function guardar(e: FormEvent) {
     e.preventDefault();
     if (form.nombre.trim().length < 2 || form.carrera.trim().length < 2) { setMsg('Completa nombre y carrera.'); return; }
+    if (pass.nueva && (pass.nueva.length < 6 || !pass.actual)) { setMsg('Para cambiar la contraseña, ingresa la actual y una nueva de 6+ caracteres.'); return; }
     setGuardando(true);
-    try { await api.put('/auth/perfil', form); await refrescar(); setEditando(false); }
-    catch (err) { setMsg(err instanceof ApiError ? err.message : 'No se pudo guardar'); }
+    try {
+      await api.put('/auth/perfil', form);
+      if (pass.nueva) await api.put('/auth/password', { actual: pass.actual, nueva: pass.nueva });
+      await refrescar();
+      setEditando(false);
+    } catch (err) { setMsg(err instanceof ApiError ? err.message : 'No se pudo guardar'); }
     finally { setGuardando(false); }
   }
 
@@ -175,13 +181,24 @@ export default function PerfilPage() {
                 <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-400">{usuario?.email} <Lock className="h-4 w-4" /></div>
                 <span className="text-[11px] text-slate-500">El correo no se puede modificar.</span>
               </label>
-              <label className="mb-1 block">
+              <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-prexi-navy">Carrera</span>
                 <select className="input" value={form.carrera} onChange={(e) => setForm((f) => ({ ...f, carrera: e.target.value }))}>
                   <option value="">Selecciona…</option>
                   {CARRERAS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </label>
+
+              <div className="border-t border-slate-100 pt-3">
+                <p className="mb-2 text-xs font-semibold text-slate-500">Cambiar contraseña (opcional)</p>
+                <input type="password" autoComplete="current-password" placeholder="Contraseña actual" className="input mb-2 text-sm" value={pass.actual} onChange={(e) => setPass((p) => ({ ...p, actual: e.target.value }))} />
+                <input type="password" autoComplete="new-password" placeholder="Nueva contraseña" className="input text-sm" value={pass.nueva} onChange={(e) => setPass((p) => ({ ...p, nueva: e.target.value }))} />
+                {pass.nueva && (
+                  <span className={`mt-1 flex items-center gap-1 text-[11px] ${pass.nueva.length >= 6 ? 'text-prexi-green' : 'text-prexi-amber'}`}>
+                    {pass.nueva.length >= 6 ? <><CheckCircle className="h-3.5 w-3.5" /> Contraseña válida</> : 'Mínimo 6 caracteres'}
+                  </span>
+                )}
+              </div>
               {msg && <p className="mt-2 text-sm text-red-500">{msg}</p>}
               <div className="mt-5 flex gap-2.5">
                 <button type="button" onClick={() => setEditando(false)} className="btn-ghost flex-1">Cancelar</button>

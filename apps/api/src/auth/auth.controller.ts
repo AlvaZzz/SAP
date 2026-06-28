@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Put, Res, UseGuards } from '@nestjs/common
 import { Response, CookieOptions } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, PerfilDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, PerfilDto, PasswordDto } from './dto/auth.dto';
 import { JwtAuthGuard, AUTH_COOKIE, JwtPayload } from '../common/auth/jwt.guard';
 import { CurrentUser } from '../common/auth/current-user.decorator';
 
@@ -53,5 +53,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async perfil(@CurrentUser() user: JwtPayload, @Body() dto: PerfilDto) {
     return { usuario: await this.auth.actualizarPerfil(user.sub, dto) };
+  }
+
+  @Put('password')
+  @UseGuards(JwtAuthGuard)
+  password(@CurrentUser('sub') usuarioId: number, @Body() dto: PasswordDto) {
+    return this.auth.cambiarPassword(usuarioId, dto);
   }
 }

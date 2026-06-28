@@ -35,3 +35,11 @@ export class PerfilDto {
   @IsString() @MinLength(2) @MaxLength(120)
   carrera!: string;
 }
+
+export class PasswordDto {
+  @IsString() @MinLength(1)
+  actual!: string;
+
+  @IsString() @MinLength(6) @MaxLength(100)
+  nueva!: string;
+}

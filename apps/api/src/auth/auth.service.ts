@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { JwtPayload } from '../common/auth/jwt.guard';
-import { RegisterDto, LoginDto, PerfilDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, PerfilDto, PasswordDto } from './dto/auth.dto';
 
 const MAX_FALLIDOS = 5;
 const BLOQUEO_MIN = 15;
@@ -99,5 +99,15 @@ export class AuthService {
       data: { nombre: dto.nombre, carrera: dto.carrera },
       select: SELECT_PUBLICO,
     });
+  }
+
+  async cambiarPassword(usuarioId: number, dto: PasswordDto) {
+    const u = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { passwordHash: true } });
+    if (!u) throw new UnauthorizedException();
+    const ok = await bcrypt.compare(dto.actual, u.passwordHash);
+    if (!ok) throw new BadRequestException('La contraseña actual no es correcta');
+    const passwordHash = await bcrypt.hash(dto.nueva, 10);
+    await this.prisma.usuario.update({ where: { id: usuarioId }, data: { passwordHash } });
+    return { ok: true };
   }
 }

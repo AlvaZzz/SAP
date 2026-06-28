@@ -57,6 +57,40 @@ export class EjerciciosService {
     return ej;
   }
 
+  /**
+   * Evalúa y concede insignias disparadas por eventos. Idempotente: no
+   * duplica logros ya obtenidos. Devuelve las claves de los logros nuevos.
+   */
+  private async otorgarLogros(
+    tx: Prisma.TransactionClient,
+    usuarioId: number,
+    ctx: { correcto: boolean; pistasUsadas: number; nivelCompletado: boolean; categoria: string },
+  ): Promise<string[]> {
+    const claves: string[] = [];
+    const add = (c: string) => { if (!claves.includes(c)) claves.push(c); };
+
+    if (ctx.correcto) {
+      const totalCorrectos = await tx.intento.count({ where: { usuarioId, correcto: true } });
+      if (totalCorrectos === 1) add('primer_acierto');
+      if (ctx.pistasUsadas === 0 && totalCorrectos >= 5) add('sin_pistas');
+      const funciones = await tx.intento.count({ where: { usuarioId, correcto: true, ejercicio: { categoria: 'Funciones' } } });
+      if (funciones >= 5) add('funciones_5');
+    }
+    if (ctx.nivelCompletado) add('nivel_completado');
+
+    const rk = await tx.ranking.findUnique({ where: { usuarioId } });
+    if (rk?.posicion != null && rk.posicion <= 5) add('top_5');
+    if ((rk?.rachaDias ?? 0) >= 7) add('racha_7');
+
+    if (claves.length === 0) return [];
+    const logros = await tx.logro.findMany({ where: { clave: { in: claves } } });
+    const yaTiene = await tx.logroUsuario.findMany({ where: { usuarioId, logroId: { in: logros.map((l) => l.id) } }, select: { logroId: true } });
+    const yaSet = new Set(yaTiene.map((y) => y.logroId));
+    const nuevos = logros.filter((l) => !yaSet.has(l.id));
+    if (nuevos.length) await tx.logroUsuario.createMany({ data: nuevos.map((l) => ({ usuarioId, logroId: l.id })), skipDuplicates: true });
+    return nuevos.map((l) => l.clave);
+  }
+
   /** IDs de ejercicios que el usuario ya resolvió correctamente. */
   async resueltos(usuarioId: number): Promise<number[]> {
     const rows = await this.prisma.intento.findMany({
@@ -156,12 +190,18 @@ export class EjerciciosService {
         await tx.ranking.update({ where: { usuarioId: orden[i].usuarioId }, data: { posicion: i + 1 } });
       }
 
+      // Insignias disparadas por eventos (idempotente).
+      const logrosNuevos = await this.otorgarLogros(tx, usuarioId, {
+        correcto, pistasUsadas: dto.pistasUsadas ?? 0, nivelCompletado, categoria: ej.categoria,
+      });
+
       return {
         correcto,
         respuesta_correcta: ej.respuestaCorrecta,
         explicacion_base: ej.explicacionIa,
         xp: { xpOtorgado, multiplicador, rachaDias },
         nivel: { nivelCompletado, nivelDesbloqueadoNumero },
+        logros_nuevos: logrosNuevos,
       };
     });
   }
