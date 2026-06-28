@@ -65,7 +65,24 @@ services:
       - ./apps/api:/app
       - api_node_modules:/app/node_modules
 
+  web:
+    build: ./apps/web
+    container_name: prexi-web
+    environment:
+      # En la red de Docker el frontend habla con el API por su nombre de servicio.
+      API_URL: http://api:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app
+      - web_node_modules:/app/node_modules
+      - web_next:/app/.next
+
 volumes:
   pgdata:
   piston_packages:
   api_node_modules:
+  web_node_modules:
+  web_next:
