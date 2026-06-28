@@ -1,0 +1,325 @@
+// ════════════════════════════════════════════════════════════
+//  PREXI UPEA — Esquema Prisma (PostgreSQL)
+//  Rol estudiante: Python + IA (ALEX/Gemini) + gamificación.
+// ════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ───────────────────────────────────────────────────
+enum Rol {
+  estudiante
+  docente
+  admin
+}
+
+enum TipoEjercicio {
+  opcion_multiple
+  predecir_salida
+  completar_codigo
+}
+
+enum Banco {
+  practica
+  pretest
+  postest
+}
+
+enum TipoTest {
+  pre
+  post
+}
+
+enum Grupo {
+  control
+  experimental
+}
+
+enum ContextoCodigo {
+  libre
+  ejercicio
+  reto
+}
+
+// ── Usuarios ────────────────────────────────────────────────
+model Usuario {
+  id            Int       @id @default(autoincrement())
+  nombre        String
+  email         String    @unique
+  cedula        String?   @unique
+  rol           Rol       @default(estudiante)
+  carrera       String?
+  passwordHash  String    @map("password_hash")
+
+  pretestCompletado Boolean @default(false) @map("pretest_completado")
+  nivelInicial      Int     @default(1)     @map("nivel_inicial")
+  // Grupo para la investigación (prueba t pretest/postest).
+  grupo             Grupo   @default(experimental)
+
+  // Seguridad de acceso.
+  failedLoginCount Int       @default(0) @map("failed_login_count")
+  lockedUntil      DateTime? @map("locked_until")
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  intentos        Intento[]
+  progreso        ProgresoNivel[]
+  ranking         Ranking?
+  logros          LogroUsuario[]
+  evaluaciones    Evaluacion[]
+  pretestRespuestas PretestRespuesta[]
+  consultasIa     ConsultaIa[]
+  codigos         CodigoPractica[]
+  documentos      Documento[]      @relation("DocenteDocumentos")
+  retos           Reto[]           @relation("DocenteRetos")
+  retosResueltos  RetoUsuario[]
+
+  @@map("usuarios")
+}
+
+// ── Niveles ─────────────────────────────────────────────────
+model Nivel {
+  id          Int     @id @default(autoincrement())
+  numero      Int     @unique
+  titulo      String
+  descripcion String?
+  umbral      Int     @default(12)
+
+  ejercicios Ejercicio[]
+  progreso   ProgresoNivel[]
+  documentos Documento[]
+
+  @@map("niveles")
+}
+
+// ── Ejercicios (práctica + bancos pretest/postest) ──────────
+model Ejercicio {
+  id                Int           @id @default(autoincrement())
+  titulo            String
+  categoria         String
+  nivelId           Int           @map("nivel_id")
+  estrellas         Int           @default(3)
+  tipo              TipoEjercicio @default(opcion_multiple)
+  enunciado         String
+  codigoPython      String?       @map("codigo_python")
+  opciones          Json          @default("[]") // [{ id:"A", texto:"15" }]
+  respuestaCorrecta String        @map("respuesta_correcta")
+  xp                Int           @default(50)
+  explicacionIa     String?       @map("explicacion_ia")
+  maxPistas         Int           @default(3) @map("max_pistas")
+  banco             Banco         @default(practica)
+  creadoEn          DateTime      @default(now()) @map("creado_en")
+
+  nivel    Nivel     @relation(fields: [nivelId], references: [id], onDelete: Cascade)
+  intentos Intento[]
+  pretestRespuestas PretestRespuesta[]
+
+  @@index([nivelId])
+  @@index([banco])
+  @@map("ejercicios")
+}
+
+// ── Intentos de práctica ────────────────────────────────────
+model Intento {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int      @map("usuario_id")
+  ejercicioId   Int      @map("ejercicio_id")
+  respuestaDada String   @map("respuesta_dada")
+  correcto      Boolean
+  tiempoSeg     Int      @default(0) @map("tiempo_seg")
+  pistasUsadas  Int      @default(0) @map("pistas_usadas")
+  xpOtorgado    Int      @default(0) @map("xp_otorgado")
+  fecha         DateTime @default(now())
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([ejercicioId])
+  @@index([fecha])
+  @@map("intentos")
+}
+
+// ── Progreso por nivel ──────────────────────────────────────
+model ProgresoNivel {
+  usuarioId             Int      @map("usuario_id")
+  nivelId               Int      @map("nivel_id")
+  ejerciciosCompletados Int      @default(0) @map("ejercicios_completados")
+  desbloqueado          Boolean  @default(false)
+  actualizadoEn         DateTime @default(now()) @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  nivel   Nivel   @relation(fields: [nivelId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, nivelId])
+  @@map("progreso_niveles")
+}
+
+// ── Evaluaciones pretest/postest (datos de investigación) ───
+model Evaluacion {
+  id           Int      @id @default(autoincrement())
+  usuarioId    Int      @map("usuario_id")
+  tipo         TipoTest
+  puntajeTotal Int      @map("puntaje_total")      // 0-100
+  tiempoSeg    Int      @default(0) @map("tiempo_seg")
+  porCategoria Json     @default("[]") @map("por_categoria") // [{categoria,aciertos,total,porcentaje}]
+  fecha        DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, tipo])
+  @@map("pretest_postest")
+}
+
+// ── Respuestas individuales de pretest/postest (autosave) ───
+model PretestRespuesta {
+  usuarioId   Int      @map("usuario_id")
+  ejercicioId Int      @map("ejercicio_id")
+  tipo        TipoTest @default(pre)
+  opcionDada  String   @default("") @map("opcion_dada")
+  correcto    Boolean  @default(false)
+  categoria   String
+  fecha       DateTime @default(now())
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, ejercicioId, tipo])
+  @@map("pretest_respuestas")
+}
+
+// ── Ranking ─────────────────────────────────────────────────
+model Ranking {
+  usuarioId       Int       @id @map("usuario_id")
+  xpTotal         Int       @default(0) @map("xp_total")
+  rachaDias       Int       @default(0) @map("racha_dias")
+  ultimaActividad DateTime? @map("ultima_actividad") @db.Date
+  posicion        Int?
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("ranking")
+}
+
+// ── Logros ──────────────────────────────────────────────────
+model Logro {
+  id        Int            @id @default(autoincrement())
+  clave     String         @unique
+  nombre    String
+  condicion String
+  icono     String         @default("🏅")
+  usuarios  LogroUsuario[]
+
+  @@map("logros")
+}
+
+model LogroUsuario {
+  usuarioId     Int      @map("usuario_id")
+  logroId       Int      @map("logro_id")
+  fechaObtenido DateTime @default(now()) @map("fecha_obtenido")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  logro   Logro   @relation(fields: [logroId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, logroId])
+  @@map("logros_usuario")
+}
+
+// ── Consultas a la IA (rate limit / auditoría) ──────────────
+model ConsultaIa {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int      @map("usuario_id")
+  endpoint  String
+  fecha     DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, fecha])
+  @@map("consultas_ia")
+}
+
+// ── Documentos del curso (PDFs subidos por docentes) ────────
+model Documento {
+  id           Int      @id @default(autoincrement())
+  titulo       String
+  descripcion  String?
+  archivo      String   // ruta o URL del PDF
+  tamanoBytes  Int      @map("tamano_bytes")
+  nivelId      Int?     @map("nivel_id")
+  subidoPorId  Int      @map("subido_por_id")
+  creadoEn     DateTime @default(now()) @map("creado_en")
+
+  nivel     Nivel?  @relation(fields: [nivelId], references: [id], onDelete: SetNull)
+  subidoPor Usuario @relation("DocenteDocumentos", fields: [subidoPorId], references: [id], onDelete: Cascade)
+
+  @@map("documentos")
+}
+
+// ── Retos del docente (ejercicios extra) ────────────────────
+model Reto {
+  id                Int           @id @default(autoincrement())
+  titulo            String
+  categoria         String
+  estrellas         Int           @default(3)
+  tipo              TipoEjercicio @default(completar_codigo)
+  enunciado         String
+  codigoInicial     String?       @map("codigo_inicial")
+  opciones          Json          @default("[]")
+  respuestaCorrecta String?       @map("respuesta_correcta")
+  xp                Int           @default(50)
+  autorId           Int           @map("autor_id")
+  creadoEn          DateTime      @default(now()) @map("creado_en")
+
+  autor     Usuario       @relation("DocenteRetos", fields: [autorId], references: [id], onDelete: Cascade)
+  resueltos RetoUsuario[]
+
+  @@map("retos")
+}
+
+model RetoUsuario {
+  usuarioId     Int      @map("usuario_id")
+  retoId        Int      @map("reto_id")
+  resuelto      Boolean  @default(false)
+  fecha         DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  reto    Reto    @relation(fields: [retoId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, retoId])
+  @@map("retos_usuario")
+}
+
+// ── Código de la zona de práctica (guardado del estudiante) ─
+model CodigoPractica {
+  id            Int            @id @default(autoincrement())
+  usuarioId     Int            @map("usuario_id")
+  contexto      ContextoCodigo @default(libre)
+  refId         Int?           @map("ref_id") // ejercicioId o retoId según contexto
+  codigo        String
+  ultimaSalida  String?        @map("ultima_salida")
+  actualizadoEn DateTime       @updatedAt @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("codigo_practica")
+}
+
+// ── Configuración del sistema (fila única id=1) ─────────────
+model ConfiguracionSistema {
+  id                   Int    @id @default(1)
+  xpPorEjercicio       Int    @default(50) @map("xp_por_ejercicio")
+  umbralPorcentaje     Int    @default(80) @map("umbral_porcentaje")
+  maxPistasIa          Int    @default(3)  @map("max_pistas_ia")
+  penalizacionPista    Int    @default(5)  @map("penalizacion_pista")
+  postestDesdeNivel    Int    @default(3)  @map("postest_desde_nivel")
+  modeloIa             String @default("gemini-2.0-flash") @map("modelo_ia")
+
+  @@map("configuracion_sistema")
+}
