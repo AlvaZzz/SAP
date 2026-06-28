@@ -1,72 +1,100 @@
 # PREXI UPEA
 
-Sistema Adaptativo con Inteligencia Artificial y Gamificación para el Aprendizaje de la Programación — UPEA, Ingeniería de Sistemas.
+Sistema adaptativo con **Inteligencia Artificial (ALEX/Gemini)** y **gamificación** para aprender **programación en Python** — UPEA, Ingeniería de Sistemas.
+
+> **Rama `rewrite/nest-next-prisma`** — reescritura completa del rol estudiante.
+> El stack anterior (Express + pg + React/Vite) permanece en `master`.
 
 ## Stack
 
-- **Backend:** Node.js + Express + TypeScript
-- **Base de datos:** PostgreSQL
-- **Frontend:** React + Vite + TailwindCSS
-- **IA:** Google Gemini (`@google/generative-ai`, modelo `gemini-2.0-flash`)
-- **Auth:** JWT
+| Capa | Tecnología |
+|---|---|
+| Frontend | **Next.js 14** (App Router) + TailwindCSS + CodeMirror 6 |
+| Backend | **NestJS** (Screaming Architecture) + TypeScript |
+| ORM / BD | **Prisma** + PostgreSQL |
+| Auth | JWT en **cookie httpOnly** + bcrypt |
+| IA | **Google Gemini** (`gemini-2.0-flash`), solo en el backend |
+| Sandbox de código | **Piston** self-hosted (ejecuta el Python del estudiante aislado) |
 
-Monorepo con npm workspaces: [`server/`](server) y [`client/`](client).
+Monorepo: [`apps/api`](apps/api) (NestJS) y [`apps/web`](apps/web) (Next.js).
 
-## Puesta en marcha
+## Arquitectura (Screaming Architecture)
 
-### Opción A — Docker Compose (recomendada)
+El backend se organiza **por dominio**, no por capas técnicas. Cada módulo NestJS tiene su controller, service y DTOs:
 
-Levanta Postgres + backend + frontend con un solo comando. No necesitas Node ni
-Postgres instalados, solo Docker.
+```
+apps/api/src/
+  auth/          estudiantes (en auth)   pretest/       ejercicios/
+  practica/      tutor-ia/               documentos/    retos/
+  ranking/       progreso/               gamificacion/  common/ (prisma, guards)
+```
+
+Regla clave: **toda** decisión (corrección de respuestas, XP, desbloqueo de nivel, ranking) se calcula en el backend. El frontend solo muestra. El código del estudiante **nunca** se ejecuta en el backend: va al contenedor **Piston** aislado (límites de tiempo/memoria).
+
+## Puesta en marcha (Docker — recomendado)
+
+Requisitos: Docker Desktop.
 
 ```bash
-cp .env.docker.example .env     # define JWT_SECRET y GEMINI_API_KEY
+cp .env.docker.example .env     # define JWT_SECRET y (opcional) GEMINI_API_KEY
 docker compose up --build
 ```
 
 | Servicio | URL |
 |---|---|
-| Frontend | http://localhost:5173 |
-| Backend  | http://localhost:4000/api/health |
-| Postgres | localhost:5432 (prexi/prexi) |
+| Frontend (Next.js) | http://localhost:3000 |
+| API (NestJS)       | http://localhost:4000/api/health |
+| Postgres           | localhost:**5433** (`prexi`/`prexi`) |
+| Piston (sandbox)   | http://localhost:2000 |
 
-Postgres ejecuta automáticamente los scripts de
-[`server/src/db/initdb/`](server/src/db/initdb) **solo la primera vez** (cuando el
-volumen de datos está vacío), en orden: `01-schema.sql` crea toda la base y
-`02-seed.sql` la puebla. Los datos persisten en el volumen `pgdata` entre
-reinicios. Para empezar de cero:
+> El puerto **5433** evita chocar con un PostgreSQL local en el 5432.
 
-```bash
-docker compose down -v && docker compose up --build
+El contenedor `api` aplica el esquema (`prisma db push`) y **siembra el contenido Python** (69 ejercicios + bancos pretest/postest) solo si la BD está vacía. La primera ejecución de código instala el runtime de Python en Piston (warm-up automático).
+
+### Cuentas demo (clave `Prexi123*`)
+`juan@upea.edu.bo` (estudiante) · `docente@upea.edu.bo` · `admin@upea.edu.bo`
+
+Para probar el flujo nuevo de pretest, **regístrate** con cualquier correo (se acepta Gmail).
+
+## Variables de entorno
+
+`.env` en la raíz (leído por docker-compose):
+
+```
+JWT_SECRET=...                 # secreto para firmar JWT
+GEMINI_API_KEY=...             # opcional; sin ella ALEX usa respaldo. NUNCA se expone al cliente
+GEMINI_MODEL=gemini-2.0-flash
+AI_RATE_LIMIT_PER_HOUR=20
 ```
 
-> **Seguridad:** `GEMINI_API_KEY` solo se inyecta en el contenedor `server`. El
-> frontend nunca la ve — solo llama a `/api/ai/*`. Si tu key fue expuesta en el
-> spec, **regenérala** antes de usarla.
+> **Seguridad:** la `GEMINI_API_KEY` solo vive en el backend. El frontend nunca la ve. Si la expusiste, **regénerala**.
 
-### Opción B — Local sin Docker
-
-**Requisitos:** Node.js >= 18, PostgreSQL >= 14 corriendo, una API key de Gemini.
+## Desarrollo local (sin Docker)
 
 ```bash
-npm install
-cp server/.env.example server/.env   # DATABASE_URL, JWT_SECRET, GEMINI_API_KEY
-npm run db:setup                      # crea tablas (initdb/01-schema.sql)
-npm run db:seed                       # siembra datos (initdb/02-seed.sql)
-npm run dev                           # server :4000 + client :5173
+# API
+cd apps/api && npm install && npx prisma generate
+cp .env.example .env           # DATABASE_URL, JWT_SECRET, GEMINI_API_KEY, PISTON_URL
+npx prisma db push && npm run seed && npm run dev   # :4000
+
+# Web
+cd apps/web && npm install && npm run dev           # :3000 (proxy /api → :4000)
 ```
 
-Usuarios de prueba (sembrados): `juan@upea.bo` (estudiante), `docente@upea.bo`,
-`admin@upea.bo`. Contraseña por defecto `Prexi123*` para todos.
+> **Nota (Windows):** los watchers en contenedores a veces no detectan cambios del bind mount. Si editas el backend y no se refleja, `docker compose restart api`.
 
-## Mapa de sprints
+## Investigación (pretest/postest)
 
-| Sprint | Entregable | Dónde |
-|---|---|---|
-| 1 | Auth + CRUD ejercicios + niveles | `auth`, `ejercicios`, `niveles` routes |
-| 2 | Motor adaptativo + pretest/postest | `services/adaptiveService.ts`, `pretest` routes |
-| 3 | Integración Gemini (3 endpoints IA) + rate limit | `services/aiTutorService.ts`, `routes/ai.ts` |
-| 4 | Gamificación (XP, ranking, insignias) + dashboards | `services/gamificationService.ts` |
-| 5 | Reportes docente/admin + exportación PDF/Excel | `services/reportService.ts` |
+`GET /api/progreso/export.csv` (rol docente/admin) exporta por estudiante:
+`puntaje_pretest, puntaje_postest, ganancia, tiempo, grupo (control/experimental)`
+— para la prueba t de Student, que se realiza fuera del sistema.
 
-Ver [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) para detalle de las reglas de negocio.
+## Mapa de la reescritura
+
+| Fase | Entregable |
+|---|---|
+| R1–R2 | Scaffold NestJS + schema Prisma + auth |
+| R3 | pretest + ejercicios + seed Python |
+| R4 | Zona de Práctica + tutor-ia (Gemini) + sandbox Piston |
+| R5 | gamificación, ranking, progreso, documentos, retos + export CSV |
+| R6 | Frontend Next.js — 11 vistas del estudiante |
