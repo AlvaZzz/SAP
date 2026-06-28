@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -13,9 +13,10 @@ import { ConfigService } from '@nestjs/config';
  * instalación); las ejecuciones posteriores ya quedan aisladas.
  */
 @Injectable()
-export class PistonService {
+export class PistonService implements OnModuleInit {
   private readonly logger = new Logger(PistonService.name);
   private versionPython: string | null = null;
+  private warmupPromise: Promise<string> | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -23,10 +24,40 @@ export class PistonService {
     return this.config.get<string>('PISTON_URL') ?? 'http://piston:2000';
   }
 
-  /** Asegura que el runtime de Python esté instalado en Piston (idempotente). */
-  private async ensurePython(): Promise<string> {
-    if (this.versionPython) return this.versionPython;
+  /**
+   * Warm-up: precarga el runtime de Python al arrancar (reintentando hasta que
+   * Piston responda), para que la primera ejecución del estudiante sea rápida.
+   * No bloquea el arranque del API.
+   */
+  onModuleInit() {
+    void this.warmup();
+  }
 
+  private async warmup(): Promise<void> {
+    for (let intento = 1; intento <= 20; intento++) {
+      try {
+        const version = await this.ensurePython();
+        this.logger.log(`Sandbox Piston listo (Python ${version}).`);
+        return;
+      } catch {
+        // Piston aún no está listo; reintenta con backoff.
+        await new Promise((r) => setTimeout(r, Math.min(15_000, intento * 2_000)));
+      }
+    }
+    this.logger.warn('No se pudo precargar Python en Piston tras varios intentos.');
+  }
+
+  /** Asegura que el runtime de Python esté instalado en Piston (idempotente). */
+  private ensurePython(): Promise<string> {
+    if (this.versionPython) return Promise.resolve(this.versionPython);
+    // Comparte una sola promesa entre llamadas concurrentes.
+    if (!this.warmupPromise) {
+      this.warmupPromise = this.instalarPython().finally(() => { this.warmupPromise = null; });
+    }
+    return this.warmupPromise;
+  }
+
+  private async instalarPython(): Promise<string> {
     const runtimes = (await this.req('GET', '/api/v2/runtimes')) as Array<{ language: string; version: string }>;
     const py = runtimes.find((r) => r.language === 'python');
     if (py) return (this.versionPython = py.version);
@@ -50,8 +81,8 @@ export class PistonService {
       version,
       files: [{ name: 'main.py', content: codigo }],
       stdin,
-      run_timeout: 5000,      // 5s máx de ejecución
-      compile_timeout: 5000,
+      run_timeout: 3000,      // 3s máx (límite configurado de Piston)
+      compile_timeout: 3000,
       run_memory_limit: 128 * 1024 * 1024, // 128 MB
     })) as { run: { stdout: string; stderr: string; code: number; signal: string | null } };
 
