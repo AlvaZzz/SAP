@@ -19,6 +19,12 @@ export class EjerciciosController {
     return { ejercicios: await this.ejercicios.listar(nivel ? Number(nivel) : undefined, categoria) };
   }
 
+  // Debe declararse ANTES de :id para no chocar con el ParseIntPipe.
+  @Get('ejercicios/resueltos')
+  async resueltos(@CurrentUser('sub') usuarioId: number) {
+    return { ids: await this.ejercicios.resueltos(usuarioId) };
+  }
+
   @Get('ejercicios/:id')
   async detalle(@Param('id', ParseIntPipe) id: number) {
     return { ejercicio: await this.ejercicios.detalle(id) };

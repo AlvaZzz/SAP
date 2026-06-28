@@ -57,6 +57,14 @@ export class EjerciciosService {
     return ej;
   }
 
+  /** IDs de ejercicios que el usuario ya resolvió correctamente. */
+  async resueltos(usuarioId: number): Promise<number[]> {
+    const rows = await this.prisma.intento.findMany({
+      where: { usuarioId, correcto: true }, distinct: ['ejercicioId'], select: { ejercicioId: true },
+    });
+    return rows.map((r) => r.ejercicioId);
+  }
+
   // ── Registrar intento (corrección + XP + desbloqueo en backend) ──
   async responder(usuarioId: number, dto: ResponderDto) {
     return this.prisma.$transaction(async (tx) => {
