@@ -7,6 +7,11 @@ import { EjerciciosModule } from './ejercicios/ejercicios.module';
 import { PretestModule } from './pretest/pretest.module';
 import { TutorIaModule } from './tutor-ia/tutor-ia.module';
 import { PracticaModule } from './practica/practica.module';
+import { GamificacionModule } from './gamificacion/gamificacion.module';
+import { RankingModule } from './ranking/ranking.module';
+import { ProgresoModule } from './progreso/progreso.module';
+import { DocumentosModule } from './documentos/documentos.module';
+import { RetosModule } from './retos/retos.module';
 
 /**
  * Módulo raíz. Cada dominio (Screaming Architecture) se importa aquí:
@@ -22,6 +27,11 @@ import { PracticaModule } from './practica/practica.module';
     PretestModule,
     TutorIaModule,
     PracticaModule,
+    GamificacionModule,
+    RankingModule,
+    ProgresoModule,
+    DocumentosModule,
+    RetosModule,
   ],
   controllers: [AppController],
 })

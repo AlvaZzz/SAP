@@ -183,8 +183,57 @@ async function main() {
   await prisma.evaluacion.create({
     data: { usuarioId: juan, tipo: 'pre', puntajeTotal: 50, tiempoSeg: 900, porCategoria: porCatPre },
   });
+  const porCatPost = [
+    { categoria: 'Variables', aciertos: 5, total: 5, porcentaje: 90 },
+    { categoria: 'Condicionales', aciertos: 4, total: 5, porcentaje: 85 },
+    { categoria: 'Bucles', aciertos: 4, total: 5, porcentaje: 75 },
+    { categoria: 'Funciones', aciertos: 4, total: 5, porcentaje: 80 },
+  ];
+  await prisma.evaluacion.create({
+    data: { usuarioId: juan, tipo: 'post', puntajeTotal: 82, tiempoSeg: 780, porCategoria: porCatPost },
+  });
 
-  console.log(`[seed] Juan XP=${xpJuan}; ranking y progreso demo listos.`);
+  // ── Documentos demo (subidos por el docente) ──
+  const docente = uid['docente@upea.edu.bo'];
+  const docs: Array<[string, number, number]> = [
+    // [titulo, nivelNumero, MB]
+    ['Introducción a Variables y Tipos de Datos', 1, 1.8],
+    ['Ejercicios resueltos de Condicionales', 2, 3.2],
+    ['Guía de Bucles FOR y WHILE', 3, 2.4],
+    ['Funciones en Python — Teoría y práctica', 4, 4.1],
+  ];
+  for (const [titulo, nivelN, mb] of docs) {
+    await prisma.documento.create({
+      data: {
+        titulo, descripcion: 'Material compartido por tus docentes.',
+        archivo: `/docs/${titulo.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`,
+        tamanoBytes: Math.round(mb * 1024 * 1024), nivelId: nid[nivelN], subidoPorId: docente,
+      },
+    });
+  }
+
+  // ── Retos demo (ejercicios extra del docente) ──
+  await prisma.reto.createMany({
+    data: [
+      {
+        titulo: 'FizzBuzz', categoria: 'Bucles', estrellas: 3, tipo: 'completar_codigo', autorId: docente, xp: 80,
+        enunciado: 'Imprime los números del 1 al 20. Para múltiplos de 3 imprime "Fizz", de 5 "Buzz", y de ambos "FizzBuzz".',
+        codigoInicial: 'for i in range(1, 21):\n    # tu código aquí\n    pass',
+      },
+      {
+        titulo: 'Invertir una cadena', categoria: 'Estructuras', estrellas: 2, tipo: 'completar_codigo', autorId: docente, xp: 60,
+        enunciado: 'Escribe una función que reciba un texto y devuelva la cadena invertida (sin usar reversed).',
+        codigoInicial: 'def invertir(texto):\n    # tu código aquí\n    return ""\n\nprint(invertir("python"))',
+      },
+      {
+        titulo: 'Número primo', categoria: 'Funciones', estrellas: 4, tipo: 'completar_codigo', autorId: docente, xp: 100,
+        enunciado: 'Escribe una función es_primo(n) que devuelva True si n es primo y False en caso contrario.',
+        codigoInicial: 'def es_primo(n):\n    # tu código aquí\n    return False\n\nprint(es_primo(7))',
+      },
+    ],
+  });
+
+  console.log(`[seed] Juan XP=${xpJuan}; ranking, progreso, documentos y retos demo listos.`);
   console.log(`[seed] ✅ Usuarios @upea.edu.bo (clave ${DEFAULT_PASSWORD})`);
 }
 
