@@ -233,7 +233,11 @@ async function main() {
     ],
   });
 
-  console.log(`[seed] Juan XP=${xpJuan}; ranking, progreso, documentos y retos demo listos.`);
+  // ── Demo: insignias desbloqueadas de Juan ──
+  const logrosJuan = await prisma.logro.findMany({ where: { clave: { in: ['primer_acierto', 'nivel_completado', 'sin_pistas'] } } });
+  await prisma.logroUsuario.createMany({ data: logrosJuan.map((l) => ({ usuarioId: juan, logroId: l.id })) });
+
+  console.log(`[seed] Juan XP=${xpJuan}; ranking, progreso, documentos, retos e insignias demo listos.`);
   console.log(`[seed] ✅ Usuarios @upea.edu.bo (clave ${DEFAULT_PASSWORD})`);
 }
 
