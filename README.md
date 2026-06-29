@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PREXI UPEA
 
 Sistema adaptativo con **Inteligencia Artificial (ALEX/Gemini)** y **gamificación** para aprender **programación en Python** — UPEA, Ingeniería de Sistemas.
@@ -98,3 +99,7 @@ cd apps/web && npm install && npm run dev           # :3000 (proxy /api → :400
 | R4 | Zona de Práctica + tutor-ia (Gemini) + sandbox Piston |
 | R5 | gamificación, ranking, progreso, documentos, retos + export CSV |
 | R6 | Frontend Next.js — 11 vistas del estudiante |
+=======
+# SAP
+Sistema Adaptativo Prexi
+>>>>>>> 29a79b41f678d4e8b7533cf517931eca0a3b69de
