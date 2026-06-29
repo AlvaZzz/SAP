@@ -1,24 +1,10 @@
 {
   "name": "prexi-upea",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "PREXI UPEA — Sistema Adaptativo con IA y Gamificación para el Aprendizaje de la Programación",
-  "workspaces": [
-    "server",
-    "client"
-  ],
+  "description": "PREXI UPEA — Sistema adaptativo con IA y gamificación para aprender Python. Backend NestJS + Prisma (apps/api), frontend Next.js (apps/web), sandbox Piston.",
   "scripts": {
-    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
-    "dev:server": "npm run dev -w server",
-    "dev:client": "npm run dev -w client",
-    "build": "npm run build -w server && npm run build -w client",
-    "db:setup": "npm run db:setup -w server",
-    "db:seed": "npm run db:seed -w server"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.0"
-  },
-  "dependencies": {
-    "glob": "^13.0.6"
+    "dev": "docker compose up --build",
+    "down": "docker compose down"
   }
 }
