@@ -15,6 +15,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: prexi-db
+    restart: unless-stopped # vuelve solo tras reiniciar la máquina/Docker
     environment:
       POSTGRES_USER: prexi
       POSTGRES_PASSWORD: prexi
@@ -41,8 +42,9 @@ services:
     restart: unless-stopped
 
   api:
-    build: ./apps/api
+    build: ./backend
     container_name: prexi-api
+    restart: unless-stopped # vuelve solo tras reiniciar la máquina/Docker
     environment:
       NODE_ENV: development
       PORT: 4000
@@ -51,7 +53,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_cambia_en_produccion}
       JWT_EXPIRES_IN: 7d
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
       AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}
       PISTON_URL: http://piston:2000
     ports:
@@ -62,21 +64,27 @@ services:
       piston:
         condition: service_started
     volumes:
-      - ./apps/api:/app
+      - ./backend:/app
       - api_node_modules:/app/node_modules
 
   web:
-    build: ./apps/web
+    build: ./frontend
     container_name: prexi-web
+    restart: unless-stopped # vuelve solo tras reiniciar la máquina/Docker
     environment:
       # En la red de Docker el frontend habla con el API por su nombre de servicio.
       API_URL: http://api:4000
+      # HOT-RELOAD EN WINDOWS: el bind mount no propaga eventos inotify del host a
+      # Linux, así que activamos SONDEO (polling) para que Next/webpack detecten los
+      # cambios y recompilen sin reiniciar el contenedor a mano.
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - "3000:3000"
     depends_on:
       - api
     volumes:
-      - ./apps/web:/app
+      - ./frontend:/app
       - web_node_modules:/app/node_modules
       - web_next:/app/.next
 

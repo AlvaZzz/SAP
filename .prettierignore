@@ -1,0 +1,13 @@
+# Artefactos y dependencias (no formatear)
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/build
+**/coverage
+backend/prisma/migrations
+package-lock.json
+**/package-lock.json
+
+# Documentos generados / no fuente
+*.md

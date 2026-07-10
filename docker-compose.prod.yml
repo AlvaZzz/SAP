@@ -1,0 +1,90 @@
+# ════════════════════════════════════════════════════════════
+#  PREXI UPEA — Despliegue en un VPS (producción)
+#
+#  Uso en el servidor:
+#    cp .env.prod.example .env      # edita DOMINIO, JWT_SECRET, GEMINI_API_KEY…
+#    docker compose -f docker-compose.prod.yml up -d --build
+#
+#  Caddy publica HTTPS automático (Let's Encrypt) en https://$DOMINIO y hace de
+#  proxy al frontend. NADA más queda expuesto a internet (db/api/piston son
+#  internos). El frontend reenvía /api → api internamente.
+# ════════════════════════════════════════════════════════════
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: prexi-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: prexi
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-prexi}
+      POSTGRES_DB: prexi
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prexi -d prexi"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # Sandbox aislado para ejecutar el código Python del estudiante (Zona de
+  # práctica). Si tu servidor es ARM y esta imagen falla, coméntalo: el resto
+  # del sistema (pretest, ejercicios, postest, IA, gamificación) funciona igual.
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    container_name: prexi-piston
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - piston_packages:/piston/packages
+
+  api:
+    build: ./backend
+    container_name: prexi-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production            # activa la cookie httpOnly `secure` (HTTPS)
+      PORT: 4000
+      CLIENT_ORIGIN: https://${DOMINIO}
+      DATABASE_URL: postgresql://prexi:${DB_PASSWORD:-prexi}@db:5432/prexi?schema=public
+      JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env}
+      JWT_EXPIRES_IN: 7d
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+      AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}
+      PISTON_URL: http://piston:2000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    container_name: prexi-web
+    restart: unless-stopped
+    environment:
+      # En la red de Docker el frontend habla con el API por su nombre de servicio.
+      API_URL: http://api:4000
+    depends_on:
+      - api
+
+  # Reverse proxy con HTTPS automático (Let's Encrypt). Único servicio expuesto.
+  caddy:
+    image: caddy:2-alpine
+    container_name: prexi-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMINIO: ${DOMINIO}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  pgdata:
+  piston_packages:
+  caddy_data:
+  caddy_config:

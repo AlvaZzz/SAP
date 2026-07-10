@@ -1,0 +1,127 @@
+import { HttpException } from '@nestjs/common';
+import { TutorIaService } from './tutor-ia.service';
+import { crearPrismaMock, PrismaMock } from '../test-utils/prisma.mock';
+
+/** ConfigService simulado: expone la clave de Gemini para el test. */
+function crearConfig(overrides: Record<string, string | undefined> = {}) {
+  const valores: Record<string, string | undefined> = { GEMINI_API_KEY: 'test-key', ...overrides };
+  return { get: (k: string) => valores[k] } as never;
+}
+
+/** Cliente de Gemini simulado (sin red): responde texto fijo y un stream fijo. */
+function inyectarGeminiFake(service: TutorIaService, texto = 'Guía simulada. AREA_DEBIL: bucles') {
+  const model = {
+    generateContent: jest.fn().mockResolvedValue({ response: { text: () => texto } }),
+    generateContentStream: jest.fn().mockResolvedValue({
+      stream: (async function* () { yield { text: () => 'Hola ' }; yield { text: () => 'mundo' }; })(),
+    }),
+  };
+  (service as unknown as { client: unknown }).client = { getGenerativeModel: () => model };
+  return model;
+}
+
+describe('TutorIaService (ALVARO enriquecido)', () => {
+  let prisma: PrismaMock;
+  let service: TutorIaService;
+
+  beforeEach(() => {
+    prisma = crearPrismaMock();
+    // Config central: IA activa. getModel hace .catch() → debe resolver.
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.0-flash', maxPistasIa: 3 });
+    // Perfil del estudiante (pretest bajo → nivel básico).
+    prisma.usuario.findUnique.mockResolvedValue({ nombre: 'Juan Pérez', nivelInicial: 1 });
+    prisma.evaluacion.findUnique.mockResolvedValue({ puntajeTotal: 40, porCategoria: [{ categoria: 'Bucles', porcentaje: 20 }] });
+    prisma.tema.findUnique.mockResolvedValue(null);
+    prisma.documento.findFirst.mockResolvedValue(null);
+    prisma.consultaIa.create.mockResolvedValue({});
+    service = new TutorIaService(crearConfig(), prisma as never);
+  });
+
+  it('asistente: responde y registra la consulta en consultas_ia', async () => {
+    const model = inyectarGeminiFake(service, 'Piensa en el concepto de bucle.');
+    const r = await service.asistente(7, '¿Qué es un for?', 'Bucles');
+    expect(r.respuesta).toBe('Piensa en el concepto de bucle.');
+    // El system prompt incluye el perfil (nivel diagnosticado) y el tono por nivel.
+    const systemEnviado = model.generateContent.mock.calls[0][0][0].text as string;
+    expect(systemEnviado).toContain('NIVEL DEL ESTUDIANTE: principiante');
+    expect(systemEnviado).toContain('Nivel diagnosticado: Bajo');
+    expect(prisma.consultaIa.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ tipo: 'asistente' }) }),
+    );
+  });
+
+  it('asistenteStream: emite chunks en orden y registra el texto completo', async () => {
+    inyectarGeminiFake(service);
+    const chunks: string[] = [];
+    for await (const c of service.asistenteStream(7, '¿Qué es un for?')) chunks.push(c);
+    expect(chunks).toEqual(['Hola ', 'mundo']);
+    expect(prisma.consultaIa.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ tipo: 'asistente', respuesta: 'Hola mundo' }) }),
+    );
+  });
+
+  it('retroalimentación: prioriza el patrón de error detectado como área débil', async () => {
+    inyectarGeminiFake(service, 'Revisa el operador. AREA_DEBIL: comparación');
+    prisma.ejercicio.findUnique.mockResolvedValue({
+      enunciado: 'Completa la condición', categoria: 'Condicionales', respuestaCorrecta: 'x == 5',
+      explicacionIa: 'Compara con ==', codigoPython: null, temaId: null,
+    });
+    // Intentos con un error recurrente (= en vez de ==).
+    prisma.intento.findMany.mockResolvedValue([
+      { correcto: false, respuestaDada: 'if x = 5', tiempoSeg: 30, ejercicio: { categoria: 'Condicionales', tipo: 'completar_codigo', respuestaCorrecta: 'if x == 5' } },
+    ]);
+    const r = await service.retroalimentacion(7, 3, 'if x = 5');
+    expect(r.explicacion).not.toContain('AREA_DEBIL');
+    expect(r.area_debil).toContain('asignacion'); // viene del patrón detectado
+  });
+
+  it('pista: rechaza un nivel por encima del máximo permitido', async () => {
+    inyectarGeminiFake(service);
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.0-flash', maxPistasIa: 2 });
+    prisma.ejercicio.findUnique.mockResolvedValue({ enunciado: 'x', codigoPython: null, categoria: 'Bucles', maxPistas: 3, temaId: null });
+    await expect(service.pista(7, 3, 3)).rejects.toBeInstanceOf(HttpException);
+  });
+
+  it('pista: dentro del límite responde y registra el nivel', async () => {
+    inyectarGeminiFake(service, 'Pista 1: piensa en el concepto.');
+    prisma.ejercicio.findUnique.mockResolvedValue({ enunciado: 'x', codigoPython: null, categoria: 'Bucles', maxPistas: 3, temaId: null });
+    const r = await service.pista(7, 3, 1);
+    expect(r.pista).toContain('Pista 1');
+    expect(prisma.consultaIa.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ tipo: 'pista', nivelPista: 1 }) }),
+    );
+  });
+
+  it('si la IA está desactivada por el admin, lanza excepción y no llama a Gemini', async () => {
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: false });
+    const model = inyectarGeminiFake(service);
+    await expect(service.asistente(7, 'hola')).rejects.toBeInstanceOf(HttpException);
+    expect(model.generateContent).not.toHaveBeenCalled();
+  });
+
+  it('reintenta UNA vez ante un 429 con espera CORTA y luego responde', async () => {
+    let n = 0;
+    const model = {
+      generateContent: jest.fn().mockImplementation(() => {
+        n++;
+        if (n === 1) return Promise.reject(new Error('[429 Too Many Requests] quota exceeded. Please retry in 0.1s'));
+        return Promise.resolve({ response: { text: () => 'Respuesta tras reintento' } });
+      }),
+      generateContentStream: jest.fn(),
+    };
+    (service as unknown as { client: unknown }).client = { getGenerativeModel: () => model };
+    const r = await service.asistente(7, 'hola');
+    expect(r.respuesta).toBe('Respuesta tras reintento');
+    expect(model.generateContent).toHaveBeenCalledTimes(2); // 1 fallo + 1 reintento OK
+  });
+
+  it('NO reintenta ante un 429 con espera LARGA (>8s): mensaje amable de límite', async () => {
+    const model = {
+      generateContent: jest.fn().mockRejectedValue(new Error('[429 Too Many Requests] quota. Please retry in 40s')),
+      generateContentStream: jest.fn(),
+    };
+    (service as unknown as { client: unknown }).client = { getGenerativeModel: () => model };
+    await expect(service.asistente(7, 'hola')).rejects.toBeInstanceOf(HttpException);
+    expect(model.generateContent).toHaveBeenCalledTimes(1); // sin reintento
+  });
+});

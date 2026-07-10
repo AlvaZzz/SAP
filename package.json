@@ -2,7 +2,7 @@
   "name": "prexi-upea",
   "version": "2.0.0",
   "private": true,
-  "description": "PREXI UPEA — Sistema adaptativo con IA y gamificación para aprender Python. Backend NestJS + Prisma (apps/api), frontend Next.js (apps/web), sandbox Piston.",
+  "description": "PREXI UPEA — Sistema adaptativo con IA y gamificación para aprender Python. Backend NestJS + Prisma (backend/), frontend Next.js (frontend/), sandbox Piston.",
   "scripts": {
     "dev": "docker compose up --build",
     "down": "docker compose down"

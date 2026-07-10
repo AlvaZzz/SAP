@@ -1,0 +1,8 @@
+# Caddy — HTTPS automático (Let's Encrypt) y proxy al frontend de PREXI.
+# {$DOMINIO} se toma de la variable de entorno DOMINIO (definida en .env).
+# El frontend (Next.js) ya reenvía /api → API internamente, así que Caddy solo
+# necesita apuntar al servicio `web`.
+{$DOMINIO} {
+	encode gzip
+	reverse_proxy web:3000
+}

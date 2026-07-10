@@ -1,0 +1,864 @@
+// ════════════════════════════════════════════════════════════
+//  PREXI UPEA — Esquema Prisma (PostgreSQL)
+//  Rol estudiante: Python + IA (ALVARO/Gemini) + gamificación.
+// ════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ───────────────────────────────────────────────────
+enum Rol {
+  estudiante
+  docente
+  admin
+  investigador
+}
+
+enum TipoEjercicio {
+  opcion_multiple
+  predecir_salida
+  completar_codigo
+  ordenar_lineas
+}
+
+// Nivel de dificultad ADAPTATIVO (discreto). Cada ejercicio de práctica
+// pertenece a uno; cada tema tiene ejercicios en los tres. El estudiante ve, en
+// cada tema, los de SU nivel actual (Teoría de Respuesta al Ítem). El nivel es
+// por-tema y puede subir con un mini-diagnóstico ≥ umbral.
+enum NivelDificultad {
+  basico
+  intermedio
+  avanzado
+}
+
+// Estado de una pregunta propuesta por ALVARO desde un PDF: nunca se publica
+// sola, siempre pasa por revisión humana del docente.
+enum EstadoPreguntaIa {
+  borrador
+  aprobada
+  rechazada
+}
+
+enum Banco {
+  practica
+  pretest
+  postest
+}
+
+enum TipoTest {
+  pre
+  post
+}
+
+enum Grupo {
+  control
+  experimental
+}
+
+enum ContextoCodigo {
+  libre
+  ejercicio
+  reto
+}
+
+// Estado de la entrega de un reto por parte del estudiante.
+enum EstadoEntrega {
+  sin_entregar // aún no lo entrega (solo lo está resolviendo)
+  pendiente_revision // entregado, esperando al docente (sin XP todavía)
+  aprobado // el docente lo aprobó → XP otorgado
+  necesita_mejorar // el docente pide correcciones → puede reenviar
+}
+
+// ── Usuarios ────────────────────────────────────────────────
+model Usuario {
+  id           Int     @id @default(autoincrement())
+  nombre       String
+  email        String  @unique
+  cedula       String? @unique
+  rol          Rol     @default(estudiante)
+  carrera      String?
+  // Institución/cohorte para el desglose del estudio (UPEA, EMI, preuniversitario…).
+  institucion  String?
+  passwordHash String  @map("password_hash")
+
+  // Gate de la fase de INTRODUCCIÓN didáctica: el diagnóstico (pretest) solo se
+  // habilita una vez que el estudiante revisa las introducciones de las 5 unidades.
+  introduccionCompletada Boolean          @default(false) @map("introduccion_completada")
+  pretestCompletado      Boolean          @default(false) @map("pretest_completado")
+  nivelInicial           Int              @default(1) @map("nivel_inicial")
+  // Clasificación adaptativa PERMANENTE del pretest (Básico/Intermedio/Avanzado):
+  // se fija una sola vez y NO cambia (instrumento de la investigación). El nivel
+  // que sí cambia es el de cada tema (ProgresoTema.nivelActual).
+  nivelInicialAdaptativo NivelDificultad? @map("nivel_inicial_adaptativo")
+
+  // ── HABILIDAD ESTIMADA POR IRT (modelo de Rasch), en logits (escala de θ) ──
+  //  θ_inicial: estimada del PRETEST por máxima verosimilitud (diagnóstico).
+  //  θ_actual : re-estimada de forma continua con la práctica (nivel vigente).
+  //  θ_final  : estimada del POSTEST → Δθ = θ_final − θ_inicial (ganancia IRT).
+  //  Son evidencia cuantitativa para la investigación (ver módulo src/irt).
+  thetaInicial Float? @map("theta_inicial")
+  thetaActual  Float? @map("theta_actual")
+  thetaFinal   Float? @map("theta_final")
+
+  // Grupo para la investigación (prueba t pretest/postest).
+  grupo                  Grupo            @default(experimental)
+
+  // Paralelo (ej. "A", "B", "C") y semestre: permiten armar los grupos de
+  // investigación por paralelo completo (ver AdminGruposService.asignarPorParalelo).
+  paralelo String? // solo aplica a estudiantes; null en docente/admin/investigador
+  semestre Int     @default(1)
+
+  // Gestión del administrador: soft-disable (no borrar → conserva datos del estudio)
+  // y forzado de cambio de contraseña tras un reseteo.
+  activo             Boolean @default(true)
+  mustChangePassword Boolean @default(false) @map("must_change_password")
+
+  // Seguridad de acceso.
+  failedLoginCount Int       @default(0) @map("failed_login_count")
+  lockedUntil      DateTime? @map("locked_until")
+
+  // Onboarding: claves de los tours/tutoriales ya vistos (persistido por usuario,
+  // no en localStorage). "Volver a ver los tutoriales" del perfil lo vacía.
+  toursVistos String[] @default([]) @map("tours_vistos")
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  intentos            Intento[]
+  progreso            ProgresoNivel[]
+  ranking             Ranking?
+  logros              LogroUsuario[]
+  evaluaciones        Evaluacion[]
+  pretestRespuestas   PretestRespuesta[]
+  consultasIa         ConsultaIa[]
+  codigos             CodigoPractica[]
+  documentos          Documento[]          @relation("DocenteDocumentos")
+  retos               Reto[]               @relation("DocenteRetos")
+  retosResueltos      RetoUsuario[]
+  notificaciones      Notificacion[]
+  notasRecibidas      NotaDocente[]        @relation("NotasRecibidas")
+  notasEscritas       NotaDocente[]        @relation("NotasEscritas")
+  accionesAuditoria   LogAuditoria[]       @relation("AuditoriaActor")
+  progresoTemas       ProgresoTema[]
+  unidadesCompletadas UnidadCompletada[]
+  preguntasGeneradas  PreguntaGenerada[]   @relation("AutorPreguntaIa")
+  desempenoUnidades   DesempenoUnidad[]
+  perfilAdaptativo    PerfilAdaptativo?
+  pasosRuta           PasoRuta[]
+  intentosSubidaNivel IntentoSubidaNivel[]
+  tokensRecuperacion  TokenRecuperacion[]
+  historialTheta      HistorialTheta[]
+  diagnosticoTemas    DiagnosticoTema[]
+
+  @@map("usuarios")
+}
+
+// ── Evolución de la habilidad θ estimada por IRT (histórico) ─────────────
+//  Cada fila es una re-estimación de θ (por máxima verosimilitud, modelo de
+//  Rasch) en un momento del uso: al terminar el pretest, durante la práctica,
+//  al subir de nivel y en el postest. Permite trazar la EVOLUCIÓN de θ del
+//  estudiante y sirve de dato para la investigación (ver src/irt).
+model HistorialTheta {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int      @map("usuario_id")
+  theta     Float // habilidad estimada (logits)
+  origen    String // pretest | practica | subir_nivel | postest
+  n         Int      @default(0) // nº de respuestas usadas en la estimación
+  temaId    Int?     @map("tema_id") // tema asociado (si aplica: práctica/subida)
+  fecha     DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, fecha])
+  @@map("historial_theta")
+}
+
+// ── Recuperación de contraseña (todos los roles) ────────────
+//  Token de un solo uso con expiración corta. En la BD se guarda SOLO el HASH
+//  (sha256) del token, nunca el valor en claro: si se filtra la tabla, no se
+//  puede reconstruir el enlace. El backend genera el token aleatorio, lo envía
+//  por correo y valida su hash al restablecer.
+model TokenRecuperacion {
+  id        Int       @id @default(autoincrement())
+  usuarioId Int       @map("usuario_id")
+  tokenHash String    @unique @map("token_hash")
+  expiraEn  DateTime  @map("expira_en")
+  usadoEn   DateTime? @map("usado_en") // se sella al usarse (un solo uso)
+  creadoEn  DateTime  @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("tokens_recuperacion")
+}
+
+// ── Unidades académicas (jerarquía UNIDAD → TEMA → SUBTEMA) ─
+//  Estructura curricular real, en paralelo a los 5 "niveles" del sistema de
+//  gamificación (que se mantienen para pretest/postest y XP por nivel).
+model Unidad {
+  id          Int      @id @default(autoincrement())
+  numero      Int
+  titulo      String
+  descripcion String?
+  // Introducción teórica DIDÁCTICA de la unidad (Markdown), editable por el
+  // docente. Alimenta las pestañas de la fase de introducción previa al
+  // diagnóstico (objetivos, conceptos clave, ejemplo, cierre).
+  introduccion String? @db.Text
+  // Plan/institución del currículo. Permite convivir varios planes (UPEA PRG-111,
+  // EMI, preuniversitario…) SIN reescribir: el numero es único POR institución.
+  institucion String   @default("UPEA")
+  plan        String   @default("PRG-111")
+  // XP adicional que se otorga al completar TODOS los temas publicados de la unidad.
+  xp          Int      @default(0)
+  orden       Int      @default(0)
+  creadoEn    DateTime @default(now()) @map("creado_en")
+
+  temas       Tema[]
+  completadas UnidadCompletada[]
+  desempenos  DesempenoUnidad[]
+
+  @@unique([institucion, numero])
+  @@map("unidades")
+}
+
+// Un Tema pertenece a una Unidad. Si `padreId` está presente, ESTE registro es
+// un SUBTEMA del tema referenciado (jerarquía de un solo nivel de profundidad).
+model Tema {
+  id          Int      @id @default(autoincrement())
+  unidadId    Int      @map("unidad_id")
+  padreId     Int?     @map("padre_id")
+  // Etiqueta jerárquica visible que arma el docente, ej. "1.5" o "1.5.2".
+  numero      String   @db.VarChar(20)
+  titulo      String
+  descripcion String?
+  // Denormalizado desde la unidad para filtrar el contenido por institución/plan.
+  institucion String   @default("UPEA")
+  orden       Int      @default(0)
+  // Ejercicios correctos necesarios para desbloquear el siguiente tema (análogo a Nivel.umbral).
+  umbral      Int      @default(10)
+  // Requiere MÍNIMO 10 ejercicios activos para poder publicarse (ver DocenteUnidadesService).
+  publicado   Boolean  @default(false)
+  // El docente marca este tema para que entre al DIAGNÓSTICO inicial. Solo temas
+  // con enDiagnostico=true y ≥3 ítems de banco 'pretest' se evalúan en el pretest.
+  enDiagnostico Boolean @default(false) @map("en_diagnostico")
+  creadoEn    DateTime @default(now()) @map("creado_en")
+
+  unidad   Unidad @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+  padre    Tema?  @relation("Subtemas", fields: [padreId], references: [id], onDelete: Cascade)
+  subtemas Tema[] @relation("Subtemas")
+
+  ejercicios          Ejercicio[]
+  documentos          Documento[]
+  progreso            ProgresoTema[]
+  preguntasGeneradas  PreguntaGenerada[]
+  intentosSubidaNivel IntentoSubidaNivel[]
+  diagnosticos        DiagnosticoTema[]
+  pretestRespuestas   PretestRespuesta[]
+
+  @@index([unidadId])
+  @@index([padreId])
+  @@map("temas")
+}
+
+// Progreso del estudiante por tema (análogo a ProgresoNivel, pero para la
+// jerarquía académica real). Habilita el desbloqueo secuencial de temas/unidades.
+model ProgresoTema {
+  usuarioId             Int             @map("usuario_id")
+  temaId                Int             @map("tema_id")
+  ejerciciosCompletados Int             @default(0) @map("ejercicios_completados")
+  desbloqueado          Boolean         @default(false)
+  // Nivel ACTUAL del estudiante en ESTE tema (adaptatividad por ítem). Arranca en
+  // la clasificación inicial del pretest y sube con el mini-diagnóstico. Puede
+  // diferir entre temas (Intermedio en uno, Avanzado en otro).
+  nivelActual           NivelDificultad @default(basico) @map("nivel_actual")
+  actualizadoEn         DateTime        @default(now()) @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tema    Tema    @relation(fields: [temaId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, temaId])
+  @@map("progreso_temas")
+}
+
+// ── Intento de SUBIR de nivel en un tema (mini-diagnóstico) ─
+//  El estudiante puede intentar pasar Básico→Intermedio→Avanzado en un tema con
+//  un mini-diagnóstico corto del nivel objetivo. Cada intento se registra
+//  (aprobado/no, puntaje, fecha) como evidencia para la investigación y para el
+//  control de cooldown entre intentos.
+model IntentoSubidaNivel {
+  id        Int             @id @default(autoincrement())
+  usuarioId Int             @map("usuario_id")
+  temaId    Int             @map("tema_id")
+  desde     NivelDificultad
+  hacia     NivelDificultad
+  puntaje   Int             @default(0) // 0-100
+  aprobado  Boolean         @default(false)
+  fecha     DateTime        @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tema    Tema    @relation(fields: [temaId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, temaId, fecha])
+  @@map("intentos_subida_nivel")
+}
+
+// ── Adaptatividad de la ruta de práctica (por estudiante) ──
+//  El banco de ejercicios es EL MISMO para todos; lo que se personaliza es el
+//  ORDEN y el ritmo. `dificultadObjetivo` (1-5) parte del pretest y el motor de
+//  reglas la sube con aciertos y la baja con fallos tras cada intento.
+model PerfilAdaptativo {
+  usuarioId          Int      @id @map("usuario_id")
+  dificultadObjetivo Int      @default(1) @map("dificultad_objetivo")
+  rachaAciertos      Int      @default(0) @map("racha_aciertos")
+  actualizadoEn      DateTime @default(now()) @updatedAt @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("perfil_adaptativo")
+}
+
+// Registro de la RUTA personalizada: cada ejercicio servido/resuelto por el
+// estudiante, con la dificultad objetivo del momento. Evidencia de la
+// adaptatividad para la tesis (secuencia + ajuste del nivel).
+model PasoRuta {
+  id                 Int      @id @default(autoincrement())
+  usuarioId          Int      @map("usuario_id")
+  ejercicioId        Int      @map("ejercicio_id")
+  estrellas          Int      @default(0)
+  dificultadObjetivo Int      @default(1) @map("dificultad_objetivo")
+  correcto           Boolean  @default(false)
+  fecha              DateTime @default(now())
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, fecha])
+  @@map("pasos_ruta")
+}
+
+// ── Control docente de la EVALUACIÓN FINAL (postest) por paralelo ──
+//  Por defecto NO existe fila → el postest está DESHABILITADO. El docente lo
+//  habilita para su paralelo cuando termina la intervención. Sin fila habilitada
+//  el estudiante no puede entrar (control de acceso en el backend).
+model PostestControl {
+  paralelo      String    @id
+  habilitado    Boolean   @default(false)
+  habilitadoEn  DateTime? @map("habilitado_en")
+  actualizadoEn DateTime  @default(now()) @updatedAt @map("actualizado_en")
+
+  @@map("postest_control")
+}
+
+// Marca idempotente de que el estudiante ya recibió el bono de XP de la
+// unidad (evita otorgarlo más de una vez al recalcular progreso).
+model UnidadCompletada {
+  usuarioId Int      @map("usuario_id")
+  unidadId  Int      @map("unidad_id")
+  fecha     DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  unidad  Unidad  @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, unidadId])
+  @@map("unidades_completadas")
+}
+
+// ── Preguntas propuestas por ALVARO desde un PDF (borrador) ─
+//  NUNCA se publican solas: el docente las revisa, edita y aprueba. Solo al
+//  aprobarlas se copian a `Ejercicio` (banco=practica, temaId=este tema).
+model PreguntaGenerada {
+  id                Int              @id @default(autoincrement())
+  temaId            Int              @map("tema_id")
+  autorId           Int              @map("autor_id") // docente dueño de la revisión
+  documentoId       Int?             @map("documento_id") // PDF origen (trazabilidad)
+  tipo              TipoEjercicio    @default(opcion_multiple)
+  categoria         String           @default("General")
+  enunciado         String
+  codigoPython      String?          @map("codigo_python")
+  opciones          Json             @default("[]")
+  respuestaCorrecta String           @map("respuesta_correcta")
+  explicacionIa     String?          @map("explicacion_ia")
+  estado            EstadoPreguntaIa @default(borrador)
+  ejercicioId       Int?             @map("ejercicio_id") // seteado al aprobar
+  creadoEn          DateTime         @default(now()) @map("creado_en")
+
+  tema      Tema       @relation(fields: [temaId], references: [id], onDelete: Cascade)
+  autor     Usuario    @relation("AutorPreguntaIa", fields: [autorId], references: [id], onDelete: Cascade)
+  documento Documento? @relation(fields: [documentoId], references: [id], onDelete: SetNull)
+
+  @@index([temaId, estado])
+  @@map("preguntas_generadas")
+}
+
+// ── Niveles ─────────────────────────────────────────────────
+model Nivel {
+  id          Int     @id @default(autoincrement())
+  numero      Int     @unique
+  titulo      String
+  descripcion String?
+  umbral      Int     @default(12)
+
+  ejercicios Ejercicio[]
+  progreso   ProgresoNivel[]
+  documentos Documento[]
+  retos      Reto[]
+
+  @@map("niveles")
+}
+
+// ── Ejercicios (práctica + bancos pretest/postest) ──────────
+model Ejercicio {
+  id                Int             @id @default(autoincrement())
+  titulo            String
+  categoria         String
+  nivelId           Int             @map("nivel_id")
+  // Ubicación en la jerarquía académica real (Unidad → Tema → Subtema).
+  // Opcional: los bancos pretest/postest y ejercicios antiguos no la requieren.
+  temaId            Int?            @map("tema_id")
+  estrellas         Int             @default(3)
+  // Nivel de dificultad adaptativo (Básico/Intermedio/Avanzado). Se deriva de
+  // `estrellas` (★1-2=básico, ★3=intermedio, ★4-5=avanzado) en el seed, pero es
+  // el campo autoritativo que filtra qué ve cada estudiante en un tema.
+  nivelDificultad   NivelDificultad @default(basico) @map("nivel_dificultad")
+  // DIFICULTAD b del ítem en el modelo de Rasch (IRT), en la escala de θ
+  // (logits, típicamente −3..+3). Se siembra desde las estrellas/nivel
+  // (src/irt: dificultadDesdeEstrellas) y se usa para estimar θ y para la
+  // selección adaptativa (máxima información cuando b ≈ θ). Calibrable a futuro.
+  dificultadB       Float           @default(0) @map("dificultad_b")
+  tipo              TipoEjercicio   @default(opcion_multiple)
+  enunciado         String
+  codigoPython      String?         @map("codigo_python")
+  // opcion_multiple/ordenar_lineas: [{ id:"A", texto:"15" }]. completar_codigo: [].
+  opciones          Json            @default("[]")
+  // opcion_multiple/completar_codigo: valor esperado (o variantes separadas por "|").
+  // ordenar_lineas: orden correcto de ids separados por coma, ej. "B,A,D,C".
+  respuestaCorrecta String          @map("respuesta_correcta")
+  xp                Int             @default(50)
+  explicacionIa     String?         @map("explicacion_ia")
+  maxPistas         Int             @default(3) @map("max_pistas")
+  banco             Banco           @default(practica)
+  // El docente puede activar/desactivar un ejercicio. El estudiante solo ve los activos.
+  activo            Boolean         @default(true)
+  creadoEn          DateTime        @default(now()) @map("creado_en")
+
+  nivel             Nivel              @relation(fields: [nivelId], references: [id], onDelete: Cascade)
+  tema              Tema?              @relation(fields: [temaId], references: [id], onDelete: SetNull)
+  intentos          Intento[]
+  pretestRespuestas PretestRespuesta[]
+  pasosRuta         PasoRuta[]
+
+  @@index([nivelId])
+  @@index([temaId])
+  @@index([temaId, nivelDificultad])
+  @@index([banco])
+  @@map("ejercicios")
+}
+
+// ── Intentos de práctica ────────────────────────────────────
+model Intento {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int      @map("usuario_id")
+  ejercicioId   Int      @map("ejercicio_id")
+  respuestaDada String   @map("respuesta_dada")
+  correcto      Boolean
+  tiempoSeg     Int      @default(0) @map("tiempo_seg")
+  pistasUsadas  Int      @default(0) @map("pistas_usadas")
+  xpOtorgado    Int      @default(0) @map("xp_otorgado")
+  fecha         DateTime @default(now())
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([ejercicioId])
+  @@index([fecha])
+  @@map("intentos")
+}
+
+// ── Progreso por nivel ──────────────────────────────────────
+model ProgresoNivel {
+  usuarioId             Int      @map("usuario_id")
+  nivelId               Int      @map("nivel_id")
+  ejerciciosCompletados Int      @default(0) @map("ejercicios_completados")
+  desbloqueado          Boolean  @default(false)
+  actualizadoEn         DateTime @default(now()) @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  nivel   Nivel   @relation(fields: [nivelId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, nivelId])
+  @@map("progreso_niveles")
+}
+
+// ── Evaluaciones pretest/postest (datos de investigación) ───
+model Evaluacion {
+  id           Int      @id @default(autoincrement())
+  usuarioId    Int      @map("usuario_id")
+  tipo         TipoTest
+  puntajeTotal Int      @map("puntaje_total") // 0-100
+  tiempoSeg    Int      @default(0) @map("tiempo_seg")
+  porCategoria Json     @default("[]") @map("por_categoria") // [{categoria,aciertos,total,porcentaje}]
+  fecha        DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, tipo])
+  @@map("pretest_postest")
+}
+
+// ── Respuestas individuales de pretest/postest (autosave) ───
+model PretestRespuesta {
+  usuarioId   Int      @map("usuario_id")
+  ejercicioId Int      @map("ejercicio_id")
+  tipo        TipoTest @default(pre)
+  opcionDada  String   @default("") @map("opcion_dada")
+  correcto    Boolean  @default(false)
+  categoria   String
+  // Tema del temario al que pertenece el ítem (diagnóstico por tema). Opcional:
+  // el postest y datos legados no lo requieren.
+  temaId      Int?     @map("tema_id")
+  fecha       DateTime @default(now())
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+  tema      Tema?     @relation(fields: [temaId], references: [id], onDelete: SetNull)
+
+  @@id([usuarioId, ejercicioId, tipo])
+  @@index([temaId])
+  @@map("pretest_respuestas")
+}
+
+// ── Diagnóstico inicial DESGLOSADO POR TEMA (permanente, investigación) ──
+//  Resultado del pretest para cada tema evaluado: puntaje, habilidad θ estimada
+//  por IRT (Rasch) y nivel inicial clasificado (Básico/Intermedio/Avanzado). Es
+//  el instrumento de medición del ANTES por tema: se fija una vez y no cambia
+//  (el nivel que evoluciona es ProgresoTema.nivelActual).
+model DiagnosticoTema {
+  usuarioId Int             @map("usuario_id")
+  temaId    Int             @map("tema_id")
+  theta     Float? // habilidad estimada por IRT (logits); null si sin ítems con b
+  nivel     NivelDificultad @default(basico)
+  aciertos  Int             @default(0)
+  total     Int             @default(0)
+  puntaje   Int             @default(0) // 0-100
+  creadoEn  DateTime        @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tema    Tema    @relation(fields: [temaId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, temaId])
+  @@index([temaId])
+  @@map("diagnostico_temas")
+}
+
+// ── Ranking ─────────────────────────────────────────────────
+model Ranking {
+  usuarioId       Int       @id @map("usuario_id")
+  xpTotal         Int       @default(0) @map("xp_total")
+  rachaDias       Int       @default(0) @map("racha_dias")
+  ultimaActividad DateTime? @map("ultima_actividad") @db.Date
+  posicion        Int?
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("ranking")
+}
+
+// ── Logros / Emblemas ───────────────────────────────────────
+//  Cada emblema se obtiene al cumplir un REQUISITO concreto. `condicion` es el
+//  texto legible del requisito; `svgKey` selecciona el ícono SVG ORIGINAL que
+//  dibuja el frontend (nada de assets de juegos con copyright). El otorgamiento
+//  siempre se valida en el backend (EmblemasService), sin duplicar (constraint
+//  en LogroUsuario).
+model Logro {
+  id          Int            @id @default(autoincrement())
+  clave       String         @unique
+  nombre      String
+  condicion   String // requisito legible: "Completa un tema sin fallar"
+  descripcion String         @default("") // texto motivador adicional
+  icono       String         @default("🏅") // emoji de respaldo
+  svgKey      String         @default("estrella") // ícono SVG original a renderizar
+  categoria   String         @default("general") // constancia | precision | velocidad | maestria | especial
+  orden       Int            @default(0)
+  usuarios    LogroUsuario[]
+
+  @@map("logros")
+}
+
+// ── Rangos de programador (catálogo por desempeño) ──────────
+//  Estética de videojuego con SVG originales. El rango de un estudiante en cada
+//  unidad se DERIVA de su desempeño real (DesempenoUnidad.puntaje ≥ umbral).
+model Rango {
+  id     Int    @id @default(autoincrement())
+  clave  String @unique // aprendiz | junior | semi_senior | senior | arquitecto | maestro
+  nombre String
+  orden  Int    @unique // 1..6 (mayor = mejor)
+  umbral Int // puntaje mínimo (0-100) del desempeño de la unidad para alcanzarlo
+  svgKey String @default("escudo_1")
+  color  String @default("#3B6291") // color del escudo (paleta sobria)
+
+  @@map("rangos")
+}
+
+// ── Desempeño del estudiante por UNIDAD (para rango + progreso) ──
+//  Se recalcula en el backend tras cada intento. `puntaje` (0-100) combina
+//  tasa de acierto, temas completados y racha; de él se deriva `rangoClave`.
+model DesempenoUnidad {
+  usuarioId           Int             @map("usuario_id")
+  unidadId            Int             @map("unidad_id")
+  ejerciciosResueltos Int             @default(0) @map("ejercicios_resueltos")
+  ejerciciosTotal     Int             @default(0) @map("ejercicios_total")
+  temasCompletados    Int             @default(0) @map("temas_completados")
+  temasTotal          Int             @default(0) @map("temas_total")
+  aciertoPct          Int             @default(0) @map("acierto_pct")
+  postestPct          Int?            @map("postest_pct") // % del postest global (proxy de dominio)
+  puntaje             Int             @default(0) // 0-100
+  rangoClave          String          @default("aprendiz") @map("rango_clave")
+  // Dominio AGREGADO de la unidad (agregación difusa del nivelActual de sus temas
+  // ponderado por avance). Gobierna el avance de unidad: se exige ≥ intermedio
+  // para desbloquear la siguiente unidad.
+  dominioPct          Int             @default(0) @map("dominio_pct")
+  nivelDominio        NivelDificultad @default(basico) @map("nivel_dominio")
+  actualizadoEn       DateTime        @default(now()) @updatedAt @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  unidad  Unidad  @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, unidadId])
+  @@map("desempeno_unidad")
+}
+
+model LogroUsuario {
+  usuarioId     Int      @map("usuario_id")
+  logroId       Int      @map("logro_id")
+  fechaObtenido DateTime @default(now()) @map("fecha_obtenido")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  logro   Logro   @relation(fields: [logroId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, logroId])
+  @@map("logros_usuario")
+}
+
+// ── Consultas a la IA (rate limit + auditoría + dato para la tesis) ──
+//  Registra cada consulta a ALVARO para: (1) limitar uso por hora,
+//  (2) analizar qué temas generan más dudas, (3) penalizar XP por pistas.
+model ConsultaIa {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int      @map("usuario_id")
+  tipo        String   @default("asistente") // asistente | retroalimentacion | pista | practica
+  endpoint    String   @default("")
+  pregunta    String?  @db.Text
+  respuesta   String?  @db.Text
+  ejercicioId Int?     @map("ejercicio_id") // contexto (retro/pista) para análisis y penalización
+  nivelPista  Int?     @map("nivel_pista") // 1|2|3 cuando tipo = pista
+  fecha       DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, fecha])
+  @@index([usuarioId, ejercicioId, tipo])
+  @@map("consultas_ia")
+}
+
+// ── Documentos del curso (PDFs subidos por docentes) ────────
+model Documento {
+  id            Int      @id @default(autoincrement())
+  titulo        String
+  descripcion   String?
+  archivo       String // ruta o URL del PDF
+  tamanoBytes   Int      @map("tamano_bytes")
+  nivelId       Int?     @map("nivel_id")
+  // Tema asociado: ALVARO lo usa como CONTEXTO (estilo/sintaxis del docente) y
+  // es la fuente para "Generar preguntas desde este PDF".
+  temaId        Int?     @map("tema_id")
+  // Texto extraído del PDF (best-effort, cacheado para no re-parsear en cada
+  // consulta de ALVARO ni en cada generación de preguntas).
+  textoExtraido String?  @map("texto_extraido") @db.Text
+  subidoPorId   Int      @map("subido_por_id")
+  creadoEn      DateTime @default(now()) @map("creado_en")
+
+  nivel              Nivel?             @relation(fields: [nivelId], references: [id], onDelete: SetNull)
+  tema               Tema?              @relation(fields: [temaId], references: [id], onDelete: SetNull)
+  subidoPor          Usuario            @relation("DocenteDocumentos", fields: [subidoPorId], references: [id], onDelete: Cascade)
+  preguntasGeneradas PreguntaGenerada[]
+
+  @@index([temaId])
+  @@map("documentos")
+}
+
+// ── Retos del docente (ejercicios extra) ────────────────────
+model Reto {
+  id                Int           @id @default(autoincrement())
+  titulo            String
+  categoria         String
+  // Nivel temático asociado (opcional). Solo referencia; el reto vive fuera de los 5 niveles.
+  nivelId           Int?          @map("nivel_id")
+  estrellas         Int           @default(3)
+  tipo              TipoEjercicio @default(completar_codigo)
+  enunciado         String
+  codigoInicial     String?       @map("codigo_inicial")
+  // Ejemplo de entrada/salida esperada (guía para el estudiante).
+  ejemploEntrada    String?       @map("ejemplo_entrada")
+  ejemploSalida     String?       @map("ejemplo_salida")
+  opciones          Json          @default("[]")
+  respuestaCorrecta String?       @map("respuesta_correcta")
+  xp                Int           @default(50)
+  // Fecha límite opcional para entregar el reto.
+  fechaLimite       DateTime?     @map("fecha_limite")
+  autorId           Int           @map("autor_id")
+  // Publicar/despublicar un reto. El estudiante solo ve los publicados (activos).
+  activo            Boolean       @default(true)
+  creadoEn          DateTime      @default(now()) @map("creado_en")
+
+  autor     Usuario       @relation("DocenteRetos", fields: [autorId], references: [id], onDelete: Cascade)
+  nivel     Nivel?        @relation(fields: [nivelId], references: [id], onDelete: SetNull)
+  resueltos RetoUsuario[]
+
+  @@map("retos")
+}
+
+// Entrega de un reto: el estudiante lo entrega (pendiente_revision, sin XP) y el
+// docente lo revisa (aprobado/necesita_mejorar) otorgando XP y feedback. `resuelto`
+// se mantiene como "aprobado" (contador de resueltos del docente).
+model RetoUsuario {
+  usuarioId       Int           @map("usuario_id")
+  retoId          Int           @map("reto_id")
+  resuelto        Boolean       @default(false)
+  estado          EstadoEntrega @default(sin_entregar)
+  codigoEntregado String?       @map("codigo_entregado")
+  feedbackDocente String?       @map("feedback_docente") @db.Text
+  xpObtenido      Int           @default(0) @map("xp_obtenido")
+  entregadoEn     DateTime?     @map("entregado_en")
+  revisadoEn      DateTime?     @map("revisado_en")
+  fecha           DateTime      @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  reto    Reto    @relation(fields: [retoId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, retoId])
+  @@index([retoId, estado])
+  @@map("retos_usuario")
+}
+
+// Notificaciones del estudiante (campana de la topbar). Ej.: el docente revisó
+// una entrega de reto. `enlace` apunta al contenido (ruta del frontend).
+model Notificacion {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int      @map("usuario_id")
+  tipo      String   @default("reto_revisado") // reto_revisado | ...
+  titulo    String
+  mensaje   String   @db.Text
+  enlace    String? // ruta del frontend (ej. /retos)
+  refId     Int?     @map("ref_id") // id del contenido relacionado (ej. retoId)
+  leida     Boolean  @default(false)
+  creadoEn  DateTime @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, leida])
+  @@index([usuarioId, creadoEn])
+  @@map("notificaciones")
+}
+
+// ── Nota del docente sobre un estudiante (observación de seguimiento) ─
+//  Una nota por par (docente, estudiante). Solo su autor la edita/lee.
+model NotaDocente {
+  estudianteId  Int      @map("estudiante_id")
+  docenteId     Int      @map("docente_id")
+  texto         String   @db.Text
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  estudiante Usuario @relation("NotasRecibidas", fields: [estudianteId], references: [id], onDelete: Cascade)
+  docente    Usuario @relation("NotasEscritas", fields: [docenteId], references: [id], onDelete: Cascade)
+
+  @@id([estudianteId, docenteId])
+  @@index([docenteId])
+  @@map("notas_docente")
+}
+
+// ── Código de la zona de práctica (guardado del estudiante) ─
+model CodigoPractica {
+  id            Int            @id @default(autoincrement())
+  usuarioId     Int            @map("usuario_id")
+  contexto      ContextoCodigo @default(libre)
+  refId         Int?           @map("ref_id") // ejercicioId o retoId según contexto
+  codigo        String
+  ultimaSalida  String?        @map("ultima_salida")
+  actualizadoEn DateTime       @updatedAt @map("actualizado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("codigo_practica")
+}
+
+// ── Configuración del sistema (fila única id=1) ─────────────
+//  ÚNICA fuente de parámetros: estudiante, docente e IA leen desde aquí (nada
+//  hardcodeado). Solo el admin la edita (rutas /admin/config).
+model ConfiguracionSistema {
+  id Int @id @default(1)
+
+  // General.
+  nombreSistema String  @default("PREXI") @map("nombre_sistema")
+  institucion   String  @default("UPEA") @map("institucion")
+  periodo       String  @default("") @map("periodo") // semestre/periodo activo
+  logoUrl       String? @map("logo_url")
+
+  // Gamificación.
+  xpPorEjercicio    Int @default(50) @map("xp_por_ejercicio")
+  xpBonusRacha      Int @default(10) @map("xp_bonus_racha")
+  xpPorLogro        Int @default(20) @map("xp_por_logro")
+  umbralPorcentaje  Int @default(80) @map("umbral_porcentaje") // umbral de desbloqueo de nivel (%)
+  penalizacionPista Int @default(5) @map("penalizacion_pista")
+
+  // Adaptatividad por niveles (Básico/Intermedio/Avanzado).
+  subirNivelPreguntas   Int @default(5) @map("subir_nivel_preguntas") // nº de ítems del mini-diagnóstico
+  subirNivelUmbral      Int @default(80) @map("subir_nivel_umbral") // % para aprobar y subir de nivel
+  subirNivelEsperaHoras Int @default(0) @map("subir_nivel_espera_horas") // cooldown entre intentos (0 = sin espera)
+  // XP: estar en un nivel más alto otorga MÁS XP (porcentaje sobre el XP base;
+  // básico = 100%). Incentivo a esforzarse (hipótesis de la tesis).
+  xpFactorIntermedio    Int @default(125) @map("xp_factor_intermedio")
+  xpFactorAvanzado      Int @default(150) @map("xp_factor_avanzado")
+
+  // Inteligencia Artificial (ALVARO).
+  iaActiva              Boolean @default(true) @map("ia_activa")
+  maxPistasIa           Int     @default(3) @map("max_pistas_ia")
+  rateLimitIaHora       Int     @default(20) @map("rate_limit_ia_hora") // consultas/hora por estudiante
+  modoRetroalimentacion String  @default("inmediata") @map("modo_retroalimentacion") // inmediata | al_finalizar
+  modeloIa              String  @default("gemini-2.5-flash-lite") @map("modelo_ia")
+
+  // Investigación.
+  postestDesdeNivel Int     @default(3) @map("postest_desde_nivel")
+  gruposBloqueados  Boolean @default(false) @map("grupos_bloqueados") // congela cambios de grupo
+
+  // Detección de estudiantes "en riesgo" (configurable, centralizado aquí).
+  riesgoDiasInactivo   Int @default(7) @map("riesgo_dias_inactivo") // días sin actividad
+  riesgoTasaAciertoMin Int @default(40) @map("riesgo_tasa_acierto_min") // % mínimo de aciertos
+  riesgoMinIntentos    Int @default(4) @map("riesgo_min_intentos") // intentos mínimos para evaluar la tasa
+
+  @@map("configuracion_sistema")
+}
+
+// ── Auditoría de acciones sensibles del admin ───────────────
+//  Trazabilidad para la seriedad del estudio: quién cambió qué y cuándo.
+model LogAuditoria {
+  id        Int      @id @default(autoincrement())
+  actorId   Int      @map("actor_id")
+  accion    String // usuario_crear | usuario_editar | usuario_estado | rol_cambiar | grupo_cambiar | config_cambiar | password_reset
+  entidad   String   @default("") // usuario | configuracion | grupo
+  entidadId Int?     @map("entidad_id")
+  detalle   String   @default("") @db.Text
+  fecha     DateTime @default(now())
+
+  actor Usuario @relation("AuditoriaActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([accion, fecha])
+  @@index([fecha])
+  @@map("log_auditoria")
+}

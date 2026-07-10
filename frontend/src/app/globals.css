@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Tokens del tema PREXI (tripletas RGB → usadas como rgb(var(--x) / opacity)).
+ * MODO CLARO por defecto en :root; MODO OSCURO en .dark (next-themes).
+ */
+:root {
+  color-scheme: light;
+  --app: 244 246 248;        /* #F4F6F8 fondo de página */
+  --card: 255 255 255;       /* #FFFFFF superficie de tarjetas */
+  --subtle: 236 240 244;     /* #ECF0F4 superficies sutiles / insets */
+  --fg: 27 43 68;            /* #1B2B44 texto principal */
+  --muted: 100 116 139;      /* #64748B texto secundario */
+  --line: 227 232 239;       /* #E3E8EF bordes */
+  --sidebar-from: 15 27 45;  /* #0F1B2D base oscura principal */
+  --sidebar-to: 10 18 31;    /* #0A121F base más profunda */
+}
+
+.dark {
+  color-scheme: dark;
+  --app: 11 20 33;           /* #0B1421 fondo oscuro profundo */
+  --card: 15 27 45;          /* #0F1B2D tarjeta (base oscura) */
+  --subtle: 27 43 68;        /* #1B2B44 inset (superficie elevada) */
+  --fg: 232 237 243;         /* #E8EDF3 */
+  --muted: 148 163 184;      /* #94a3b8 */
+  --line: 38 58 88;          /* #263A58 borde sobrio */
+  --sidebar-from: 10 18 31;  /* #0A121F */
+  --sidebar-to: 6 11 19;     /* #060B13 */
+}
+
+/*
+ * Escala base RESPONSIVA de la interfaz (mobile-first).
+ * Tailwind usa rem, por lo que ajustar el font-size del root escala texto,
+ * espaciados, gaps y anchos de forma proporcional, sin tocar cada clase.
+ *  · Móvil   (<640px): 112.5% (18px) — cómodo de leer sin desbordar 375px.
+ *  · Tablet  (≥640px): 125%   (20px).
+ *  · Desktop (≥1024px): 135%  (21.6px) — la escala generosa original.
+ * (Las media queries se evalúan contra el tamaño inicial del navegador, no
+ *  contra este font-size, así que los breakpoints de Tailwind no se mueven.)
+ */
+html {
+  font-size: 112.5%;
+}
+@media (min-width: 640px) {
+  html { font-size: 125%; }
+}
+@media (min-width: 1024px) {
+  html { font-size: 135%; }
+}
+
+body {
+  background: rgb(var(--app));
+  color: rgb(var(--fg));
+  line-height: 1.55; /* interlineado generoso: el texto respira */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Foco visible accesible (teclado) coherente con el acento del tema.
+   Los inputs conservan su ring propio (focus:ring-*, mayor especificidad). */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--card)), 0 0 0 4px #3B6291;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5
+           font-semibold text-white shadow-sm transition hover:bg-prexi-blue-hover hover:shadow-md
+           active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-card
+           px-5 py-2.5 font-semibold text-fg transition hover:bg-subtle active:scale-[0.98];
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-card p-6 shadow-soft transition-all duration-200;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:border-prexi-blue/30 hover:shadow-lift;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-card px-4 py-2.5 text-fg outline-none transition
+           placeholder:text-muted focus:border-prexi-blue focus:ring-2 focus:ring-prexi-blue/20;
+  }
+  /* Etiqueta de stat: mayúsculas pequeñas con tracking. */
+  .stat-label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-muted;
+  }
+  /* Skeleton de carga. */
+  .skeleton {
+    @apply relative overflow-hidden rounded-2xl bg-subtle;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgb(var(--card) / 0.55), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Scrollbar discreta y consciente del tema. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: rgb(var(--line));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
