@@ -38,7 +38,7 @@ export function CodeViewer({ code, titulo = 'ejercicio.py' }: { code: string; ti
   const anchoNum = String(lineas.length).length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#24466B] bg-[#0F1B2D] shadow-lift">
+    <div className="overflow-hidden rounded-xl border border-[#0E3F7E] bg-[#04162E] shadow-lift">
       {/* Barra de ventana estilo editor */}
       <div className="flex items-center gap-2 border-b border-white/10 bg-[#0A121F] px-4 py-2.5">
         <span className="h-3 w-3 rounded-full bg-[#FF5F56]" />

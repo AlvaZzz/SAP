@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { DocenteReto } from '@/lib/types';
+import { DocenteReto, NivelDificultad, NIVEL_LABEL, OpcionTema } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, Select, EmptyState } from '@/components/ui';
-import { Plus, Edit, Trash2, Power, Target, ClipboardList, Clock } from '@/components/icons';
+import { SelectorTema } from '@/components/docente/selector-tema';
+import { NivelBadge, nivelDesdeEstrellas, estrellasDesdeNivel, NIVELES } from '@/components/nivel-badge';
+import { Plus, Edit, Trash2, Power, Target, ClipboardList, Clock, Lock, CheckCircle } from '@/components/icons';
+
+interface RetosConfig { intermedio: boolean; avanzado: boolean }
 
 interface FormState {
-  titulo: string; categoria: string; nivel: string; estrellas: number; enunciado: string;
-  codigoInicial: string; ejemploEntrada: string; ejemploSalida: string; xp: number; fechaLimite: string; activo: boolean;
+  titulo: string; categoria: string; nivel: string; temaId: number | null; estrellas: number; enunciado: string;
+  codigoInicial: string; ejemploEntrada: string; ejemploSalida: string; xp: number; fechaLimite: string; activo: boolean; esBugHunt: boolean;
 }
 const VACIO: FormState = {
-  titulo: '', categoria: '', nivel: '', estrellas: 3, enunciado: '',
-  codigoInicial: '', ejemploEntrada: '', ejemploSalida: '', xp: 60, fechaLimite: '', activo: true,
+  titulo: '', categoria: '', nivel: '', temaId: null, estrellas: 3, enunciado: '',
+  codigoInicial: '', ejemploEntrada: '', ejemploSalida: '', xp: 60, fechaLimite: '', activo: true, esBugHunt: false,
 };
 
 export default function DocenteRetosPage() {
@@ -25,20 +29,33 @@ export default function DocenteRetosPage() {
   const [guardando, setGuardando] = useState(false);
   const [apiError, setApiError] = useState('');
 
+  const [config, setConfig] = useState<RetosConfig | null>(null);
+  const [temas, setTemas] = useState<OpcionTema[]>([]);
+
   async function cargar() {
     setCargando(true);
     try { const r = await api.get<{ retos: DocenteReto[] }>('/docente/retos'); setItems(r.retos); }
     catch { /* noop */ } finally { setCargando(false); }
   }
   useEffect(() => { cargar(); }, []);
+  useEffect(() => { api.get<RetosConfig>('/docente/retos/config').then(setConfig).catch(() => undefined); }, []);
+  useEffect(() => { api.get<{ temas: OpcionTema[] }>('/docente/unidades/temas/opciones').then((r) => setTemas(r.temas)).catch(() => undefined); }, []);
+
+  async function alternarNivel(nivel: 'intermedio' | 'avanzado') {
+    if (!config) return;
+    const nuevo = { ...config, [nivel]: !config[nivel] };
+    setConfig(nuevo); // optimista
+    try { await api.put('/docente/retos/config', { [nivel]: nuevo[nivel] }); }
+    catch { setConfig(config); } // revierte si falla
+  }
 
   function abrirCrear() { setEditId(null); setForm(VACIO); setErrores({}); setApiError(''); setModal(true); }
   function abrirEditar(r: DocenteReto) {
     setEditId(r.id); setErrores({}); setApiError('');
     setForm({
-      titulo: r.titulo, categoria: r.categoria, nivel: r.nivel ? String(r.nivel) : '', estrellas: r.estrellas,
+      titulo: r.titulo, categoria: r.categoria, nivel: r.nivel ? String(r.nivel) : '', temaId: r.temaId ?? null, estrellas: r.estrellas,
       enunciado: r.enunciado, codigoInicial: r.codigoInicial ?? '', ejemploEntrada: r.ejemploEntrada ?? '',
-      ejemploSalida: r.ejemploSalida ?? '', xp: r.xp, fechaLimite: r.fechaLimite ? r.fechaLimite.slice(0, 10) : '', activo: r.activo,
+      ejemploSalida: r.ejemploSalida ?? '', xp: r.xp, fechaLimite: r.fechaLimite ? r.fechaLimite.slice(0, 10) : '', activo: r.activo, esBugHunt: r.esBugHunt,
     });
     setModal(true);
   }
@@ -58,11 +75,14 @@ export default function DocenteRetosPage() {
     setGuardando(true); setApiError('');
     const payload = {
       titulo: form.titulo.trim(), categoria: form.categoria.trim(),
-      nivel: form.nivel ? Number(form.nivel) : undefined, estrellas: form.estrellas,
+      nivel: form.nivel ? Number(form.nivel) : undefined,
+      // `null` (no `undefined`) para poder DESASIGNAR el tema al editar.
+      temaId: editId ? form.temaId : (form.temaId ?? undefined),
+      estrellas: form.estrellas,
       enunciado: form.enunciado.trim(), codigoInicial: form.codigoInicial.trim() || undefined,
       ejemploEntrada: form.ejemploEntrada.trim() || undefined, ejemploSalida: form.ejemploSalida.trim() || undefined,
       xp: form.xp, fechaLimite: form.fechaLimite ? new Date(form.fechaLimite + 'T23:59:59').toISOString() : undefined,
-      activo: form.activo,
+      activo: form.activo, esBugHunt: form.esBugHunt,
     };
     try {
       if (editId) await api.put(`/docente/retos/${editId}`, payload);
@@ -82,8 +102,33 @@ export default function DocenteRetosPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Gestión de retos" subtitle="Retos extra que el estudiante resuelve en la Zona de Práctica. Las entregas se califican en Revisiones."
+      <PageHeader title="Gestión de retos" subtitle="Retos extra que el estudiante resuelve en el editor de código. Las entregas se califican en Revisiones."
         action={<button onClick={abrirCrear} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo reto</button>} />
+
+      {/* Habilitación de retos por nivel (Básico nunca accede) */}
+      <Card className="mb-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-prexi-blue/10 text-prexi-blue-deep"><Lock className="h-5 w-5" /></div>
+            <div>
+              <p className="font-semibold text-fg">Habilitar retos para</p>
+              <p className="mt-0.5 max-w-md text-sm text-muted">El editor de código libre no se ofrece a estudiantes <b className="text-fg">Básicos</b> (aún consolidan fundamentos). Elige qué niveles pueden acceder.</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {(['intermedio', 'avanzado'] as const).map((n) => {
+              const on = config?.[n] ?? false;
+              const label = n === 'intermedio' ? 'Intermedio' : 'Avanzado';
+              return (
+                <button key={n} onClick={() => alternarNivel(n)} disabled={!config}
+                  className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:opacity-50 ${on ? 'border-prexi-green bg-emerald-500/10 text-prexi-green' : 'border-line bg-card text-muted hover:border-prexi-blue/40'}`}>
+                  {on ? <CheckCircle className="h-4 w-4" /> : <Lock className="h-4 w-4" />} {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Card>
 
       {cargando ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
         : items.length === 0 ? <EmptyState icon={<Target className="h-7 w-7" />} title="Aún no hay retos" hint="Crea un reto para que aparezca en la Zona de Práctica del estudiante." />
@@ -99,9 +144,11 @@ export default function DocenteRetosPage() {
                     </div>
                   </div>
                   <p className="font-display font-bold text-fg">{r.titulo}</p>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-prexi-blue-deep">
-                    {r.categoria}{r.nivel ? ` · Nivel ${r.nivel}` : ''} · {'★'.repeat(r.estrellas)}
-                  </p>
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-prexi-blue-deep">{r.categoria}</span>
+                    <NivelBadge estrellas={r.estrellas} size="sm" />
+                    {r.tema_titulo && <Badge tone="green">{r.tema_titulo}</Badge>}
+                  </div>
                   <p className="mb-3 line-clamp-2 flex-1 text-sm text-muted">{r.enunciado}</p>
                   <div className="mb-1 flex items-center justify-between text-xs text-muted">
                     <span>{r.xp} XP · {r.resueltos} aprobados</span>
@@ -127,9 +174,11 @@ export default function DocenteRetosPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2"><Field label="Título" error={errores.titulo}><Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ej: FizzBuzz" /></Field></div>
           <Field label="Categoría" error={errores.categoria}><Input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="Bucles, Cadenas…" /></Field>
-          <Field label="Nivel asociado (opcional)"><Select value={form.nivel} onChange={(e) => setForm({ ...form, nivel: e.target.value })}><option value="">Sin nivel</option>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}</Select></Field>
-          <Field label="Dificultad (estrellas)"><Select value={form.estrellas} onChange={(e) => setForm({ ...form, estrellas: Number(e.target.value) })}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{'★'.repeat(n)} ({n})</option>)}</Select></Field>
+          <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(form.estrellas)} onChange={(e) => setForm({ ...form, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
           <Field label="XP máximo" error={errores.xp}><Input type="number" min={5} max={500} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
+          <Field label="Nivel asociado (opcional)"><Select value={form.nivel} onChange={(e) => setForm({ ...form, nivel: e.target.value })}><option value="">Sin nivel</option>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}</Select></Field>
+          {/* Ubicación académica: agrupa el reto en la vista del estudiante por Unidad → Tema → Subtema. */}
+          <div className="sm:col-span-2"><SelectorTema temas={temas} valor={form.temaId} onChange={(temaId) => setForm({ ...form, temaId })} hint="Ubica el reto en el temario: tus estudiantes lo verán junto al tema que estudian." /></div>
           <div className="sm:col-span-2"><Field label="Enunciado / descripción del problema" error={errores.enunciado}><Textarea value={form.enunciado} onChange={(e) => setForm({ ...form, enunciado: e.target.value })} placeholder="Describe el reto de programación." /></Field></div>
           <Field label="Ejemplo de entrada (opcional)"><Textarea value={form.ejemploEntrada} onChange={(e) => setForm({ ...form, ejemploEntrada: e.target.value })} className="font-mono text-sm" placeholder="n = 5" /></Field>
           <Field label="Salida esperada (opcional)"><Textarea value={form.ejemploSalida} onChange={(e) => setForm({ ...form, ejemploSalida: e.target.value })} className="font-mono text-sm" placeholder="15" /></Field>
@@ -139,6 +188,12 @@ export default function DocenteRetosPage() {
             <input type="checkbox" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} className="h-4 w-4 accent-prexi-blue" />
             <span className="text-sm font-medium text-fg">Publicado (visible para estudiantes)</span>
           </label>
+          <div className="sm:col-span-2">
+            <label className="flex items-start gap-2 rounded-xl border border-line bg-subtle/40 p-3">
+              <input type="checkbox" checked={form.esBugHunt} onChange={(e) => setForm({ ...form, esBugHunt: e.target.checked })} className="mt-0.5 h-4 w-4 accent-prexi-blue" />
+              <span className="text-sm text-fg"><b>Misión de depuración (bug‑hunt)</b> — el código base trae un bug; se <b>auto‑valida</b> comparando con la <b>salida esperada</b> (obligatoria) y otorga el emblema, sin revisión manual.</span>
+            </label>
+          </div>
         </div>
       </Modal>
     </div>

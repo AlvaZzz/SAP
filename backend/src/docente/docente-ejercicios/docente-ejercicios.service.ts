@@ -1,18 +1,24 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, Banco } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { CrearEjercicioDto, EditarEjercicioDto } from './dto/ejercicio.dto';
+import { CrearEjercicioDto, EditarEjercicioDto, BANCOS_DOCENTE } from './dto/ejercicio.dto';
 import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
 import { dificultadDesdeEstrellas } from '../../mediciones/irt/irt';
 
 /**
- * Gestión de ejercicios (rol docente). CRUD del banco de práctica (5 niveles).
- * ENGANCHE: lo que aquí se crea/edita/activa aparece de inmediato en el módulo
- * de ejercicios del estudiante, que consulta `banco = practica AND activo`.
+ * Gestión de ejercicios (rol docente). CRUD de los bancos que el docente controla:
+ * 'practica' (5 niveles, ruta del estudiante) y 'examen' (fin de unidad). NUNCA
+ * toca pretest/postest (medición de la tesis). El banco 'practica' alimenta la
+ * ruta (`banco=practica AND activo`) y 'examen' alimenta el examen de fin de unidad.
  */
 @Injectable()
 export class DocenteEjerciciosService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /** Normaliza el banco recibido a uno gestionable por el docente (default práctica). */
+  private banco(b?: Banco): Banco {
+    return b && BANCOS_DOCENTE.includes(b) ? b : 'practica';
+  }
 
   /** Traduce número de nivel (1-5) al id real del nivel. */
   private async nivelId(numero: number): Promise<number> {
@@ -21,9 +27,9 @@ export class DocenteEjerciciosService {
     return nivel.id;
   }
 
-  async listar(filtros: { nivel?: number; categoria?: string; dificultad?: number; temaId?: number }) {
+  async listar(filtros: { nivel?: number; categoria?: string; dificultad?: number; temaId?: number; banco?: Banco }) {
     const where: Prisma.EjercicioWhereInput = {
-      banco: 'practica',
+      banco: this.banco(filtros.banco),
       ...(filtros.nivel ? { nivel: { numero: filtros.nivel } } : {}),
       ...(filtros.categoria ? { categoria: filtros.categoria } : {}),
       ...(filtros.dificultad ? { estrellas: filtros.dificultad } : {}),
@@ -42,9 +48,9 @@ export class DocenteEjerciciosService {
   }
 
   /** Categorías existentes (para poblar el filtro del frontend). */
-  async categorias(): Promise<string[]> {
+  async categorias(banco?: Banco): Promise<string[]> {
     const rows = await this.prisma.ejercicio.findMany({
-      where: { banco: 'practica' },
+      where: { banco: this.banco(banco) },
       distinct: ['categoria'],
       select: { categoria: true },
       orderBy: { categoria: 'asc' },
@@ -54,7 +60,8 @@ export class DocenteEjerciciosService {
 
   async detalle(id: number) {
     const e = await this.prisma.ejercicio.findFirst({
-      where: { id, banco: 'practica' },
+      // Gestiona práctica y examen; nunca pretest/postest.
+      where: { id, banco: { in: BANCOS_DOCENTE } },
       include: { nivel: { select: { numero: true, titulo: true } }, tema: { select: { numero: true, titulo: true } }, _count: { select: { intentos: true } } },
     });
     if (!e) throw new NotFoundException('Ejercicio no encontrado');
@@ -82,7 +89,7 @@ export class DocenteEjerciciosService {
         xp: dto.xp,
         explicacionIa: dto.explicacionIa ?? null,
         activo: dto.activo ?? true,
-        banco: 'practica',
+        banco: this.banco(dto.banco),
       },
       include: { nivel: { select: { numero: true, titulo: true } }, tema: { select: { numero: true, titulo: true } }, _count: { select: { intentos: true } } },
     });
@@ -139,6 +146,7 @@ export class DocenteEjerciciosService {
       id: e.id,
       titulo: e.titulo,
       categoria: e.categoria,
+      banco: e.banco,
       nivel: e.nivel.numero,
       nivel_titulo: e.nivel.titulo,
       temaId: e.temaId,

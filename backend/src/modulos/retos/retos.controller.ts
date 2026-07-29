@@ -1,22 +1,15 @@
-import { Body, Controller, Get, Post, Param, ParseIntPipe, UseGuards, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, ParseIntPipe, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { IsString, MinLength } from 'class-validator';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
+import { RetosAccessService } from './retos-access.service';
+import { RetosAccessGuard } from './retos-access.guard';
+import { RetosService } from './retos.service';
 
 class EntregarRetoDto {
   @IsString() @MinLength(1) codigo!: string;
-}
-
-// Deriva la etiqueta que ve el estudiante en la tarjeta del reto.
-function estadoTarjeta(estado: string | undefined): 'nuevo' | 'pendiente' | 'aprobado' | 'necesita_mejorar' {
-  switch (estado) {
-    case 'pendiente_revision': return 'pendiente';
-    case 'aprobado': return 'aprobado';
-    case 'necesita_mejorar': return 'necesita_mejorar';
-    default: return 'nuevo';
-  }
 }
 
 /**
@@ -31,37 +24,36 @@ export class RetosController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificaciones: NotificacionesService,
+    private readonly retosAccess: RetosAccessService,
+    private readonly retos: RetosService,
   ) {}
 
+  /** Estado de acceso del estudiante a los retos (nivel + habilitación docente). */
+  @Get('acceso')
+  async acceso(@CurrentUser('sub') usuarioId: number) {
+    return this.retosAccess.estado(usuarioId);
+  }
+
+  /**
+   * Retos disponibles: filtrados por el nivel que el estudiante tiene EN CADA
+   * TEMA (no por su nivel global). Ver RetosService.
+   */
   @Get()
-  async listar(@CurrentUser('sub') usuarioId: number) {
-    const retos = await this.prisma.reto.findMany({
-      where: { activo: true }, // el estudiante solo ve retos publicados
-      orderBy: { creadoEn: 'desc' },
-      include: {
-        autor: { select: { nombre: true } },
-        nivel: { select: { numero: true } },
-        resueltos: { where: { usuarioId } },
-      },
+  @UseGuards(RetosAccessGuard)
+  async listar(
+    @CurrentUser('sub') usuarioId: number,
+    @Query('unidad') unidad?: string,
+    @Query('tema') tema?: string,
+  ) {
+    return this.retos.disponibles(usuarioId, {
+      unidad: unidad ? Number(unidad) : undefined,
+      temaCodigo: tema,
     });
-    return {
-      retos: retos.map((r) => {
-        const e = r.resueltos[0];
-        return {
-          id: r.id, titulo: r.titulo, categoria: r.categoria, nivel: r.nivel?.numero ?? null,
-          estrellas: r.estrellas, tipo: r.tipo, enunciado: r.enunciado, codigo_inicial: r.codigoInicial,
-          ejemplo_entrada: r.ejemploEntrada, ejemplo_salida: r.ejemploSalida,
-          xp: r.xp, fecha_limite: r.fechaLimite, autor: r.autor.nombre, fecha: r.creadoEn,
-          estado: estadoTarjeta(e?.estado),
-          xp_obtenido: e?.xpObtenido ?? 0,
-          feedback: e?.feedbackDocente ?? null,
-        };
-      }),
-    };
   }
 
   /** Entregas del estudiante con su estado, XP y feedback (vista "Mis entregas"). */
   @Get('mis-entregas')
+  @UseGuards(RetosAccessGuard)
   async misEntregas(@CurrentUser('sub') usuarioId: number) {
     const entregas = await this.prisma.retoUsuario.findMany({
       where: { usuarioId, estado: { not: 'sin_entregar' } },
@@ -78,12 +70,38 @@ export class RetosController {
   }
 
   @Get(':id')
+  @UseGuards(RetosAccessGuard)
   async detalle(@CurrentUser('sub') usuarioId: number, @Param('id', ParseIntPipe) id: number) {
-    const r = await this.prisma.reto.findFirst({ where: { id, activo: true }, include: { autor: { select: { nombre: true } } } });
+    const r = await this.prisma.reto.findFirst({
+      where: { id, activo: true },
+      include: {
+        autor: { select: { nombre: true } },
+        tema: { select: { numero: true, titulo: true, unidad: { select: { numero: true } } } },
+        origenEjercicio: { select: { id: true, enunciado: true, fuenteDoc: true } },
+      },
+    });
     if (!r) return { reto: null, entrega: null };
     const e = await this.prisma.retoUsuario.findUnique({ where: { usuarioId_retoId: { usuarioId, retoId: id } } });
+    // Contexto académico legible para el tutor ALVARO (ej. "U2 · 2.4 Bucles").
+    const contextoTema = r.tema
+      ? `U${r.tema.unidad.numero} · ${r.tema.numero} ${r.tema.titulo}`
+      : r.categoria;
+
+    // NUNCA se expone la solución de referencia al cliente: `respuestaCorrecta`
+    // guarda el código correcto y `pistas` se sirven de a una desde ALVARO.
+    const { respuestaCorrecta: _solucion, pistas: _pistas, origenEjercicio, ...publico } = r;
+    const fd = (origenEjercicio?.fuenteDoc ?? {}) as { codigo?: string };
+
     return {
-      reto: r,
+      reto: {
+        ...publico,
+        contextoTema,
+        // Trazabilidad visible: "este reto se basa en el ejercicio E1.5.I.06".
+        origen: origenEjercicio
+          ? { ejercicio_id: origenEjercicio.id, codigo: fd.codigo ?? null, enunciado: origenEjercicio.enunciado }
+          : null,
+        total_pistas: Array.isArray(r.pistas) ? r.pistas.length : 0,
+      },
       entrega: e
         ? { estado: e.estado, xp_obtenido: e.xpObtenido, feedback: e.feedbackDocente, codigo: e.codigoEntregado, entregado_en: e.entregadoEn, revisado_en: e.revisadoEn }
         : null,
@@ -92,6 +110,7 @@ export class RetosController {
 
   /** Entrega el reto para revisión del docente. No otorga XP todavía. */
   @Post(':id/entregar')
+  @UseGuards(RetosAccessGuard)
   async entregar(@CurrentUser('sub') usuarioId: number, @Param('id', ParseIntPipe) retoId: number, @Body() dto: EntregarRetoDto) {
     const reto = await this.prisma.reto.findFirst({ where: { id: retoId, activo: true }, select: { id: true, titulo: true, autorId: true } });
     if (!reto) throw new BadRequestException('El reto no existe o no está disponible');

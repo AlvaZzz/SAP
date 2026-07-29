@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { DocenteEjercicio, TipoEjercicio, UnidadDocente } from '@/lib/types';
+import { DocenteEjercicio, TipoEjercicio, UnidadDocente, NivelDificultad, NIVEL_LABEL } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, Select, EmptyState } from '@/components/ui';
+import { NivelBadge, nivelDesdeEstrellas, estrellasDesdeNivel, NIVELES } from '@/components/nivel-badge';
 import { Plus, Edit, Trash2, Power, Filter, Code, Layers, ChevronUp, ChevronDown } from '@/components/icons';
 
 const TIPOS: { value: TipoEjercicio; label: string }[] = [
@@ -36,7 +37,10 @@ const VACIO: FormState = {
   respuestaCorrecta: 'A', xp: 50, explicacionIa: '', activo: true,
 };
 
+type BancoDocente = 'practica' | 'examen';
+
 export default function DocenteEjerciciosPage() {
+  const [banco, setBanco] = useState<BancoDocente>('practica');
   const [items, setItems] = useState<DocenteEjercicio[]>([]);
   const [categorias, setCategorias] = useState<string[]>([]);
   const [unidades, setUnidades] = useState<UnidadDocente[]>([]);
@@ -59,14 +63,14 @@ export default function DocenteEjerciciosPage() {
   async function cargar() {
     setCargando(true);
     try {
-      // Se traen TODOS los de práctica y se agrupan/filtran en el cliente por unidad/tema.
-      const r = await api.get<{ ejercicios: DocenteEjercicio[] }>('/docente/ejercicios');
+      // Trae el banco seleccionado (práctica o examen) y agrupa/filtra en el cliente.
+      const r = await api.get<{ ejercicios: DocenteEjercicio[] }>(`/docente/ejercicios?banco=${banco}`);
       setItems(r.ejercicios ?? []);
     } catch { /* noop */ } finally { setCargando(false); }
   }
 
-  useEffect(() => { cargar(); }, []);
-  useEffect(() => { api.get<{ categorias: string[] }>('/docente/ejercicios/categorias').then((r) => setCategorias(r.categorias)).catch(() => undefined); }, [items.length]);
+  useEffect(() => { cargar(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [banco]);
+  useEffect(() => { api.get<{ categorias: string[] }>(`/docente/ejercicios/categorias?banco=${banco}`).then((r) => setCategorias(r.categorias)).catch(() => undefined); }, [items.length, banco]);
   useEffect(() => { api.get<{ unidades: UnidadDocente[] }>('/docente/unidades').then((r) => setUnidades(r.unidades ?? [])).catch(() => undefined); }, []);
 
   // Índice temaId → ubicación (mapea IDs de tema Y de subtema, porque un ejercicio
@@ -91,7 +95,7 @@ export default function DocenteEjerciciosPage() {
     if (fTema && (!l || l.parentTemaId !== Number(fTema))) return false;
     if (fSubtema && e.temaId !== Number(fSubtema)) return false;
     if (fCategoria && e.categoria !== fCategoria) return false;
-    if (fDificultad && e.estrellas !== Number(fDificultad)) return false;
+    if (fDificultad && nivelDesdeEstrellas(e.estrellas) !== fDificultad) return false;
     return true;
   }), [items, loc, fUnidad, fTema, fSubtema, fCategoria, fDificultad]);
 
@@ -165,7 +169,7 @@ export default function DocenteEjerciciosPage() {
     const nivelDerivado = unidades.find((u) => String(u.id) === form.unidadId)?.numero ?? 1;
     const payload = {
       titulo: form.titulo.trim(), categoria: form.categoria.trim(), nivel: nivelDerivado,
-      temaId: temaIdFinal, estrellas: form.estrellas,
+      temaId: temaIdFinal, estrellas: form.estrellas, banco,
       tipo: form.tipo, enunciado: form.enunciado.trim(), codigoPython: form.codigoPython.trim() || undefined,
       opciones: CON_OPCIONES.includes(form.tipo) ? form.opciones.map((o) => ({ id: o.id, texto: o.texto.trim() })) : [],
       respuestaCorrecta, xp: form.xp, explicacionIa: form.explicacionIa.trim() || undefined, activo: form.activo,
@@ -217,8 +221,24 @@ export default function DocenteEjerciciosPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Gestión de ejercicios" subtitle={`${items.length} ejercicios · ${totalActivos} activos · organizados por unidad`}
-        action={<button onClick={abrirCrear} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo ejercicio</button>} />
+      <PageHeader title="Gestión de ejercicios" subtitle={`${items.length} ${banco === 'examen' ? 'preguntas de examen' : 'ejercicios de práctica'} · ${totalActivos} activos · organizados por unidad`}
+        action={<button onClick={abrirCrear} className="btn-primary"><Plus className="h-4 w-4" /> {banco === 'examen' ? 'Nueva pregunta' : 'Nuevo ejercicio'}</button>} />
+
+      {/* Selector de BANCO: práctica (ruta del estudiante) o examen de fin de unidad */}
+      <div className="mb-5 inline-flex rounded-xl border border-line bg-card p-1">
+        {([['practica', 'Práctica (ruta)'], ['examen', 'Examen de unidad']] as [BancoDocente, string][]).map(([b, label]) => (
+          <button key={b} onClick={() => setBanco(b)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${banco === b ? 'bg-prexi-blue text-white' : 'text-muted hover:text-fg'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {banco === 'examen' && (
+        <p className="mb-5 flex items-start gap-2 rounded-xl bg-prexi-blue/10 px-3.5 py-2.5 text-sm text-fg">
+          <Filter className="mt-0.5 h-4 w-4 shrink-0 text-prexi-blue-deep" />
+          <span>Estas preguntas forman el <b>examen de fin de unidad</b> (gate de avance). Son distintas del banco de práctica; el estudiante las rinde tras el repaso de la unidad.</span>
+        </p>
+      )}
 
       {/* Filtros por jerarquía real: Unidad → Tema → Subtema, categoría y dificultad */}
       <Card className="mb-6 flex flex-wrap items-center gap-3 !py-4">
@@ -240,8 +260,8 @@ export default function DocenteEjerciciosPage() {
           {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
         </Select>
         <Select value={fDificultad} onChange={(e) => setFDificultad(e.target.value)} className="!w-auto">
-          <option value="">Toda dificultad</option>
-          {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{'★'.repeat(n)}</option>)}
+          <option value="">Todo nivel</option>
+          {NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}
         </Select>
         {hayFiltro && <button onClick={() => { setFUnidad(''); setFTema(''); setFSubtema(''); setFCategoria(''); setFDificultad(''); }} className="text-sm font-semibold text-prexi-blue-deep hover:underline">Limpiar</button>}
       </Card>
@@ -277,7 +297,7 @@ export default function DocenteEjerciciosPage() {
                             <p className="font-semibold text-fg">{e.titulo}</p>
                             <p className="text-xs text-muted">{e.categoria} · {TIPOS.find((t) => t.value === e.tipo)?.label ?? e.tipo}</p>
                           </div>
-                          <span className="whitespace-nowrap text-prexi-amber" title={`Dificultad ${e.estrellas}`}>{'★'.repeat(e.estrellas)}</span>
+                          <NivelBadge estrellas={e.estrellas} size="sm" />
                           <span className="w-14 text-right text-xs text-muted">{e.xp} XP</span>
                           <span className="w-16 text-right text-xs text-muted">{e.intentos} int.</span>
                           {e.activo ? <Badge tone="green">Activo</Badge> : <Badge tone="slate">Inactivo</Badge>}
@@ -303,7 +323,7 @@ export default function DocenteEjerciciosPage() {
                 {grupos.sinAsignar.map((e) => (
                   <div key={e.id} className="flex flex-wrap items-center gap-3 px-5 py-3 transition hover:bg-subtle">
                     <div className="min-w-[200px] flex-1"><p className="font-semibold text-fg">{e.titulo}</p><p className="text-xs text-muted">{e.categoria} · {ubicacionCorta(e)}</p></div>
-                    <span className="text-prexi-amber">{'★'.repeat(e.estrellas)}</span>
+                    <NivelBadge estrellas={e.estrellas} size="sm" />
                     {e.activo ? <Badge tone="green">Activo</Badge> : <Badge tone="slate">Inactivo</Badge>}
                     <div className="flex items-center gap-1">
                       <button onClick={() => alternar(e)} title={e.activo ? 'Desactivar' : 'Activar'} className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep"><Power className="h-4 w-4" /></button>
@@ -354,7 +374,7 @@ export default function DocenteEjerciciosPage() {
             <Input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="Variables, Bucles…" list="cats" />
             <datalist id="cats">{categorias.map((c) => <option key={c} value={c} />)}</datalist>
           </Field>
-          <Field label="Dificultad (estrellas)"><Select value={form.estrellas} onChange={(e) => setForm({ ...form, estrellas: Number(e.target.value) })}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{'★'.repeat(n)} ({n})</option>)}</Select></Field>
+          <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(form.estrellas)} onChange={(e) => setForm({ ...form, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
 
           <div className="sm:col-span-2"><Field label="Tipo de pregunta"><Select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as TipoEjercicio })}>{TIPOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}</Select></Field></div>
 

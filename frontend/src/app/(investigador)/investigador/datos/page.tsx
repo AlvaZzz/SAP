@@ -54,7 +54,7 @@ export default function DatosPage() {
         </div>
         <Dispersion puntos={d.puntos} eje={eje} etiqueta={EJES.find((e) => e.key === eje)!.label} />
         <div className="mt-3 flex items-center gap-4 text-xs text-muted">
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-prexi-navy" /> Control</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-prexi-blue" /> Control</span>
           <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-prexi-green" /> Experimental</span>
           <span className="ml-auto">Eje Y: ganancia (postest − pretest) · Eje X: {EJES.find((e) => e.key === eje)!.label}</span>
         </div>
@@ -129,7 +129,7 @@ function Dispersion({ puntos, eje, etiqueta }: { puntos: Punto[]; eje: EjeX; eti
       <line x1={padL} x2={W - padR} y1={y(minY)} y2={y(minY)} stroke="rgb(var(--muted))" strokeOpacity="0.4" />
       {puntos.map((p) => (
         <circle key={p.id_anonimo} cx={x(p[eje])} cy={y(p.ganancia)} r={5}
-          fill={p.grupo === 'experimental' ? '#2E7D5B' : '#1B2B44'} fillOpacity="0.75">
+          fill={p.grupo === 'experimental' ? '#10B981' : '#3B82F6'} fillOpacity="0.75">
           <title>{p.id_anonimo} · {etiqueta}: {p[eje]} · ganancia: {p.ganancia}</title>
         </circle>
       ))}

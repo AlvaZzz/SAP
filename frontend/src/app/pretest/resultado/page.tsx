@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { Award, CheckCircle, TrendingUp, ArrowRight, ClipboardList } from '@/components/icons';
+import { Award, CheckCircle, TrendingUp, ArrowRight, ClipboardList, Sparkles } from '@/components/icons';
 
 type Nivel = 'basico' | 'intermedio' | 'avanzado';
 interface TemaR {
@@ -19,8 +20,14 @@ interface Resultado {
 }
 
 // Paleta sobria por nivel (coherente con el resto del sistema).
-const COLOR_NIVEL: Record<Nivel, string> = { basico: '#B5822E', intermedio: '#2C4A6E', avanzado: '#2E7D5B' };
-const BG_NIVEL: Record<Nivel, string> = { basico: 'bg-amber-50 text-amber-700', intermedio: 'bg-blue-50 text-prexi-blue-deep', avanzado: 'bg-green-50 text-prexi-green' };
+const COLOR_NIVEL: Record<Nivel, string> = { basico: '#F59E0B', intermedio: '#3B82F6', avanzado: '#10B981' };
+// Badge de nivel con tinte translúcido (funciona en claro y oscuro) y texto de
+// alto contraste sobre ese tinte (tono 700 en claro / 300 en oscuro).
+const BG_NIVEL: Record<Nivel, string> = {
+  basico: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
+  intermedio: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
+  avanzado: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+};
 
 export default function ResultadoPage() {
   const router = useRouter();
@@ -42,60 +49,82 @@ export default function ResultadoPage() {
     return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([unidad, temas]) => ({ unidad, temas }));
   }, [r]);
 
-  if (cargando || !r) return <div className="grid min-h-screen place-items-center bg-slate-50 text-slate-400">Cargando…</div>;
+  if (cargando || !r) return <div className="grid min-h-screen place-items-center bg-app text-muted">Cargando…</div>;
   const colorNivel = COLOR_NIVEL[r.nivel_adaptativo];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-app p-4">
       <div className="mx-auto max-w-3xl py-8">
         {/* Resumen global */}
         <div className="card animate-fade-up text-center">
           <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-prexi-blue text-white"><Award className="h-7 w-7" /></div>
-          <h1 className="text-2xl font-extrabold text-prexi-navy">¡Diagnóstico completado!</h1>
-          <p className="mx-auto mt-1 max-w-md text-slate-500">Acertaste {r.aciertos} de {r.total} preguntas en {r.por_tema.length} temas.</p>
+          <h1 className="text-2xl font-extrabold text-fg">¡Diagnóstico completado!</h1>
+          <p className="mx-auto mt-1 max-w-md text-muted">Acertaste {r.aciertos} de {r.total} preguntas en {r.por_tema.length} temas.</p>
 
           <div className="my-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Gauge puntaje={r.puntaje} color={colorNivel} />
             <div className="text-left">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Nivel inicial global</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">Nivel inicial global</p>
               <span className="mt-1 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-base font-extrabold text-white" style={{ backgroundColor: colorNivel }}>{r.nivel_adaptativo_label}</span>
-              {r.theta != null && <p className="mt-1 text-xs text-slate-400">habilidad estimada (θ): <b className="text-slate-600">{r.theta.toFixed(2)}</b></p>}
-              <p className="mt-2 max-w-xs text-sm text-slate-500">
-                Cada tema arranca en el nivel que muestra el mapa. Podrás <b className="text-prexi-navy">subir de nivel</b> tema por tema cuando te sientas listo.
+              {r.theta != null && <p className="mt-1 text-xs text-muted">habilidad estimada (θ): <b className="text-fg">{r.theta.toFixed(2)}</b></p>}
+              <p className="mt-2 max-w-xs text-sm text-muted">
+                Cada tema arranca en el nivel que muestra el mapa. Podrás <b className="text-fg">subir de nivel</b> tema por tema cuando te sientas listo.
               </p>
             </div>
           </div>
 
           <div className="grid gap-4 text-left sm:grid-cols-2">
-            <div className="rounded-xl bg-green-50 p-4">
-              <h3 className="mb-2 flex items-center gap-1.5 font-bold text-prexi-green"><CheckCircle className="h-4 w-4" /> Fortalezas</h3>
-              <ul className="space-y-1 text-sm text-slate-700">{r.fortalezas.length ? r.fortalezas.map((c) => <li key={c}>• {c}</li>) : <li>Sigue practicando.</li>}</ul>
+            {/* Tinte translúcido (claro/oscuro) + texto de ALTO CONTRASTE del cuerpo
+                (tono 900 en claro / 100 en oscuro), nunca gris claro. */}
+            <div className="rounded-xl bg-emerald-500/10 p-4">
+              <h3 className="mb-2 flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-300"><CheckCircle className="h-4 w-4" /> Fortalezas</h3>
+              <ul className="space-y-1 text-sm font-medium text-emerald-900 dark:text-emerald-100">{r.fortalezas.length ? r.fortalezas.map((c) => <li key={c}>• {c}</li>) : <li>Sigue practicando.</li>}</ul>
             </div>
-            <div className="rounded-xl bg-amber-50 p-4">
-              <h3 className="mb-2 flex items-center gap-1.5 font-bold text-prexi-amber"><TrendingUp className="h-4 w-4" /> A reforzar</h3>
-              <ul className="space-y-1 text-sm text-slate-700">{r.debilidades.length ? r.debilidades.map((c) => <li key={c}>• {c}</li>) : <li>¡Excelente!</li>}</ul>
+            <div className="rounded-xl bg-amber-500/10 p-4">
+              <h3 className="mb-2 flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-300"><TrendingUp className="h-4 w-4" /> A reforzar</h3>
+              {r.debilidades.length ? (
+                <ul className="space-y-1.5 text-sm font-medium text-amber-900 dark:text-amber-100">
+                  {r.debilidades.map((c) => {
+                    // Convierte la recomendación en ACCIÓN: enlaza al mazo de flashcards
+                    // del tema débil (repaso libre, no puntúa). Se resuelve el tema por
+                    // su título dentro de `por_tema`.
+                    const tema = r.por_tema.find((t) => c === t.titulo || c.includes(t.titulo) || t.titulo.includes(c));
+                    return (
+                      <li key={c} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                        <span>• {c}</span>
+                        {tema && (
+                          <Link href={`/flashcards/tema/${tema.tema_id}?volver=/pretest/resultado`}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-prexi-blue-deep hover:underline">
+                            <Sparkles className="h-3.5 w-3.5" /> Repasar con flashcards
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : <p className="text-sm font-medium text-amber-900 dark:text-amber-100">¡Excelente!</p>}
             </div>
           </div>
         </div>
 
         {/* Mapa detallado por unidad → tema */}
         <div className="card mt-5 animate-fade-up">
-          <h2 className="mb-1 text-lg font-bold text-prexi-navy">Tu nivel por tema</h2>
-          <p className="mb-4 text-sm text-slate-500">Este es el punto de partida de tu ruta adaptativa en cada tema del temario.</p>
+          <h2 className="mb-1 text-lg font-bold text-fg">Tu nivel por tema</h2>
+          <p className="mb-4 text-sm text-muted">Este es el punto de partida de tu ruta adaptativa en cada tema del temario.</p>
           <div className="space-y-5">
             {porUnidad.map(({ unidad, temas }) => (
               <div key={unidad}>
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-prexi-blue-deep">Unidad {unidad}</h3>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">Unidad {unidad}</h3>
                 <div className="space-y-2">
                   {temas.map((t) => (
-                    <div key={t.tema_id} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3">
+                    <div key={t.tema_id} className="flex items-center gap-3 rounded-xl border border-line p-3">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-prexi-navy">{t.numero} · {t.titulo}</p>
-                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                        <p className="truncate text-sm font-semibold text-fg">{t.numero} · {t.titulo}</p>
+                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-subtle">
                           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${t.puntaje}%`, backgroundColor: COLOR_NIVEL[t.nivel] }} />
                         </div>
                       </div>
-                      <span className="shrink-0 text-xs text-slate-400">{t.aciertos}/{t.total}</span>
+                      <span className="shrink-0 text-xs text-muted">{t.aciertos}/{t.total}</span>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${BG_NIVEL[t.nivel]}`}>{t.nivel_label}</span>
                     </div>
                   ))}
@@ -119,10 +148,10 @@ function Gauge({ puntaje, color }: { puntaje: number; color: string }) {
   const offset = circ - (Math.min(100, Math.max(0, puntaje)) / 100) * circ;
   return (
     <svg width={140} height={140} viewBox="0 0 140 140">
-      <circle cx="70" cy="70" r={r} fill="none" stroke="#E3E8EF" strokeWidth="12" />
+      <circle cx="70" cy="70" r={r} fill="none" stroke="rgb(var(--line))" strokeWidth="12" />
       <circle cx="70" cy="70" r={r} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} transform="rotate(-90 70 70)" style={{ transition: 'stroke-dashoffset 1s ease' }} />
-      <text x="70" y="64" textAnchor="middle" className="fill-prexi-navy" fontSize="28" fontWeight="800">{puntaje}</text>
-      <text x="70" y="86" textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="600">PUNTOS</text>
+      <text x="70" y="64" textAnchor="middle" fill="rgb(var(--fg))" fontSize="28" fontWeight="800">{puntaje}</text>
+      <text x="70" y="86" textAnchor="middle" fill="rgb(var(--muted))" fontSize="11" fontWeight="600">PUNTOS</text>
     </svg>
   );
 }

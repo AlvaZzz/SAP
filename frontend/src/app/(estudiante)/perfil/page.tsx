@@ -6,6 +6,9 @@ import { useAuth } from '@/providers/auth-provider';
 import { CountUp } from '@/components/count-up';
 import { Card, SectionTitle, ProgressBar } from '@/components/ui';
 import { EmblemasGaleria } from '@/components/emblemas-galeria';
+import { RadarIndicadores } from '@/components/radar-indicadores';
+import { reproducir } from '@/lib/sonidos';
+import { vozSoportada } from '@/lib/voz';
 import { Star, Trophy, Flame, Lock, CheckCircle, Medal, Edit, X, Play } from '@/components/icons';
 
 const CARRERAS = ['Ingeniería de Sistemas', 'Ingeniería de Software', 'Ingeniería Informática', 'Ingeniería Electrónica', 'Ingeniería Industrial', 'Otra'];
@@ -14,7 +17,7 @@ interface Resumen { puntos: number; posicion: number | null; racha_dias: number;
 interface NivelP { id: number; numero: number; titulo: string; umbral: number; ejercicios_completados: number; desbloqueado: boolean }
 
 export default function PerfilPage() {
-  const { usuario, refrescar } = useAuth();
+  const { usuario, refrescar, guardarAudio } = useAuth();
   const [res, setRes] = useState<Resumen | null>(null);
   const [niveles, setNiveles] = useState<NivelP[]>([]);
   const [nivelLabel, setNivelLabel] = useState<string | null>(null);
@@ -75,14 +78,18 @@ export default function PerfilPage() {
     <div className="animate-fade-up">
       <h1 className="mb-6 font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">Perfil</h1>
 
+      {/* Resumen de los 5 indicadores (radar): lo primero que se ve en el perfil. */}
+      <RadarIndicadores />
+
+
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         {/* ── Columna izquierda ── */}
         <div className="space-y-6">
           {/* Tarjeta de identidad */}
           <Card hover className="overflow-hidden !p-0 text-center">
-            <div className="h-20 bg-gradient-to-r from-prexi-navy to-prexi-navy-soft" />
+            <div className="h-20 bg-gradient-to-r from-prexi-blue to-prexi-blue-hover" />
             <div className="-mt-12 px-5 pb-6">
-              <div className="mx-auto grid h-24 w-24 place-items-center rounded-full border-4 border-card bg-prexi-navy text-3xl font-extrabold text-white shadow-lift">{inicial}</div>
+              <div className="mx-auto grid h-24 w-24 place-items-center rounded-full border-4 border-card bg-prexi-blue text-3xl font-extrabold text-accent-on shadow-lift">{inicial}</div>
               <p className="mt-3 font-display text-xl font-extrabold text-fg">{usuario?.nombre}</p>
               <p className="text-xs text-muted">ID: {idCodigo}</p>
               <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-prexi-blue/10 px-3 py-1 text-xs font-semibold text-prexi-blue-deep">
@@ -96,7 +103,7 @@ export default function PerfilPage() {
                 <div className="flex-1 border-l border-line"><p className="font-display text-lg font-bold text-fg">{res?.posicion ? `#${res.posicion}` : '—'}</p><p className="text-[11px] text-muted">Posición</p></div>
               </div>
 
-              <button onClick={abrir} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-prexi-navy py-2.5 text-sm font-semibold text-white transition hover:bg-prexi-navy-soft active:scale-[0.98]">
+              <button onClick={abrir} className="btn-primary mt-4 w-full">
                 <Edit className="h-4 w-4" /> Editar perfil
               </button>
             </div>
@@ -110,6 +117,28 @@ export default function PerfilPage() {
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-subtle py-2.5 text-sm font-semibold text-fg transition hover:bg-prexi-blue/10 hover:text-prexi-blue-deep active:scale-[0.98] disabled:opacity-60">
               <Play className="h-4 w-4" /> {reiniciandoTours ? 'Reiniciando…' : 'Volver a ver los tutoriales'}
             </button>
+          </Card>
+
+          {/* Audio y voz */}
+          <Card hover>
+            <p className="mb-1 text-sm font-semibold text-fg">Audio y voz</p>
+            <p className="mb-3 text-xs leading-relaxed text-muted">Controla los sonidos de logros y si ALVARO te lee sus respuestas en voz alta.</p>
+            <div className="space-y-2.5">
+              <Interruptor
+                titulo="Sonidos activados"
+                detalle="Suena al ganar una medalla, subir de rango o de nivel."
+                activo={usuario?.sonidosActivados ?? true}
+                onChange={(v) => { if (v) reproducir('acierto', true); void guardarAudio({ sonidosActivados: v }); }}
+              />
+              {vozSoportada() && (
+                <Interruptor
+                  titulo="Leer respuestas en voz alta"
+                  detalle="ALVARO lee automáticamente cada respuesta. También puedes usar el botón de audio en cada una."
+                  activo={usuario?.vozAutomatica ?? false}
+                  onChange={(v) => void guardarAudio({ vozAutomatica: v })}
+                />
+              )}
+            </div>
           </Card>
 
           {/* Tu nivel */}
@@ -147,7 +176,7 @@ export default function PerfilPage() {
                 const completo = n.ejercicios_completados >= n.umbral;
                 const enProg = n.desbloqueado && !completo;
                 const pct = n.umbral ? Math.min(100, Math.round((n.ejercicios_completados / n.umbral) * 100)) : 0;
-                const color = completo ? '#2E7D5B' : enProg ? '#2C4A6E' : 'rgb(var(--muted))';
+                const color = completo ? '#10B981' : enProg ? '#3B82F6' : 'rgb(var(--muted))';
                 return (
                   <div key={n.id}>
                     <div className="mb-1.5 flex items-center justify-between text-xs">
@@ -173,7 +202,7 @@ export default function PerfilPage() {
             </div>
             <form onSubmit={guardar} className="p-5">
               <div className="mb-4 flex items-center gap-3">
-                <div className="grid h-16 w-16 place-items-center rounded-full bg-prexi-navy text-xl font-extrabold text-white">{inicial}</div>
+                <div className="grid h-16 w-16 place-items-center rounded-full bg-prexi-blue text-xl font-extrabold text-accent-on">{inicial}</div>
                 <p className="text-xs text-muted">Tu avatar usa tus iniciales.<br />La carga de foto llegará pronto.</p>
               </div>
               <label className="mb-3 block">
@@ -206,13 +235,31 @@ export default function PerfilPage() {
               {msg && <p className="mt-2 text-sm text-red-500">{msg}</p>}
               <div className="mt-5 flex gap-2.5">
                 <button type="button" onClick={() => setEditando(false)} className="btn-ghost flex-1">Cancelar</button>
-                <button className="flex-1 rounded-xl bg-prexi-navy py-2.5 font-semibold text-white transition hover:bg-prexi-navy-soft active:scale-[0.98] disabled:opacity-60" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</button>
+                <button className="btn-primary flex-1" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+/** Interruptor accesible (switch) para una preferencia booleana. */
+function Interruptor({ titulo, detalle, activo, onChange }: {
+  titulo: string; detalle: string; activo: boolean; onChange: (v: boolean) => void;
+}) {
+  return (
+    <button role="switch" aria-checked={activo} onClick={() => onChange(!activo)}
+      className="flex w-full items-start gap-3 rounded-xl border border-line bg-subtle/60 p-3 text-left transition hover:border-prexi-blue/40">
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold text-fg">{titulo}</span>
+        <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">{detalle}</span>
+      </span>
+      <span aria-hidden className={`mt-0.5 grid h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${activo ? 'bg-prexi-blue' : 'bg-line'}`}>
+        <span className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${activo ? 'translate-x-5' : 'translate-x-0'}`} />
+      </span>
+    </button>
   );
 }
 

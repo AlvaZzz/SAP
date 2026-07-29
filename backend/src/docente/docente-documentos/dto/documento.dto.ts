@@ -1,4 +1,4 @@
-import { IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -31,6 +31,9 @@ export class EditarDocumentoDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(5)
   nivel?: number;
 
+  // `null` explícito desasigna el tema (el documento vuelve a "General");
+  // omitirlo deja el valor como estaba. Por eso admite null además de número.
+  @ValidateIf((_, v) => v !== null)
   @IsOptional() @Type(() => Number) @IsInt() @Min(1)
-  temaId?: number;
+  temaId?: number | null;
 }

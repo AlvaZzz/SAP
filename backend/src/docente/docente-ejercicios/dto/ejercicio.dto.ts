@@ -3,7 +3,11 @@ import {
   IsEnum, IsBoolean, IsArray, ValidateNested, ArrayMinSize, ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TipoEjercicio } from '@prisma/client';
+import { TipoEjercicio, Banco } from '@prisma/client';
+
+// El docente solo gestiona estos dos bancos (nunca pretest/postest, que son la
+// medición de la tesis): práctica (5 niveles) y examen de fin de unidad.
+export const BANCOS_DOCENTE: Banco[] = ['practica', 'examen'];
 
 /**
  * Una opción de respuesta:
@@ -39,6 +43,10 @@ export class CrearEjercicioDto {
 
   @IsString() @MinLength(2) @MaxLength(80)
   categoria!: string;
+
+  // Banco al que pertenece: 'practica' (por defecto) o 'examen' (fin de unidad).
+  @IsOptional() @IsEnum(Banco)
+  banco?: Banco;
 
   @IsInt() @Min(1) @Max(5)
   nivel!: number; // número de nivel (1-5), para XP/gamificación
@@ -84,6 +92,11 @@ export class EditarEjercicioDto {
 
   @IsOptional() @IsString() @MinLength(2) @MaxLength(80)
   categoria?: string;
+
+  // El banco no cambia al editar, pero el formulario lo envía; se acepta (whitelist)
+  // y el servicio lo ignora. Sin esto, ValidationPipe (forbidNonWhitelisted) da 400.
+  @IsOptional() @IsEnum(Banco)
+  banco?: Banco;
 
   @IsOptional() @IsInt() @Min(1) @Max(5)
   nivel?: number;

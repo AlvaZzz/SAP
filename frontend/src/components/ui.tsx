@@ -1,4 +1,5 @@
-import { ReactNode, useEffect, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react';
+import { ReactNode, useEffect, useState, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from './icons';
 
 /**
@@ -47,13 +48,36 @@ export function StatCard({ icon, label, value, accent = 'blue' }: {
   icon: ReactNode; label: string; value: ReactNode; accent?: keyof typeof ACCENTS;
 }) {
   return (
-    <Card hover className="flex items-center gap-4">
-      <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${ACCENTS[accent]}`}>{icon}</div>
+    // Padding horizontal e ícono algo más compactos que una Card normal: así el
+    // texto (ícono + etiqueta + número) cabe completo desde ~215px de ancho, que
+    // es el mínimo que usa StatGrid para decidir cuántas columnas caben.
+    <Card hover className="flex items-center gap-3 !px-4">
+      <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${ACCENTS[accent]}`}>{icon}</div>
       <div className="min-w-0">
-        <p className="stat-label">{label}</p>
-        <p className="font-display text-3xl font-extrabold leading-tight text-fg">{value}</p>
+        {/* break-words: red de seguridad. Si la tarjeta quedara más angosta que
+            la palabra más larga, la etiqueta se parte en dos líneas en vez de
+            desbordar/cortarse (p. ej. "COMPLETADOS HOY"). */}
+        <p className="stat-label break-words">{label}</p>
+        <p className="font-display text-2xl font-extrabold leading-tight text-fg sm:text-3xl">{value}</p>
       </div>
     </Card>
+  );
+}
+
+/**
+ * Rejilla responsiva para filas de StatCard. Usa auto-fit + minmax: cada tarjeta
+ * mantiene un ancho MÍNIMO legible (215px) y, si no caben todas en la fila,
+ * envuelven a la siguiente en vez de comprimirse hasta cortar el texto. Reacomoda
+ * de forma fluida al redimensionar, sin depender de breakpoints fijos que ignoran
+ * el ancho real disponible (el sidebar reduce el ancho útil en escritorio):
+ *   · móvil: 1 columna a todo el ancho (etiqueta en una sola línea);
+ *   · tablet: 2-3 columnas; · escritorio amplio: hasta 5.
+ */
+export function StatGrid({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(210px,1fr))] ${className}`}>
+      {children}
+    </div>
   );
 }
 
@@ -115,6 +139,15 @@ export function EmptyState({ icon, title, hint }: { icon?: ReactNode; title: str
 export function Modal({ open, onClose, title, children, footer, size = 'md' }: {
   open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; size?: 'md' | 'lg';
 }) {
+  // El modal se monta en un PORTAL a <body>. Es imprescindible: las páginas
+  // envuelven su contenido en `.animate-fade-up`, cuyo `transform` residual
+  // (translateY(0) con fill "both") convierte a ese <div> en el containing
+  // block de cualquier descendiente `position: fixed`. Sin el portal, el
+  // overlay se posiciona respecto a la página (no al viewport) y el diálogo
+  // queda centrado fuera de pantalla → "el fondo se oscurece pero no aparece".
+  const [montado, setMontado] = useState(false);
+  useEffect(() => { setMontado(true); }, []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -123,13 +156,13 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: {
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !montado) return null;
   const max = size === 'lg' ? 'max-w-3xl' : 'max-w-xl';
   // Diálogo con alto máximo propio (flex-col): header y footer fijos, el cuerpo
   // scrollea. Así nunca desborda la pantalla ni corta el footer, en cualquier
   // tamaño. En móvil ocupa casi todo el ancho con márgenes (p-3).
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-6" onMouseDown={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-6" onMouseDown={onClose}>
       <div className={`flex max-h-[calc(100dvh-1.5rem)] w-full ${max} animate-fade-up flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-lift sm:max-h-[calc(100dvh-3rem)]`} onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
           <h2 className="min-w-0 truncate font-display text-lg font-bold text-fg sm:text-xl">{title}</h2>
@@ -138,7 +171,8 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: {
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
         {footer && <div className="flex shrink-0 flex-wrap justify-end gap-2.5 border-t border-line px-5 py-4 sm:px-6">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -236,5 +270,8 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`input ${props.className ?? ''}`}>{props.children}</select>;
+  // max-w-full: un <Select> con `!w-auto` se dimensiona a su opción más larga
+  // (p. ej. "Unidad 1: Fundamentos de la Programación") y en móvil desbordaría
+  // la página. El tope al 100% del contenedor lo impide en TODO el sistema.
+  return <select {...props} className={`input max-w-full ${props.className ?? ''}`}>{props.children}</select>;
 }

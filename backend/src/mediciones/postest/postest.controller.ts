@@ -22,6 +22,16 @@ export class PostestController {
     return this.postest.estado(usuarioId);
   }
 
+  @Get('repaso')
+  async repaso() {
+    return { unidades: await this.postest.repaso() };
+  }
+
+  @Post('repaso/completar')
+  completarRepaso(@CurrentUser('sub') usuarioId: number) {
+    return this.postest.completarRepaso(usuarioId);
+  }
+
   @Get('preguntas')
   async preguntas(@CurrentUser('sub') usuarioId: number) {
     return { preguntas: await this.postest.preguntas(usuarioId), total: TOTAL_POSTEST };

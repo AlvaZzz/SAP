@@ -1,9 +1,10 @@
 import { Body, Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { IsString, IsOptional, IsInt, IsEnum, MinLength } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsEnum, MinLength, Min } from 'class-validator';
 import { ContextoCodigo } from '@prisma/client';
 import { PracticaService } from './practica.service';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { AiRateLimitGuard } from '../../common/auth/ai-rate-limit.guard';
+import { RetosAccessGuard } from '../retos/retos-access.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 
 class GuardarCodigoDto {
@@ -22,9 +23,19 @@ class AsistirDto {
   @IsOptional() @IsString() enunciado?: string;
   @IsOptional() @IsString() pregunta?: string;
 }
+class TrazaDto {
+  @IsString() @MinLength(1) codigo!: string;
+  @IsOptional() @IsString() stdin?: string;
+}
+class VerificarRetoDto {
+  @IsInt() @Min(1) retoId!: number;
+  @IsString() @MinLength(1) codigo!: string;
+}
 
+// El editor de código solo se usa dentro de un reto → requiere acceso a retos
+// (nivel Intermedio/Avanzado habilitado por el docente), validado en el backend.
 @Controller('practica')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RetosAccessGuard)
 export class PracticaController {
   constructor(private readonly practica: PracticaService) {}
 
@@ -53,5 +64,17 @@ export class PracticaController {
   @UseGuards(AiRateLimitGuard)
   asistir(@Body() dto: AsistirDto) {
     return this.practica.asistir(dto.codigo, dto.enunciado, dto.pregunta);
+  }
+
+  /** Visualizador de traza: ejecución paso a paso (línea + variables). */
+  @Post('traza')
+  traza(@Body() dto: TrazaDto) {
+    return this.practica.traza(dto.codigo, dto.stdin ?? '');
+  }
+
+  /** Auto‑validación de una misión de depuración (bug‑hunt). */
+  @Post('verificar-reto')
+  verificarReto(@CurrentUser('sub') usuarioId: number, @Body() dto: VerificarRetoDto) {
+    return this.practica.verificarReto(usuarioId, dto.retoId, dto.codigo);
   }
 }

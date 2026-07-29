@@ -55,4 +55,19 @@ export class InvestigadorExportacionController {
     res.setHeader('Content-Disposition', 'attachment; filename="prexi_diagnostico_por_tema.csv"');
     res.send(csv);
   }
+
+  /** Exámenes de fin de unidad (JSON) — avance interno entre unidades. */
+  @Get('examenes-unidad')
+  async examenesUnidad() {
+    return { examenes: await this.service.examenesUnidad() };
+  }
+
+  /** Descarga del CSV de exámenes de fin de unidad (una fila por estudiante×intento). */
+  @Get('examenes-unidad.csv')
+  async examenesUnidadCsv(@Res() res: Response) {
+    const csv = await this.service.examenesUnidadCsv();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="prexi_examenes_unidad.csv"');
+    res.send(csv);
+  }
 }

@@ -63,7 +63,7 @@ export default function AdminSistemaPage() {
 
       <div className="mb-6 flex flex-wrap gap-2">
         {TABS.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${tab === id ? 'bg-prexi-navy text-white shadow-soft' : 'border border-line text-muted hover:bg-subtle'}`}>
+          <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${tab === id ? 'bg-prexi-blue text-accent-on shadow-soft' : 'border border-line text-muted hover:bg-subtle'}`}>
             <Icon className="h-4 w-4" /> {label}
           </button>
         ))}

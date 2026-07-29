@@ -1,5 +1,5 @@
 import {
-  IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength, IsEnum, IsBoolean, IsDateString,
+  IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength, IsEnum, IsBoolean, IsDateString, ValidateIf,
 } from 'class-validator';
 import { TipoEjercicio } from '@prisma/client';
 
@@ -18,6 +18,11 @@ export class CrearRetoDto {
   // Nivel temático asociado (1-5), opcional.
   @IsOptional() @IsInt() @Min(1) @Max(5)
   nivel?: number;
+
+  // Tema (o subtema) académico al que pertenece el reto. Ubica el reto en el
+  // temario para agruparlo en la vista del estudiante.
+  @IsOptional() @IsInt() @Min(1)
+  temaId?: number;
 
   @IsInt() @Min(1) @Max(5)
   estrellas!: number; // dificultad 1-5
@@ -46,6 +51,10 @@ export class CrearRetoDto {
 
   @IsOptional() @IsBoolean()
   activo?: boolean;
+
+  // Misión de depuración: auto‑valida por comparación de salida (requiere ejemploSalida).
+  @IsOptional() @IsBoolean()
+  esBugHunt?: boolean;
 }
 
 export class EditarRetoDto {
@@ -57,6 +66,12 @@ export class EditarRetoDto {
 
   @IsOptional() @IsInt() @Min(1) @Max(5)
   nivel?: number;
+
+  // `null` explícito desasigna el tema (el reto vuelve a "General"); omitirlo lo
+  // deja como estaba. Por eso admite null además de número.
+  @ValidateIf((_, v) => v !== null)
+  @IsOptional() @IsInt() @Min(1)
+  temaId?: number | null;
 
   @IsOptional() @IsInt() @Min(1) @Max(5)
   estrellas?: number;
@@ -84,4 +99,8 @@ export class EditarRetoDto {
 
   @IsOptional() @IsBoolean()
   activo?: boolean;
+
+  // Misión de depuración: auto‑valida por comparación de salida (requiere ejemploSalida).
+  @IsOptional() @IsBoolean()
+  esBugHunt?: boolean;
 }

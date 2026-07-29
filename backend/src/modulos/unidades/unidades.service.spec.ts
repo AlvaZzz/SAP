@@ -31,10 +31,9 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
     // …y el dominio de la unidad TAMBIÉN es Avanzado (no Básico como antes).
     expect(u.nivel_dominio).toBe('avanzado');
     expect(u.dominio_pct).toBe(100);
-    expect(u.habilita_siguiente).toBe(true);
   });
 
-  it('el nivelActual guardado por tema manda sobre el inicial y promedia el dominio', async () => {
+  it('el dominio de la unidad promedia el nivelActual de sus temas (indicador)', async () => {
     prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
     prisma.unidad.findMany.mockResolvedValue([
       {
@@ -51,20 +50,35 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
     // (avanzado=1 + basico=0)/2 = 0.5 → 50 → intermedio.
     expect(u.dominio_pct).toBe(50);
     expect(u.nivel_dominio).toBe('intermedio');
-    expect(u.habilita_siguiente).toBe(true); // ≥ intermedio desbloquea la siguiente
   });
 
-  it('todo en Básico → dominio Básico, no habilita la siguiente unidad', async () => {
+  it('GATE: el avance a la siguiente unidad lo decide el EXAMEN aprobado, no el dominio', async () => {
+    // Dominio alto (avanzado) pero SIN examen aprobado → no habilita la siguiente.
+    prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'avanzado' });
+    prisma.unidad.findMany.mockResolvedValue([
+      { id: 1, numero: 1, titulo: 'U1', descripcion: null, xp: 100, temas: [tema(1)] },
+    ]);
+    // examenUnidad.findMany (aprobados) vacío por defecto.
+
+    const [u] = await service.listar(7);
+
+    expect(u.nivel_dominio).toBe('avanzado'); // el dominio sigue siendo indicador
+    expect(u.examen_aprobado).toBe(false);
+    expect(u.habilita_siguiente).toBe(false); // sin examen aprobado, no avanza
+  });
+
+  it('con el EXAMEN de la unidad aprobado, habilita la siguiente aunque el dominio sea Básico', async () => {
     prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
     prisma.unidad.findMany.mockResolvedValue([
       { id: 1, numero: 1, titulo: 'U1', descripcion: null, xp: 100, temas: [tema(1), tema(2)] },
     ]);
+    prisma.examenUnidad.findMany.mockResolvedValue([{ unidadId: 1 }]); // examen aprobado
 
     const [u] = await service.listar(7);
 
     expect(u.nivel_dominio).toBe('basico');
-    expect(u.dominio_pct).toBe(0);
-    expect(u.habilita_siguiente).toBe(false);
+    expect(u.examen_aprobado).toBe(true);
+    expect(u.habilita_siguiente).toBe(true);
   });
 
   it('un tema en Avanzado se marca como nivel máximo y no ofrece subir', async () => {
@@ -78,5 +92,47 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
     expect(u.temas[0].nivel_maximo).toBe(true);
     expect(u.temas[0].puede_subir).toBe(false);
     expect(u.temas[0].nivel_objetivo).toBeNull();
+  });
+
+  describe('dashboard() — Preview de Unidad', () => {
+    it('arma el mapa (temas + subtemas coloreados por nivel) y devuelve las zonas', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
+      prisma.unidad.findUnique.mockResolvedValue({
+        id: 1, numero: 2, titulo: 'Control de flujo',
+        dashObjetivos: '## Al final…\n- [ ] Usar for', dashAnalogias: '- **Bucle = línea**', dashMinutos: 80,
+        dashEjemplos: [{ titulo: 'Suma', codigo: 'x=0', diagrama: '(inicio)', salida: '0' }],
+        temas: [
+          {
+            id: 10, numero: '2.1', titulo: 'Condicionales',
+            ejercicios: [{ id: 1 }, { id: 2 }],
+            progreso: [{ nivelActual: 'intermedio', ejerciciosCompletados: 1 }],
+            subtemas: [
+              { id: 11, numero: '2.1.1', titulo: 'Booleanos', ejercicios: [{ id: 3 }], progreso: [{ nivelActual: 'avanzado', ejerciciosCompletados: 1 }] },
+            ],
+          },
+        ],
+      });
+
+      const d = await service.dashboard(7, 1);
+
+      expect(d.unidad.titulo).toBe('Control de flujo');
+      expect(d.objetivos_md).toContain('for');
+      expect(d.analogias_md).toContain('Bucle');
+      expect(d.ejemplos).toHaveLength(1);
+      expect(d.minutos).toBe(80);
+      // Mapa: 1 tema + 1 subtema, con una arista "se_compone_de".
+      expect(d.mapa.nodos).toHaveLength(2);
+      expect(d.mapa.nodos.find((n) => n.id === 10)!.nivel).toBe('intermedio');
+      expect(d.mapa.nodos.find((n) => n.id === 11)!.nivel).toBe('avanzado');
+      expect(d.mapa.aristas).toEqual([{ de: 10, a: 11, tipo: 'se_compone_de' }]);
+      // Progreso: 2 ejercicios completados de 3 → 67%.
+      expect(d.progreso_pct).toBe(67);
+    });
+
+    it('lanza NotFound si la unidad no existe', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
+      prisma.unidad.findUnique.mockResolvedValue(null);
+      await expect(service.dashboard(7, 999)).rejects.toThrow('Unidad no encontrada');
+    });
   });
 });

@@ -14,7 +14,10 @@ import { MailModule } from '../common/mail/mail.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET') ?? 'dev_secret',
-        signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '7d' },
+        // Access token CORTO: si la cookie se filtra, la ventana de abuso es de
+        // minutos. La continuidad de la sesión la da el refresh token rotatorio
+        // (ver RefreshToken en el esquema y AuthService.refrescar).
+        signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '15m' },
       }),
     }),
   ],

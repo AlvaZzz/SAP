@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, MaxLength, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsEmail, IsString, MinLength, MaxLength, IsOptional, IsInt, Min, Max, IsBoolean, Matches } from 'class-validator';
 
 // Nota: por ahora se acepta cualquier correo válido (p. ej. Gmail). La
 // restricción al dominio institucional @upea.edu.bo está deshabilitada
@@ -34,6 +34,13 @@ export class LoginDto {
 
   @IsString() @MinLength(1)
   password!: string;
+
+  /**
+   * "Recordarme": SOLO alarga la vida del refresh token en el backend (30 días
+   * frente a 1). Nunca implica guardar correo ni contraseña en el navegador.
+   */
+  @IsOptional() @IsBoolean()
+  recordarme?: boolean;
 }
 
 export class PerfilDto {
@@ -48,6 +55,15 @@ export class TourVistoDto {
   @IsString({ message: 'La clave del tutorial es obligatoria' })
   @MinLength(1) @MaxLength(60)
   clave!: string;
+}
+
+/** Preferencias de audio del usuario (ambas opcionales: se actualiza lo enviado). */
+export class PreferenciasAudioDto {
+  @IsOptional() @IsBoolean()
+  sonidosActivados?: boolean;
+
+  @IsOptional() @IsBoolean()
+  vozAutomatica?: boolean;
 }
 
 export class PasswordDto {
@@ -69,10 +85,18 @@ export class ValidarTokenDto {
   token!: string;
 }
 
+/**
+ * Complejidad mínima de contraseña: 8 caracteres con al menos una letra y un
+ * número. Deliberadamente sencilla — son estudiantes de primer semestre; exigir
+ * símbolos y mayúsculas produce contraseñas apuntadas en papel, no más seguras.
+ */
+export const PASSWORD_REGEX = /^(?=.*[A-Za-zÁÉÍÓÚáéíóúÑñ])(?=.*\d).{8,}$/;
+export const PASSWORD_MENSAJE = 'La contraseña debe tener al menos 8 caracteres, una letra y un número';
+
 export class RestablecerDto {
   @IsString() @MinLength(10) @MaxLength(200)
   token!: string;
 
-  @IsString() @MinLength(6) @MaxLength(100)
+  @IsString() @MaxLength(100) @Matches(PASSWORD_REGEX, { message: PASSWORD_MENSAJE })
   nueva!: string;
 }

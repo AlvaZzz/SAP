@@ -23,7 +23,7 @@ export const TOURS: Tour[] = [
     clave: 'bienvenida',
     ruta: en('/pretest'),
     pasos: [
-      { titulo: '¡Bienvenido a PREXI! 👋', texto: 'PREXI es tu plataforma para aprender programación en Python con ayuda de ALVARO, un tutor con inteligencia artificial. Este breve recorrido te explica cómo funciona todo.' },
+      { titulo: 'Bienvenido a PREXI', texto: 'PREXI es tu plataforma para aprender programación en Python con ayuda de ALVARO, un tutor con inteligencia artificial. Este breve recorrido te explica cómo funciona todo.' },
       { titulo: '1º · Evaluación diagnóstica', texto: 'Empezarás con un PRETEST de 20 preguntas. No es una nota: sirve para conocer tu punto de partida y ubicarte en el nivel adecuado. Responde con calma; tus respuestas se guardan automáticamente.' },
       { titulo: '2º · Aprende resolviendo', texto: 'Después practicarás con ejercicios organizados en 5 niveles. Cada acierto te da XP, y al completar un nivel se desbloquea el siguiente. Si te atascas, ALVARO te dará pistas.' },
       { titulo: '3º · Demuestra tu avance', texto: 'Cuando completes suficientes niveles se habilitará el POSTEST (evaluación final). Comparando ambos resultados verás cuánto mejoraste en la sección "Progreso".' },
@@ -80,10 +80,9 @@ export const TOURS: Tour[] = [
     clave: 'progreso',
     ruta: en('/progreso'),
     pasos: [
-      { titulo: 'Tu progreso académico', texto: 'Este banner compara tu PRETEST y tu POSTEST, y muestra la GANANCIA: cuántos puntos mejoraste entre ambas evaluaciones.', selector: '[data-tour="progreso-banner"]' },
-      { titulo: 'Comparativa por tema', texto: 'Barras dobles por cada tema: azul = pretest, verde = postest. Así ves exactamente en qué temas mejoraste más.', selector: '[data-tour="progreso-comparativa"]' },
-      { titulo: 'Radar de competencias', texto: 'Tu perfil de habilidades (relleno azul) frente al promedio del grupo (línea punteada). Se dibuja cuando tienes al menos 3 temas evaluados.', selector: '[data-tour="progreso-radar"]' },
-      { titulo: 'Avance por nivel', texto: 'Cada tarjeta muestra cuántos ejercicios llevas en el nivel y su estado: completado, en progreso o bloqueado.', selector: '[data-tour="progreso-niveles"]' },
+      { titulo: '① Progreso de aprendizaje', texto: 'Este banner compara tu PRETEST y tu POSTEST, y muestra la GANANCIA: cuántos puntos mejoraste entre ambas evaluaciones.', selector: '[data-tour="progreso-banner"]' },
+      { titulo: '② Dominio por unidad', texto: 'Elige una unidad y verás tu nivel actual y el dominio de cada tema, comparado con el promedio del grupo. Abajo te decimos qué tema conviene reforzar.', selector: '[data-tour="progreso-dominio"]' },
+      { titulo: 'Cómo estudias', texto: 'Tus hábitos: constancia (tu racha), autonomía (si cada vez necesitas menos pistas) y eficiencia (cómo evoluciona tu acierto). No son una nota: describen cómo trabajas.', selector: '[data-tour="progreso-habitos"]' },
     ],
   },
   {

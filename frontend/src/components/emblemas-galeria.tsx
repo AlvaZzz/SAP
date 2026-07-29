@@ -62,7 +62,7 @@ export function EmblemasGaleria({ compacto = false }: { compacto?: boolean }) {
                     <div className="min-w-0">
                       <p className={`text-sm font-semibold ${e.obtenido ? 'text-fg' : 'text-muted'}`}>{e.nombre}</p>
                       <p className="text-xs text-muted">{e.obtenido ? e.descripcion : e.condicion}</p>
-                      {!e.obtenido && <p className="mt-0.5 text-[11px] font-medium text-prexi-amber/80">🔒 {e.condicion}</p>}
+                      {!e.obtenido && <p className="mt-0.5 text-[11px] font-medium text-prexi-amber/80">{e.condicion}</p>}
                     </div>
                   </div>
                 ))}

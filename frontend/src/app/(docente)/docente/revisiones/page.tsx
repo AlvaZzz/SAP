@@ -73,7 +73,7 @@ export default function DocenteRevisionesPage() {
         : entregas.length === 0 ? (
           <EmptyState icon={<ClipboardList className="h-7 w-7" />}
             title={verTodas ? 'Aún no hay entregas' : 'No hay entregas pendientes'}
-            hint={verTodas ? 'Cuando un estudiante entregue un reto, aparecerá aquí.' : 'Todas las entregas están revisadas. 🎉'} />
+            hint={verTodas ? 'Cuando un estudiante entregue un reto, aparecerá aquí.' : 'Todas las entregas están revisadas.'} />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {entregas.map((e) => (

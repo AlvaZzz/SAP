@@ -16,10 +16,12 @@ export interface RegistroData {
 interface AuthState {
   usuario: Usuario | null;
   cargando: boolean;
-  login: (email: string, password: string) => Promise<Usuario>;
+  login: (email: string, password: string, recordarme?: boolean) => Promise<Usuario>;
   register: (data: RegistroData) => Promise<Usuario>;
   refrescar: () => Promise<void>;
   logout: () => Promise<void>;
+  /** Guarda las preferencias de audio (sonidos / voz automática) del usuario. */
+  guardarAudio: (prefs: { sonidosActivados?: boolean; vozAutomatica?: boolean }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -35,8 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setCargando(false));
   }, []);
 
-  async function login(email: string, password: string) {
-    const r = await api.post<{ usuario: Usuario }>('/auth/login', { email, password });
+  async function login(email: string, password: string, recordarme = false) {
+    // `recordarme` NO se guarda en el navegador: solo alarga la vida del refresh
+    // token que el backend deja en su cookie httpOnly.
+    const r = await api.post<{ usuario: Usuario }>('/auth/login', { email, password, recordarme });
     setUsuario(r.usuario);
     return r.usuario;
   }
@@ -57,8 +61,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUsuario(null);
   }
 
+  /**
+   * Preferencias de audio: aplica el cambio al instante (optimista) para que el
+   * interruptor responda, y persiste en el backend. Si falla, revierte.
+   */
+  async function guardarAudio(prefs: { sonidosActivados?: boolean; vozAutomatica?: boolean }) {
+    const previo = usuario;
+    setUsuario((u) => (u ? { ...u, ...prefs } : u));
+    try {
+      const r = await api.put<{ usuario: Usuario }>('/auth/preferencias-audio', prefs);
+      setUsuario(r.usuario);
+    } catch {
+      setUsuario(previo);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ usuario, cargando, login, register, refrescar, logout }}>
+    <AuthContext.Provider value={{ usuario, cargando, login, register, refrescar, logout, guardarAudio }}>
       {children}
     </AuthContext.Provider>
   );

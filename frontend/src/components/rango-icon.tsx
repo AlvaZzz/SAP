@@ -9,7 +9,7 @@ const NIVEL: Record<string, number> = {
   escudo_1: 1, escudo_2: 2, escudo_3: 3, escudo_4: 4, escudo_5: 5, escudo_6: 6,
 };
 
-export function RangoIcon({ svgKey, color = '#3B6291', className = 'h-10 w-10' }: Props) {
+export function RangoIcon({ svgKey, color = '#3B82F6', className = 'h-10 w-10' }: Props) {
   const nivel = NIVEL[svgKey] ?? 1;
   // Estrellas que se muestran dentro del escudo según el rango.
   const estrellas = Math.min(3, Math.ceil(nivel / 2));

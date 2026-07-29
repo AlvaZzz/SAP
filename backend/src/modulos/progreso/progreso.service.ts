@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ETIQUETA_NIVEL } from '../../common/niveles/nivel-dificultad';
+import {
+  BLOQUES_TENDENCIA, MIN_INTENTOS_TENDENCIA, clasificar, deltaMitades, promedio, redondear, trocear,
+} from '../../common/estadistica/tendencia';
 
 interface CatEval { categoria: string; aciertos: number; total: number; porcentaje: number }
 
@@ -152,6 +155,135 @@ export class ProgresoService {
       titulo: i.ejercicio.titulo, categoria: i.ejercicio.categoria,
       correcto: i.correcto, xp: i.xpOtorgado, tiempo_seg: i.tiempoSeg, fecha: i.fecha,
     }));
+  }
+
+  /**
+   * HÁBITOS DE ESTUDIO (proceso, no resultado): constancia, autonomía y
+   * eficiencia. Alimenta el Bloque B de la vista de progreso.
+   *
+   * La TENDENCIA no se agrupa por calendario sino por BLOQUES del historial de
+   * intentos del estudiante (quintiles cronológicos): con semanas naturales, un
+   * estudiante que practica a ráfagas deja huecos y la tendencia no se puede
+   * leer. Los bloques responden directamente a "¿conforme avanzo, cómo cambio?".
+   */
+  async habitos(usuarioId: number) {
+    const [intentos, consultas, ranking] = await Promise.all([
+      this.prisma.intento.findMany({
+        where: { usuarioId }, orderBy: { fecha: 'asc' },
+        select: { correcto: true, tiempoSeg: true, pistasUsadas: true, fecha: true },
+      }),
+      this.prisma.consultaIa.count({ where: { usuarioId } }),
+      this.prisma.ranking.findUnique({ where: { usuarioId }, select: { rachaDias: true } }),
+    ]);
+
+    // ── Constancia: ejercicios resueltos por día (últimos 7, incluidos los de 0) ──
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const porDia = new Map<string, { resueltos: number; intentos: number }>();
+    for (const it of intentos) {
+      const k = it.fecha.toISOString().slice(0, 10);
+      const e = porDia.get(k) ?? { resueltos: 0, intentos: 0 };
+      e.intentos++; if (it.correcto) e.resueltos++;
+      porDia.set(k, e);
+    }
+    const dias: { dia: string; resueltos: number; intentos: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(hoy); d.setDate(hoy.getDate() - i);
+      const k = d.toISOString().slice(0, 10);
+      dias.push({ dia: k, ...(porDia.get(k) ?? { resueltos: 0, intentos: 0 }) });
+    }
+    const diasActivos = dias.filter((d) => d.intentos > 0).length;
+
+    // ── Serie por bloques (autonomía y eficiencia comparten el troceado) ──
+    const bloques = trocear(intentos, BLOQUES_TENDENCIA);
+    const serie = bloques.map((b, i) => {
+      const conTiempo = b.filter((x) => x.tiempoSeg > 0);
+      return {
+        bloque: i + 1,
+        n: b.length,
+        pistas_por_ejercicio: redondear(promedio(b.map((x) => x.pistasUsadas)), 2),
+        sin_pistas_pct: Math.round((b.filter((x) => x.pistasUsadas === 0).length / b.length) * 100),
+        tasa_acierto: Math.round((b.filter((x) => x.correcto).length / b.length) * 100),
+        // Sin tiempo registrado (intentos antiguos) el promedio se omite en vez
+        // de contarse como 0, que hundiría la media.
+        tiempo_medio_seg: conTiempo.length ? Math.round(promedio(conTiempo.map((x) => x.tiempoSeg))) : null,
+      };
+    });
+
+    const hayTendencia = intentos.length >= MIN_INTENTOS_TENDENCIA;
+    const conTiempoTotal = intentos.filter((x) => x.tiempoSeg > 0);
+
+    return {
+      constancia: {
+        racha_dias: ranking?.rachaDias ?? 0,
+        dias,
+        dias_activos_semana: diasActivos,
+      },
+      autonomia: {
+        total_pistas: intentos.reduce((s, x) => s + x.pistasUsadas, 0),
+        total_consultas: consultas,
+        sin_pistas_pct: intentos.length ? Math.round((intentos.filter((x) => x.pistasUsadas === 0).length / intentos.length) * 100) : 0,
+        pistas_por_ejercicio: redondear(promedio(intentos.map((x) => x.pistasUsadas)), 2),
+        serie: serie.map((s) => ({ bloque: s.bloque, n: s.n, pistas_por_ejercicio: s.pistas_por_ejercicio, sin_pistas_pct: s.sin_pistas_pct })),
+        // delta < 0 = cada vez usa MENOS pistas = gana independencia.
+        delta: hayTendencia ? redondear(deltaMitades(intentos.map((x) => x.pistasUsadas)), 2) : null,
+        tendencia: hayTendencia ? clasificar(deltaMitades(intentos.map((x) => x.pistasUsadas)), 0.1, 'baja', 'sube') : 'sin_datos',
+      },
+      eficiencia: {
+        tasa_acierto: intentos.length ? Math.round((intentos.filter((x) => x.correcto).length / intentos.length) * 100) : 0,
+        tiempo_medio_seg: conTiempoTotal.length ? Math.round(promedio(conTiempoTotal.map((x) => x.tiempoSeg))) : null,
+        total_intentos: intentos.length,
+        serie: serie.map((s) => ({ bloque: s.bloque, n: s.n, tasa_acierto: s.tasa_acierto, tiempo_medio_seg: s.tiempo_medio_seg })),
+        delta_tasa: hayTendencia ? Math.round(deltaMitades(intentos.map((x) => (x.correcto ? 100 : 0)))) : null,
+        // El tiempo es INFORMACIÓN, no una meta: se reporta el delta pero el
+        // cliente NO lo enmarca como "ir más rápido" (ver la vista de progreso).
+        delta_tiempo_seg: hayTendencia && conTiempoTotal.length >= MIN_INTENTOS_TENDENCIA
+          ? Math.round(deltaMitades(conTiempoTotal.map((x) => x.tiempoSeg)))
+          : null,
+        tendencia_tasa: hayTendencia ? clasificar(deltaMitades(intentos.map((x) => (x.correcto ? 100 : 0))), 3, 'baja', 'sube') : 'sin_datos',
+      },
+    };
+  }
+
+  /**
+   * EVOLUCIÓN de la habilidad estimada (θ, IRT) del estudiante para el gráfico
+   * "Tu evolución" del dashboard. Devuelve su serie completa de HistorialTheta
+   * (pretest → práctica → subidas de nivel → postest) más el PROMEDIO DEL GRUPO
+   * por semana ISO (agregado anónimo, solo para la línea punteada de comparación).
+   */
+  async evolucionTheta(usuarioId: number) {
+    const claveSemana = (d: Date) => {
+      // Semana ISO-8601 (el jueves define el año de la semana).
+      const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+      const inicio = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+      const sem = Math.ceil(((t.getTime() - inicio.getTime()) / 86400000 + 1) / 7);
+      return `${t.getUTCFullYear()}-S${String(sem).padStart(2, '0')}`;
+    };
+
+    const [propios, todos] = await Promise.all([
+      this.prisma.historialTheta.findMany({
+        where: { usuarioId },
+        orderBy: { fecha: 'asc' },
+        select: { theta: true, origen: true, n: true, fecha: true },
+      }),
+      this.prisma.historialTheta.findMany({ select: { theta: true, fecha: true } }),
+    ]);
+
+    const porSemana = new Map<string, { suma: number; n: number }>();
+    for (const h of todos) {
+      const k = claveSemana(h.fecha);
+      const e = porSemana.get(k) ?? { suma: 0, n: 0 };
+      e.suma += h.theta; e.n++;
+      porSemana.set(k, e);
+    }
+    const grupo = [...porSemana.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([semana, v]) => ({ semana, theta: Number((v.suma / v.n).toFixed(2)) }));
+
+    return {
+      serie: propios.map((h) => ({ theta: Number(h.theta.toFixed(2)), origen: h.origen, n: h.n, fecha: h.fecha, semana: claveSemana(h.fecha) })),
+      grupo,
+    };
   }
 
   // ── Export CSV de pretest/postest (investigación) ──

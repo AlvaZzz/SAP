@@ -50,4 +50,10 @@ export class GamificacionController {
   async actividad(@CurrentUser('sub') id: number) {
     return { actividad: await this.gami.actividad(id) };
   }
+
+  // Últimos intentos del propio estudiante (lista "Actividad reciente") + tasa de acierto global.
+  @Get('recientes')
+  recientes(@CurrentUser('sub') id: number) {
+    return this.gami.recientes(id);
+  }
 }

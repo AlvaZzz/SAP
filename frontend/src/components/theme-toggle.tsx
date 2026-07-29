@@ -12,11 +12,15 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
 
   const oscuro = resolvedTheme === 'dark';
 
+  // Hasta montar, el tema es desconocido en SSR: usamos una etiqueta estable para
+  // evitar un hydration mismatch en el aria-label/title.
+  const etiqueta = !montado ? 'Cambiar tema' : oscuro ? 'Activar modo claro' : 'Activar modo oscuro';
+
   return (
     <button
       type="button"
-      aria-label={oscuro ? 'Activar modo claro' : 'Activar modo oscuro'}
-      title={oscuro ? 'Modo claro' : 'Modo oscuro'}
+      aria-label={etiqueta}
+      title={etiqueta}
       onClick={() => setTheme(oscuro ? 'light' : 'dark')}
       className={`grid h-9 w-9 place-items-center rounded-xl text-muted transition hover:bg-subtle hover:text-fg ${className}`}
     >

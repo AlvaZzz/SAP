@@ -29,9 +29,11 @@ export default function PostestPage() {
 
   useEffect(() => {
     if (usuario && usuario.rol !== 'estudiante') { router.replace('/dashboard'); return; }
-    api.get<{ disponible: boolean; habilitado: boolean; completado: boolean; desdeNivel: number }>('/postest/estado').then((e) => {
+    api.get<{ disponible: boolean; habilitado: boolean; repasoCompletado: boolean; completado: boolean; desdeNivel: number }>('/postest/estado').then((e) => {
       if (e.completado) { router.replace('/postest/resultado'); return; }
-      if (!e.disponible) { setBloqueado('La evaluación final estará disponible cuando tu docente la habilite. Te avisaremos con una notificación.'); setCargando(false); return; }
+      if (!e.habilitado) { setBloqueado('La evaluación final estará disponible cuando tu docente la habilite. Te avisaremos con una notificación.'); setCargando(false); return; }
+      // Gate: el docente ya habilitó, pero falta revisar el repaso de cierre.
+      if (!e.repasoCompletado) { router.replace('/postest/repaso'); return; }
       api.get<{ preguntas: Pregunta[] }>('/postest/preguntas').then((r) => {
         setPreguntas(r.preguntas);
         const ini: Record<number, string> = {};
@@ -142,7 +144,7 @@ export default function PostestPage() {
             <p className="mb-2 text-xs text-muted">{respondidas} de {total} respondidas</p>
             <div className="grid grid-cols-10 gap-1.5">
               {preguntas.map((q, i) => (
-                <button key={q.id} onClick={() => setIdx(i)} className={`aspect-square rounded-md text-[10px] font-bold transition ${i === idx ? 'bg-prexi-navy text-white' : resp[q.id] ? 'bg-prexi-green text-white' : 'bg-subtle text-muted hover:bg-line'}`}>{i + 1}</button>
+                <button key={q.id} onClick={() => setIdx(i)} className={`aspect-square rounded-md text-[10px] font-bold transition ${i === idx ? 'bg-prexi-blue text-accent-on' : resp[q.id] ? 'bg-prexi-green text-white' : 'bg-subtle text-muted hover:bg-line'}`}>{i + 1}</button>
               ))}
             </div>
           </div>

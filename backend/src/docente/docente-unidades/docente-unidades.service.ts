@@ -1,5 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { promises as fs } from 'fs';
+import { join, basename } from 'path';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import {
+  UPLOAD_IMG_DIR, MAX_IMG_BYTES, detectarFormatoImagen, ArchivoSubido,
+} from '../../common/config/upload.config';
 import { CrearUnidadDto, EditarUnidadDto, CrearTemaDto, EditarTemaDto } from './dto/unidad.dto';
 
 /** Mínimo de ejercicios ACTIVOS que debe tener un tema para poder publicarse. */
@@ -9,7 +15,7 @@ export const MIN_EJERCICIOS_TEMA = 10;
 export const MIN_ITEMS_DIAGNOSTICO = 3;
 
 interface TemaVista {
-  id: number; numero: string; titulo: string; descripcion: string | null; orden: number;
+  id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number;
   umbral: number; publicado: boolean; ejercicios_activos: number; ejercicios_minimos: number;
   puede_publicarse: boolean; en_diagnostico: boolean; items_diagnostico: number;
   puede_diagnosticar: boolean; subtemas: TemaVista[];
@@ -54,19 +60,60 @@ export class DocenteUnidadesService {
 
     return unidades.map((u) => ({
       id: u.id, numero: u.numero, titulo: u.titulo, descripcion: u.descripcion,
-      introduccion: u.introduccion, xp: u.xp, orden: u.orden,
+      introduccion: u.introduccion, repaso: u.repaso,
+      dashObjetivos: u.dashObjetivos, dashAnalogias: u.dashAnalogias,
+      xp: u.xp, orden: u.orden,
+      // URL de stream (no la ruta física); null si la unidad no tiene portada.
+      imagen_url: u.imagenUrl ? `/api/unidades/${u.id}/portada` : null,
       temas: u.temas.map((t) => this.vistaTema(t, diag)),
     }));
   }
 
+  // ── Imagen de portada de la unidad ──
+  /**
+   * Sube (o REEMPLAZA) la portada de una unidad. Valida por FIRMA binaria
+   * (jpg/png/webp) y tamaño (≤2 MB), guarda con nombre opaco y borra la anterior.
+   */
+  async subirImagen(id: number, archivo?: ArchivoSubido) {
+    const unidad = await this.prisma.unidad.findUnique({ where: { id } });
+    if (!unidad) throw new NotFoundException('Unidad no encontrada');
+    if (!archivo) throw new BadRequestException('Falta la imagen');
+    if (archivo.size > MAX_IMG_BYTES) {
+      throw new BadRequestException(`La imagen supera el límite de ${Math.round(MAX_IMG_BYTES / 1024 / 1024)} MB`);
+    }
+    const formato = detectarFormatoImagen(archivo.buffer);
+    if (!formato) throw new BadRequestException('Formato no válido. Solo se aceptan imágenes JPG, PNG o WebP.');
+
+    await fs.mkdir(UPLOAD_IMG_DIR, { recursive: true });
+    const nombreArchivo = `${randomUUID()}.${formato.ext}`;
+    await fs.writeFile(join(UPLOAD_IMG_DIR, nombreArchivo), archivo.buffer);
+
+    // Borra la portada anterior (best-effort) para no dejar huérfanos.
+    if (unidad.imagenUrl) await fs.unlink(join(UPLOAD_IMG_DIR, basename(unidad.imagenUrl))).catch(() => undefined);
+
+    await this.prisma.unidad.update({ where: { id }, data: { imagenUrl: nombreArchivo } });
+    return { imagen_url: `/api/unidades/${id}/portada` };
+  }
+
+  /** Quita la portada de la unidad (vuelve al fondo degradado por defecto). */
+  async eliminarImagen(id: number) {
+    const unidad = await this.prisma.unidad.findUnique({ where: { id } });
+    if (!unidad) throw new NotFoundException('Unidad no encontrada');
+    if (unidad.imagenUrl) {
+      await fs.unlink(join(UPLOAD_IMG_DIR, basename(unidad.imagenUrl))).catch(() => undefined);
+      await this.prisma.unidad.update({ where: { id }, data: { imagenUrl: null } });
+    }
+    return { ok: true };
+  }
+
   private vistaTema(t: {
-    id: number; numero: string; titulo: string; descripcion: string | null; orden: number;
+    id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number;
     umbral: number; publicado: boolean; enDiagnostico: boolean; _count: { ejercicios: number };
-    subtemas?: { id: number; numero: string; titulo: string; descripcion: string | null; orden: number; umbral: number; publicado: boolean; enDiagnostico: boolean; _count: { ejercicios: number } }[];
+    subtemas?: { id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number; umbral: number; publicado: boolean; enDiagnostico: boolean; _count: { ejercicios: number } }[];
   }, diag: Map<number, number>): TemaVista {
     const items = diag.get(t.id) ?? 0;
     return {
-      id: t.id, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion, orden: t.orden,
+      id: t.id, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion, repaso: t.repaso, orden: t.orden,
       umbral: t.umbral, publicado: t.publicado,
       ejercicios_activos: t._count.ejercicios,
       ejercicios_minimos: MIN_EJERCICIOS_TEMA,
@@ -153,15 +200,27 @@ export class DocenteUnidadesService {
   }
 
   /** Lista simplificada de temas/subtemas (para selects: crear ejercicio, subir documento…). */
+  /**
+   * Temas para selectores. Devuelve la ETIQUETA ya compuesta (para selects
+   * planos) y además la ESTRUCTURA (unidad, padre, orden), que es lo que
+   * necesitan los desplegables dependientes Unidad → Tema → Subtema.
+   */
   async opcionesTema() {
     const temas = await this.prisma.tema.findMany({
       orderBy: [{ unidadId: 'asc' }, { orden: 'asc' }],
-      include: { unidad: { select: { numero: true, titulo: true } }, padre: { select: { numero: true, titulo: true } } },
+      include: { unidad: { select: { id: true, numero: true, titulo: true } }, padre: { select: { numero: true, titulo: true } } },
     });
     return temas.map((t) => ({
       id: t.id,
       etiqueta: `U${t.unidad.numero} · ${t.numero} ${t.titulo}${t.padre ? ` (subtema de ${t.padre.numero})` : ''}`,
       publicado: t.publicado,
+      numero: t.numero,
+      titulo: t.titulo,
+      orden: t.orden,
+      padre_id: t.padreId,
+      unidad_id: t.unidad.id,
+      unidad_numero: t.unidad.numero,
+      unidad_titulo: t.unidad.titulo,
     }));
   }
 }

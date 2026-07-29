@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/providers/auth-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { TourManager } from '@/components/tour';
+import { SonidoGlobal } from '@/components/sonido-global';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const sora = Sora({ subsets: ['latin'], weight: ['600', '700', '800'], variable: '--font-display' });
@@ -23,6 +24,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
             {/* Tours de onboarding por módulo (persistidos por usuario). */}
             <TourManager />
+            {/* Click suave global en todos los botones (respeta el mute). */}
+            <SonidoGlobal />
           </AuthProvider>
         </ThemeProvider>
       </body>

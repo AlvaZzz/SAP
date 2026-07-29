@@ -2,39 +2,32 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { api, ApiError } from '@/lib/api';
-import { Ejercicio, ResultadoIntento, Opcion } from '@/lib/types';
-import { CodeViewer } from '@/components/code-viewer';
+import { Ejercicio, ResultadoIntento } from '@/lib/types';
+import { VistaEjercicio } from '@/components/ejercicios';
 import { AlexPanel } from '@/components/alex-panel';
 import { RangoIcon } from '@/components/rango-icon';
 import { useLogros } from '@/components/logro-toast';
-import { CheckCircle, ArrowRight, ChevronLeft, Layers, X, ChevronUp, ChevronDown, GripVertical, Star, Zap, Bot } from '@/components/icons';
+import { useSound } from '@/components/use-sound';
+import { CheckCircle, ArrowRight, ChevronLeft, Layers, X, Zap, Bot } from '@/components/icons';
+import { NivelBadge } from '@/components/nivel-badge';
 
 interface RangoInfo { clave: string; nombre: string; svgKey: string; color: string }
-
-/** Baraja las líneas de un ejercicio "ordenar_lineas" (Fisher-Yates). */
-function barajar<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 export default function DetallePage() {
   const params = useParams();
   const id = Number(params.id);
   const router = useRouter();
   const { celebrar } = useLogros();
+  const { playCorrect, playWrong } = useSound();
 
   const [ej, setEj] = useState<Ejercicio | null>(null);
   const [rango, setRango] = useState<RangoInfo | null>(null);
   const [orden, setOrden] = useState<{ idx: number; total: number; ids: number[] }>({ idx: 0, total: 1, ids: [] });
-  const [seleccion, setSeleccion] = useState<string | null>(null);
-  const [textoLibre, setTextoLibre] = useState('');
-  const [lineas, setLineas] = useState<Opcion[]>([]);
+  // Respuesta actual reportada por el componente de tipo (null = aún sin responder).
+  const [respuesta, setRespuesta] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ResultadoIntento | null>(null);
   const [retro, setRetro] = useState<string | null>(null);
   const [pidiendoIa, setPidiendoIa] = useState(false);
@@ -46,10 +39,9 @@ export default function DetallePage() {
 
   useEffect(() => {
     setResultado(null); setRetro(null); setPidiendoIa(false); setIaPedida(false); setUltimaRespuesta('');
-    setSeleccion(null); setTextoLibre(''); setXpVuela(null); setInicio(Date.now());
+    setRespuesta(null); setXpVuela(null); setInicio(Date.now());
     api.get<{ ejercicio: Ejercicio }>(`/ejercicios/${id}`).then((r) => {
       setEj(r.ejercicio);
-      if (r.ejercicio.tipo === 'ordenar_lineas') setLineas(barajar(r.ejercicio.opciones));
       // Progreso y ORDEN ADAPTATIVO: la ruta del backend decide la secuencia
       // según el nivel del estudiante (tema si lo tiene; si no, nivel).
       const q = r.ejercicio.temaId ? `tema=${r.ejercicio.temaId}` : `nivel=${r.ejercicio.nivel?.numero ?? ''}`;
@@ -65,34 +57,21 @@ export default function DetallePage() {
     api.get<{ global: { rango: RangoInfo } }>('/gamificacion/rangos').then((r) => setRango(r.global.rango)).catch(() => undefined);
   }, []);
 
-  function moverLinea(i: number, dir: -1 | 1) {
-    setLineas((prev) => {
-      const j = i + dir;
-      if (j < 0 || j >= prev.length) return prev;
-      const nuevas = [...prev];
-      [nuevas[i], nuevas[j]] = [nuevas[j], nuevas[i]];
-      return nuevas;
-    });
-  }
-
-  const respuestaLista = ej?.tipo === 'completar_codigo' ? textoLibre.trim().length > 0
-    : ej?.tipo === 'ordenar_lineas' ? lineas.length > 0
-    : !!seleccion;
+  const respuestaLista = respuesta != null && respuesta.length > 0;
 
   async function enviar() {
-    if (!ej || !respuestaLista) return;
-    const respuestaDada = ej.tipo === 'completar_codigo' ? textoLibre.trim()
-      : ej.tipo === 'ordenar_lineas' ? lineas.map((o) => o.id).join(',')
-      : seleccion!;
+    if (!ej || !respuestaLista || resultado) return;
     setEnviando(true);
     try {
       const r = await api.post<ResultadoIntento>('/intentos', {
-        ejercicioId: ej.id, respuestaDada, tiempoSeg: Math.round((Date.now() - inicio) / 1000),
+        ejercicioId: ej.id, respuestaDada: respuesta, tiempoSeg: Math.round((Date.now() - inicio) / 1000),
       });
       setResultado(r);
       if (r.correcto) {
         setXpVuela(r.xp.xpOtorgado);
-        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 }, colors: ['#2C4A6E', '#2E7D5B', '#B5822E'] });
+        // Sonido MUY sutil de acierto (si el usuario tiene los sonidos activados).
+        playCorrect();
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 }, colors: ['#3B82F6', '#10B981', '#F59E0B'] });
         if (r.nivel.nivelDesbloqueadoNumero) {
           setTimeout(() => confetti({ particleCount: 140, spread: 100, origin: { y: 0.5 } }), 300);
         }
@@ -103,11 +82,14 @@ export default function DetallePage() {
         ];
         if (celebs.length) setTimeout(() => celebrar(celebs), 600);
       } else {
+        // Tono neutro y AMABLE al fallar (nunca estridente): acompaña el mensaje
+        // de ALVARO de que equivocarse es parte de aprender.
+        playWrong();
         // Retroalimentación DETERMINÍSTICA primero: mostramos la explicación
         // estática del docente (explicacion_base) sin gastar tokens de Gemini.
         // ALVARO (IA) solo se llama bajo demanda si el estudiante lo pide.
         setRetro(r.explicacion_base ?? null);
-        setUltimaRespuesta(respuestaDada.slice(0, 120));
+        setUltimaRespuesta((respuesta ?? '').slice(0, 120));
       }
     } catch (err) {
       alert(err instanceof ApiError ? err.message : 'Error al enviar');
@@ -132,7 +114,7 @@ export default function DetallePage() {
   if (!ej) return (
     <div className="space-y-4">
       <div className="skeleton h-16" />
-      <div className="grid gap-6 lg:grid-cols-3"><div className="skeleton h-96 lg:col-span-2" /><div className="skeleton h-96" /></div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"><div className="skeleton h-96" /><div className="skeleton h-96" /></div>
     </div>
   );
 
@@ -147,7 +129,20 @@ export default function DetallePage() {
         <button onClick={() => router.push('/ejercicios')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-muted transition hover:bg-subtle hover:text-fg" title="Salir"><X className="h-4 w-4" /></button>
         <div className="min-w-0 flex-1">
           <p className="mb-2 text-sm font-semibold text-fg">Ejercicio {orden.idx + 1} de {orden.total}</p>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full origin-left rounded-full bg-gradient-to-r from-prexi-blue to-prexi-blue-hover transition-all animate-grow-x" style={{ width: `${progreso}%` }} /></div>
+          {/* Progreso VIVO por segmentos (uno por ejercicio de la ruta) que se llenan
+              con animación; si la ruta es muy larga, cae a una barra continua. */}
+          {orden.total <= 30 ? (
+            <div className="flex gap-1" role="progressbar" aria-valuenow={orden.idx + 1} aria-valuemin={1} aria-valuemax={orden.total} aria-label="Progreso del cuestionario">
+              {Array.from({ length: orden.total }).map((_, i) => (
+                <div key={i} className="h-2 flex-1 overflow-hidden rounded-full bg-subtle">
+                  <motion.div className="h-full rounded-full bg-gradient-to-r from-prexi-blue to-prexi-blue-hover"
+                    initial={false} animate={{ width: i <= orden.idx ? '100%' : '0%' }} transition={{ duration: 0.4, ease: 'easeOut' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><motion.div className="h-full rounded-full bg-gradient-to-r from-prexi-blue to-prexi-blue-hover" initial={false} animate={{ width: `${progreso}%` }} transition={{ duration: 0.4 }} /></div>
+          )}
         </div>
         {rango && (
           <div className="hidden shrink-0 items-center gap-2 rounded-xl bg-subtle px-3 py-1.5 sm:flex" title={`Tu rango: ${rango.nombre}`}>
@@ -157,64 +152,29 @@ export default function DetallePage() {
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      {/* Escritorio amplio (xl+): 2 columnas PROPORCIONADAS (~57% ejercicio /
+          ~43% ALVARO). El ancho fijo de 340px se quedaba corto al crecer la
+          pantalla (ALVARO caía a ~28% y el chat quedaba estrecho); 1.35fr/1fr
+          mantiene la proporción a cualquier ancho.
+          El corte va en xl y no en lg a propósito: en lg el sidebar (w-64) deja
+          ~575px útiles, y partirlos en dos dejaba el ejercicio en ~210px. Por
+          debajo de xl, ALVARO se apila DEBAJO a todo el ancho. */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
           <div className={`card ${resultado && !resultado.correcto ? 'animate-shake' : ''}`}>
             {/* Badges del ejercicio */}
             <div className="mb-3 flex flex-wrap items-center gap-2">
               {unidadTema && <span className="inline-flex items-center gap-1.5 rounded-full bg-prexi-navy/10 px-2.5 py-1 text-[11px] font-bold text-prexi-navy dark:bg-white/10 dark:text-blue-200"><Layers className="h-3.5 w-3.5" /> {unidadTema}</span>}
               <span className="rounded-full bg-prexi-blue/10 px-2.5 py-1 text-[11px] font-bold text-prexi-blue-deep">{ej.categoria}</span>
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-prexi-amber">
-                {Array.from({ length: ej.estrellas }).map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
-              </span>
+              <NivelBadge nivel={ej.nivelDificultad} estrellas={ej.estrellas} />
               <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-[11px] font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>
             </div>
 
             <h1 className="mb-5 font-display text-2xl font-bold leading-snug text-fg">{ej.enunciado}</h1>
-            {ej.codigoPython && <div className="mb-6"><CodeViewer code={ej.codigoPython} /></div>}
 
-            {ej.tipo === 'completar_codigo' ? (
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-fg">Escribe la línea o el valor que falta</label>
-                <input value={textoLibre} onChange={(e) => setTextoLibre(e.target.value)} disabled={!!resultado}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && respuestaLista && !resultado) enviar(); }}
-                  placeholder="Ej.: for i in range(10)"
-                  className={`input font-mono text-sm ${resultado ? (resultado.correcto ? 'border-prexi-green' : 'border-red-400') : ''}`} />
-                {resultado && !resultado.correcto && <p className="mt-2 text-sm text-muted">Respuesta esperada: <span className="font-mono font-semibold text-prexi-green">{resultado.respuesta_correcta}</span></p>}
-              </div>
-            ) : ej.tipo === 'ordenar_lineas' ? (
-              <div>
-                <p className="mb-2 text-sm text-muted">Ordena las líneas con las flechas hasta lograr la secuencia correcta.</p>
-                <div className="space-y-2">
-                  {lineas.map((o, i) => (
-                    <div key={o.id} className="flex items-center gap-2 rounded-xl border border-[#24466B] bg-[#0F1B2D] p-2.5">
-                      <GripVertical className="h-4 w-4 shrink-0 text-slate-500" />
-                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/10 text-sm font-bold text-slate-300">{i + 1}</span>
-                      <span className="flex-1 whitespace-pre font-mono text-sm text-slate-100">{o.texto}</span>
-                      <div className="flex shrink-0 flex-col">
-                        <button type="button" disabled={!!resultado || i === 0} onClick={() => moverLinea(i, -1)} className="grid h-4 w-6 place-items-center text-slate-500 disabled:opacity-20 hover:text-sky-300"><ChevronUp className="h-3.5 w-3.5" /></button>
-                        <button type="button" disabled={!!resultado || i === lineas.length - 1} onClick={() => moverLinea(i, 1)} className="grid h-4 w-6 place-items-center text-slate-500 disabled:opacity-20 hover:text-sky-300"><ChevronDown className="h-3.5 w-3.5" /></button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {ej.opciones.map((o) => {
-                  const elegido = seleccion === o.id;
-                  const esCorrecta = resultado && o.id === resultado.respuesta_correcta;
-                  const malaElegida = resultado && elegido && !resultado.correcto;
-                  return (
-                    <button key={o.id} disabled={!!resultado} onClick={() => setSeleccion(o.id)}
-                      className={`flex items-center gap-3 rounded-xl border-2 p-4 text-left transition active:scale-[0.99] ${esCorrecta ? 'border-prexi-green bg-emerald-500/10' : malaElegida ? 'border-red-400 bg-red-500/10' : elegido ? 'border-prexi-blue bg-prexi-blue/10' : 'border-line hover:border-prexi-blue/40 hover:bg-subtle'}`}>
-                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-bold ${esCorrecta ? 'bg-prexi-green text-white' : elegido ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>{o.id}</span>
-                      <span className="whitespace-pre-line font-medium text-fg">{o.texto}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {/* Cada tipo renderiza su interacción y reporta la respuesta con onChange.
+                `key={ej.id}` remonta el componente (estado limpio) al cambiar de ejercicio. */}
+            <VistaEjercicio key={ej.id} ejercicio={ej} resultado={resultado} onChange={setRespuesta} />
 
             {resultado && (
               <div className="mt-6">
@@ -224,7 +184,7 @@ export default function DetallePage() {
                     <div>
                       <p className="font-bold text-prexi-green">¡Correcto! <span className="ml-1 text-prexi-amber">+{resultado.xp.xpOtorgado} XP</span></p>
                       <p className="text-sm text-muted">base × {resultado.xp.multiplicador} por racha de {resultado.xp.rachaDias} días.</p>
-                      {resultado.nivel.nivelDesbloqueadoNumero && <p className="mt-1 text-sm font-semibold text-prexi-blue-deep">🔓 ¡Desbloqueaste el Nivel {resultado.nivel.nivelDesbloqueadoNumero}!</p>}
+                      {resultado.nivel.nivelDesbloqueadoNumero && <p className="mt-1 text-sm font-semibold text-prexi-blue-deep">Desbloqueaste el Nivel {resultado.nivel.nivelDesbloqueadoNumero}</p>}
                     </div>
                     {/* XP que "vuela" hacia arriba */}
                     {xpVuela != null && <span className="xp-fly pointer-events-none absolute right-6 top-4 font-display text-2xl font-extrabold text-prexi-amber">+{xpVuela}</span>}
@@ -243,7 +203,7 @@ export default function DetallePage() {
                       <button
                         onClick={pedirRetroIa}
                         disabled={pidiendoIa}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-prexi-navy px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-prexi-navy-soft disabled:opacity-50"
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-prexi-blue px-3 py-1.5 text-xs font-semibold text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-50"
                       >
                         <Bot className="h-3.5 w-3.5" />
                         {pidiendoIa ? 'ALVARO está pensando…' : 'Explícame más con ALVARO'}
@@ -257,7 +217,7 @@ export default function DetallePage() {
             <div className="mt-7 flex items-center justify-between border-t border-line pt-5">
               <button onClick={() => router.push('/ejercicios')} className="btn-ghost"><ChevronLeft className="h-4 w-4" /> Volver</button>
               {!resultado ? (
-                <button onClick={enviar} disabled={!respuestaLista || enviando} className="btn-primary disabled:opacity-50">{enviando ? 'Enviando…' : 'Enviar respuesta'}</button>
+                <button onClick={enviar} disabled={!respuestaLista || enviando} className="btn-primary disabled:opacity-50">{enviando ? 'Comprobando…' : 'Comprobar'}</button>
               ) : sig ? (
                 <button onClick={() => router.push(`/ejercicios/${sig}`)} className="btn-primary">Siguiente <ArrowRight className="h-4 w-4" /></button>
               ) : (
@@ -267,8 +227,8 @@ export default function DetallePage() {
           </div>
         </div>
 
-        <div>
-          <AlexPanel ejercicioId={ej.id} contextoTema={ej.categoria} maxPistas={ej.maxPistas} />
+        <div className="min-w-0">
+          <AlexPanel ejercicioId={ej.id} contextoTema={ej.categoria} maxPistas={ej.maxPistas} tipo={ej.tipo} resultado={resultado} />
         </div>
       </div>
 

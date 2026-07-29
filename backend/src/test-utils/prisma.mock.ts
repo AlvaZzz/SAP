@@ -58,6 +58,8 @@ export function crearPrismaMock() {
     tokenRecuperacion: delegate(),
     historialTheta: delegate(),
     diagnosticoTema: delegate(),
+    repasoUnidad: delegate(),
+    examenUnidad: delegate(),
     $queryRaw: jest.fn().mockResolvedValue([]),
     $executeRaw: jest.fn().mockResolvedValue(0),
     $transaction: jest.fn(),

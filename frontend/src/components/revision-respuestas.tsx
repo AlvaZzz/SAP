@@ -106,9 +106,9 @@ export function RevisionRespuestas({ endpoint, titulo, volverHref }: { endpoint:
                   </div>
 
                   {it.explicacion && (
-                    <div className="mt-3 flex items-start gap-2 rounded-xl bg-prexi-blue/10 p-3 text-sm text-fg">
+                    <div className="mt-3 flex items-start gap-2 rounded-xl border border-prexi-blue/20 bg-prexi-blue/10 p-3 text-sm text-fg">
                       <Bot className="mt-0.5 h-4 w-4 shrink-0 text-prexi-blue-deep" />
-                      <p><b className="text-prexi-blue-deep">Explicación:</b> {it.explicacion}</p>
+                      <p><b className="text-fg">Explicación:</b> {it.explicacion}</p>
                     </div>
                   )}
                 </div>

@@ -18,10 +18,22 @@ export class ProgresoController {
     return { ...comp, niveles, sesiones };
   }
 
+  // Evolución de la habilidad estimada (θ) del estudiante + promedio del grupo.
+  @Get('evolucion')
+  evolucion(@CurrentUser('sub') id: number) {
+    return this.progreso.evolucionTheta(id);
+  }
+
   // Progreso detallado por Unidad → Tema (dominio del estudiante vs promedio grupal).
   @Get('detalle')
   async detalle(@CurrentUser('sub') id: number) {
     return { unidades: await this.progreso.detalleUnidades(id) };
+  }
+
+  // Hábitos de estudio (proceso): constancia, autonomía y eficiencia con tendencias.
+  @Get('habitos')
+  habitos(@CurrentUser('sub') id: number) {
+    return this.progreso.habitos(id);
   }
 
   // ── Export para la investigación (prueba t fuera del sistema) ──

@@ -35,7 +35,7 @@ export default function PostestResultadoPage() {
           <p className="mx-auto mt-1 max-w-md text-muted">Acertaste {r.aciertos} de {r.total} preguntas.</p>
 
           <div className="my-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Gauge puntaje={r.puntaje} color="#2E7D5B" />
+            <Gauge puntaje={r.puntaje} color="#10B981" />
             <div className="text-left">
               <span className="inline-flex items-center gap-2 rounded-full bg-prexi-green px-4 py-1.5 text-sm font-bold text-white">Puntaje {r.puntaje}/100</span>
               {r.ganancia != null && (
@@ -62,7 +62,7 @@ export default function PostestResultadoPage() {
             {r.por_categoria.map((c) => (
               <div key={c.categoria}>
                 <div className="mb-0.5 flex justify-between text-xs"><span className="font-medium text-fg">{c.categoria}</span><span className="text-muted">{c.aciertos}/{c.total} · {c.porcentaje}%</span></div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${c.porcentaje}%`, backgroundColor: c.porcentaje >= 60 ? '#2E7D5B' : '#B5822E' }} /></div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all duration-700" style={{ width: `${c.porcentaje}%`, backgroundColor: c.porcentaje >= 60 ? '#10B981' : '#F59E0B' }} /></div>
               </div>
             ))}
           </div>

@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
-import { PreguntaIa, OpcionTema, TipoEjercicio, DocenteDocumento } from '@/lib/types';
+import { PreguntaIa, OpcionTema, TipoEjercicio, DocenteDocumento, NivelDificultad, NIVEL_LABEL } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, Select, EmptyState } from '@/components/ui';
+import { nivelDesdeEstrellas, estrellasDesdeNivel, NIVELES } from '@/components/nivel-badge';
 import { Bot, Sparkles, CheckCircle, X, Edit, Upload } from '@/components/icons';
 
 const MAX_MB = 15;
@@ -253,7 +254,7 @@ export default function DocentePreguntasIaPage() {
         <p className="mb-4 text-sm text-muted">Asigna el nivel de gamificación, la dificultad y el XP de este ejercicio antes de publicarlo para los estudiantes.</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Nivel"><Select value={formAprobar.nivel} onChange={(e) => setFormAprobar({ ...formAprobar, nivel: Number(e.target.value) })}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}</Select></Field>
-          <Field label="Dificultad"><Select value={formAprobar.estrellas} onChange={(e) => setFormAprobar({ ...formAprobar, estrellas: Number(e.target.value) })}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{'★'.repeat(n)}</option>)}</Select></Field>
+          <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(formAprobar.estrellas)} onChange={(e) => setFormAprobar({ ...formAprobar, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
           <Field label="XP"><Input type="number" min={5} max={500} value={formAprobar.xp} onChange={(e) => setFormAprobar({ ...formAprobar, xp: Number(e.target.value) })} /></Field>
         </div>
       </Modal>

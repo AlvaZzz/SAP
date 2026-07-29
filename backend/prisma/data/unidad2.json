@@ -1,0 +1,4547 @@
+{
+  "unidad": {
+    "numero": 2,
+    "titulo": "Programación Estructurada"
+  },
+  "fuente": "**\"PREXI_Unidad2_Banco_Ejercicios.pdf\"** (130 ítems: 120 de práctica + 10 de examen final), derivado del **Módulo Unidad 2 PRG-111 — Programación Estructurada** de la UPEA. Los ítems citan el módulo por contenido y no por página: `fuenteDoc.paginaPDF` se omite y se conserva `fuenteDoc.codigo` como clave de negocio del banco. El tema **2.5** y los **retos** son contenido PREEXISTENTE del sistema (no proviene de este banco): el módulo oficial de 2.5 aún no fue entregado, así que se conserva lo que ya había. Van marcados con `fuenteDoc.origen: \"preexistente\"`.",
+  "autorEmail": "docente@upea.edu.bo",
+  "temas": [
+    {
+      "numero": "2.1",
+      "titulo": "Conceptos de Programación Estructurada",
+      "descripcion": "Paradigma de claridad, modularidad y control del flujo; diseño descendente y Teorema Fundamental.",
+      "umbral": 10,
+      "publicado": true,
+      "ejercicios": [
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Segun Joyanes Aguilar, en que se basa la programacion estructurada?",
+          "xp": 10,
+          "explicacion": "El modulo cita a Joyanes Aguilar definiendo la programacion estructurada como un paradigma basado en claridad, modularidad y control del flujo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo cita a Joyanes Aguilar definiendo la programacion estructurada como un paradigma basado en claridad, modularidad y control del flujo.",
+            "codigo": "E2.1.B.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Velocidad, memoria y tamano del programa"
+            },
+            {
+              "id": "B",
+              "texto": "Claridad, modularidad y control del flujo del programa"
+            },
+            {
+              "id": "C",
+              "texto": "Cantidad de variables utilizadas"
+            },
+            {
+              "id": "D",
+              "texto": "El tipo de compilador usado"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete: la programacion estructurada evita el uso excesivo de saltos incondicionales llamados ______.",
+          "xp": 10,
+          "explicacion": "El modulo indica que se evita el uso excesivo de goto, favoreciendo estructuras de control bien definidas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo indica que se evita el uso excesivo de goto, favoreciendo estructuras de control bien definidas.",
+            "codigo": "E2.1.B.02"
+          },
+          "respuestaCorrecta": "goto"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cuales son las tres estructuras de control que favorece la programacion estructurada segun Joyanes?",
+          "xp": 10,
+          "explicacion": "El modulo lista secuencia, seleccion (if, switch) e iteracion (for, while, do-while) como las estructuras favorecidas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo lista secuencia, seleccion (if, switch) e iteracion (for, while, do-while) como las estructuras favorecidas.",
+            "codigo": "E2.1.B.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Entrada, proceso y salida"
+            },
+            {
+              "id": "B",
+              "texto": "Secuencia, seleccion e iteracion"
+            },
+            {
+              "id": "C",
+              "texto": "Compilacion, enlace y ejecucion"
+            },
+            {
+              "id": "D",
+              "texto": "Analisis, diseno y prueba"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "El diseno descendente mencionado por Joyanes se conoce tambien como:",
+          "xp": 10,
+          "explicacion": "El modulo indica que la programacion estructurada se apoya en el diseno descendente, es decir, top-down.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo indica que la programacion estructurada se apoya en el diseno descendente, es decir, top-down.",
+            "codigo": "E2.1.B.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Bottom-up"
+            },
+            {
+              "id": "B",
+              "texto": "Top-down"
+            },
+            {
+              "id": "C",
+              "texto": "Round-robin"
+            },
+            {
+              "id": "D",
+              "texto": "Divide y venceras inverso"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete: un ______ es un conjunto de principios y directrices que define un enfoque particular para disenar, estructurar y escribir codigo.",
+          "xp": 10,
+          "explicacion": "El modulo define asi el concepto de paradigma de programacion.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo define asi el concepto de paradigma de programacion.",
+            "codigo": "E2.1.B.05"
+          },
+          "respuestaCorrecta": "paradigma"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Segun el Teorema Fundamental de la Programacion Estructurada, cuantos puntos de entrada debe tener un diagrama o programa?",
+          "xp": 10,
+          "explicacion": "El teorema exige un unico punto de entrada (inicio) y un unico punto de salida (fin).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El teorema exige un unico punto de entrada (inicio) y un unico punto de salida (fin).",
+            "codigo": "E2.1.B.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Uno"
+            },
+            {
+              "id": "B",
+              "texto": "Dos"
+            },
+            {
+              "id": "C",
+              "texto": "Tres"
+            },
+            {
+              "id": "D",
+              "texto": "Los que el programador decida"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cuales son las tres estructuras de control permitidas por el Teorema Fundamental?",
+          "xp": 10,
+          "explicacion": "El teorema permite unicamente estructuras secuenciales, condicionales y repetitivas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El teorema permite unicamente estructuras secuenciales, condicionales y repetitivas.",
+            "codigo": "E2.1.B.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Secuenciales, condicionales y repetitivas"
+            },
+            {
+              "id": "B",
+              "texto": "Aritmeticas, relacionales y logicas"
+            },
+            {
+              "id": "C",
+              "texto": "Publicas, privadas y protegidas"
+            },
+            {
+              "id": "D",
+              "texto": "Simples, dobles y multiples"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La seleccion en programacion estructurada se implementa mediante:",
+          "xp": 10,
+          "explicacion": "El modulo asocia la seleccion con las estructuras if y switch.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo asocia la seleccion con las estructuras if y switch.",
+            "codigo": "E2.1.B.08"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "for y while"
+            },
+            {
+              "id": "B",
+              "texto": "if y switch"
+            },
+            {
+              "id": "C",
+              "texto": "goto y label"
+            },
+            {
+              "id": "D",
+              "texto": "import y export"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La iteracion en programacion estructurada se implementa mediante:",
+          "xp": 10,
+          "explicacion": "El modulo asocia la iteracion con for, while y do-while.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo asocia la iteracion con for, while y do-while.",
+            "codigo": "E2.1.B.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "if, switch y case"
+            },
+            {
+              "id": "B",
+              "texto": "for, while y do-while"
+            },
+            {
+              "id": "C",
+              "texto": "try, catch y finally"
+            },
+            {
+              "id": "D",
+              "texto": "class, def y return"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete: la programacion estructurada organiza el codigo en ______ o modulos independientes y reutilizables.",
+          "xp": 10,
+          "explicacion": "El modulo indica que organiza el codigo en bloques o modulos independientes y reutilizables.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo indica que organiza el codigo en bloques o modulos independientes y reutilizables.",
+            "codigo": "E2.1.B.10"
+          },
+          "respuestaCorrecta": "bloques"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Que beneficio menciona el modulo sobre la programacion estructurada?",
+          "xp": 10,
+          "explicacion": "El modulo indica que facilita la comprension, depuracion y mantenimiento del software.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo indica que facilita la comprension, depuracion y mantenimiento del software.",
+            "codigo": "E2.1.B.11"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Reduce el tamano del disco duro"
+            },
+            {
+              "id": "B",
+              "texto": "Facilita la comprension, depuracion y mantenimiento del software"
+            },
+            {
+              "id": "C",
+              "texto": "Elimina la necesidad de variables"
+            },
+            {
+              "id": "D",
+              "texto": "Hace innecesarios los diagramas de flujo"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "El diseno top-down consiste en:",
+          "xp": 10,
+          "explicacion": "El top-down descompone un problema complejo en subproblemas mas simples y manejables.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El top-down descompone un problema complejo en subproblemas mas simples y manejables.",
+            "codigo": "E2.1.B.12"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Escribir el codigo antes de definir el problema"
+            },
+            {
+              "id": "B",
+              "texto": "Descomponer un problema en subproblemas mas simples"
+            },
+            {
+              "id": "C",
+              "texto": "Ejecutar el programa de abajo hacia arriba"
+            },
+            {
+              "id": "D",
+              "texto": "Usar unicamente bucles anidados"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Que autor define la programacion estructurada segun el modulo?",
+          "xp": 10,
+          "explicacion": "El modulo cita explicitamente a Luis Joyanes Aguilar en su obra Fundamentos de Programacion.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo cita explicitamente a Luis Joyanes Aguilar en su obra Fundamentos de Programacion.",
+            "codigo": "E2.1.B.13"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Niklaus Wirth"
+            },
+            {
+              "id": "B",
+              "texto": "Luis Joyanes Aguilar"
+            },
+            {
+              "id": "C",
+              "texto": "Alan Turing"
+            },
+            {
+              "id": "D",
+              "texto": "Dennis Ritchie"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cual es un ejemplo de aplicacion de programacion estructurada mencionado en el modulo?",
+          "xp": 10,
+          "explicacion": "El modulo menciona como ejemplo un programa para calcular estadisticas basicas o un juego simple.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo menciona como ejemplo un programa para calcular estadisticas basicas o un juego simple.",
+            "codigo": "E2.1.B.14"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Un sistema operativo completo"
+            },
+            {
+              "id": "B",
+              "texto": "Un programa para calcular estadisticas basicas o un juego simple"
+            },
+            {
+              "id": "C",
+              "texto": "Una red neuronal"
+            },
+            {
+              "id": "D",
+              "texto": "Un compilador de C++"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "ordenar_lineas",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Ordene de mas general a mas especifico los siguientes conceptos:",
+          "xp": 10,
+          "explicacion": "El paradigma es el enfoque general, la estructura de control es un mecanismo del paradigma, y la instruccion if es una implementacion concreta de esa estructura.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El paradigma es el enfoque general, la estructura de control es un mecanismo del paradigma, y la instruccion if es una implementacion concreta de esa estructura",
+            "codigo": "E2.1.B.15"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Instruccion if"
+            },
+            {
+              "id": "B",
+              "texto": "Estructura de control"
+            },
+            {
+              "id": "C",
+              "texto": "Paradigma de programacion"
+            }
+          ],
+          "respuestaCorrecta": "C,B,A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Por que la programacion estructurada evita el uso de goto segun el enfoque de Joyanes?",
+          "xp": 20,
+          "explicacion": "El goto genera saltos incondicionales que rompen la linealidad y dificultan seguir el flujo logico del programa.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El goto genera saltos incondicionales que rompen la linealidad y dificultan seguir el flujo logico del programa.",
+            "codigo": "E2.1.I.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque goto no existe en Python"
+            },
+            {
+              "id": "B",
+              "texto": "Porque el goto dificulta el control de flujo y la legibilidad, favoreciendo estructuras bien definidas"
+            },
+            {
+              "id": "C",
+              "texto": "Porque goto es mas lento de ejecutar"
+            },
+            {
+              "id": "D",
+              "texto": "Porque goto solo funciona con numeros enteros"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Que relacion existe entre modularidad y reutilizacion de codigo?",
+          "xp": 20,
+          "explicacion": "Al organizar el codigo en modulos independientes, estos pueden emplearse en distintos contextos sin reescribirlos.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "Al organizar el codigo en modulos independientes, estos pueden emplearse en distintos contextos sin reescribirlos.",
+            "codigo": "E2.1.I.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "No existe relacion alguna"
+            },
+            {
+              "id": "B",
+              "texto": "El codigo organizado en bloques o modulos independientes puede reutilizarse en otros programas"
+            },
+            {
+              "id": "C",
+              "texto": "La modularidad hace el codigo mas lento"
+            },
+            {
+              "id": "D",
+              "texto": "La reutilizacion solo aplica a variables globales"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Complete: para que un diagrama pueda implementarse posteriormente en la computadora, debe respetar el teorema que exige un punto de ______ y un punto de salida.",
+          "xp": 20,
+          "explicacion": "El Teorema Fundamental exige exactamente un punto de entrada (inicio) y un punto de salida (fin).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El Teorema Fundamental exige exactamente un punto de entrada (inicio) y un punto de salida (fin).",
+            "codigo": "E2.1.I.03"
+          },
+          "respuestaCorrecta": "entrada"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Por que distintos paradigmas de programacion representan 'filosofias' distintas segun el modulo?",
+          "xp": 20,
+          "explicacion": "El modulo define paradigma como el conjunto de principios que impone una forma unica de pensar sobre el desarrollo del software.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo define paradigma como el conjunto de principios que impone una forma unica de pensar sobre el desarrollo del software.",
+            "codigo": "E2.1.I.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque usan colores de sintaxis distintos"
+            },
+            {
+              "id": "B",
+              "texto": "Porque cada paradigma impone una forma unica de pensar como desarrollar software y como interactuan sus componentes"
+            },
+            {
+              "id": "C",
+              "texto": "Porque cada uno requiere un sistema operativo distinto"
+            },
+            {
+              "id": "D",
+              "texto": "Porque solo difieren en el nombre"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Un diagrama de flujo presenta dos simbolos de Fin en ramas distintas del programa. Cumple con el Teorema Fundamental?",
+          "xp": 20,
+          "explicacion": "El teorema exige que el diagrama tenga solo un punto de salida, sin importar cuantas ramas condicionales existan.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El teorema exige que el diagrama tenga solo un punto de salida, sin importar cuantas ramas condicionales existan.",
+            "codigo": "E2.1.I.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Si, porque tiene inicio"
+            },
+            {
+              "id": "B",
+              "texto": "No, porque debe tener un unico punto de salida"
+            },
+            {
+              "id": "C",
+              "texto": "Si, siempre que use if"
+            },
+            {
+              "id": "D",
+              "texto": "No, porque le falta un bucle"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Cual de las siguientes NO es una estructura de control permitida por el Teorema Fundamental?",
+          "xp": 20,
+          "explicacion": "El teorema limita el diseno a secuenciales, condicionales y repetitivas; el goto no esta entre las permitidas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El teorema limita el diseno a secuenciales, condicionales y repetitivas; el goto no esta entre las permitidas.",
+            "codigo": "E2.1.I.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Secuencial"
+            },
+            {
+              "id": "B",
+              "texto": "Condicional"
+            },
+            {
+              "id": "C",
+              "texto": "Repetitiva"
+            },
+            {
+              "id": "D",
+              "texto": "Salto incondicional (goto)"
+            }
+          ],
+          "respuestaCorrecta": "D"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "La claridad, modularidad y control de flujo que menciona Joyanes se logran principalmente:",
+          "xp": 20,
+          "explicacion": "Estas tres cualidades se logran mediante el control de flujo limitado a las estructuras permitidas, sin saltos incondicionales.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "Estas tres cualidades se logran mediante el control de flujo limitado a las estructuras permitidas, sin saltos incondicionales.",
+            "codigo": "E2.1.I.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Aumentando la velocidad del procesador"
+            },
+            {
+              "id": "B",
+              "texto": "Evitando el goto y usando secuencia, seleccion e iteracion"
+            },
+            {
+              "id": "C",
+              "texto": "Reduciendo el numero de variables a cero"
+            },
+            {
+              "id": "D",
+              "texto": "Usando unicamente estructuras repetitivas"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Complete: cada paradigma impone una forma unica de pensar sobre como interactuan los ______ del software.",
+          "xp": 20,
+          "explicacion": "El modulo indica que cada paradigma define como deberia desarrollarse el software y como interactuan sus componentes.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El modulo indica que cada paradigma define como deberia desarrollarse el software y como interactuan sus componentes.",
+            "codigo": "E2.1.I.08"
+          },
+          "respuestaCorrecta": "componentes"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "ordenar_lineas",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Ordene el proceso de diseno top-down desde el nivel mas alto al mas bajo:",
+          "xp": 20,
+          "explicacion": "El top-down parte del problema general, lo descompone en partes simples, y finalmente llega a instrucciones concretas del codigo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El top-down parte del problema general, lo descompone en partes simples, y finalmente llega a instrucciones concretas del codigo.",
+            "codigo": "E2.1.I.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Instrucciones concretas del lenguaje"
+            },
+            {
+              "id": "B",
+              "texto": "Problema completo"
+            },
+            {
+              "id": "C",
+              "texto": "Subproblemas simples"
+            }
+          ],
+          "respuestaCorrecta": "B,C,A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Por que el Teorema Fundamental es la base de los diagramas de flujo estudiados en la Unidad 1 y aplicados en la Unidad 2?",
+          "xp": 20,
+          "explicacion": "Al limitar el diseno a secuencia, condicion y repeticion, cualquier diagrama de flujo construido bajo este teorema puede traducirse a un programa coherente.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "Al limitar el diseno a secuencia, condicion y repeticion, cualquier diagrama de flujo construido bajo este teorema puede traducirse a un programa coherente.",
+            "codigo": "E2.1.I.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque impone el uso de goto"
+            },
+            {
+              "id": "B",
+              "texto": "Porque limita el diseno a tres estructuras, garantizando que cualquier diagrama resultante sea implementable de forma coherente"
+            },
+            {
+              "id": "C",
+              "texto": "Porque elimina la necesidad de pseudocodigo"
+            },
+            {
+              "id": "D",
+              "texto": "Porque solo aplica a lenguajes compilados"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Analice: por que un programa con multiples goto puede violar el espiritu del Teorema Fundamental aunque tecnicamente tenga un solo inicio y un solo fin declarados?",
+          "xp": 40,
+          "explicacion": "El teorema busca flujo claro y predecible; los goto pueden crear rutas de ejecucion caoticas (codigo spaghetti) aunque formalmente exista un solo inicio y un solo fin.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El teorema busca flujo claro y predecible; los goto pueden crear rutas de ejecucion caoticas (codigo spaghetti) aunque formalmente exista un solo inicio y un so",
+            "codigo": "E2.1.A.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "No lo viola, el teorema solo habla del inicio y fin"
+            },
+            {
+              "id": "B",
+              "texto": "Porque los saltos incondicionales rompen el control de flujo estructurado, generando un flujo dificil de seguir pese a mantener un unico inicio y fin formales"
+            },
+            {
+              "id": "C",
+              "texto": "Porque el goto es mas rapido que las estructuras normales"
+            },
+            {
+              "id": "D",
+              "texto": "Porque el teorema prohibe expresamente usar mas de una variable"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Evalue: es posible que un programa use solo secuencia y condicion, sin ninguna estructura repetitiva, y aun asi sea valido segun el Teorema Fundamental?",
+          "xp": 40,
+          "explicacion": "El teorema restringe el diseno a esas tres estructuras posibles, no obliga a que un programa particular use las tres.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El teorema restringe el diseno a esas tres estructuras posibles, no obliga a que un programa particular use las tres.",
+            "codigo": "E2.1.A.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "No, las tres estructuras son obligatorias en todo programa"
+            },
+            {
+              "id": "B",
+              "texto": "Si, el teorema permite las tres estructuras pero no exige que todas esten presentes en cada programa"
+            },
+            {
+              "id": "C",
+              "texto": "No, sin repeticion el programa no compila"
+            },
+            {
+              "id": "D",
+              "texto": "Si, pero solo en Python"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Complete: la diferencia entre un paradigma y una estructura de control es que el paradigma es un enfoque general de diseno, mientras que la estructura de control es un ______ concreto del lenguaje.",
+          "xp": 40,
+          "explicacion": "Un paradigma es una filosofia general; una estructura de control (if, for, while) es su implementacion concreta en un lenguaje.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "Un paradigma es una filosofia general; una estructura de control (if, for, while) es su implementacion concreta en un lenguaje.",
+            "codigo": "E2.1.A.03"
+          },
+          "respuestaCorrecta": "mecanismo"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Por que Joyanes vincula la programacion estructurada con la fiabilidad del software?",
+          "xp": 40,
+          "explicacion": "Al limitar las estructuras posibles y modularizar el codigo, es mas facil predecir y verificar el comportamiento del software, reduciendo errores.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "Al limitar las estructuras posibles y modularizar el codigo, es mas facil predecir y verificar el comportamiento del software, reduciendo errores.",
+            "codigo": "E2.1.A.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque reduce el tamano del archivo ejecutable"
+            },
+            {
+              "id": "B",
+              "texto": "Porque el control de flujo limitado y el diseno modular reducen la posibilidad de errores ocultos y facilitan verificar el comportamiento del programa"
+            },
+            {
+              "id": "C",
+              "texto": "Porque evita usar variables reales"
+            },
+            {
+              "id": "D",
+              "texto": "Porque impide el uso de funciones"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Un algoritmo usa una cadena de if-elif-else con seis ramas distintas. Respeta el Teorema Fundamental?",
+          "xp": 40,
+          "explicacion": "El numero de ramas condicionales no viola el teorema mientras se respete un unico punto de entrada/salida y solo se usen las estructuras permitidas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.1",
+            "citaBreve": "El numero de ramas condicionales no viola el teorema mientras se respete un unico punto de entrada/salida y solo se usen las estructuras permitidas.",
+            "codigo": "E2.1.A.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "No, porque tiene demasiadas ramas"
+            },
+            {
+              "id": "B",
+              "texto": "Si, siempre que mantenga un unico punto de entrada y salida y solo use las tres estructuras permitidas, sin importar cuantas ramas condicionales tenga"
+            },
+            {
+              "id": "C",
+              "texto": "No, el teorema limita a maximo tres ramas"
+            },
+            {
+              "id": "D",
+              "texto": "Si, pero solo si usa switch en vez de if-elif"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        }
+      ],
+      "retos": []
+    },
+    {
+      "numero": "2.2",
+      "titulo": "Estructuras Secuenciales",
+      "descripcion": "Ejecución de instrucciones en orden: entrada, proceso y salida.",
+      "umbral": 10,
+      "publicado": true,
+      "ejercicios": [
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Que caracteriza a una estructura secuencial segun el modulo?",
+          "xp": 10,
+          "explicacion": "El modulo define la estructura secuencial como una secuencia lineal de acciones, sin ruptura de control ni bifurcaciones.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo define la estructura secuencial como una secuencia lineal de acciones, sin ruptura de control ni bifurcaciones.",
+            "codigo": "E2.2.B.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Tiene multiples bifurcaciones"
+            },
+            {
+              "id": "B",
+              "texto": "No existe en ningun momento ruptura de control ni bifurcaciones"
+            },
+            {
+              "id": "C",
+              "texto": "Repite un bloque de instrucciones"
+            },
+            {
+              "id": "D",
+              "texto": "Evalua una condicion logica"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete el ejemplo de asignacion simple del modulo: a = ______",
+          "xp": 10,
+          "explicacion": "El modulo ejemplifica la asignacion simple con a=15, es decir, pasar un valor constante a una variable.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo ejemplifica la asignacion simple con a=15, es decir, pasar un valor constante a una variable.",
+            "codigo": "E2.2.B.02"
+          },
+          "respuestaCorrecta": "15"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La asignacion tipo 'contador' se usa para:",
+          "xp": 10,
+          "explicacion": "El modulo define la asignacion contador como un verificador del numero de veces que se realiza un proceso, ejemplo a=a+1.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo define la asignacion contador como un verificador del numero de veces que se realiza un proceso, ejemplo a=a+1.",
+            "codigo": "E2.2.B.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Sumar valores en un proceso"
+            },
+            {
+              "id": "B",
+              "texto": "Verificar el numero de veces que se realiza un proceso, por ejemplo a=a+1"
+            },
+            {
+              "id": "C",
+              "texto": "Recibir un valor del teclado"
+            },
+            {
+              "id": "D",
+              "texto": "Mostrar un mensaje en pantalla"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La asignacion tipo 'acumulador' se usa para:",
+          "xp": 10,
+          "explicacion": "El modulo define la asignacion acumulador como un sumador en un proceso, ejemplo a=a+b.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo define la asignacion acumulador como un sumador en un proceso, ejemplo a=a+b.",
+            "codigo": "E2.2.B.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Contar repeticiones"
+            },
+            {
+              "id": "B",
+              "texto": "Usarla como sumador en un proceso, por ejemplo a=a+b"
+            },
+            {
+              "id": "C",
+              "texto": "Leer datos por teclado"
+            },
+            {
+              "id": "D",
+              "texto": "Comparar dos valores"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La asignacion 'de trabajo' se caracteriza por:",
+          "xp": 10,
+          "explicacion": "El modulo la define como la asignacion que recibe el resultado de una operacion matematica que involucra varias variables.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo la define como la asignacion que recibe el resultado de una operacion matematica que involucra varias variables.",
+            "codigo": "E2.2.B.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Solo aceptar numeros enteros"
+            },
+            {
+              "id": "B",
+              "texto": "Recibir el resultado de una operacion matematica que involucra varias variables, por ejemplo a=c+b*2/4"
+            },
+            {
+              "id": "C",
+              "texto": "Ser usada unicamente para mostrar mensajes"
+            },
+            {
+              "id": "D",
+              "texto": "No poder cambiar de valor"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete: la lectura consiste en recibir desde un dispositivo de entrada, por ejemplo el ______, un valor.",
+          "xp": 10,
+          "explicacion": "El modulo indica el teclado como ejemplo de dispositivo de entrada para la operacion de lectura.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo indica el teclado como ejemplo de dispositivo de entrada para la operacion de lectura.",
+            "codigo": "E2.2.B.06"
+          },
+          "respuestaCorrecta": "teclado"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La escritura consiste en:",
+          "xp": 10,
+          "explicacion": "El modulo define la escritura como el envio de un resultado o mensaje por un dispositivo de salida.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo define la escritura como el envio de un resultado o mensaje por un dispositivo de salida.",
+            "codigo": "E2.2.B.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Recibir un valor del teclado"
+            },
+            {
+              "id": "B",
+              "texto": "Mandar por un dispositivo de salida (monitor o impresora) un resultado o mensaje"
+            },
+            {
+              "id": "C",
+              "texto": "Comparar dos variables logicas"
+            },
+            {
+              "id": "D",
+              "texto": "Repetir un bloque de instrucciones"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de interes bancario del modulo, con capital=5000 e interes de 2% mensual, cual es la ganancia (ganancia = capital * 0.02)?",
+          "xp": 10,
+          "explicacion": "5000 * 0.02 = 100, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "5000 * 0.02 = 100, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.2.B.08"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "50"
+            },
+            {
+              "id": "B",
+              "texto": "100"
+            },
+            {
+              "id": "C",
+              "texto": "500"
+            },
+            {
+              "id": "D",
+              "texto": "1000"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con capital=10000 en el mismo ejercicio, cual es la ganancia?",
+          "xp": 10,
+          "explicacion": "10000 * 0.02 = 200, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "10000 * 0.02 = 200, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.B.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "100"
+            },
+            {
+              "id": "B",
+              "texto": "200"
+            },
+            {
+              "id": "C",
+              "texto": "2000"
+            },
+            {
+              "id": "D",
+              "texto": "20"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio del vendedor, con sb=100, v1=300, v2=200, v3=100, cual es el total de ventas (tot_vta = v1+v2+v3)?",
+          "xp": 10,
+          "explicacion": "300+200+100 = 600, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "300+200+100 = 600, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.B.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "500"
+            },
+            {
+              "id": "B",
+              "texto": "600"
+            },
+            {
+              "id": "C",
+              "texto": "700"
+            },
+            {
+              "id": "D",
+              "texto": "1000"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con tot_vta=600 en el mismo ejercicio, cual es la comision (com = tot_vta * 0.10)?",
+          "xp": 10,
+          "explicacion": "600 * 0.10 = 60, tal como indica la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "600 * 0.10 = 60, tal como indica la prueba de escritorio del modulo.",
+            "codigo": "E2.2.B.11"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "6"
+            },
+            {
+              "id": "B",
+              "texto": "60"
+            },
+            {
+              "id": "C",
+              "texto": "600"
+            },
+            {
+              "id": "D",
+              "texto": "100"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con sb=100 y com=60, cual es el total a pagar (tpag = sb + com)?",
+          "xp": 10,
+          "explicacion": "100 + 60 = 160, segun la prueba de escritorio del ejercicio del vendedor.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "100 + 60 = 160, segun la prueba de escritorio del ejercicio del vendedor.",
+            "codigo": "E2.2.B.12"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "100"
+            },
+            {
+              "id": "B",
+              "texto": "60"
+            },
+            {
+              "id": "C",
+              "texto": "160"
+            },
+            {
+              "id": "D",
+              "texto": "260"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio del descuento de tienda, con tc=5000 y descuento del 15%, cual es el descuento d = tc * 0.15?",
+          "xp": 10,
+          "explicacion": "5000 * 0.15 = 750, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "5000 * 0.15 = 750, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.2.B.13"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "75"
+            },
+            {
+              "id": "B",
+              "texto": "750"
+            },
+            {
+              "id": "C",
+              "texto": "7500"
+            },
+            {
+              "id": "D",
+              "texto": "15"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con tc=5000 y d=750, cual es el total a pagar (tp = tc - d)?",
+          "xp": 10,
+          "explicacion": "5000 - 750 = 4250, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "5000 - 750 = 4250, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.B.14"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "4250"
+            },
+            {
+              "id": "B",
+              "texto": "4750"
+            },
+            {
+              "id": "C",
+              "texto": "5750"
+            },
+            {
+              "id": "D",
+              "texto": "4000"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cual es la estructura basica de un algoritmo secuencial segun el modulo?",
+          "xp": 10,
+          "explicacion": "El modulo indica que la estructura secuencial tiene una entrada y una salida.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo indica que la estructura secuencial tiene una entrada y una salida.",
+            "codigo": "E2.2.B.15"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Tiene una entrada y una salida, sin bifurcaciones"
+            },
+            {
+              "id": "B",
+              "texto": "Tiene multiples entradas y ninguna salida"
+            },
+            {
+              "id": "C",
+              "texto": "Solo tiene condiciones logicas"
+            },
+            {
+              "id": "D",
+              "texto": "Solo tiene bucles anidados"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de calificacion final, con c1=60, c2=70, c3=50, cual es el promedio prom=(c1+c2+c3)/3?",
+          "xp": 20,
+          "explicacion": "(60+70+50)/3 = 180/3 = 60, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "(60+70+50)/3 = 180/3 = 60, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "50"
+            },
+            {
+              "id": "B",
+              "texto": "60"
+            },
+            {
+              "id": "C",
+              "texto": "65"
+            },
+            {
+              "id": "D",
+              "texto": "70"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con prom=60, cual es ppar = prom * 0.55?",
+          "xp": 20,
+          "explicacion": "60 * 0.55 = 33, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "60 * 0.55 = 33, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "30"
+            },
+            {
+              "id": "B",
+              "texto": "33"
+            },
+            {
+              "id": "C",
+              "texto": "36"
+            },
+            {
+              "id": "D",
+              "texto": "60"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con ef=80, cual es pef = ef * 0.30?",
+          "xp": 20,
+          "explicacion": "80 * 0.30 = 24, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "80 * 0.30 = 24, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "20"
+            },
+            {
+              "id": "B",
+              "texto": "24"
+            },
+            {
+              "id": "C",
+              "texto": "30"
+            },
+            {
+              "id": "D",
+              "texto": "80"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con tf=80, cual es ptf = tf * 0.15?",
+          "xp": 20,
+          "explicacion": "80 * 0.15 = 12, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "80 * 0.15 = 12, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "8"
+            },
+            {
+              "id": "B",
+              "texto": "12"
+            },
+            {
+              "id": "C",
+              "texto": "15"
+            },
+            {
+              "id": "D",
+              "texto": "80"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con ppar=33, pef=24 y ptf=12, cual es la calificacion final cf = ppar+pef+ptf?",
+          "xp": 20,
+          "explicacion": "33+24+12 = 69, tal como muestra la prueba de escritorio del ejercicio de calificacion final.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "33+24+12 = 69, tal como muestra la prueba de escritorio del ejercicio de calificacion final.",
+            "codigo": "E2.2.I.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "59"
+            },
+            {
+              "id": "B",
+              "texto": "69"
+            },
+            {
+              "id": "C",
+              "texto": "79"
+            },
+            {
+              "id": "D",
+              "texto": "89"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de porcentaje de hombres y mujeres, con nh=70 y nm=60, cual es el total ta = nh + nm?",
+          "xp": 20,
+          "explicacion": "70+60 = 130, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "70+60 = 130, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "120"
+            },
+            {
+              "id": "B",
+              "texto": "130"
+            },
+            {
+              "id": "C",
+              "texto": "140"
+            },
+            {
+              "id": "D",
+              "texto": "70"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con nh=70 y ta=130, cual es el porcentaje de hombres ph = nh*100/ta (aproximado)?",
+          "xp": 20,
+          "explicacion": "70*100/130 es aproximadamente 53.8, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "70*100/130 es aproximadamente 53.8, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "46.15"
+            },
+            {
+              "id": "B",
+              "texto": "50.00"
+            },
+            {
+              "id": "C",
+              "texto": "53.8"
+            },
+            {
+              "id": "D",
+              "texto": "60.00"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Complete la formula del ejercicio de area de triangulo (ejemplo 7 del modulo): A = (B * H) / ______",
+          "xp": 20,
+          "explicacion": "El area de un triangulo se calcula como base por altura dividido entre 2, segun el proceso descrito en el modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El area de un triangulo se calcula como base por altura dividido entre 2, segun el proceso descrito en el modulo.",
+            "codigo": "E2.2.I.08"
+          },
+          "respuestaCorrecta": "2"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con B=7 y H=3 en el ejercicio del area de triangulo, cual es A = (B*H)/2?",
+          "xp": 20,
+          "explicacion": "(7*3)/2 = 21/2 = 10.5, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "(7*3)/2 = 21/2 = 10.5, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "10"
+            },
+            {
+              "id": "B",
+              "texto": "10.5"
+            },
+            {
+              "id": "C",
+              "texto": "21"
+            },
+            {
+              "id": "D",
+              "texto": "21.5"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de perimetro de rectangulo, con A=5 y B=8, cual es P = (2*A)+(2*B)?",
+          "xp": 20,
+          "explicacion": "(2*5)+(2*8) = 10+16 = 26, segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "(2*5)+(2*8) = 10+16 = 26, segun la prueba de escritorio del modulo.",
+            "codigo": "E2.2.I.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "13"
+            },
+            {
+              "id": "B",
+              "texto": "18"
+            },
+            {
+              "id": "C",
+              "texto": "26"
+            },
+            {
+              "id": "D",
+              "texto": "40"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio de obtener el residuo de una division (ejemplo 12 del modulo), con A=7 y B=3, cual es R = A mod B?",
+          "xp": 40,
+          "explicacion": "7 dividido entre 3 da residuo 1, tal como muestra la prueba de escritorio del modulo (A=7,B=3,R=1).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "7 dividido entre 3 da residuo 1, tal como muestra la prueba de escritorio del modulo (A=7,B=3,R=1).",
+            "codigo": "E2.2.A.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "0"
+            },
+            {
+              "id": "B",
+              "texto": "1"
+            },
+            {
+              "id": "C",
+              "texto": "2"
+            },
+            {
+              "id": "D",
+              "texto": "3"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio de area de circulo con r=5, usando A = Pi * r^2 con Pi=3.1416, cual es el resultado aproximado que muestra el modulo?",
+          "xp": 40,
+          "explicacion": "El modulo indica en su prueba de escritorio que con R=5 el area resultante es aproximadamente 78.5375.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "El modulo indica en su prueba de escritorio que con R=5 el area resultante es aproximadamente 78.5375.",
+            "codigo": "E2.2.A.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "50.24"
+            },
+            {
+              "id": "B",
+              "texto": "62.83"
+            },
+            {
+              "id": "C",
+              "texto": "78.5375"
+            },
+            {
+              "id": "D",
+              "texto": "94.2"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Analice por que la estructura secuencial exige que 'la salida de una tarea sea la entrada de la siguiente'.",
+          "xp": 40,
+          "explicacion": "Esta caracteristica asegura que el flujo permanezca lineal: cada paso se apoya en el resultado exacto del paso previo, sin desvios.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "Esta caracteristica asegura que el flujo permanezca lineal: cada paso se apoya en el resultado exacto del paso previo, sin desvios.",
+            "codigo": "E2.2.A.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque asi lo exige el lenguaje Python"
+            },
+            {
+              "id": "B",
+              "texto": "Porque garantiza el orden lineal sin bifurcaciones, ya que cada instruccion depende del resultado de la anterior para mantener la coherencia del proceso"
+            },
+            {
+              "id": "C",
+              "texto": "Porque reduce el numero de variables necesarias"
+            },
+            {
+              "id": "D",
+              "texto": "Porque evita que el programa tenga una salida"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Complete: en el ejercicio de las cuatro operaciones basicas del modulo, con A=4 y B=7, la resta R = A - B da ______.",
+          "xp": 40,
+          "explicacion": "4 - 7 = -3, tal como muestra la prueba de escritorio del ejercicio de las cuatro operaciones basicas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "4 - 7 = -3, tal como muestra la prueba de escritorio del ejercicio de las cuatro operaciones basicas.",
+            "codigo": "E2.2.A.04"
+          },
+          "respuestaCorrecta": "-3"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Siguiendo el mismo ejercicio de las cuatro operaciones basicas, con A=4 y B=7, la division R = A / B da aproximadamente?",
+          "xp": 40,
+          "explicacion": "4/7 es aproximadamente 0.57, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.2",
+            "citaBreve": "4/7 es aproximadamente 0.57, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.2.A.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "0.57"
+            },
+            {
+              "id": "B",
+              "texto": "1.75"
+            },
+            {
+              "id": "C",
+              "texto": "3.00"
+            },
+            {
+              "id": "D",
+              "texto": "4.70"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        }
+      ],
+      "retos": []
+    },
+    {
+      "numero": "2.3",
+      "titulo": "Estructuras Selectivas o Condicionales",
+      "descripcion": "Selección simple, doble y múltiple (if, if-else, switch) y condiciones anidadas.",
+      "umbral": 10,
+      "publicado": true,
+      "ejercicios": [
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cuantos tipos de estructura condicional menciona el modulo?",
+          "xp": 10,
+          "explicacion": "El modulo indica que una estructura de control condicional puede ser simple, doble o multiple.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que una estructura de control condicional puede ser simple, doble o multiple.",
+            "codigo": "E2.3.B.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Dos: simple y doble"
+            },
+            {
+              "id": "B",
+              "texto": "Tres: simple, doble y multiple"
+            },
+            {
+              "id": "C",
+              "texto": "Cuatro: simple, doble, triple y multiple"
+            },
+            {
+              "id": "D",
+              "texto": "Solo una: if"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La condicional simple (if) ejecuta una accion cuando:",
+          "xp": 10,
+          "explicacion": "El modulo indica que si-entonces ejecuta la accion cuando la condicion es verdadera, y no hace nada si es falsa.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que si-entonces ejecuta la accion cuando la condicion es verdadera, y no hace nada si es falsa.",
+            "codigo": "E2.3.B.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "La condicion es falsa"
+            },
+            {
+              "id": "B",
+              "texto": "La condicion es verdadera; si es falsa no hace nada"
+            },
+            {
+              "id": "C",
+              "texto": "Siempre, sin importar la condicion"
+            },
+            {
+              "id": "D",
+              "texto": "Solo si hay un bucle asociado"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La condicional doble (if-else) permite elegir entre:",
+          "xp": 10,
+          "explicacion": "El modulo indica que la estructura doble permite elegir entre dos opciones en funcion del cumplimiento o no de una condicion.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que la estructura doble permite elegir entre dos opciones en funcion del cumplimiento o no de una condicion.",
+            "codigo": "E2.3.B.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Una unica opcion"
+            },
+            {
+              "id": "B",
+              "texto": "Dos opciones o alternativas posibles"
+            },
+            {
+              "id": "C",
+              "texto": "Tres opciones obligatorias"
+            },
+            {
+              "id": "D",
+              "texto": "Ninguna opcion, solo evalua"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En la condicional multiple se evalua una expresion que puede tomar:",
+          "xp": 10,
+          "explicacion": "El modulo indica que la estructura de decision multiple evalua una expresion que puede tomar n valores distintos.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que la estructura de decision multiple evalua una expresion que puede tomar n valores distintos.",
+            "codigo": "E2.3.B.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Solo dos valores"
+            },
+            {
+              "id": "B",
+              "texto": "N valores distintos"
+            },
+            {
+              "id": "C",
+              "texto": "Unicamente valores booleanos"
+            },
+            {
+              "id": "D",
+              "texto": "Solo valores negativos"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete: en Python, desde la version 3.10, el pattern matching se implementa con las palabras clave match y ______.",
+          "xp": 10,
+          "explicacion": "El modulo indica que Python introdujo desde la version 3.10 el pattern matching con match y case.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que Python introdujo desde la version 3.10 el pattern matching con match y case.",
+            "codigo": "E2.3.B.05"
+          },
+          "respuestaCorrecta": "case"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Python admite una estructura switch-case nativa como C++ o Java?",
+          "xp": 10,
+          "explicacion": "El modulo aclara que Python no admite una estructura de control de casos nativa como otros lenguajes.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo aclara que Python no admite una estructura de control de casos nativa como otros lenguajes.",
+            "codigo": "E2.3.B.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Si, identica a la de Java"
+            },
+            {
+              "id": "B",
+              "texto": "No, no la admite; se puede simular con if-elif-else o match-case desde la version 3.10"
+            },
+            {
+              "id": "C",
+              "texto": "Si, pero solo en Python 2"
+            },
+            {
+              "id": "D",
+              "texto": "No, y tampoco tiene alternativa"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cuando se dice que una estructura condicional es anidada?",
+          "xp": 10,
+          "explicacion": "El modulo define asi la anidacion de estructuras condicionales.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo define asi la anidacion de estructuras condicionales.",
+            "codigo": "E2.3.B.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Cuando usa mas de un operador logico"
+            },
+            {
+              "id": "B",
+              "texto": "Cuando por la rama del verdadero o el falso de una estructura condicional hay otra estructura condicional"
+            },
+            {
+              "id": "C",
+              "texto": "Cuando tiene mas de diez lineas"
+            },
+            {
+              "id": "D",
+              "texto": "Cuando no usa la palabra else"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de verificar si un numero es positivo, con N=7, cual es la salida segun la prueba de escritorio?",
+          "xp": 10,
+          "explicacion": "La prueba de escritorio del modulo muestra 'ES POSITIVO' para N=7 (condicion N>=0).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "La prueba de escritorio del modulo muestra 'ES POSITIVO' para N=7 (condicion N>=0).",
+            "codigo": "E2.3.B.08"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "ES POSITIVO"
+            },
+            {
+              "id": "B",
+              "texto": "ES NEGATIVO"
+            },
+            {
+              "id": "C",
+              "texto": "ES NEUTRO"
+            },
+            {
+              "id": "D",
+              "texto": "Sin salida"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el mismo ejercicio, con N=-4, que muestra la tabla de prueba de escritorio del modulo?",
+          "xp": 10,
+          "explicacion": "La tabla del modulo muestra guiones para N=-4 y N=0, ya que la condicion evaluada es unicamente 'si N>=0 entonces Es Positivo'.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "La tabla del modulo muestra guiones para N=-4 y N=0, ya que la condicion evaluada es unicamente 'si N>=0 entonces Es Positivo'.",
+            "codigo": "E2.3.B.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "ES POSITIVO"
+            },
+            {
+              "id": "B",
+              "texto": "ES NEGATIVO"
+            },
+            {
+              "id": "C",
+              "texto": "Sin salida (guion), pues no cumple la condicion de N>=0"
+            },
+            {
+              "id": "D",
+              "texto": "ES NEUTRO"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de par o impar, con N=10, cual es la salida?",
+          "xp": 10,
+          "explicacion": "10 mod 2 = 0, por lo tanto la salida es 'ES PAR', segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "10 mod 2 = 0, por lo tanto la salida es 'ES PAR', segun la prueba de escritorio del modulo.",
+            "codigo": "E2.3.B.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "ES PAR"
+            },
+            {
+              "id": "B",
+              "texto": "ES IMPAR"
+            },
+            {
+              "id": "C",
+              "texto": "N no es entero"
+            },
+            {
+              "id": "D",
+              "texto": "Sin salida"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con N=15 en el mismo ejercicio, cual es la salida?",
+          "xp": 10,
+          "explicacion": "15 mod 2 es distinto de 0, por lo tanto la salida es 'ES IMPAR', segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "15 mod 2 es distinto de 0, por lo tanto la salida es 'ES IMPAR', segun la prueba de escritorio del modulo.",
+            "codigo": "E2.3.B.11"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "ES PAR"
+            },
+            {
+              "id": "B",
+              "texto": "ES IMPAR"
+            },
+            {
+              "id": "C",
+              "texto": "Sin salida"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de verificar cual de dos numeros es mayor, con A=12 y B=6, cual es la salida?",
+          "xp": 10,
+          "explicacion": "Como A>B (12>6), la salida es '12 ES MAYOR', segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "Como A>B (12>6), la salida es '12 ES MAYOR', segun la prueba de escritorio del modulo.",
+            "codigo": "E2.3.B.12"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "12 ES MAYOR"
+            },
+            {
+              "id": "B",
+              "texto": "6 ES MAYOR"
+            },
+            {
+              "id": "C",
+              "texto": "Son iguales"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con A=56 y B=100 en el mismo ejercicio, cual es la salida?",
+          "xp": 10,
+          "explicacion": "Como B>A (100>56), la salida es '100 ES MAYOR', segun la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "Como B>A (100>56), la salida es '100 ES MAYOR', segun la prueba de escritorio del modulo.",
+            "codigo": "E2.3.B.13"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "56 ES MAYOR"
+            },
+            {
+              "id": "B",
+              "texto": "100 ES MAYOR"
+            },
+            {
+              "id": "C",
+              "texto": "Son iguales"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "La palabra 'caso contrario' usada en el pseudocodigo del modulo equivale en Python a:",
+          "xp": 10,
+          "explicacion": "El pseudocodigo usa 'caso contrario' para las acciones cuando no se cumple la condicion, equivalente al else de Python.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El pseudocodigo usa 'caso contrario' para las acciones cuando no se cumple la condicion, equivalente al else de Python.",
+            "codigo": "E2.3.B.14"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "elif"
+            },
+            {
+              "id": "B",
+              "texto": "else"
+            },
+            {
+              "id": "C",
+              "texto": "except"
+            },
+            {
+              "id": "D",
+              "texto": "break"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Que estructura sugiere el modulo para implementar un menu de opciones en consola (por ejemplo un cajero automatico)?",
+          "xp": 10,
+          "explicacion": "El modulo indica que el switch (o su equivalente en Python) es util para definir un menu de usuario en aplicaciones de consola.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que el switch (o su equivalente en Python) es util para definir un menu de usuario en aplicaciones de consola.",
+            "codigo": "E2.3.B.15"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Una estructura secuencial simple"
+            },
+            {
+              "id": "B",
+              "texto": "Una estructura tipo switch (o su equivalente if-elif / match-case en Python)"
+            },
+            {
+              "id": "C",
+              "texto": "Un bucle for sin condiciones"
+            },
+            {
+              "id": "D",
+              "texto": "Ninguna, se debe usar solo lectura de datos"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de positivo, negativo o neutro, con N=0, cual es la salida?",
+          "xp": 20,
+          "explicacion": "Segun la prueba de escritorio del modulo, N=0 corresponde a la salida NEUTRO.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "Segun la prueba de escritorio del modulo, N=0 corresponde a la salida NEUTRO.",
+            "codigo": "E2.3.I.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "POSITIVO"
+            },
+            {
+              "id": "B",
+              "texto": "NEGATIVO"
+            },
+            {
+              "id": "C",
+              "texto": "NEUTRO"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con N=-7 en el mismo ejercicio, cual es la salida?",
+          "xp": 20,
+          "explicacion": "Segun la prueba de escritorio del modulo, N=-7 corresponde a la salida NEGATIVO.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "Segun la prueba de escritorio del modulo, N=-7 corresponde a la salida NEGATIVO.",
+            "codigo": "E2.3.I.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "POSITIVO"
+            },
+            {
+              "id": "B",
+              "texto": "NEGATIVO"
+            },
+            {
+              "id": "C",
+              "texto": "NEUTRO"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con N=8 en el mismo ejercicio, cual es la salida?",
+          "xp": 20,
+          "explicacion": "Segun la prueba de escritorio del modulo, N=8 corresponde a la salida POSITIVO.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "Segun la prueba de escritorio del modulo, N=8 corresponde a la salida POSITIVO.",
+            "codigo": "E2.3.I.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "POSITIVO"
+            },
+            {
+              "id": "B",
+              "texto": "NEGATIVO"
+            },
+            {
+              "id": "C",
+              "texto": "NEUTRO"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En la ecuacion de segundo grado con A=1, B=2, C=-3, cual es el discriminante D = B^2 - 4AC?",
+          "xp": 20,
+          "explicacion": "D = 2^2 - 4*1*(-3) = 4 + 12 = 16, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "D = 2^2 - 4*1*(-3) = 4 + 12 = 16, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.3.I.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "4"
+            },
+            {
+              "id": "B",
+              "texto": "10"
+            },
+            {
+              "id": "C",
+              "texto": "16"
+            },
+            {
+              "id": "D",
+              "texto": "-8"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con D=16 (positivo) en el ejercicio de la ecuacion de segundo grado, que tipo de raices tiene?",
+          "xp": 20,
+          "explicacion": "Segun el modulo, si D>0 la ecuacion tiene raices reales y distintas.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "Segun el modulo, si D>0 la ecuacion tiene raices reales y distintas.",
+            "codigo": "E2.3.I.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "No tiene raices reales"
+            },
+            {
+              "id": "B",
+              "texto": "Raices reales e iguales"
+            },
+            {
+              "id": "C",
+              "texto": "Raices reales y distintas"
+            },
+            {
+              "id": "D",
+              "texto": "Raices imaginarias"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de determinar el mayor entre tres numeros, con A=4, B=8, C=9, cual es el resultado?",
+          "xp": 20,
+          "explicacion": "C=9 es mayor que A=4 y B=8, por lo tanto 'C es mayor', segun la logica del modulo (C>A y C>B).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "C=9 es mayor que A=4 y B=8, por lo tanto 'C es mayor', segun la logica del modulo (C>A y C>B).",
+            "codigo": "E2.3.I.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "A es mayor"
+            },
+            {
+              "id": "B",
+              "texto": "B es mayor"
+            },
+            {
+              "id": "C",
+              "texto": "C es mayor"
+            },
+            {
+              "id": "D",
+              "texto": "Son todos iguales"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de multiplo de 3 pero no de 5, con N=18, cual es la salida segun el modulo?",
+          "xp": 20,
+          "explicacion": "18 mod 3 = 0 y 18 mod 5 es distinto de 0, por lo tanto es multiplo de 3 pero no de 5, tal como indica el modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "18 mod 3 = 0 y 18 mod 5 es distinto de 0, por lo tanto es multiplo de 3 pero no de 5, tal como indica el modulo.",
+            "codigo": "E2.3.I.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "18 es multiplo de 3 pero no de 5"
+            },
+            {
+              "id": "B",
+              "texto": "18 es multiplo de 3 y de 5"
+            },
+            {
+              "id": "C",
+              "texto": "18 no es multiplo de 3"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con N=15 en el mismo ejercicio, cual es la situacion segun el modulo?",
+          "xp": 20,
+          "explicacion": "15 mod 3 = 0 y 15 mod 5 = 0, por lo tanto el modulo indica que es multiplo de 3 y de 5 (no cumple la condicion exclusiva).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "15 mod 3 = 0 y 15 mod 5 = 0, por lo tanto el modulo indica que es multiplo de 3 y de 5 (no cumple la condicion exclusiva).",
+            "codigo": "E2.3.I.08"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "15 es multiplo de 3 pero no de 5"
+            },
+            {
+              "id": "B",
+              "texto": "15 es multiplo de 3 y tambien de 5"
+            },
+            {
+              "id": "C",
+              "texto": "15 no es multiplo de 3 ni de 5"
+            },
+            {
+              "id": "D",
+              "texto": "Error"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Complete la condicion en Python para el ejercicio de multiplo de 3 pero no de 5: if N % 3 == 0 and N % 5 ______ 0:",
+          "xp": 20,
+          "explicacion": "La condicion exige que N sea multiplo de 3 (resto 0) y que NO sea multiplo de 5 (resto distinto de 0), por lo tanto se usa el operador de distinto (!=).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "La condicion exige que N sea multiplo de 3 (resto 0) y que NO sea multiplo de 5 (resto distinto de 0), por lo tanto se usa el operador de distinto (!=).",
+            "codigo": "E2.3.I.09"
+          },
+          "respuestaCorrecta": "!="
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de aprobar o reprobar con calif1=80, calif2=60, calif3=70, segun la prueba de escritorio del modulo, el resultado mostrado es:",
+          "xp": 20,
+          "explicacion": "La prueba de escritorio del modulo, con prom=(80+60+70)/3=70, indica textualmente 'Alumno Aprobado' como resultado.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "La prueba de escritorio del modulo, con prom=(80+60+70)/3=70, indica textualmente 'Alumno Aprobado' como resultado.",
+            "codigo": "E2.3.I.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Alumno Aprobado"
+            },
+            {
+              "id": "B",
+              "texto": "Alumno Reprobado"
+            },
+            {
+              "id": "C",
+              "texto": "Nota insuficiente"
+            },
+            {
+              "id": "D",
+              "texto": "Error de calculo"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio del obrero que calcula su salario semanal, con ht=60 horas trabajadas (pago de $16 por las primeras 40 horas y $20 por cada hora extra), cual es el total ttrab?",
+          "xp": 40,
+          "explicacion": "he = 60-40 = 20 horas extra; ttrab = 20*20 + 40*16 = 400+640 = 1040, tal como muestra la prueba de escritorio del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "he = 60-40 = 20 horas extra; ttrab = 20*20 + 40*16 = 400+640 = 1040, tal como muestra la prueba de escritorio del modulo.",
+            "codigo": "E2.3.A.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "960"
+            },
+            {
+              "id": "B",
+              "texto": "1000"
+            },
+            {
+              "id": "C",
+              "texto": "1040"
+            },
+            {
+              "id": "D",
+              "texto": "1200"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Por que el switch-case no es directamente traducible a Python en versiones anteriores a la 3.10?",
+          "xp": 40,
+          "explicacion": "El modulo aclara que Python carecia de switch-case nativo y que debia simularse con if-elif-else antes de la introduccion de match-case.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo aclara que Python carecia de switch-case nativo y que debia simularse con if-elif-else antes de la introduccion de match-case.",
+            "codigo": "E2.3.A.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque Python no permite condicionales"
+            },
+            {
+              "id": "B",
+              "texto": "Porque Python no tenia una declaracion switch-case nativa; se simulaba con if-elif-else"
+            },
+            {
+              "id": "C",
+              "texto": "Porque Python no admite variables numericas"
+            },
+            {
+              "id": "D",
+              "texto": "Porque el switch-case fue eliminado de todos los lenguajes"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio de la ecuacion de segundo grado, si el discriminante D es menor que 0, que tipo de raices tiene la ecuacion segun el modulo?",
+          "xp": 40,
+          "explicacion": "El modulo indica que si D<0 la ecuacion no tiene raices reales sino imaginarias.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo indica que si D<0 la ecuacion no tiene raices reales sino imaginarias.",
+            "codigo": "E2.3.A.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Raices reales y distintas"
+            },
+            {
+              "id": "B",
+              "texto": "Raices reales e iguales"
+            },
+            {
+              "id": "C",
+              "texto": "No tiene raices reales, tiene raices imaginarias"
+            },
+            {
+              "id": "D",
+              "texto": "Raices negativas unicamente"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Complete la logica del ejercicio de descuento por monto de compra: si compra > 1000 entonces desc = compra * ______, caso contrario desc = 0.",
+          "xp": 40,
+          "explicacion": "El modulo establece un descuento del 20% cuando la compra supera los 1000, segun el ejercicio de almacen del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "El modulo establece un descuento del 20% cuando la compra supera los 1000, segun el ejercicio de almacen del modulo.",
+            "codigo": "E2.3.A.04"
+          },
+          "respuestaCorrecta": "0.20"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Analice la diferencia entre una estructura condicional anidada y una estructura condicional multiple en cascada.",
+          "xp": 40,
+          "explicacion": "La anidacion coloca una estructura condicional completa dentro de una rama de otra; la estructura multiple evalua una sola expresion comparandola contra varios valores posibles (casos).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "La anidacion coloca una estructura condicional completa dentro de una rama de otra; la estructura multiple evalua una sola expresion comparandola contra varios ",
+            "codigo": "E2.3.A.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Son exactamente lo mismo, solo cambia el nombre"
+            },
+            {
+              "id": "B",
+              "texto": "Ambas usan condiciones encadenadas, pero la anidada coloca una estructura completa dentro de la rama de otra, mientras que la multiple evalua una unica expresion contra varios valores posibles"
+            },
+            {
+              "id": "C",
+              "texto": "La anidada no permite usar else"
+            },
+            {
+              "id": "D",
+              "texto": "La multiple solo puede tener dos casos"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        }
+      ],
+      "retos": [
+        {
+          "titulo": "🐛 Bug: contar pares",
+          "categoria": "Condicionales",
+          "nivelSugerido": "intermedio",
+          "enunciado": "Debe contar cuántos números pares hay en la lista (=3), pero el conteo está mal. Corrige el bug.",
+          "codigoInicial": "nums = [4, 7, 10, 3, 8]\npares = 0\nfor x in nums:\n    if x % 2 == 1:\n        pares = pares + 1\nprint(pares)",
+          "ejemploSalida": "3",
+          "xp": 80,
+          "esBugHunt": true,
+          "activo": true,
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.3",
+            "citaBreve": "🐛 Bug: contar pares",
+            "origen": "preexistente"
+          }
+        }
+      ]
+    },
+    {
+      "numero": "2.4",
+      "titulo": "Estructuras Repetitivas o Bucles",
+      "descripcion": "Iteración con FOR, WHILE y DO WHILE; contadores, acumuladores y condiciones de parada.",
+      "umbral": 10,
+      "publicado": true,
+      "ejercicios": [
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Como se denominan las estructuras que repiten una secuencia de instrucciones un numero determinado de veces?",
+          "xp": 10,
+          "explicacion": "El modulo denomina 'bucles' a las estructuras que repiten instrucciones un numero determinado de veces.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo denomina 'bucles' a las estructuras que repiten instrucciones un numero determinado de veces.",
+            "codigo": "E2.4.B.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Condicionales"
+            },
+            {
+              "id": "B",
+              "texto": "Bucles"
+            },
+            {
+              "id": "C",
+              "texto": "Asignaciones"
+            },
+            {
+              "id": "D",
+              "texto": "Lecturas"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Como se denomina el hecho de repetir la ejecucion de una secuencia de acciones?",
+          "xp": 10,
+          "explicacion": "El modulo define iteracion como el hecho de repetir la ejecucion de una secuencia de acciones.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo define iteracion como el hecho de repetir la ejecucion de una secuencia de acciones.",
+            "codigo": "E2.4.B.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Asignacion"
+            },
+            {
+              "id": "B",
+              "texto": "Iteracion"
+            },
+            {
+              "id": "C",
+              "texto": "Lectura"
+            },
+            {
+              "id": "D",
+              "texto": "Escritura"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Cuales son las tres estructuras de control de repeticion mencionadas en el modulo?",
+          "xp": 10,
+          "explicacion": "El modulo indica que las estructuras de control de repeticion son For, While y Do While.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica que las estructuras de control de repeticion son For, While y Do While.",
+            "codigo": "E2.4.B.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "If, switch y case"
+            },
+            {
+              "id": "B",
+              "texto": "For, while y do while"
+            },
+            {
+              "id": "C",
+              "texto": "Lectura, proceso y escritura"
+            },
+            {
+              "id": "D",
+              "texto": "Entrada, salida y proceso"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "El bucle FOR tambien se conoce como:",
+          "xp": 10,
+          "explicacion": "El modulo describe al FOR como un bucle repetitivo conocido tambien como contador automatico.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo describe al FOR como un bucle repetitivo conocido tambien como contador automatico.",
+            "codigo": "E2.4.B.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Contador automatico"
+            },
+            {
+              "id": "B",
+              "texto": "Iterador manual"
+            },
+            {
+              "id": "C",
+              "texto": "Bucle infinito"
+            },
+            {
+              "id": "D",
+              "texto": "Bucle condicional puro"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Complete: el bucle FOR funciona sobre la base de una variable de ______ que, a partir de un valor inicial, se incrementa o decrementa.",
+          "xp": 10,
+          "explicacion": "El modulo indica que el FOR funciona con una variable de control (vc) que parte de un valor inicial.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica que el FOR funciona con una variable de control (vc) que parte de un valor inicial.",
+            "codigo": "E2.4.B.05"
+          },
+          "respuestaCorrecta": "control"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de sumar los N primeros numeros naturales, con N=5, cual es la suma S=1+2+3+4+5?",
+          "xp": 10,
+          "explicacion": "1+2+3+4+5 = 15, tal como muestra el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "1+2+3+4+5 = 15, tal como muestra el ejemplo del modulo.",
+            "codigo": "E2.4.B.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "10"
+            },
+            {
+              "id": "B",
+              "texto": "15"
+            },
+            {
+              "id": "C",
+              "texto": "20"
+            },
+            {
+              "id": "D",
+              "texto": "25"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con N=10 en el mismo ejercicio, cual es la suma S?",
+          "xp": 10,
+          "explicacion": "1+2+...+10 = 55, tal como muestra el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "1+2+...+10 = 55, tal como muestra el ejemplo del modulo.",
+            "codigo": "E2.4.B.07"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "45"
+            },
+            {
+              "id": "B",
+              "texto": "50"
+            },
+            {
+              "id": "C",
+              "texto": "55"
+            },
+            {
+              "id": "D",
+              "texto": "60"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "El bucle WHILE repite su cuerpo mientras:",
+          "xp": 10,
+          "explicacion": "El modulo indica que la estructura while repite mientras la condicion es verdadera, evaluandola antes de ejecutar el cuerpo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica que la estructura while repite mientras la condicion es verdadera, evaluandola antes de ejecutar el cuerpo.",
+            "codigo": "E2.4.B.08"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "La condicion es falsa"
+            },
+            {
+              "id": "B",
+              "texto": "La condicion es verdadera, evaluada antes de ejecutar el cuerpo"
+            },
+            {
+              "id": "C",
+              "texto": "Se presione una tecla"
+            },
+            {
+              "id": "D",
+              "texto": "El contador llegue a cero obligatoriamente"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "El bucle DO WHILE repite su cuerpo mientras:",
+          "xp": 10,
+          "explicacion": "El modulo indica que en do-while la condicion se evalua despues, garantizando que el cuerpo se ejecute al menos una vez.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica que en do-while la condicion se evalua despues, garantizando que el cuerpo se ejecute al menos una vez.",
+            "codigo": "E2.4.B.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "La condicion es verdadera, evaluada despues de ejecutar el cuerpo al menos una vez"
+            },
+            {
+              "id": "B",
+              "texto": "La condicion es falsa, evaluada antes"
+            },
+            {
+              "id": "C",
+              "texto": "Nunca se ejecuta el cuerpo"
+            },
+            {
+              "id": "D",
+              "texto": "Solo se ejecuta si N es par"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Python implementa nativamente la estructura Do While?",
+          "xp": 10,
+          "explicacion": "El modulo aclara explicitamente que en Python no se puede implementar la estructura de control Do While.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo aclara explicitamente que en Python no se puede implementar la estructura de control Do While.",
+            "codigo": "E2.4.B.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Si, de forma identica a Java"
+            },
+            {
+              "id": "B",
+              "texto": "No, segun el modulo no se puede implementar directamente esta estructura en Python"
+            },
+            {
+              "id": "C",
+              "texto": "Si, pero solo en Python 2"
+            },
+            {
+              "id": "D",
+              "texto": "No, y tampoco existe el bucle While"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de calcular el factorial usando FOR, con N=5, cual es F=1*2*3*4*5?",
+          "xp": 10,
+          "explicacion": "1*2*3*4*5 = 120, tal como muestra el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "1*2*3*4*5 = 120, tal como muestra el ejemplo del modulo.",
+            "codigo": "E2.4.B.11"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "100"
+            },
+            {
+              "id": "B",
+              "texto": "110"
+            },
+            {
+              "id": "C",
+              "texto": "120"
+            },
+            {
+              "id": "D",
+              "texto": "130"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Por definicion, segun el modulo, cuanto vale el factorial de 0?",
+          "xp": 10,
+          "explicacion": "El modulo indica explicitamente que por definicion el factorial de 0 es 1.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica explicitamente que por definicion el factorial de 0 es 1.",
+            "codigo": "E2.4.B.12"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "0"
+            },
+            {
+              "id": "B",
+              "texto": "1"
+            },
+            {
+              "id": "C",
+              "texto": "Indefinido"
+            },
+            {
+              "id": "D",
+              "texto": "Depende del lenguaje"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "En el ejercicio de calcular X elevado a Y mediante bucle FOR, con X=2 y Y=4, cual es el resultado P=2*2*2*2?",
+          "xp": 10,
+          "explicacion": "2*2*2*2 = 16, tal como muestra el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "2*2*2*2 = 16, tal como muestra el ejemplo del modulo.",
+            "codigo": "E2.4.B.13"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "8"
+            },
+            {
+              "id": "B",
+              "texto": "12"
+            },
+            {
+              "id": "C",
+              "texto": "16"
+            },
+            {
+              "id": "D",
+              "texto": "20"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Con X=5 y Y=3 en el mismo ejercicio, cual es el resultado P?",
+          "xp": 10,
+          "explicacion": "5*5*5 = 125, tal como muestra el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "5*5*5 = 125, tal como muestra el ejemplo del modulo.",
+            "codigo": "E2.4.B.14"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "15"
+            },
+            {
+              "id": "B",
+              "texto": "100"
+            },
+            {
+              "id": "C",
+              "texto": "125"
+            },
+            {
+              "id": "D",
+              "texto": "150"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.0,
+          "enunciado": "Segun el modulo, cuales son las dos preguntas principales a responder al disenar un bucle?",
+          "xp": 10,
+          "explicacion": "El modulo indica que las principales preguntas al disenar un bucle son que contiene el bucle y cuantas veces debe repetirse.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica que las principales preguntas al disenar un bucle son que contiene el bucle y cuantas veces debe repetirse.",
+            "codigo": "E2.4.B.15"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Que lenguaje usar y que IDE elegir"
+            },
+            {
+              "id": "B",
+              "texto": "Que contiene el bucle y cuantas veces se debe repetir"
+            },
+            {
+              "id": "C",
+              "texto": "Quien lo va a programar y cuanto va a tardar"
+            },
+            {
+              "id": "D",
+              "texto": "Si usa mayusculas o minusculas en el codigo"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de contar numeros pares con la lista 2, 7, 6, 14, 55, 124 (N=6), cuantos pares hay segun el modulo?",
+          "xp": 20,
+          "explicacion": "2, 6, 14 y 124 son pares: en total 4, tal como indica el ejemplo del modulo (CP=4).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "2, 6, 14 y 124 son pares: en total 4, tal como indica el ejemplo del modulo (CP=4).",
+            "codigo": "E2.4.I.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "2"
+            },
+            {
+              "id": "B",
+              "texto": "3"
+            },
+            {
+              "id": "C",
+              "texto": "4"
+            },
+            {
+              "id": "D",
+              "texto": "5"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de sumar los primeros N numeros pares, con N=6, cual es S=2+4+6+8+10+12?",
+          "xp": 20,
+          "explicacion": "2+4+6+8+10+12 = 42, tal como muestra el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "2+4+6+8+10+12 = 42, tal como muestra el ejemplo del modulo.",
+            "codigo": "E2.4.I.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "36"
+            },
+            {
+              "id": "B",
+              "texto": "40"
+            },
+            {
+              "id": "C",
+              "texto": "42"
+            },
+            {
+              "id": "D",
+              "texto": "48"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de verificar si N es primo, con N=5, cuantos divisores exactos tiene entre 1 y N segun el modulo?",
+          "xp": 20,
+          "explicacion": "5 solo es divisible exactamente entre 1 y 5, por lo tanto C=2 y es primo, segun el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "5 solo es divisible exactamente entre 1 y 5, por lo tanto C=2 y es primo, segun el ejemplo del modulo.",
+            "codigo": "E2.4.I.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "1"
+            },
+            {
+              "id": "B",
+              "texto": "2"
+            },
+            {
+              "id": "C",
+              "texto": "3"
+            },
+            {
+              "id": "D",
+              "texto": "5"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con N=8 en el mismo ejercicio, cuantos divisores exactos tiene segun el modulo?",
+          "xp": 20,
+          "explicacion": "8 es divisible entre 1,2,4,8, dando C=4, por lo tanto no es primo, segun el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "8 es divisible entre 1,2,4,8, dando C=4, por lo tanto no es primo, segun el ejemplo del modulo.",
+            "codigo": "E2.4.I.04"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "2"
+            },
+            {
+              "id": "B",
+              "texto": "3"
+            },
+            {
+              "id": "C",
+              "texto": "4"
+            },
+            {
+              "id": "D",
+              "texto": "8"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de determinar si N es perfecto, con N=6, cual es la suma de sus divisores propios (1+2+3)?",
+          "xp": 20,
+          "explicacion": "1+2+3 = 6, que es igual a N, por lo tanto 6 es perfecto, segun el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "1+2+3 = 6, que es igual a N, por lo tanto 6 es perfecto, segun el ejemplo del modulo.",
+            "codigo": "E2.4.I.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "4"
+            },
+            {
+              "id": "B",
+              "texto": "5"
+            },
+            {
+              "id": "C",
+              "texto": "6"
+            },
+            {
+              "id": "D",
+              "texto": "7"
+            }
+          ],
+          "respuestaCorrecta": "C"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Con N=8 en el mismo ejercicio, cual es la suma de sus divisores propios (1+2+4)?",
+          "xp": 20,
+          "explicacion": "1+2+4 = 7, que es distinto de 8, por lo tanto 8 no es perfecto, segun el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "1+2+4 = 7, que es distinto de 8, por lo tanto 8 no es perfecto, segun el ejemplo del modulo.",
+            "codigo": "E2.4.I.06"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "6"
+            },
+            {
+              "id": "B",
+              "texto": "7"
+            },
+            {
+              "id": "C",
+              "texto": "8"
+            },
+            {
+              "id": "D",
+              "texto": "9"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Complete el pseudocodigo del bucle FOR para sumar N numeros leidos por teclado: Para i = 1 hasta N { Leer A; S = S + ______ }",
+          "xp": 20,
+          "explicacion": "Cada numero leido (A) se acumula en S dentro del bucle, segun el ejemplo de suma de N numeros del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "Cada numero leido (A) se acumula en S dentro del bucle, segun el ejemplo de suma de N numeros del modulo.",
+            "codigo": "E2.4.I.07"
+          },
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de calcular el producto de dos enteros mediante sumas sucesivas, con A=3 y B=6, cual es C=3+3+3+3+3+3?",
+          "xp": 20,
+          "explicacion": "3 sumado 6 veces da 18, equivalente a 3*6, segun el ejemplo del modulo.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "3 sumado 6 veces da 18, equivalente a 3*6, segun el ejemplo del modulo.",
+            "codigo": "E2.4.I.08"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "15"
+            },
+            {
+              "id": "B",
+              "texto": "18"
+            },
+            {
+              "id": "C",
+              "texto": "21"
+            },
+            {
+              "id": "D",
+              "texto": "24"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "Por que el ejercicio de numero primo del modulo cuenta divisores desde 1 hasta N en lugar de detenerse antes?",
+          "xp": 20,
+          "explicacion": "El modulo presenta la solucion recorriendo todos los valores de 1 a N y comparando si el contador de divisores exactos es igual a 2.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo presenta la solucion recorriendo todos los valores de 1 a N y comparando si el contador de divisores exactos es igual a 2.",
+            "codigo": "E2.4.I.09"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque Python lo exige asi"
+            },
+            {
+              "id": "B",
+              "texto": "Porque la solucion basica del modulo cuenta todos los divisores exactos en ese rango y compara si el contador final es igual a 2"
+            },
+            {
+              "id": "C",
+              "texto": "Porque asi el programa es mas rapido"
+            },
+            {
+              "id": "D",
+              "texto": "Porque N siempre es menor a 10"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0.0,
+          "enunciado": "En el ejercicio de invertir un numero usando WHILE, con N=5314, cual es el numero invertido NI segun el modulo?",
+          "xp": 20,
+          "explicacion": "El modulo muestra paso a paso que invertir 5314 da como resultado 4135.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo muestra paso a paso que invertir 5314 da como resultado 4135.",
+            "codigo": "E2.4.I.10"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "4135"
+            },
+            {
+              "id": "B",
+              "texto": "4315"
+            },
+            {
+              "id": "C",
+              "texto": "5134"
+            },
+            {
+              "id": "D",
+              "texto": "4153"
+            }
+          ],
+          "respuestaCorrecta": "A"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio del Maximo Comun Divisor por restas sucesivas con WHILE, segun la tabla del modulo con X=10 y Y=8, cual es el MCD resultante?",
+          "xp": 40,
+          "explicacion": "La tabla del modulo muestra que restando sucesivamente el mayor menos el menor (10,8 -> 2,6 -> 4 -> 2) se llega a un MCD de 2.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "La tabla del modulo muestra que restando sucesivamente el mayor menos el menor (10,8 -> 2,6 -> 4 -> 2) se llega a un MCD de 2.",
+            "codigo": "E2.4.A.01"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "1"
+            },
+            {
+              "id": "B",
+              "texto": "2"
+            },
+            {
+              "id": "C",
+              "texto": "4"
+            },
+            {
+              "id": "D",
+              "texto": "8"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio del Minimo Comun Multiplo con WHILE, segun la tabla del modulo con X=8 y Y=2 (A=8, B=2), cual es el resultado final?",
+          "xp": 40,
+          "explicacion": "La tabla del modulo muestra que sumando sucesivamente A y B hasta igualar X y Y, el resultado final coincide en 8.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "La tabla del modulo muestra que sumando sucesivamente A y B hasta igualar X y Y, el resultado final coincide en 8.",
+            "codigo": "E2.4.A.02"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "2"
+            },
+            {
+              "id": "B",
+              "texto": "4"
+            },
+            {
+              "id": "C",
+              "texto": "6"
+            },
+            {
+              "id": "D",
+              "texto": "8"
+            }
+          ],
+          "respuestaCorrecta": "D"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "En el ejercicio de invertir un numero utilizando la estructura DO WHILE, con N=1234, cual es NI segun el modulo?",
+          "xp": 40,
+          "explicacion": "El modulo muestra paso a paso que invertir 1234 mediante do-while da como resultado 4321.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo muestra paso a paso que invertir 1234 mediante do-while da como resultado 4321.",
+            "codigo": "E2.4.A.03"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "1234"
+            },
+            {
+              "id": "B",
+              "texto": "4321"
+            },
+            {
+              "id": "C",
+              "texto": "3214"
+            },
+            {
+              "id": "D",
+              "texto": "2143"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "completar_codigo",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Complete: en el ejemplo de la serie generada con DO WHILE '10100100010000100000...', si n=3 el resultado mostrado por el modulo es ______.",
+          "xp": 40,
+          "explicacion": "El modulo indica explicitamente que para n=3 la serie generada es 101001000.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El modulo indica explicitamente que para n=3 la serie generada es 101001000.",
+            "codigo": "E2.4.A.04"
+          },
+          "respuestaCorrecta": "101001000"
+        },
+        {
+          "categoria": "Programación Estructurada",
+          "tipo": "opcion_multiple",
+          "nivel": "avanzado",
+          "b": 1.0,
+          "enunciado": "Analice por que 'cualquier problema resuelto con FOR es posible resolver con WHILE, y cualquier problema resuelto con WHILE es posible resolver con DO WHILE, pero no siempre a la inversa', segun la nota del modulo.",
+          "xp": 40,
+          "explicacion": "El FOR es un caso particular con iteraciones conocidas (expresable como WHILE); el WHILE evalua antes y el DO WHILE despues (ejecutando al menos una vez), por lo que la generalidad aumenta en ese sentido pero no siempre a la inversa.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "El FOR es un caso particular con iteraciones conocidas (expresable como WHILE); el WHILE evalua antes y el DO WHILE despues (ejecutando al menos una vez), por l",
+            "codigo": "E2.4.A.05"
+          },
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "Porque FOR, WHILE y DO WHILE son exactamente identicos"
+            },
+            {
+              "id": "B",
+              "texto": "Porque FOR es un caso particular de repeticion con numero de iteraciones conocido que puede expresarse como WHILE, y WHILE evalua la condicion antes mientras DO WHILE la evalua despues garantizando al menos una ejecucion, por lo que son estructuras cada vez mas generales pero no equivalentes en ambos sentidos"
+            },
+            {
+              "id": "C",
+              "texto": "Porque DO WHILE no existe en ningun lenguaje"
+            },
+            {
+              "id": "D",
+              "texto": "Porque FOR solo funciona con numeros pares"
+            }
+          ],
+          "respuestaCorrecta": "B"
+        }
+      ],
+      "retos": [
+        {
+          "titulo": "FizzBuzz",
+          "categoria": "Bucles",
+          "nivelSugerido": "intermedio",
+          "enunciado": "Imprime los números del 1 al 20. Para múltiplos de 3 imprime \"Fizz\", de 5 \"Buzz\", y de ambos \"FizzBuzz\".",
+          "codigoInicial": "for i in range(1, 21):\n    # tu código aquí\n    pass",
+          "xp": 80,
+          "esBugHunt": false,
+          "activo": true,
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "FizzBuzz",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "titulo": "🐛 Bug: suma del 1 al 5",
+          "categoria": "Bucles",
+          "nivelSugerido": "intermedio",
+          "enunciado": "Este código debería imprimir la suma de 1 a 5 (=15), pero da otro resultado. Encuentra y corrige el bug.",
+          "codigoInicial": "total = 0\nfor n in range(1, 5):\n    total = total + n\nprint(total)",
+          "ejemploSalida": "15",
+          "xp": 70,
+          "esBugHunt": true,
+          "activo": true,
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.4",
+            "citaBreve": "🐛 Bug: suma del 1 al 5",
+            "origen": "preexistente"
+          }
+        }
+      ]
+    },
+    {
+      "numero": "2.5",
+      "titulo": "Procesamiento y patrones numéricos",
+      "descripcion": "Descomposición de números, series y sucesiones.",
+      "umbral": 10,
+      "publicado": true,
+      "ejercicios": [
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "basico",
+          "b": -0.75,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "n = 47\nprint(n // 10, n % 10)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "4 7"
+            },
+            {
+              "id": "B",
+              "texto": "7 4"
+            },
+            {
+              "id": "C",
+              "texto": "47 0"
+            },
+            {
+              "id": "D",
+              "texto": "4.7"
+            }
+          ],
+          "respuestaCorrecta": "A",
+          "xp": 20,
+          "explicacion": "47//10=4 (decenas), 47%10=7 (unidades).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "47//10=4 (decenas), 47%10=7 (unidades).",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "n = 253\nunidades = n % 10\nprint(unidades)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "2"
+            },
+            {
+              "id": "B",
+              "texto": "5"
+            },
+            {
+              "id": "C",
+              "texto": "3"
+            },
+            {
+              "id": "D",
+              "texto": "253"
+            }
+          ],
+          "respuestaCorrecta": "C",
+          "xp": 30,
+          "explicacion": "n % 10 extrae el último dígito (unidades): 253 → 3.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "n % 10 extrae el último dígito (unidades): 253 → 3.",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "n = 253\ndecenas = (n // 10) % 10\nprint(decenas)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "3"
+            },
+            {
+              "id": "B",
+              "texto": "2"
+            },
+            {
+              "id": "C",
+              "texto": "25"
+            },
+            {
+              "id": "D",
+              "texto": "5"
+            }
+          ],
+          "respuestaCorrecta": "D",
+          "xp": 30,
+          "explicacion": "(253//10)=25; 25%10 = 5 (dígito de las decenas).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "(253//10)=25; 25%10 = 5 (dígito de las decenas).",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "completar_codigo",
+          "nivel": "intermedio",
+          "b": 0,
+          "enunciado": "Completa para obtener el último dígito de un número.",
+          "codigoPython": "n = 189\nultimo = n ____ 10\nprint(ultimo)",
+          "respuestaCorrecta": "%",
+          "xp": 30,
+          "explicacion": "n % 10 devuelve el dígito de las unidades.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "n % 10 devuelve el dígito de las unidades.",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "intermedio",
+          "b": 0,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "serie = 0\nfor i in range(2, 11, 2):\n    serie += i\nprint(serie)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "20"
+            },
+            {
+              "id": "B",
+              "texto": "25"
+            },
+            {
+              "id": "C",
+              "texto": "2"
+            },
+            {
+              "id": "D",
+              "texto": "30"
+            }
+          ],
+          "respuestaCorrecta": "D",
+          "xp": 30,
+          "explicacion": "Pares 2+4+6+8+10 = 30.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "Pares 2+4+6+8+10 = 30.",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 0.75,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "suma = 0\nfor i in range(1, 11):\n    suma += i\nprint(suma)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "45"
+            },
+            {
+              "id": "B",
+              "texto": "55"
+            },
+            {
+              "id": "C",
+              "texto": "10"
+            },
+            {
+              "id": "D",
+              "texto": "100"
+            }
+          ],
+          "respuestaCorrecta": "B",
+          "xp": 40,
+          "explicacion": "Suma de 1 a 10 = 55.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "Suma de 1 a 10 = 55.",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 0.75,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "resultado = 1\nfor i in range(1, 5):\n    resultado *= i\nprint(resultado)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "10"
+            },
+            {
+              "id": "B",
+              "texto": "20"
+            },
+            {
+              "id": "C",
+              "texto": "24"
+            },
+            {
+              "id": "D",
+              "texto": "120"
+            }
+          ],
+          "respuestaCorrecta": "C",
+          "xp": 40,
+          "explicacion": "Factorial de 4 = 1*2*3*4 = 24.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "Factorial de 4 = 1*2*3*4 = 24.",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 1.5,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "a, b = 0, 1\nfor _ in range(5):\n    a, b = b, a + b\nprint(a)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "5"
+            },
+            {
+              "id": "B",
+              "texto": "3"
+            },
+            {
+              "id": "C",
+              "texto": "8"
+            },
+            {
+              "id": "D",
+              "texto": "13"
+            }
+          ],
+          "respuestaCorrecta": "A",
+          "xp": 50,
+          "explicacion": "Fibonacci: tras 5 pasos a=5 (0,1,1,2,3,5).",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "Fibonacci: tras 5 pasos a=5 (0,1,1,2,3,5).",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "ordenar_lineas",
+          "nivel": "avanzado",
+          "b": 0.75,
+          "enunciado": "Ordena para sumar los dígitos de un número de 3 cifras (n=347):",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "n = 347"
+            },
+            {
+              "id": "B",
+              "texto": "suma = n // 100 + (n // 10) % 10 + n % 10"
+            },
+            {
+              "id": "C",
+              "texto": "print(suma)"
+            }
+          ],
+          "respuestaCorrecta": "A,B,C",
+          "xp": 40,
+          "explicacion": "Se extrae cada dígito con // y % y se suman: 3+4+7=14.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "Se extrae cada dígito con // y % y se suman: 3+4+7=14.",
+            "origen": "preexistente"
+          }
+        },
+        {
+          "categoria": "Patrones numéricos",
+          "tipo": "predecir_salida",
+          "nivel": "avanzado",
+          "b": 0.75,
+          "enunciado": "¿Qué imprime el siguiente código?",
+          "codigoPython": "cont = 0\nfor i in range(1, 21):\n    if i % 3 == 0:\n        cont += 1\nprint(cont)",
+          "opciones": [
+            {
+              "id": "A",
+              "texto": "7"
+            },
+            {
+              "id": "B",
+              "texto": "6"
+            },
+            {
+              "id": "C",
+              "texto": "5"
+            },
+            {
+              "id": "D",
+              "texto": "3"
+            }
+          ],
+          "respuestaCorrecta": "B",
+          "xp": 40,
+          "explicacion": "Múltiplos de 3 entre 1 y 20: 3,6,9,12,15,18 → 6.",
+          "fuenteDoc": {
+            "unidad": "2",
+            "tema": "2.5",
+            "citaBreve": "Múltiplos de 3 entre 1 y 20: 3,6,9,12,15,18 → 6.",
+            "origen": "preexistente"
+          }
+        }
+      ],
+      "retos": []
+    }
+  ],
+  "examen": [
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "opcion_multiple",
+      "nivel": "intermedio",
+      "b": 0.0,
+      "enunciado": "Un diagrama de flujo presenta dos simbolos de Fin en ramas distintas del programa. Segun el Teorema Fundamental, esto es aceptable?",
+      "xp": 20,
+      "explicacion": "El Teorema Fundamental exige que el diagrama tenga solo un punto de salida, sin importar cuantas ramas condicionales existan.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.1",
+        "citaBreve": "El Teorema Fundamental exige que el diagrama tenga solo un punto de salida, sin importar cuantas ramas condicionales existan.",
+        "codigo": "EF.01"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Si, siempre que tenga un inicio"
+        },
+        {
+          "id": "B",
+          "texto": "No, el teorema exige un unico punto de salida"
+        },
+        {
+          "id": "C",
+          "texto": "Si, siempre que use bucles"
+        },
+        {
+          "id": "D",
+          "texto": "No, porque le falta una condicion"
+        }
+      ],
+      "respuestaCorrecta": "B"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "predecir_salida",
+      "nivel": "intermedio",
+      "b": 0.0,
+      "enunciado": "En el ejercicio del vendedor, con sb=100, v1=300, v2=200, v3=100, cual es el total a pagar tpag = sb + (tot_vta*0.10)?",
+      "xp": 20,
+      "explicacion": "tot_vta=600, com=60, tpag=100+60=160, tal como muestra la prueba de escritorio del modulo.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.2",
+        "citaBreve": "tot_vta=600, com=60, tpag=100+60=160, tal como muestra la prueba de escritorio del modulo.",
+        "codigo": "EF.02"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "100"
+        },
+        {
+          "id": "B",
+          "texto": "60"
+        },
+        {
+          "id": "C",
+          "texto": "160"
+        },
+        {
+          "id": "D",
+          "texto": "600"
+        }
+      ],
+      "respuestaCorrecta": "C"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "predecir_salida",
+      "nivel": "intermedio",
+      "b": 0.0,
+      "enunciado": "En el ejercicio de multiplo de 3 pero no de 5, con N=18, cual es el resultado segun el modulo?",
+      "xp": 20,
+      "explicacion": "18 mod 3 = 0 y 18 mod 5 es distinto de 0, por lo tanto es multiplo de 3 pero no de 5.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.3",
+        "citaBreve": "18 mod 3 = 0 y 18 mod 5 es distinto de 0, por lo tanto es multiplo de 3 pero no de 5.",
+        "codigo": "EF.03"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "18 es multiplo de 3 pero no de 5"
+        },
+        {
+          "id": "B",
+          "texto": "18 es multiplo de 3 y de 5"
+        },
+        {
+          "id": "C",
+          "texto": "18 no es multiplo de 3"
+        },
+        {
+          "id": "D",
+          "texto": "18 es multiplo de 5 pero no de 3"
+        }
+      ],
+      "respuestaCorrecta": "A"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "predecir_salida",
+      "nivel": "intermedio",
+      "b": 0.0,
+      "enunciado": "En el ejercicio de numero perfecto con N=6, la suma de sus divisores propios (1+2+3) es igual a N. Es N=6 un numero perfecto?",
+      "xp": 20,
+      "explicacion": "1+2+3=6, que es igual a N, por lo tanto 6 es un numero perfecto segun el ejemplo del modulo.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.4",
+        "citaBreve": "1+2+3=6, que es igual a N, por lo tanto 6 es un numero perfecto segun el ejemplo del modulo.",
+        "codigo": "EF.04"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Si, es perfecto porque la suma de divisores propios es igual a 6"
+        },
+        {
+          "id": "B",
+          "texto": "No, porque 6 es un numero par"
+        },
+        {
+          "id": "C",
+          "texto": "No, porque le falta un divisor"
+        },
+        {
+          "id": "D",
+          "texto": "Si, pero solo si N es primo"
+        }
+      ],
+      "respuestaCorrecta": "A"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "completar_codigo",
+      "nivel": "intermedio",
+      "b": 0.0,
+      "enunciado": "Complete la condicion en Python para verificar si un numero N es par: if N % 2 == ______:",
+      "xp": 20,
+      "explicacion": "Un numero es par cuando el resto de dividirlo entre 2 es exactamente 0.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.3",
+        "citaBreve": "Un numero es par cuando el resto de dividirlo entre 2 es exactamente 0.",
+        "codigo": "EF.05"
+      },
+      "respuestaCorrecta": "0"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "opcion_multiple",
+      "nivel": "avanzado",
+      "b": 1.0,
+      "enunciado": "Analice: un programa con multiples goto pero con un solo inicio y un solo fin declarados formalmente, respeta el espiritu del Teorema Fundamental?",
+      "xp": 40,
+      "explicacion": "El teorema busca flujo claro y predecible; el uso extensivo de goto puede generar codigo dificil de seguir aunque formalmente exista un solo inicio y un solo fin.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.1",
+        "citaBreve": "El teorema busca flujo claro y predecible; el uso extensivo de goto puede generar codigo dificil de seguir aunque formalmente exista un solo inicio y un solo fi",
+        "codigo": "EF.06"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Si, porque cumple la condicion formal de inicio y fin unicos"
+        },
+        {
+          "id": "B",
+          "texto": "No necesariamente, porque los saltos incondicionales pueden romper el control de flujo estructurado generando un flujo dificil de seguir pese a mantener un unico inicio y fin formales"
+        },
+        {
+          "id": "C",
+          "texto": "Si, siempre que use variables enteras"
+        },
+        {
+          "id": "D",
+          "texto": "No, porque el goto esta prohibido en todos los lenguajes"
+        }
+      ],
+      "respuestaCorrecta": "B"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "predecir_salida",
+      "nivel": "avanzado",
+      "b": 1.0,
+      "enunciado": "En el ejercicio de las cuatro operaciones basicas, con A=4 y B=7, cual es el resultado aproximado de R = A / B?",
+      "xp": 40,
+      "explicacion": "4/7 es aproximadamente 0.57, tal como muestra la prueba de escritorio del modulo.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.2",
+        "citaBreve": "4/7 es aproximadamente 0.57, tal como muestra la prueba de escritorio del modulo.",
+        "codigo": "EF.07"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "0.57"
+        },
+        {
+          "id": "B",
+          "texto": "1.75"
+        },
+        {
+          "id": "C",
+          "texto": "-3"
+        },
+        {
+          "id": "D",
+          "texto": "28"
+        }
+      ],
+      "respuestaCorrecta": "A"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "opcion_multiple",
+      "nivel": "avanzado",
+      "b": 1.0,
+      "enunciado": "En el ejercicio de la ecuacion de segundo grado, si el discriminante D es menor que 0, que tipo de raices tiene la ecuacion?",
+      "xp": 40,
+      "explicacion": "El modulo indica que si D<0 la ecuacion no tiene raices reales sino imaginarias.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.3",
+        "citaBreve": "El modulo indica que si D<0 la ecuacion no tiene raices reales sino imaginarias.",
+        "codigo": "EF.08"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Raices reales y distintas"
+        },
+        {
+          "id": "B",
+          "texto": "Raices reales e iguales"
+        },
+        {
+          "id": "C",
+          "texto": "No tiene raices reales, tiene raices imaginarias"
+        },
+        {
+          "id": "D",
+          "texto": "Raices negativas enteras"
+        }
+      ],
+      "respuestaCorrecta": "C"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "predecir_salida",
+      "nivel": "avanzado",
+      "b": 1.0,
+      "enunciado": "En el ejercicio del Maximo Comun Divisor por restas sucesivas con WHILE, con X=10 y Y=8, cual es el MCD resultante segun la tabla del modulo?",
+      "xp": 40,
+      "explicacion": "Restando sucesivamente el mayor menos el menor (10,8 -> 2,6 -> 4 -> 2) se llega a un MCD de 2, tal como muestra la tabla del modulo.",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.4",
+        "citaBreve": "Restando sucesivamente el mayor menos el menor (10,8 -> 2,6 -> 4 -> 2) se llega a un MCD de 2, tal como muestra la tabla del modulo.",
+        "codigo": "EF.09"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "1"
+        },
+        {
+          "id": "B",
+          "texto": "2"
+        },
+        {
+          "id": "C",
+          "texto": "4"
+        },
+        {
+          "id": "D",
+          "texto": "8"
+        }
+      ],
+      "respuestaCorrecta": "B"
+    },
+    {
+      "categoria": "Programación Estructurada",
+      "tipo": "opcion_multiple",
+      "nivel": "avanzado",
+      "b": 1.0,
+      "enunciado": "Por que no siempre es posible resolver con FOR un problema que se resuelve con WHILE o DO WHILE, segun la nota del modulo?",
+      "xp": 40,
+      "explicacion": "El FOR es un contador automatico pensado para un numero de iteraciones conocido; WHILE y DO WHILE permiten repetir un numero indeterminado de veces segun una condicion, siendo mas generales en ese sentido. CRITERIO DE CALIFICACION Aciertos Porcentaje Resultado 10 de 10 100 % Aprobado - dominio avanzado de la unidad 8 a 9 80 a 90 % Aprobado - habilita la Unidad 3 7 70 % Aprobado en el limite - se sugiere repaso 6 o menos menos de 70 % No aprobado - repetir practica del nivel intermedio",
+      "fuenteDoc": {
+        "unidad": "2",
+        "tema": "2.4",
+        "citaBreve": "El FOR es un contador automatico pensado para un numero de iteraciones conocido; WHILE y DO WHILE permiten repetir un numero indeterminado de veces segun una co",
+        "codigo": "EF.10"
+      },
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Porque FOR es mas lento que WHILE"
+        },
+        {
+          "id": "B",
+          "texto": "Porque FOR requiere un numero de iteraciones conocido de antemano, mientras que WHILE y DO WHILE permiten un numero indeterminado de iteraciones controlado por una condicion"
+        },
+        {
+          "id": "C",
+          "texto": "Porque FOR no admite variables enteras"
+        },
+        {
+          "id": "D",
+          "texto": "Porque FOR solo existe en Python"
+        }
+      ],
+      "respuestaCorrecta": "B"
+    }
+  ]
+}

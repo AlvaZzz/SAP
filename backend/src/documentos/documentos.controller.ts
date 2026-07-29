@@ -22,23 +22,78 @@ export class DocumentosController {
 
   @Get()
   async listar(@Query('nivel') nivel?: string, @Query('q') q?: string) {
+    // El buscador REAL vive en el cliente (filtra en tiempo real sobre el listado
+    // ya cargado). Este `q` se conserva para consumidores directos de la API y
+    // cubre los mismos campos que la UI: título, descripción, tema, unidad y docente.
+    const termino = q?.trim();
     const where: Prisma.DocumentoWhereInput = {
       ...(nivel ? { nivel: { numero: Number(nivel) } } : {}),
-      ...(q ? { titulo: { contains: q, mode: 'insensitive' } } : {}),
+      ...(termino
+        ? {
+            OR: [
+              { titulo: { contains: termino, mode: 'insensitive' } },
+              { descripcion: { contains: termino, mode: 'insensitive' } },
+              { subidoPor: { nombre: { contains: termino, mode: 'insensitive' } } },
+              { tema: { titulo: { contains: termino, mode: 'insensitive' } } },
+              { tema: { numero: { contains: termino, mode: 'insensitive' } } },
+              { tema: { unidad: { titulo: { contains: termino, mode: 'insensitive' } } } },
+            ],
+          }
+        : {}),
     };
     const docs = await this.prisma.documento.findMany({
       where,
-      orderBy: { creadoEn: 'desc' },
-      include: { subidoPor: { select: { nombre: true } }, nivel: { select: { numero: true, titulo: true } } },
+      include: {
+        subidoPor: { select: { nombre: true } },
+        nivel: { select: { numero: true, titulo: true } },
+        // Un SUBTEMA es un Tema con `padre`. Por eso el documento apunta siempre a
+        // `temaId` y aquí deducimos si ese tema es un tema raíz o un subtema; la
+        // unidad se alcanza por la relación en cualquiera de los dos casos.
+        tema: {
+          select: {
+            id: true, numero: true, titulo: true, orden: true,
+            unidad: { select: { id: true, numero: true, titulo: true } },
+            padre: { select: { id: true, numero: true, titulo: true, orden: true } },
+          },
+        },
+      },
     });
-    return {
-      documentos: docs.map((d) => ({
-        id: d.id, titulo: d.titulo, descripcion: d.descripcion,
+
+    const salida = docs.map((d) => {
+      const esSubtema = !!d.tema?.padre;
+      const temaRaiz = esSubtema ? d.tema!.padre! : d.tema ?? null;
+      return {
+        id: d.id,
+        titulo: d.titulo,
+        descripcion: d.descripcion,
         archivo: `/api/documentos/${d.id}/archivo`, // URL de stream, no la ruta física
-        tamano_bytes: d.tamanoBytes, nivel: d.nivel?.titulo ?? null,
-        subido_por: d.subidoPor.nombre, fecha: d.creadoEn,
-      })),
-    };
+        tamano_bytes: d.tamanoBytes,
+        nivel: d.nivel?.titulo ?? null,
+        subido_por: d.subidoPor.nombre,
+        fecha: d.creadoEn,
+        unidad: d.tema ? d.tema.unidad : null,
+        tema: temaRaiz ? { id: temaRaiz.id, numero: temaRaiz.numero, titulo: temaRaiz.titulo } : null,
+        subtema: esSubtema ? { id: d.tema!.id, numero: d.tema!.numero, titulo: d.tema!.titulo } : null,
+        // Claves de ordenamiento/agrupación (no se pintan): mantienen el mismo
+        // criterio académico que el resto del sistema.
+        _orden: {
+          unidad: d.tema?.unidad.numero ?? Number.MAX_SAFE_INTEGER, // sin tema → "General", al final
+          tema: (esSubtema ? d.tema!.padre!.orden : d.tema?.orden) ?? 0,
+          subtema: esSubtema ? d.tema!.orden : -1, // el tema en sí va antes que sus subtemas
+        },
+      };
+    });
+
+    // UNIDAD → TEMA → SUBTEMA → título. `numero` es texto ("1.10" < "1.9" al
+    // comparar como cadena), así que ordenamos por `orden`, que es el campo
+    // numérico que ya usa el temario.
+    salida.sort((a, b) =>
+      a._orden.unidad - b._orden.unidad
+      || a._orden.tema - b._orden.tema
+      || a._orden.subtema - b._orden.subtema
+      || a.titulo.localeCompare(b.titulo, 'es'));
+
+    return { documentos: salida.map(({ _orden, ...d }) => d) };
   }
 
   // Sirve el PDF por streaming (inline). Accesible a cualquier usuario autenticado.

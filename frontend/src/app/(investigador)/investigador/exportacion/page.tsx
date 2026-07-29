@@ -33,6 +33,12 @@ export default function ExportacionPage() {
       <PageHeader title="Exportación del dataset" subtitle="Dataset consolidado y anonimizado, listo para la prueba t de Student en Google Colab."
         action={<a href="/api/investigador/exportacion/export.csv" className="btn-primary"><Download className="h-4 w-4" /> Exportar CSV</a>} />
 
+      {/* Descargas complementarias (desglose fino del progreso) */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        <a href="/api/investigador/exportacion/diagnostico-temas.csv" className="inline-flex items-center gap-2 rounded-xl border border-line bg-card px-3.5 py-2 text-sm font-semibold text-fg transition hover:bg-subtle"><Download className="h-4 w-4 text-prexi-blue-deep" /> Diagnóstico por tema (CSV)</a>
+        <a href="/api/investigador/exportacion/examenes-unidad.csv" className="inline-flex items-center gap-2 rounded-xl border border-line bg-card px-3.5 py-2 text-sm font-semibold text-fg transition hover:bg-subtle"><Download className="h-4 w-4 text-prexi-blue-deep" /> Exámenes de unidad (CSV)</a>
+      </div>
+
       {/* Aviso de anonimización + columnas */}
       <div className="mb-6 grid gap-4 lg:grid-cols-3">
         <Card className="flex items-start gap-3 lg:col-span-2">

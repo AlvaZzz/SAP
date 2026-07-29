@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
 import { Markdown } from '@/components/markdown';
+import { BotonVoz } from '@/components/boton-voz';
 import { GraduationCap, BookOpen, CheckCircle, Check, ArrowRight, Lock } from '@/components/icons';
 
 interface UnidadIntro {
@@ -91,12 +92,14 @@ export default function IntroduccionPage() {
 
         {/* Contenido de la unidad activa */}
         <article className="card animate-fade-up">
-          <div className="mb-3 flex items-start gap-3 border-b border-slate-100 pb-4">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-prexi-blue-deep"><BookOpen className="h-5 w-5" /></div>
-            <div>
+          <div className="mb-3 flex flex-wrap items-start gap-3 border-b border-line pb-4">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-prexi-blue/10 text-prexi-blue-deep"><BookOpen className="h-5 w-5" /></div>
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-bold uppercase tracking-wide text-prexi-blue-deep">Unidad {u.numero}</p>
-              <h1 className="text-xl font-extrabold text-prexi-navy">{u.titulo}</h1>
+              <h1 className="text-xl font-extrabold text-fg">{u.titulo}</h1>
             </div>
+            {/* Escuchar la introducción (accesibilidad; oculto si el navegador no soporta voz) */}
+            {u.introduccion && <BotonVoz texto={`Unidad ${u.numero}. ${u.titulo}. ${u.introduccion}`} variante="boton" className="shrink-0" />}
           </div>
           {u.introduccion
             ? <Markdown content={u.introduccion} />

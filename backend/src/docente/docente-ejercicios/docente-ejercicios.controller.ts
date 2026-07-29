@@ -2,7 +2,8 @@ import {
   Controller, Get, Post, Put, Patch, Delete, Param, Query, Body, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { DocenteEjerciciosService } from './docente-ejercicios.service';
-import { CrearEjercicioDto, EditarEjercicioDto } from './dto/ejercicio.dto';
+import { CrearEjercicioDto, EditarEjercicioDto, BANCOS_DOCENTE } from './dto/ejercicio.dto';
+import { Banco } from '@prisma/client';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 
@@ -16,25 +17,32 @@ import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 export class DocenteEjerciciosController {
   constructor(private readonly service: DocenteEjerciciosService) {}
 
+  /** Normaliza el query `banco` a uno gestionable (practica | examen). */
+  private banco(b?: string): Banco | undefined {
+    return b && (BANCOS_DOCENTE as string[]).includes(b) ? (b as Banco) : undefined;
+  }
+
   @Get()
   async listar(
     @Query('nivel') nivel?: string,
     @Query('categoria') categoria?: string,
     @Query('dificultad') dificultad?: string,
     @Query('tema') tema?: string,
+    @Query('banco') banco?: string,
   ) {
     const ejercicios = await this.service.listar({
       nivel: nivel ? Number(nivel) : undefined,
       categoria: categoria || undefined,
       dificultad: dificultad ? Number(dificultad) : undefined,
       temaId: tema ? Number(tema) : undefined,
+      banco: this.banco(banco),
     });
     return { ejercicios };
   }
 
   @Get('categorias')
-  async categorias() {
-    return { categorias: await this.service.categorias() };
+  async categorias(@Query('banco') banco?: string) {
+    return { categorias: await this.service.categorias(this.banco(banco)) };
   }
 
   @Get(':id')

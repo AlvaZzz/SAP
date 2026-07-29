@@ -25,7 +25,7 @@ export default function RankingPage() {
   const arriba = yo?.posicion ? ranking.find((r) => r.posicion === yo.posicion! - 1) : undefined;
   const xpParaSubir = arriba && yo ? Math.max(0, arriba.xp_total - yo.xp_total + 1) : null;
   const podio = ranking.slice(0, 3);
-  const medalla = (p: number | null) => (p === 1 ? '🥇' : p === 2 ? '🥈' : p === 3 ? '🥉' : `#${p ?? '—'}`);
+  const medalla = (p: number | null) => `#${p ?? '—'}`;
 
   return (
     <div className="animate-fade-up">
@@ -83,7 +83,7 @@ export default function RankingPage() {
               <p className="mb-4 text-sm text-blue-100/80">{yo.xp_total.toLocaleString()} XP acumulados</p>
               <div className="rounded-xl bg-white/10 px-4 py-3 text-sm">
                 {xpParaSubir != null && arriba ? <span className="flex items-center gap-1.5"><TrendingUp className="h-4 w-4 text-green-300" /> Te faltan <b>{xpParaSubir} XP</b> para el puesto #{arriba.posicion}</span>
-                  : <span className="flex items-center gap-1.5"><Trophy className="h-4 w-4 text-amber-300" /> ¡Estás en lo más alto! 🎉</span>}
+                  : <span className="flex items-center gap-1.5"><Trophy className="h-4 w-4 text-amber-300" /> Estás en lo más alto.</span>}
               </div>
             </div>
           )}

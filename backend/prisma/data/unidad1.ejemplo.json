@@ -1,0 +1,92 @@
+{
+  "_instrucciones": "PLANTILLA DE FORMATO para prisma/data/unidad1.json. El temario (1.1–1.11) ya refleja el índice REAL de 'UNIDAD 1 PROGRAMACION 1.pdf'. Los 2 ítems incluidos son EJEMPLOS DE FORMATO y deben REEMPLAZARSE por el contenido real con revisión pedagógica. Ver prisma/data/README-unidad1.md. Guardar la versión final como unidad1.json.",
+  "unidad": { "numero": 1, "titulo": "Fundamentos de la Programación" },
+  "autorEmail": "docente@upea.edu.bo",
+  "temas": [
+    {
+      "numero": "1.1", "titulo": "Algoritmo y Programación",
+      "descripcion": "Qué es un algoritmo (finitud, definibilidad, precisión) y qué es programar.",
+      "ejercicios": [
+        {
+          "_nota": "EJEMPLO DE FORMATO — REEMPLAZAR por contenido real revisado.",
+          "categoria": "Algoritmos",
+          "tipo": "opcion_multiple",
+          "nivel": "basico",
+          "b": -1.2,
+          "enunciado": "Según el texto guía, ¿cuál de estas características exige que un algoritmo siempre termine?",
+          "opciones": [
+            { "id": "A", "texto": "Finitud" },
+            { "id": "B", "texto": "Definibilidad" },
+            { "id": "C", "texto": "Precisión" },
+            { "id": "D", "texto": "Ambigüedad" }
+          ],
+          "respuestaCorrecta": "A",
+          "explicacion": "La finitud garantiza que el proceso del algoritmo siempre acaba.",
+          "fuenteDoc": { "unidad": "1", "tema": "1.1", "subtema": "1.1.1 Algoritmo", "paginaPDF": 1, "citaBreve": "características del algoritmo: finitud, definibilidad, precisión" }
+        }
+      ],
+      "retos": []
+    },
+    { "numero": "1.2", "titulo": "Fases del Desarrollo del Software", "descripcion": "Definición del problema, estudio de soluciones, representación, codificación y prueba.", "ejercicios": [] },
+    { "numero": "1.3", "titulo": "Lenguajes de programación", "descripcion": "Lenguaje y lenguaje de programación; bajo, medio y alto nivel.", "ejercicios": [] },
+    { "numero": "1.4", "titulo": "Herramientas de desarrollo", "descripcion": "IDE, compiladores e intérpretes.", "ejercicios": [] },
+    {
+      "numero": "1.5", "titulo": "Tipos de Datos y Variables",
+      "descripcion": "Constantes, variables, tipos de datos y operadores.",
+      "ejercicios": [],
+      "subtemas": [
+        { "numero": "1.5.1", "titulo": "Constantes", "ejercicios": [] },
+        { "numero": "1.5.2", "titulo": "Variables", "ejercicios": [] },
+        { "numero": "1.5.3", "titulo": "Tipos de datos", "ejercicios": [] },
+        { "numero": "1.5.4", "titulo": "Operadores (aritméticos, relacionales, lógicos)", "_nota": "Para 1.5.4.1/1.5.4.2/1.5.4.3 usar fuenteDoc.subtema (el sistema soporta 2 niveles).", "ejercicios": [] }
+      ]
+    },
+    {
+      "numero": "1.6", "titulo": "Expresiones",
+      "ejercicios": [],
+      "subtemas": [ { "numero": "1.6.1", "titulo": "Expresiones Lógicas", "ejercicios": [] } ]
+    },
+    {
+      "numero": "1.7", "titulo": "Razonamiento",
+      "ejercicios": [],
+      "subtemas": [
+        { "numero": "1.7.1", "titulo": "Lógico – Heurístico", "ejercicios": [] },
+        { "numero": "1.7.2", "titulo": "Matemático", "ejercicios": [] }
+      ]
+    },
+    {
+      "numero": "1.8", "titulo": "Diagramas de flujo y Pseudocódigo",
+      "ejercicios": [],
+      "subtemas": [
+        { "numero": "1.8.1", "titulo": "Diagrama de flujo", "ejercicios": [] },
+        { "numero": "1.8.2", "titulo": "Pseudocódigo", "ejercicios": [] }
+      ]
+    },
+    { "numero": "1.9", "titulo": "Metodología de la Programación", "ejercicios": [] },
+    { "numero": "1.10", "titulo": "Estructura general de un Algoritmo", "ejercicios": [] },
+    {
+      "numero": "1.11", "titulo": "Diseño de un Algoritmo",
+      "ejercicios": [],
+      "retos": [
+        {
+          "_nota": "EJEMPLO DE FORMATO de RETO (estilo Guía de Práctica 1: análisis → lógica → código) — REEMPLAZAR.",
+          "titulo": "Promedio de tres notas",
+          "categoria": "Diseño de algoritmos",
+          "nivelSugerido": "intermedio",
+          "enunciado": "Siguiendo la metodología del texto guía (análisis → lógica → código), escribe un programa Python que lea tres notas y muestre su promedio con un decimal.",
+          "ejemploEntrada": "60 70 80",
+          "ejemploSalida": "Promedio: 70.0",
+          "solucionReferencia": "n1 = float(input())\nn2 = float(input())\nn3 = float(input())\nprint(f\"Promedio: {(n1 + n2 + n3) / 3:.1f}\")",
+          "criteriosEvaluacion": [
+            "Lee las tres notas correctamente",
+            "Calcula el promedio con la fórmula correcta",
+            "Muestra la salida con un decimal como el ejemplo"
+          ],
+          "xp": 60,
+          "fuenteDoc": { "unidad": "1", "tema": "1.11", "paginaPDF": 20, "citaBreve": "diseño de un algoritmo: del análisis al código (Práctica 1)" }
+        }
+      ]
+    }
+  ],
+  "examen": []
+}

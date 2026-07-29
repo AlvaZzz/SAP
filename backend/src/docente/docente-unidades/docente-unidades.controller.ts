@@ -1,6 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards,
+  UseInterceptors, UploadedFile,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { DocenteUnidadesService } from './docente-unidades.service';
 import { CrearUnidadDto, EditarUnidadDto, CrearTemaDto, EditarTemaDto } from './dto/unidad.dto';
+import { MAX_IMG_BYTES, ArchivoSubido } from '../../common/config/upload.config';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 
@@ -34,6 +39,19 @@ export class DocenteUnidadesController {
   @Delete(':id')
   async eliminarUnidad(@Param('id', ParseIntPipe) id: number) {
     return this.service.eliminarUnidad(id);
+  }
+
+  // ── Portada de la unidad ── (subir/reemplazar y quitar)
+  @Post(':id/imagen')
+  // Buffer en memoria + límite duro de tamaño en el interceptor (defensa extra).
+  @UseInterceptors(FileInterceptor('imagen', { limits: { fileSize: MAX_IMG_BYTES } }))
+  async subirImagen(@Param('id', ParseIntPipe) id: number, @UploadedFile() imagen?: ArchivoSubido) {
+    return this.service.subirImagen(id, imagen);
+  }
+
+  @Delete(':id/imagen')
+  async eliminarImagen(@Param('id', ParseIntPipe) id: number) {
+    return this.service.eliminarImagen(id);
   }
 
   @Post(':id/temas')

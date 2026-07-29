@@ -26,6 +26,11 @@ class PracticaDto {
   @IsOptional() @IsString() @MaxLength(500) enunciado_reto?: string;
   @IsOptional() @IsString() @MaxLength(500) pregunta?: string;
 }
+class PistaRetoDto {
+  @IsInt() @Min(1) reto_id!: number;
+  @IsInt() @IsIn([1, 2, 3]) nivel_pista!: 1 | 2 | 3;
+  @IsString() @MinLength(1) @MaxLength(5000) codigo_actual!: string;
+}
 
 /**
  * ALVARO — Tutor IA. Todos los endpoints requieren sesión y cuentan para el
@@ -82,5 +87,32 @@ export class TutorIaController {
   @Post('practica')
   practica(@CurrentUser('sub') usuarioId: number, @Body() dto: PracticaDto) {
     return this.tutor.practica(usuarioId, dto.codigo_actual, dto.enunciado_reto, dto.pregunta);
+  }
+
+  /** Streaming de la asistencia sobre el código (retos). Mismo patrón que asistente/stream. */
+  @Post('practica/stream')
+  async practicaStream(
+    @CurrentUser('sub') usuarioId: number,
+    @Body() dto: PracticaDto,
+    @Res() res: Response,
+  ) {
+    try {
+      for await (const chunk of this.tutor.practicaStream(usuarioId, dto.codigo_actual, dto.enunciado_reto, dto.pregunta)) {
+        if (!res.headersSent) {
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          res.setHeader('Cache-Control', 'no-cache, no-transform');
+          res.setHeader('X-Accel-Buffering', 'no');
+        }
+        res.write(chunk);
+      }
+    } catch (err) {
+      if (!res.headersSent) throw err;
+    }
+    res.end();
+  }
+
+  @Post('pista-reto')
+  pistaReto(@CurrentUser('sub') usuarioId: number, @Body() dto: PistaRetoDto) {
+    return this.tutor.pistaReto(usuarioId, dto.reto_id, dto.nivel_pista, dto.codigo_actual);
   }
 }

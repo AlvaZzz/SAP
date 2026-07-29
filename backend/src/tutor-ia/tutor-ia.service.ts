@@ -41,16 +41,17 @@ export class TutorIaService {
   ) {}
 
   /**
-   * Tope de tokens de SALIDA por tipo de llamada. Acota el costo y la latencia:
-   * las respuestas de ALVARO son cortas por diseño (2-5 frases), así que un
-   * límite bajo no recorta contenido útil. La generación de preguntas (JSON)
-   * necesita bastante más espacio.
+   * Tope de tokens de SALIDA por tipo de llamada. Acota el costo y la latencia y
+   * REFUERZA la brevedad que pide el prompt (ver ESTILO_RESPUESTA: 3-4 frases).
+   * Se dejan con algo de holgura sobre esas 3-4 frases (~120-180 tokens) para no
+   * truncar a media frase. La generación de preguntas (JSON) y el borrador de
+   * feedback del docente NO son respuestas al estudiante y conservan su margen.
    */
   private static readonly MAX_OUTPUT: Record<string, number> = {
-    asistente: 500,
-    retroalimentacion: 400,
-    pista: 300,
-    practica: 600,
+    asistente: 300,
+    retroalimentacion: 260, // incluye la línea final AREA_DEBIL
+    pista: 200,
+    practica: 320, // puede incluir un fragmento mínimo de código
     feedback_docente: 450,
     preguntas: 2048,
   };
@@ -197,7 +198,7 @@ export class TutorIaService {
     const system = `${PERSONA}
 ${tonoPorNivel(perfil.nivel)}
 ${contextoTema ? `El estudiante estudia el tema: "${sanitizar(contextoTema, 80)}".` : ''}
-Responde su duda en máximo 4-5 frases, aprovechando su perfil para personalizar${perfil.nombre ? ` (puedes llamarlo ${perfil.nombre})` : ''}.${bloquePerfil(perfil.resumen)}${bloqueMemoria(memoria)}${bloqueMaterial(material)}`;
+Responde su duda respetando el estilo (3-4 frases), aprovechando su perfil para personalizar${perfil.nombre ? ` (puedes llamarlo ${perfil.nombre}, sin saludos largos)` : ''}.${bloquePerfil(perfil.resumen)}${bloqueMemoria(memoria)}${bloqueMaterial(material)}`;
 
     return { system, pregunta, ejercicioId };
   }
@@ -232,6 +233,11 @@ Responde su duda en máximo 4-5 frases, aprovechando su perfil para personalizar
     try {
       // La creación del stream se reintenta ante un 429 transitorio (espera corta).
       const result = await this.conReintento(() => model.generateContentStream([{ text: system }, { text: pregunta }]));
+      // `result.response` es una promesa aparte que se rechaza si el stream se
+      // rompe (p. ej. el cliente cierra la pestaña a mitad). Si nadie la maneja,
+      // Node la trata como unhandledRejection y TUMBA el proceso. La absorbemos.
+      // Optional chaining: en tests el mock no trae response; en el SDK real sí.
+      void result.response?.catch(() => undefined);
       for await (const chunk of result.stream) {
         const t = chunk.text();
         if (t) { completo += t; yield t; }
@@ -323,8 +329,9 @@ ${instr} No repitas pistas ya dadas. Máximo 3 frases.${bloquePerfil(perfil.resu
     return { pista };
   }
 
-  // ── 4) Asistencia contextual sobre el código (Zona de Práctica) ──
-  async practica(usuarioId: number, codigoRaw: string, enunciadoReto?: string, preguntaRaw?: string) {
+  // ── 4) Asistencia contextual sobre el código (Zona de Práctica / retos) ──
+  /** Arma el prompt de práctica (compartido por la versión normal y la de streaming). */
+  private async prepararPractica(usuarioId: number, codigoRaw: string, enunciadoReto?: string, preguntaRaw?: string) {
     const codigo = sanitizar(codigoRaw, 4000);
     const enunciado = sanitizar(enunciadoReto, 400);
     const pregunta = sanitizar(preguntaRaw);
@@ -337,15 +344,110 @@ ${tonoPorNivel(perfil.nivel)}
 Estás revisando el CÓDIGO ACTUAL del estudiante en la zona de práctica${enunciado ? ` para este reto: "${enunciado}"` : ''}.
 Detecta errores, responde su pregunta sobre SU propio código y orienta el siguiente
 paso mediante preguntas y pistas. NUNCA escribas la solución completa ni el código
-final corregido: explica el qué y el porqué para que él lo escriba. Máximo 5 frases.${bloquePerfil(perfil.resumen)}${bloqueMemoria(memoria)}`;
+final corregido: explica el qué y el porqué para que él lo escriba.${bloquePerfil(perfil.resumen)}${bloqueMemoria(memoria)}`;
     const msg = [
       `Código actual del estudiante:\n\`\`\`python\n${codigo}\n\`\`\``,
       pregunta ? `Pregunta del estudiante: ${pregunta}` : 'El estudiante pide orientación.',
     ].join('\n\n');
+    return { system, msg, pregunta };
+  }
 
+  async practica(usuarioId: number, codigoRaw: string, enunciadoReto?: string, preguntaRaw?: string) {
+    const { system, msg, pregunta } = await this.prepararPractica(usuarioId, codigoRaw, enunciadoReto, preguntaRaw);
     const respuesta = await this.generar(system, msg, TutorIaService.MAX_OUTPUT.practica);
     await this.registrar({ usuarioId, tipo: 'practica', pregunta: pregunta || '(orientación)', respuesta });
     return { respuesta };
+  }
+
+  /** Igual que practica pero en STREAMING (ALVARO "escribiendo" en el editor de retos). */
+  async *practicaStream(usuarioId: number, codigoRaw: string, enunciadoReto?: string, preguntaRaw?: string): AsyncGenerator<string> {
+    const { system, msg, pregunta } = await this.prepararPractica(usuarioId, codigoRaw, enunciadoReto, preguntaRaw);
+    const model = await this.getModel(TutorIaService.MAX_OUTPUT.practica);
+    let completo = '';
+    try {
+      const result = await this.conReintento(() => model.generateContentStream([{ text: system }, { text: msg }]));
+      // Ver nota en asistenteStream: absorbe el rechazo tardío de result.response
+      // para que un cliente que se desconecta a mitad no tumbe el proceso.
+      // Optional chaining: en tests el mock no trae response; en el SDK real sí.
+      void result.response?.catch(() => undefined);
+      for await (const chunk of result.stream) {
+        const t = chunk.text();
+        if (t) { completo += t; yield t; }
+      }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Gemini stream (practica): ${errMsg}`);
+      if (!completo) {
+        completo = err instanceof HttpException ? err.message
+          : (errMsg.includes('429') || /quota/i.test(errMsg))
+            ? 'Se alcanzó el límite de uso de ALVARO. Intenta en unos minutos.'
+            : 'ALVARO no está disponible ahora, intenta de nuevo.';
+        yield completo;
+      }
+    }
+    await this.registrar({ usuarioId, tipo: 'practica', pregunta: pregunta || '(orientación)', respuesta: completo.trim() });
+  }
+
+  /**
+   * Pistas escalonadas para un RETO (misión/editor). A diferencia de las pistas
+   * de ejercicio (que penalizan el XP del ejercicio), las de reto se REGISTRAN
+   * como consulta a ALVARO —cuentan para el indicador de Autonomía— pero el XP
+   * del reto lo decide el docente (o la auto‑validación del bug‑hunt). Son
+   * CONTEXTUALES al código que el estudiante lleva escrito.
+   */
+  async pistaReto(usuarioId: number, retoId: number, nivelPista: 1 | 2 | 3, codigoRaw: string) {
+    const reto = await this.prisma.reto.findFirst({
+      where: { id: retoId, activo: true },
+      select: {
+        enunciado: true, categoria: true, ejemploSalida: true, esBugHunt: true,
+        pistas: true, tipoBug: true,
+        // ANCLAJE AL MATERIAL: el reto derivado nace de un ejercicio del banco.
+        // ALVARO se apoya en ESA explicación y en el repaso del tema, en vez de
+        // razonar desde su conocimiento general de Python.
+        origenEjercicio: { select: { enunciado: true, explicacionIa: true } },
+        tema: { select: { numero: true, titulo: true, repaso: true, unidad: { select: { numero: true, titulo: true } } } },
+      },
+    });
+    if (!reto) throw new NotFoundException('Reto no encontrado');
+    const codigo = sanitizar(codigoRaw, 4000);
+    const perfil = await construirPerfil(this.prisma, usuarioId, { categoria: reto.categoria });
+
+    // Las pistas redactadas del reto son el PLAN DE ESCALAMIENTO: la de este nivel
+    // es la que ALVARO debe transmitir (reformulada), sin adelantar las siguientes.
+    const pistasReto = Array.isArray(reto.pistas) ? (reto.pistas as unknown[]).map(String) : [];
+    const pistaGuion = pistasReto[nivelPista - 1];
+
+    const instr = {
+      1: 'Da una pista GENERAL sobre el enfoque o el concepto, sin señalar la línea exacta.',
+      2: `Da una pista sobre DÓNDE está el problema en SU código${reto.esBugHunt ? ' (recuerda: hay un bug plantado)' : ''}, sin corregirlo por él.`,
+      3: 'Da una pista de casi-solución, paso a paso, SIN escribir el código corregido literal.',
+    }[nivelPista];
+
+    const alcance = reto.tema
+      ? `Este reto pertenece a la Unidad ${reto.tema.unidad.numero} (${reto.tema.unidad.titulo}), tema ${reto.tema.numero} ${reto.tema.titulo}.`
+      : '';
+
+    const system = `${PERSONA}
+${tonoPorNivel(perfil.nivel)}
+Vas a dar una pista de nivel ${nivelPista} de 3 sobre el CÓDIGO del estudiante en un reto, que ESCALA sobre las anteriores.
+${instr} No repitas pistas ya dadas. NUNCA escribas la solución completa. Máximo 3 frases.
+${alcance}
+CÍÑETE AL MATERIAL DEL MÓDULO que se te entrega abajo: no introduzcas funciones, librerías ni "buenas prácticas" que no se hayan visto en este tema. Si el estudiante pregunta algo fuera del alcance del tema, recondúcelo al concepto del módulo en vez de dar una respuesta general de programación.${bloquePerfil(perfil.resumen)}`;
+
+    const msg = [
+      `Reto: ${reto.enunciado}`,
+      reto.ejemploSalida ? `Salida esperada: ${reto.ejemploSalida}` : '',
+      // Material de origen: es lo que el estudiante ya estudió para este tema.
+      reto.origenEjercicio ? `Ejercicio del módulo del que sale este reto: ${reto.origenEjercicio.enunciado}` : '',
+      reto.origenEjercicio?.explicacionIa ? `Explicación del módulo: ${reto.origenEjercicio.explicacionIa}` : '',
+      reto.tema?.repaso ? `Resumen del tema:\n${reto.tema.repaso.slice(0, 1200)}` : '',
+      pistaGuion ? `Guion de la pista ${nivelPista} (reformúlala con tus palabras, NO la copies literal): ${pistaGuion}` : '',
+      `Código actual del estudiante:\n\`\`\`python\n${codigo}\n\`\`\``,
+    ].filter(Boolean).join('\n');
+
+    const pista = await this.generar(system, msg, TutorIaService.MAX_OUTPUT.pista);
+    await this.registrar({ usuarioId, tipo: 'pista', respuesta: pista, nivelPista });
+    return { pista };
   }
 
   // Compat: la Zona de Práctica antigua (/practica/asistir) sigue funcionando.

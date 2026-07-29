@@ -1,11 +1,21 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { UnidadEstudiante, TemaEstudiante } from '@/lib/types';
-import { Skeleton, Badge } from '@/components/ui';
-import { Layers, CheckCircle, Lock, ArrowRight, Lightbulb } from '@/components/icons';
+import { UnidadEstudiante, TemaEstudiante, NIVEL_COLOR, NIVEL_LABEL, colorUnidad } from '@/lib/types';
+import { Skeleton } from '@/components/ui';
+import { Layers, CheckCircle, Lock, ArrowRight, Lightbulb, GraduationCap } from '@/components/icons';
+
+/** Badge sutil (fondo del color al 12% + texto del color) — regla 60-30-10. */
+function ColorPill({ color, children }: { color: string; children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide"
+      style={{ color, backgroundColor: `${color}1F` }}>
+      {children}
+    </span>
+  );
+}
 
 /** Recorre un tema y sus subtemas acumulando totales (ejercicios y temas). */
 function acumular(t: TemaEstudiante, acc: { total: number; comp: number; temas: number; temasOk: number; desbloqueado: boolean }) {
@@ -62,62 +72,103 @@ export default function EjerciciosPage() {
 
   return (
     <div className="animate-fade-up">
-      {/* Progreso general del curso */}
-      <div className="card mb-8 border-0 bg-gradient-to-r from-prexi-navy to-prexi-navy-soft text-white">
+      <h1 className="font-display text-2xl font-extrabold text-fg sm:text-3xl">Unidades del curso</h1>
+      <p className="mb-6 text-[15px] text-muted">Programación I — UPEA · Cada unidad tiene su color; el nivel indica tu dificultad actual.</p>
+
+      {/* Tu avance general: barra de acento a la izquierda + resumen numérico */}
+      <div className="card mb-6 border-l-4 border-l-prexi-blue">
         <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="min-w-[240px] flex-1">
-            <h1 className="font-display text-2xl font-extrabold">Programación I — UPEA</h1>
-            <p className="mb-4 text-sm font-medium text-blue-100/80">{global.pct}% del curso completado</p>
-            <div className="h-3 w-full max-w-lg overflow-hidden rounded-full bg-white/20"><div className="h-full origin-left rounded-full bg-white transition-all duration-700 animate-grow-x" style={{ width: `${global.pct}%` }} /></div>
+          <div className="min-w-[220px] flex-1">
+            <h2 className="font-display text-xl font-extrabold text-fg">Tu avance general</h2>
+            <p className="mt-1 text-sm text-muted">Sigue completando temas para desbloquear las siguientes unidades.</p>
           </div>
-          <div className="flex gap-8 text-center">
-            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-blue-200/70">Ejercicios</p><p className="font-display text-2xl font-extrabold">{global.comp}/{global.total}</p></div>
-            <div><p className="text-[11px] font-semibold uppercase tracking-wide text-blue-200/70">Unidades OK</p><p className="font-display text-2xl font-extrabold">{global.unidadesOk}/{unidades.length}</p></div>
+          <div className="flex gap-8">
+            <div className="text-right"><p className="font-display text-3xl font-extrabold text-fg">{global.comp}<span className="text-muted">/{global.total}</span></p><p className="stat-label">Ejercicios</p></div>
+            <div className="text-right"><p className="font-display text-3xl font-extrabold text-fg">{global.unidadesOk}<span className="text-muted">/{unidades.length}</span></p><p className="stat-label">Unidades</p></div>
           </div>
         </div>
       </div>
 
-      <h2 className="font-display text-2xl font-extrabold text-fg">Unidades del curso</h2>
-      <p className="mb-6 text-[15px] text-muted">Entra a una unidad para avanzar por sus temas (niveles). Tu ruta se <b>adapta a tu nivel</b>.</p>
+      {/* Leyenda de niveles (color unificado en todo el sistema) */}
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+        <span className="font-semibold text-fg">Nivel del tema:</span>
+        {(['basico', 'intermedio', 'avanzado'] as const).map((n) => (
+          <span key={n} className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: NIVEL_COLOR[n] }} /> {NIVEL_LABEL[n]}
+          </span>
+        ))}
+      </div>
 
       <div className="space-y-4">
         {unidades.map((u) => {
           const r = resumenUnidad(u);
           const completa = r.temas > 0 && r.temasOk === r.temas;
           const abierta = u.desbloqueada;
-          const iconoBg = completa ? 'bg-emerald-500/10 text-prexi-green' : abierta ? 'bg-prexi-blue/10 text-prexi-blue-deep' : 'bg-subtle text-muted';
-          const borde = completa ? 'border-l-prexi-green' : abierta ? 'border-l-prexi-blue' : 'border-l-line';
+          const color = colorUnidad(u.numero);      // acento distintivo de la unidad
+          const domColor = NIVEL_COLOR[u.nivel_dominio]; // color unificado del nivel
           return (
-            <button key={u.id} onClick={() => abierta && router.push(`/ejercicios/unidad/${u.id}`)}
-              disabled={!abierta}
-              className={`card block w-full border-l-4 text-left ${borde} ${abierta ? 'card-hover' : 'cursor-not-allowed opacity-80'}`}>
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${iconoBg}`}>
-                    {abierta ? <span className="font-display text-lg font-extrabold">{u.numero}</span> : <Lock className="h-5 w-5" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="mb-1 flex flex-wrap items-center gap-2">
-                      {completa && <Badge tone="green"><CheckCircle className="h-3 w-3" /> Completada</Badge>}
-                      {!completa && abierta && <Badge tone="blue">En progreso</Badge>}
-                      {!abierta && <Badge tone="slate"><Lock className="h-3 w-3" /> Bloqueada</Badge>}
-                      {abierta && <Badge tone="slate">Dominio: {u.nivel_dominio_label}</Badge>}
-                      <span className="text-xs font-semibold text-muted">{r.temasOk}/{r.temas} temas</span>
+            <div key={u.id}>
+            <div className={`group overflow-hidden rounded-2xl border border-line bg-card shadow-soft transition-[transform,box-shadow,border-color] duration-200 ${abierta ? 'hover:-translate-y-0.5 hover:shadow-lift' : 'opacity-70'}`}>
+              {/* Barra superior de acento = color de la unidad (nunca fondo grande) */}
+              <div className="h-1.5 w-full" style={{ backgroundColor: color, opacity: abierta ? 1 : 0.5 }} />
+              <button onClick={() => abierta && router.push(`/ejercicios/unidad/${u.id}`)}
+                disabled={!abierta}
+                className={`block w-full p-5 text-left sm:p-6 ${abierta ? '' : 'cursor-not-allowed'}`}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    {/* Número de unidad en su color (tinte 15% + texto del color) */}
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-display text-lg font-extrabold"
+                      style={{ color, backgroundColor: `${color}26` }}>
+                      {abierta ? u.numero : <Lock className="h-5 w-5" />}
                     </div>
-                    <h3 className="font-display text-lg font-bold text-fg">Unidad {u.numero}: {u.titulo}</h3>
-                    {u.descripcion && <p className="mt-0.5 line-clamp-2 max-w-2xl text-sm text-muted">{u.descripcion}</p>}
-                    {!abierta && <p className="mt-1 text-xs font-medium text-muted">Alcanza nivel <b>{u.requiere_nivel_label}</b> de dominio en la unidad anterior para desbloquearla.</p>}
+                    <div className="min-w-0">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        {completa
+                          ? <ColorPill color="#10B981"><CheckCircle className="h-3 w-3" /> Completada</ColorPill>
+                          : abierta
+                            ? <ColorPill color={color}>En progreso</ColorPill>
+                            : <span className="inline-flex items-center gap-1 rounded-full bg-subtle px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>}
+                        {abierta && <ColorPill color={domColor}>Dominio: {u.nivel_dominio_label}</ColorPill>}
+                        {abierta
+                          ? <span className="text-xs font-semibold text-muted">{r.temasOk}/{r.temas} temas</span>
+                          : <span className="text-xs font-semibold text-faint">Requiere completar la Unidad {u.numero - 1}</span>}
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-fg">Unidad {u.numero}: {u.titulo}</h3>
+                      {u.descripcion && <p className={`mt-0.5 line-clamp-2 max-w-2xl text-sm ${abierta ? 'text-muted' : 'text-faint'}`}>{u.descripcion}</p>}
+                      {!abierta && <p className="mt-1 text-xs font-medium text-faint">Aprueba el <b>examen de fin de unidad</b> de la unidad anterior (nivel ≥ {u.requiere_nivel_label}) para desbloquearla.</p>}
+                    </div>
                   </div>
+                  {abierta && (
+                    <span className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition group-hover:gap-2.5"
+                      style={{ color, backgroundColor: `${color}1F` }}>Ver <ArrowRight className="h-4 w-4" /></span>
+                  )}
                 </div>
-                <div className="flex items-center gap-4 self-stretch sm:self-center">
-                  <div className="hidden w-40 sm:block">
-                    <div className="mb-1 flex justify-between text-[11px] text-muted"><span>Dominio {u.dominio_pct}%</span><span>{r.comp}/{r.total}</span></div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full bg-prexi-blue transition-all" style={{ width: `${u.dominio_pct}%` }} /></div>
+
+                {/* Barra de progreso de la unidad en SU color */}
+                {abierta && (
+                  <div className="mt-4">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-subtle">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${r.pct}%`, backgroundColor: color }} />
+                    </div>
+                    <p className="mt-1.5 text-right text-xs font-medium text-muted">{r.comp}/{r.total} · {r.pct}%</p>
                   </div>
-                  {abierta && <span className="inline-flex items-center gap-1.5 rounded-xl bg-prexi-blue/10 px-3 py-2 text-sm font-semibold text-prexi-blue-deep">Ver <ArrowRight className="h-4 w-4" /></span>}
-                </div>
+                )}
+              </button>
+            </div>
+
+            {/* Examen de fin de unidad (gate de avance a la siguiente unidad) */}
+            {abierta && (u.examen_aprobado ? (
+              <div className="mt-1.5 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-prexi-green">
+                <CheckCircle className="h-4 w-4" /> Examen de unidad aprobado — siguiente unidad desbloqueada
               </div>
-            </button>
+            ) : u.examen_disponible ? (
+              <button onClick={() => router.push(`/examen-unidad/${u.id}`)}
+                className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-xl border border-prexi-blue/30 bg-prexi-blue/5 px-4 py-2.5 text-left transition hover:bg-prexi-blue/10">
+                <span className="flex items-center gap-2 text-sm font-semibold text-prexi-blue-deep"><GraduationCap className="h-4 w-4" /> {u.repaso_revisado ? 'Rendir examen de fin de unidad' : 'Repasar y rendir el examen de fin de unidad'}</span>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-prexi-blue-deep">para avanzar <ArrowRight className="h-4 w-4" /></span>
+              </button>
+            ) : null)}
+            </div>
           );
         })}
       </div>

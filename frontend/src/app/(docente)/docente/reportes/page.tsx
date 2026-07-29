@@ -32,7 +32,7 @@ export default function DocenteReportesPage() {
       <div className="mb-6 flex flex-wrap gap-2">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${tab === id ? 'bg-prexi-navy text-white shadow-soft' : 'border border-line text-muted hover:bg-subtle'}`}>
+            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${tab === id ? 'bg-prexi-blue text-accent-on shadow-soft' : 'border border-line text-muted hover:bg-subtle'}`}>
             <Icon className="h-4 w-4" /> {label}
           </button>
         ))}
@@ -139,7 +139,7 @@ function TabProgreso() {
           <div key={n.numero} className="flex items-center gap-3">
             <span className="w-40 shrink-0 truncate text-sm font-medium text-fg" title={n.titulo}>Nivel {n.numero} · {n.titulo}</span>
             <div className="h-8 flex-1 overflow-hidden rounded-lg bg-subtle">
-              <div className="flex h-full items-center justify-end rounded-lg bg-gradient-to-r from-prexi-navy to-prexi-blue px-2 text-xs font-bold text-white transition-all duration-700" style={{ width: `${Math.max(6, (n.estudiantes / max) * 100)}%` }}>
+              <div className="flex h-full items-center justify-end rounded-lg bg-prexi-blue px-2 text-xs font-bold text-accent-on transition-all duration-700" style={{ width: `${Math.max(6, (n.estudiantes / max) * 100)}%` }}>
                 {n.estudiantes > 0 && n.estudiantes}
               </div>
             </div>
@@ -168,7 +168,7 @@ function TabActividad() {
         {d.dias.map((x) => (
           <div key={x.dia} className="flex flex-1 flex-col items-center gap-2" title={`${x.intentos} intentos · ${x.aciertos} aciertos · ${x.estudiantes_activos} activos`}>
             <div className="flex w-full flex-1 items-end justify-center">
-              <div className="w-full max-w-[48px] rounded-t-lg bg-gradient-to-t from-prexi-navy to-prexi-blue transition-all duration-700" style={{ height: `${(x.intentos / max) * 100}%`, minHeight: x.intentos ? '6px' : '0' }} />
+              <div className="w-full max-w-[48px] rounded-t-lg bg-prexi-blue transition-all duration-700" style={{ height: `${(x.intentos / max) * 100}%`, minHeight: x.intentos ? '6px' : '0' }} />
             </div>
             <span className="text-xs font-semibold text-fg">{x.intentos}</span>
             <span className="text-[10px] capitalize text-muted">{dia(x.dia)}</span>

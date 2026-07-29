@@ -75,7 +75,7 @@ export default function AdminGruposPage() {
 
       {/* Conteos + balance */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card className="text-center"><p className="stat-label">Control</p><p className="font-display text-3xl font-extrabold text-prexi-navy dark:text-blue-300">{d.conteo.control}</p></Card>
+        <Card className="text-center"><p className="stat-label">Control</p><p className="font-display text-3xl font-extrabold text-prexi-blue-deep">{d.conteo.control}</p></Card>
         <Card className="text-center"><p className="stat-label">Experimental</p><p className="font-display text-3xl font-extrabold text-prexi-green">{d.conteo.experimental}</p></Card>
         <Card className="text-center"><p className="stat-label">Balance de la muestra</p><p className="font-display text-3xl font-extrabold text-fg">{balance}%</p></Card>
       </div>
@@ -89,7 +89,7 @@ export default function AdminGruposPage() {
               <div key={i.institucion} className="flex items-center gap-3 text-sm">
                 <span className="w-40 shrink-0 truncate text-muted">{i.institucion}</span>
                 <div className="flex h-5 flex-1 overflow-hidden rounded">
-                  <div className="bg-prexi-navy" style={{ width: `${(i.control / i.total) * 100}%` }} />
+                  <div className="bg-prexi-blue" style={{ width: `${(i.control / i.total) * 100}%` }} />
                   <div className="bg-prexi-green" style={{ width: `${(i.experimental / i.total) * 100}%` }} />
                 </div>
                 <span className="w-24 shrink-0 text-right text-xs text-muted">{i.control} / {i.experimental}</span>
@@ -113,7 +113,7 @@ export default function AdminGruposPage() {
               <option value="">Selecciona un paralelo…</option>
               {d.paralelos.map((p) => <option key={p.paralelo} value={p.paralelo}>{p.paralelo} ({p.total} estudiantes)</option>)}
             </Select>
-            <button onClick={() => asignarParalelo('control')} disabled={!paraleloSel || aplicando} className="rounded-xl bg-prexi-navy px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40">Todo el paralelo → Control</button>
+            <button onClick={() => asignarParalelo('control')} disabled={!paraleloSel || aplicando} className="rounded-xl bg-prexi-blue px-4 py-2 text-sm font-semibold text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-40">Todo el paralelo → Control</button>
             <button onClick={() => asignarParalelo('experimental')} disabled={!paraleloSel || aplicando} className="rounded-xl bg-prexi-green px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40">Todo el paralelo → Experimental</button>
           </div>
         )}
@@ -123,7 +123,7 @@ export default function AdminGruposPage() {
               <div key={p.paralelo} className="flex items-center gap-3 text-sm">
                 <span className="w-20 shrink-0 truncate text-muted">Paralelo {p.paralelo}</span>
                 <div className="flex h-5 flex-1 overflow-hidden rounded">
-                  <div className="bg-prexi-navy" style={{ width: `${(p.control / p.total) * 100}%` }} />
+                  <div className="bg-prexi-blue" style={{ width: `${(p.control / p.total) * 100}%` }} />
                   <div className="bg-prexi-green" style={{ width: `${(p.experimental / p.total) * 100}%` }} />
                 </div>
                 <span className="w-24 shrink-0 text-right text-xs text-muted">{p.control} / {p.experimental}</span>
@@ -136,9 +136,9 @@ export default function AdminGruposPage() {
       {/* Barra de acción masiva */}
       <Card className="mb-4 flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium text-fg">{sel.size} seleccionado(s)</span>
-        <div className="flex items-center gap-2">
-          <Input value={inst} onChange={(e) => setInst(e.target.value)} placeholder="Institución (opcional)" className="!w-44" />
-          <button onClick={() => asignar('control', [...sel])} disabled={sel.size === 0 || aplicando} className="rounded-xl bg-prexi-navy px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40">→ Control</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input value={inst} onChange={(e) => setInst(e.target.value)} placeholder="Institución (opcional)" className="!w-44 max-w-full" />
+          <button onClick={() => asignar('control', [...sel])} disabled={sel.size === 0 || aplicando} className="rounded-xl bg-prexi-blue px-4 py-2 text-sm font-semibold text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-40">→ Control</button>
           <button onClick={() => asignar('experimental', [...sel])} disabled={sel.size === 0 || aplicando} className="rounded-xl bg-prexi-green px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40">→ Experimental</button>
         </div>
       </Card>
@@ -188,7 +188,7 @@ function BotonesAsignar({ e, aplicando, onAsignar, grandes = false }: {
   const pad = grandes ? 'px-3.5 py-2 text-sm' : 'px-2.5 py-1 text-xs';
   return (
     <div className={`flex items-center gap-1.5 ${grandes ? '' : 'justify-end'}`}>
-      <button onClick={() => onAsignar('control', [e.id])} disabled={aplicando} className={`rounded-lg border font-semibold transition ${pad} ${e.grupo === 'control' ? 'border-prexi-navy bg-prexi-navy/10 text-prexi-navy dark:text-blue-300' : 'border-line text-muted hover:bg-subtle'}`}>Control</button>
+      <button onClick={() => onAsignar('control', [e.id])} disabled={aplicando} className={`rounded-lg border font-semibold transition ${pad} ${e.grupo === 'control' ? 'border-prexi-blue bg-prexi-blue/10 text-prexi-blue-deep' : 'border-line text-muted hover:bg-subtle'}`}>Control</button>
       <button onClick={() => onAsignar('experimental', [e.id])} disabled={aplicando} className={`rounded-lg border font-semibold transition ${pad} ${e.grupo === 'experimental' ? 'border-prexi-green bg-emerald-500/10 text-prexi-green' : 'border-line text-muted hover:bg-subtle'}`}>Experimental</button>
     </div>
   );

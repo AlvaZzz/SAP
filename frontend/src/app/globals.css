@@ -8,26 +8,59 @@
  */
 :root {
   color-scheme: light;
-  --app: 244 246 248;        /* #F4F6F8 fondo de página */
+  --app: 242 247 252;        /* #F2F7FC fondo de página (azul muy claro) */
   --card: 255 255 255;       /* #FFFFFF superficie de tarjetas */
-  --subtle: 236 240 244;     /* #ECF0F4 superficies sutiles / insets */
-  --fg: 27 43 68;            /* #1B2B44 texto principal */
-  --muted: 100 116 139;      /* #64748B texto secundario */
-  --line: 227 232 239;       /* #E3E8EF bordes */
-  --sidebar-from: 15 27 45;  /* #0F1B2D base oscura principal */
-  --sidebar-to: 10 18 31;    /* #0A121F base más profunda */
+  --subtle: 232 241 251;     /* #E8F1FB superficies sutiles / insets */
+  --fg: 15 23 42;            /* #0F172A texto principal */
+  --muted: 74 107 150;       /* #4A6B96 texto secundario (AA sobre blanco) */
+  --faint: 148 166 191;      /* #94A6BF texto atenuado */
+  --line: 213 226 240;       /* #D5E2F0 bordes sutiles */
+  --line-strong: 194 210 229;/* #C2D2E5 bordes marcados */
+  /* El sidebar es SIEMPRE oscuro (superficie de navegación). */
+  --sidebar-from: 10 15 26;  /* #0A0F1A panel */
+  --sidebar-to: 6 9 16;      /* #060910 */
+  --sidebar-ink: 122 134 151;     /* #7A8697 ítem inactivo */
+  --sidebar-active: 20 28 43;     /* #141C2B ítem activo (superficie elevada) */
+  --sidebar-active-ink: 230 235 242; /* #E6EBF2 texto/ícono activo */
+  --sidebar-bar: 74 144 226;      /* #4A90E2 barra de acento del activo */
+  /* ACENTO ÚNICO del sistema (azul profesional #4A90E2) — mismo en claro/oscuro. */
+  --accent: 74 144 226;      /* #4A90E2 */
+  --accent-hover: 59 127 212;/* #3B7FD4 */
+  --accent-pressed: 46 111 192; /* #2E6FC0 */
+  --accent-ink: 46 111 192;  /* #2E6FC0 énfasis (texto/íconos del acento sobre claro) */
+  --accent-on: 255 255 255;  /* texto BLANCO sobre el fondo de acento (botón primario) */
+  --glow: 74 144 226;        /* #4A90E2 */
 }
 
+/* Modo oscuro PROFUNDO (casi negro): fondo #060910, tarjetas #0D1220 (mismo
+   fondo en TODAS), superficie elevada #141C2B, bordes #1A2231 / #232E40.
+   Las tarjetas "flotan" sobre el fondo casi negro con sombras profundas.
+   El acento (#3B82F6, énfasis #93C5FD) da el contraste; el color semántico
+   (verde/ámbar/rojo) y el color por unidad aparecen SOLO en detalles. */
 .dark {
   color-scheme: dark;
-  --app: 11 20 33;           /* #0B1421 fondo oscuro profundo */
-  --card: 15 27 45;          /* #0F1B2D tarjeta (base oscura) */
-  --subtle: 27 43 68;        /* #1B2B44 inset (superficie elevada) */
-  --fg: 232 237 243;         /* #E8EDF3 */
-  --muted: 148 163 184;      /* #94a3b8 */
-  --line: 38 58 88;          /* #263A58 borde sobrio */
-  --sidebar-from: 10 18 31;  /* #0A121F */
-  --sidebar-to: 6 11 19;     /* #060B13 */
+  --app: 6 9 16;             /* #060910 fondo casi negro, muy profundo */
+  --card: 13 18 32;          /* #0D1220 tarjeta (todas iguales) */
+  --subtle: 20 28 43;        /* #141C2B superficie elevada (hover/activo) */
+  --fg: 230 235 242;         /* #E6EBF2 texto principal */
+  --muted: 122 134 151;      /* #7A8697 texto secundario */
+  --faint: 90 101 119;       /* #5A6577 texto atenuado */
+  --line: 26 34 49;          /* #1A2231 borde sutil */
+  --line-strong: 35 46 64;   /* #232E40 borde marcado */
+  --sidebar-from: 10 15 26;  /* #0A0F1A panel */
+  --sidebar-to: 6 9 16;      /* #060910 */
+  --sidebar-ink: 122 134 151;     /* #7A8697 ítem inactivo */
+  --sidebar-active: 20 28 43;     /* #141C2B ítem activo (superficie elevada) */
+  --sidebar-active-ink: 230 235 242; /* #E6EBF2 texto/ícono activo */
+  --sidebar-bar: 74 144 226;      /* #4A90E2 barra de acento del activo */
+  /* ACENTO ÚNICO del sistema (azul profesional #4A90E2) — mismo tono en oscuro;
+     el énfasis (accent-ink) se aclara para contrastar sobre el fondo casi negro. */
+  --accent: 74 144 226;      /* #4A90E2 */
+  --accent-hover: 59 127 212;/* #3B7FD4 */
+  --accent-pressed: 46 111 192; /* #2E6FC0 */
+  --accent-ink: 143 190 240; /* #8FBEF0 énfasis (texto/íconos del acento sobre oscuro) */
+  --accent-on: 255 255 255;  /* texto BLANCO sobre el fondo de acento */
+  --glow: 74 144 226;        /* #4A90E2 */
 }
 
 /*
@@ -61,32 +94,52 @@ body {
    Los inputs conservan su ring propio (focus:ring-*, mayor especificidad). */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(var(--card)), 0 0 0 4px #3B6291;
+  box-shadow: 0 0 0 2px rgb(var(--card)), 0 0 0 4px rgb(var(--accent));
 }
 
 @layer components {
+  /* Botón primario: fondo de acento + texto oscuro (#021024) para máximo
+     contraste + glow sutil. Claramente destacado. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5
-           font-semibold text-white shadow-sm transition hover:bg-prexi-blue-hover hover:shadow-md
-           active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100;
+           font-semibold text-accent-on shadow-glow transition
+           hover:bg-prexi-blue-hover hover:shadow-lift
+           active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none;
+  }
+  /* Estado "pressed" del acento (color, sin depender de utilidades del config). */
+  .btn-primary:active:not(:disabled) {
+    background-color: rgb(var(--accent-pressed));
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-card
-           px-5 py-2.5 font-semibold text-fg transition hover:bg-subtle active:scale-[0.98];
+           px-5 py-2.5 font-semibold text-fg transition hover:border-prexi-blue/40 hover:bg-subtle active:scale-[0.98];
   }
   .card {
-    @apply rounded-2xl border border-line bg-card p-6 shadow-soft transition-all duration-200;
+    /* Solo transicionamos transform/sombra/borde (para el hover). El
+       background/color NO se transiciona: al cambiar de tema debe conmutar al
+       instante, si no el color viejo queda "pegado" durante la animación. */
+    @apply rounded-2xl border border-line bg-card p-6 shadow-soft transition-[transform,box-shadow,border-color] duration-200;
   }
+  /* Hover: leve elevación + borde de acento + superficie ligeramente elevada. */
   .card-hover {
-    @apply hover:-translate-y-0.5 hover:border-prexi-blue/30 hover:shadow-lift;
+    @apply hover:-translate-y-0.5 hover:border-prexi-blue/45 hover:shadow-lift;
   }
   .input {
     @apply w-full rounded-xl border border-line bg-card px-4 py-2.5 text-fg outline-none transition
-           placeholder:text-muted focus:border-prexi-blue focus:ring-2 focus:ring-prexi-blue/20;
+           placeholder:text-muted focus:border-prexi-blue focus:ring-2 focus:ring-prexi-blue/25;
   }
   /* Etiqueta de stat: mayúsculas pequeñas con tracking. */
   .stat-label {
     @apply text-[11px] font-semibold uppercase tracking-wider text-muted;
+  }
+  /* Material de estudio: el Markdown de la app es text-sm, pensado para bloques
+     cortos (chat, chips). El apartado teórico es LECTURA LARGA en teléfono, así
+     que ahí el cuerpo va un punto más grande y más aireado. */
+  .prose-teoria :is(p, li) {
+    @apply text-[15px] leading-7 sm:text-base;
+  }
+  .prose-teoria :is(h3, h4) {
+    @apply mt-6 text-lg;
   }
   /* Skeleton de carga. */
   .skeleton {
@@ -102,6 +155,32 @@ body {
 
 @keyframes shimmer {
   100% { transform: translateX(100%); }
+}
+
+/* ── Avatar de ALVARO: micro-animaciones sutiles ── */
+.alvaro-avatar { animation: alvaro-saludo 0.6s ease-out both; }
+.alvaro-ojos { animation: alvaro-parpadeo 4.2s infinite; transform-origin: center; transform-box: fill-box; }
+.alvaro-antena { animation: alvaro-antena 2.4s ease-in-out infinite; }
+.alvaro-think { animation: alvaro-think 1s ease-in-out infinite; }
+@keyframes alvaro-saludo {
+  0% { opacity: 0; transform: scale(0.6) rotate(-12deg); }
+  60% { transform: scale(1.08) rotate(6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes alvaro-parpadeo {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+}
+@keyframes alvaro-antena {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; filter: drop-shadow(0 0 3px #3B82F6); }
+}
+@keyframes alvaro-think {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-1.5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .alvaro-avatar, .alvaro-ojos, .alvaro-antena, .alvaro-think { animation: none !important; }
 }
 
 /* Scrollbar discreta y consciente del tema. */

@@ -86,7 +86,11 @@ describe('1 · Control docente de la evaluación final (postest)', () => {
 
     const e = await req('GET', '/postest/estado', { token: estudianteTk });
     expect(e.data.habilitado).toBe(true);
-    expect(e.data.disponible).toBe(true);
+    // El postest exige además revisar el repaso de cierre; tras completarlo, disponible.
+    expect(e.data.repasoCompletado).toBe(false);
+    await req('POST', '/postest/repaso/completar', { token: estudianteTk, body: {} });
+    const e2 = await req('GET', '/postest/estado', { token: estudianteTk });
+    expect(e2.data.disponible).toBe(true);
 
     // Le llegó la notificación por la campana.
     const notis = await req('GET', '/notificaciones', { token: estudianteTk });

@@ -37,6 +37,20 @@ services:
     privileged: true # Piston requiere aislamiento a nivel de kernel
     ports:
       - "2000:2000"
+    environment:
+      # Límite de stdout POR ETAPA. El default de Piston (1024 bytes) es
+      # diminuto: el visualizador de traza imprime un JSON con los pasos y, con
+      # cualquier bucle de más de ~10 iteraciones, se pasa de 1KB → el sandbox
+      # mata el proceso con "stdout length exceeded" (SIGKILL, status OL). Lo
+      # subimos a 1 MB, suficiente para la traza y para programas normales.
+      PISTON_OUTPUT_MAX_SIZE: "1048576"
+      # Techo de memoria por ejecución (128 MB) a nivel de servicio, coherente
+      # con run_memory_limit del backend.
+      PISTON_RUN_MEMORY_LIMIT: "134217728"
+      PISTON_COMPILE_MEMORY_LIMIT: "268435456"
+    # Acota la memoria del CONTENEDOR del sandbox (defensa en profundidad: el
+    # código del alumno nunca puede agotar la RAM del host).
+    mem_limit: 1g
     volumes:
       - piston_packages:/piston/packages
     restart: unless-stopped

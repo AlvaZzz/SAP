@@ -4,14 +4,15 @@ import { useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { UnidadDocente, TemaDocente } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, EmptyState } from '@/components/ui';
+import { ImageUpload } from '@/components/image-upload';
 import { Markdown } from '@/components/markdown';
 import { Plus, Edit, Trash2, Layers, CheckCircle, Lock, AlertTriangle, ClipboardList } from '@/components/icons';
 
-interface FormUnidad { numero: number; titulo: string; descripcion: string; introduccion: string; xp: number }
-const VACIO_UNIDAD: FormUnidad = { numero: 1, titulo: '', descripcion: '', introduccion: '', xp: 0 };
+interface FormUnidad { numero: number; titulo: string; descripcion: string; introduccion: string; repaso: string; dashObjetivos: string; dashAnalogias: string; xp: number }
+const VACIO_UNIDAD: FormUnidad = { numero: 1, titulo: '', descripcion: '', introduccion: '', repaso: '', dashObjetivos: '', dashAnalogias: '', xp: 0 };
 
-interface FormTema { unidadId: number; padreId: number | null; numero: string; titulo: string; descripcion: string; umbral: number }
-const vacioTema = (unidadId: number, padreId: number | null = null): FormTema => ({ unidadId, padreId, numero: '', titulo: '', descripcion: '', umbral: 10 });
+interface FormTema { unidadId: number; padreId: number | null; numero: string; titulo: string; descripcion: string; repaso: string; umbral: number }
+const vacioTema = (unidadId: number, padreId: number | null = null): FormTema => ({ unidadId, padreId, numero: '', titulo: '', descripcion: '', repaso: '', umbral: 10 });
 
 export default function DocenteUnidadesPage() {
   const [unidades, setUnidades] = useState<UnidadDocente[]>([]);
@@ -22,7 +23,10 @@ export default function DocenteUnidadesPage() {
   const [editUnidadId, setEditUnidadId] = useState<number | null>(null);
   const [formUnidad, setFormUnidad] = useState<FormUnidad>(VACIO_UNIDAD);
   const [erroresU, setErroresU] = useState<Record<string, string>>({});
-  const [vistaPrevia, setVistaPrevia] = useState(false);
+  // Portada: imagen guardada (al editar), archivo nuevo elegido y si el docente la tocó.
+  const [imgActual, setImgActual] = useState<string | null>(null);
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const [imgTocada, setImgTocada] = useState(false);
 
   const [modalTema, setModalTema] = useState(false);
   const [editTemaId, setEditTemaId] = useState<number | null>(null);
@@ -39,10 +43,12 @@ export default function DocenteUnidadesPage() {
 
   function abrirCrearUnidad() {
     const siguiente = unidades.length ? Math.max(...unidades.map((u) => u.numero)) + 1 : 1;
-    setEditUnidadId(null); setFormUnidad({ ...VACIO_UNIDAD, numero: siguiente }); setErroresU({}); setError(''); setVistaPrevia(false); setModalUnidad(true);
+    setEditUnidadId(null); setFormUnidad({ ...VACIO_UNIDAD, numero: siguiente }); setErroresU({}); setError('');
+    setImgActual(null); setImgFile(null); setImgTocada(false); setModalUnidad(true);
   }
   function abrirEditarUnidad(u: UnidadDocente) {
-    setEditUnidadId(u.id); setFormUnidad({ numero: u.numero, titulo: u.titulo, descripcion: u.descripcion ?? '', introduccion: u.introduccion ?? '', xp: u.xp }); setErroresU({}); setError(''); setVistaPrevia(false); setModalUnidad(true);
+    setEditUnidadId(u.id); setFormUnidad({ numero: u.numero, titulo: u.titulo, descripcion: u.descripcion ?? '', introduccion: u.introduccion ?? '', repaso: u.repaso ?? '', dashObjetivos: u.dashObjetivos ?? '', dashAnalogias: u.dashAnalogias ?? '', xp: u.xp }); setErroresU({}); setError('');
+    setImgActual(u.imagen_url); setImgFile(null); setImgTocada(false); setModalUnidad(true);
   }
   function validarUnidad(): boolean {
     const e: Record<string, string> = {};
@@ -54,10 +60,23 @@ export default function DocenteUnidadesPage() {
   async function guardarUnidad() {
     if (!validarUnidad()) return;
     setGuardando(true); setError('');
-    const payload = { numero: formUnidad.numero, titulo: formUnidad.titulo.trim(), descripcion: formUnidad.descripcion.trim() || undefined, introduccion: formUnidad.introduccion.trim() || undefined, xp: formUnidad.xp };
+    const payload = { numero: formUnidad.numero, titulo: formUnidad.titulo.trim(), descripcion: formUnidad.descripcion.trim() || undefined, introduccion: formUnidad.introduccion.trim() || undefined, repaso: formUnidad.repaso.trim() || undefined, dashObjetivos: formUnidad.dashObjetivos.trim() || undefined, dashAnalogias: formUnidad.dashAnalogias.trim() || undefined, xp: formUnidad.xp };
     try {
+      // 1) Guarda los campos de texto; obtiene el id (nuevo o existente).
+      let unidadId = editUnidadId;
       if (editUnidadId) await api.put(`/docente/unidades/${editUnidadId}`, payload);
-      else await api.post('/docente/unidades', payload);
+      else unidadId = (await api.post<{ unidad: { id: number } }>('/docente/unidades', payload)).unidad.id;
+
+      // 2) Portada: solo si el docente la tocó. Archivo nuevo → subir; quitada → borrar.
+      if (imgTocada && unidadId) {
+        if (imgFile) {
+          const fd = new FormData();
+          fd.append('imagen', imgFile);
+          await api.upload(`/docente/unidades/${unidadId}/imagen`, fd);
+        } else if (editUnidadId && imgActual) {
+          await api.del(`/docente/unidades/${unidadId}/imagen`);
+        }
+      }
       setModalUnidad(false); await cargar();
     } catch (err) { setError(err instanceof ApiError ? err.message : 'No se pudo guardar la unidad'); }
     finally { setGuardando(false); }
@@ -73,7 +92,7 @@ export default function DocenteUnidadesPage() {
   }
   function abrirEditarTema(unidadId: number, t: TemaDocente, padreId: number | null = null) {
     setEditTemaId(t.id);
-    setFormTema({ unidadId, padreId, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion ?? '', umbral: t.umbral });
+    setFormTema({ unidadId, padreId, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion ?? '', repaso: t.repaso ?? '', umbral: t.umbral });
     setErroresT({}); setError(''); setModalTema(true);
   }
   function validarTema(): boolean {
@@ -88,10 +107,11 @@ export default function DocenteUnidadesPage() {
   async function guardarTema() {
     if (!formTema || !validarTema()) return;
     setGuardando(true); setError('');
-    const payload = { numero: formTema.numero.trim(), titulo: formTema.titulo.trim(), descripcion: formTema.descripcion.trim() || undefined, umbral: formTema.umbral, padreId: formTema.padreId ?? undefined };
+    const base = { numero: formTema.numero.trim(), titulo: formTema.titulo.trim(), descripcion: formTema.descripcion.trim() || undefined, repaso: formTema.repaso.trim() || undefined, umbral: formTema.umbral };
     try {
-      if (editTemaId) await api.put(`/docente/unidades/temas/${editTemaId}`, payload);
-      else await api.post(`/docente/unidades/${formTema.unidadId}/temas`, payload);
+      // El padre (padreId) solo aplica al CREAR; al editar no se reasigna (y el DTO de edición no lo acepta).
+      if (editTemaId) await api.put(`/docente/unidades/temas/${editTemaId}`, base);
+      else await api.post(`/docente/unidades/${formTema.unidadId}/temas`, { ...base, padreId: formTema.padreId ?? undefined });
       setModalTema(false); await cargar();
     } catch (err) { setError(err instanceof ApiError ? err.message : 'No se pudo guardar el tema'); }
     finally { setGuardando(false); }
@@ -169,6 +189,10 @@ export default function DocenteUnidadesPage() {
         </>}>
         {error && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{error}</p>}
         <div className="space-y-4">
+          <Field label="Imagen de portada (opcional)" hint="Se muestra como banner de la unidad al estudiante. Sube una imagen propia o de un banco libre (Unsplash, Pexels). JPG, PNG o WebP · máx. 2 MB.">
+            <ImageUpload valorActual={imgActual} disabled={guardando}
+              onArchivo={(f) => { setImgFile(f); setImgTocada(true); }} />
+          </Field>
           <Field label="Número de unidad" error={erroresU.numero} hint="Define el orden en que la ve el estudiante.">
             <Input type="number" min={1} value={formUnidad.numero} onChange={(e) => setFormUnidad({ ...formUnidad, numero: Number(e.target.value) })} />
           </Field>
@@ -179,13 +203,16 @@ export default function DocenteUnidadesPage() {
             <Textarea value={formUnidad.descripcion} onChange={(e) => setFormUnidad({ ...formUnidad, descripcion: e.target.value })} />
           </Field>
           <Field label="Introducción didáctica (opcional)" hint="La verá el estudiante antes del diagnóstico, en la pestaña de esta unidad. Admite Markdown: ## títulos, **negrita**, `código`, listas con «-» y bloques ```.">
-            <div className="mb-1.5 flex items-center gap-2">
-              <button type="button" onClick={() => setVistaPrevia(false)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${!vistaPrevia ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>Editar</button>
-              <button type="button" onClick={() => setVistaPrevia(true)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${vistaPrevia ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>Vista previa</button>
-            </div>
-            {vistaPrevia
-              ? <div className="min-h-[8rem] rounded-xl border border-line bg-card p-3">{formUnidad.introduccion.trim() ? <Markdown content={formUnidad.introduccion} /> : <p className="text-sm text-muted">Nada que previsualizar todavía.</p>}</div>
-              : <Textarea rows={10} value={formUnidad.introduccion} onChange={(e) => setFormUnidad({ ...formUnidad, introduccion: e.target.value })} placeholder={'## Objetivos de la unidad\n...\n\n## Conceptos clave\n- ...'} />}
+            <EditorMarkdown value={formUnidad.introduccion} onChange={(v) => setFormUnidad({ ...formUnidad, introduccion: v })} placeholder={'## Objetivos de la unidad\n...\n\n## Conceptos clave\n- ...'} />
+          </Field>
+          <Field label="Repaso de cierre (opcional)" hint="Lo verá el estudiante antes de la EVALUACIÓN FINAL (postest), como repaso de la unidad. Mismo formato Markdown.">
+            <EditorMarkdown value={formUnidad.repaso} onChange={(v) => setFormUnidad({ ...formUnidad, repaso: v })} placeholder={'## Lo esencial que ya dominas\n...\n\n## Conceptos clave a recordar\n- ...'} />
+          </Field>
+          <Field label="Dashboard · Objetivos (opcional)" hint="Zona ① del Preview de Unidad. Una casilla por objetivo con «- [ ] …». El mapa conceptual y los ejemplos se generan/siembran aparte.">
+            <EditorMarkdown value={formUnidad.dashObjetivos} onChange={(v) => setFormUnidad({ ...formUnidad, dashObjetivos: v })} placeholder={'## Al final de esta unidad podrás…\n- [ ] …\n- [ ] …'} />
+          </Field>
+          <Field label="Dashboard · Analogías del mundo real (opcional)" hint="Zona ③ del Preview de Unidad. Ej.: «**Variable = caja etiquetada.** …».">
+            <EditorMarkdown value={formUnidad.dashAnalogias} onChange={(v) => setFormUnidad({ ...formUnidad, dashAnalogias: v })} placeholder={'## Analogías para entenderlo\n- **Concepto = analogía.** …'} />
           </Field>
           <Field label="Bono de XP al completar la unidad" hint="Se otorga una sola vez cuando el estudiante completa todos los temas publicados.">
             <Input type="number" min={0} value={formUnidad.xp} onChange={(e) => setFormUnidad({ ...formUnidad, xp: Number(e.target.value) })} />
@@ -211,6 +238,9 @@ export default function DocenteUnidadesPage() {
             <Field label="Descripción (opcional)">
               <Textarea value={formTema.descripcion} onChange={(e) => setFormTema({ ...formTema, descripcion: e.target.value })} />
             </Field>
+            <Field label="Repaso del tema (opcional)" hint="Lo verá el estudiante antes del EXAMEN DE FIN DE UNIDAD, en la pestaña de este tema. Admite Markdown.">
+              <EditorMarkdown value={formTema.repaso} onChange={(v) => setFormTema({ ...formTema, repaso: v })} placeholder={'**Concepto clave.** Recuerda que…'} />
+            </Field>
             <Field label="Ejercicios correctos para desbloquear el siguiente" error={erroresT.umbral}>
               <Input type="number" min={1} value={formTema.umbral} onChange={(e) => setFormTema({ ...formTema, umbral: Number(e.target.value) })} />
             </Field>
@@ -218,6 +248,22 @@ export default function DocenteUnidadesPage() {
         )}
       </Modal>
     </div>
+  );
+}
+
+/** Editor de texto Markdown con conmutador Editar / Vista previa (reutilizable). */
+function EditorMarkdown({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  const [preview, setPreview] = useState(false);
+  return (
+    <>
+      <div className="mb-1.5 flex items-center gap-2">
+        <button type="button" onClick={() => setPreview(false)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${!preview ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>Editar</button>
+        <button type="button" onClick={() => setPreview(true)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${preview ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>Vista previa</button>
+      </div>
+      {preview
+        ? <div className="min-h-[6rem] rounded-xl border border-line bg-card p-3">{value.trim() ? <Markdown content={value} /> : <p className="text-sm text-muted">Nada que previsualizar todavía.</p>}</div>
+        : <Textarea rows={10} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />}
+    </>
   );
 }
 

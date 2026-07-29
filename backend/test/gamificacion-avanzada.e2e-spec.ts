@@ -45,10 +45,10 @@ beforeAll(async () => {
 });
 
 describe('1 · Emblemas: catálogo con estado y requisito visible', () => {
-  it('lista los 15 emblemas del catálogo; el estudiante nuevo no tiene ninguno', async () => {
+  it('lista los 16 emblemas del catálogo; el estudiante nuevo no tiene ninguno', async () => {
     const r = await req('GET', '/gamificacion/emblemas', { token: estudianteTk });
     expect(r.status).toBe(200);
-    expect(r.data.total).toBe(15);
+    expect(r.data.total).toBe(16);
     expect(r.data.desbloqueados).toBe(0);
     // Cada emblema trae su requisito (condicion) y su ícono SVG (svgKey).
     for (const e of r.data.emblemas) {

@@ -1,8 +1,10 @@
-import { PrismaClient, Banco, NivelDificultad } from '@prisma/client';
+import { PrismaClient, Banco, NivelDificultad, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { Def, POSTEST } from './data';
 import { PLAN_UPEA, EXTRA_AVANZADO, EjPlan, TemaPlan } from './plan-upea';
 import { DIAGNOSTICO, INTRO_UNIDADES } from './diagnostico';
+import { EXAMEN_UNIDAD, REPASO_UNIDADES, REPASO_TEMAS } from './repaso';
+import { DASH_OBJETIVOS, DASH_ANALOGIAS, DASH_EJEMPLOS, DASH_MINUTOS } from './dashboard';
 import { EMBLEMAS, RANGOS } from '../src/gamificacion/catalogo';
 import { dificultadDesdeEstrellas, estimarTheta, nivelDesdeTheta, redondearTheta, RespuestaIrt } from '../src/mediciones/irt/irt';
 
@@ -40,6 +42,8 @@ async function main() {
     prisma.logroUsuario.deleteMany(),
     prisma.logro.deleteMany(),
     prisma.rango.deleteMany(),
+    prisma.examenUnidad.deleteMany(),
+    prisma.repasoUnidad.deleteMany(),
     prisma.diagnosticoTema.deleteMany(),
     prisma.pretestRespuesta.deleteMany(),
     prisma.evaluacion.deleteMany(),
@@ -62,7 +66,15 @@ async function main() {
 
   // modeloIa: se fija a un modelo con cuota vigente (gemini-2.0-flash quedó sin
   // cuota en free tier → 429). Alineado con GEMINI_MODEL del entorno.
-  await prisma.configuracionSistema.create({ data: { id: 1, modeloIa: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite' } });
+  await prisma.configuracionSistema.create({
+    data: {
+      id: 1,
+      modeloIa: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite',
+      // Demo: retos habilitados para Intermedio y Avanzado (el docente los controla).
+      retosIntermedioHabilitado: true,
+      retosAvanzadoHabilitado: true,
+    },
+  });
 
   // ── Usuarios demo ──
   const hash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
@@ -81,7 +93,7 @@ async function main() {
     const u = await prisma.usuario.create({
       data: {
         nombre, email, cedula, rol, carrera: 'Ingeniería de Sistemas',
-        passwordHash: hash, introduccionCompletada: true, pretestCompletado: true, grupo, institucion,
+        passwordHash: hash, introduccionCompletada: true, repasoPostestCompletado: true, pretestCompletado: true, grupo, institucion,
       },
     });
     uid[email] = u.id;
@@ -144,6 +156,7 @@ async function main() {
     const tema = await prisma.tema.create({
       data: {
         unidadId, padreId, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion,
+        repaso: REPASO_TEMAS[t.numero] ?? null,
         institucion: 'UPEA', orden, umbral: MIN_TEMA,
         publicado: ejercicios.length >= MIN_TEMA, // publicado solo si cumple el mínimo
       },
@@ -164,6 +177,11 @@ async function main() {
       data: {
         numero: u.numero, titulo: u.titulo, descripcion: u.descripcion,
         introduccion: INTRO_UNIDADES[u.numero] ?? null,
+        repaso: REPASO_UNIDADES[u.numero] ?? null,
+        dashObjetivos: DASH_OBJETIVOS[u.numero] ?? null,
+        dashAnalogias: DASH_ANALOGIAS[u.numero] ?? null,
+        dashEjemplos: (DASH_EJEMPLOS[u.numero] ?? []) as unknown as object,
+        dashMinutos: DASH_MINUTOS[u.numero] ?? null,
         institucion: u.institucion, plan: u.plan, orden: u.numero, xp: 100,
       },
     });
@@ -235,7 +253,42 @@ async function main() {
     temasDiagnostico.push(temaId);
   }
 
-  console.log(`[seed] UPEA: ${PLAN_UPEA.length} unidades, ${totalTemas} temas | práctica=${totalPractica} | diagnóstico=${totalDiag} (${temasDiagnostico.length} temas) | postest=${POSTEST.length}`);
+  // ── Banco del EXAMEN DE FIN DE UNIDAD (banco='examen', por tema de la unidad) ──
+  //  Preguntas propias distintas del diagnóstico/práctica; alimentan el examen que
+  //  valida el avance a la siguiente unidad. El docente puede gestionarlas luego.
+  let totalExamen = 0;
+  for (const et of EXAMEN_UNIDAD) {
+    const temaId = temaIdPorNumero[et.tema];
+    if (!temaId) {
+      console.warn(`[seed] ⚠ tema de examen ${et.tema} no existe en el plan; se omite.`);
+      continue;
+    }
+    const nivelNum = nivelPorTema[et.tema] ?? 1;
+    for (const it of et.items) {
+      await prisma.ejercicio.create({
+        data: {
+          titulo: tituloDe(it.codigo ?? '', it.enunciado),
+          categoria: et.categoria,
+          nivelId: nid[nivelNum],
+          temaId,
+          estrellas: it.estrellas,
+          nivelDificultad: nivelDe(it.estrellas),
+          dificultadB: dificultadDesdeEstrellas(it.estrellas),
+          tipo: 'opcion_multiple',
+          enunciado: it.enunciado,
+          codigoPython: it.codigo ?? null,
+          opciones: it.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
+          respuestaCorrecta: LETRAS[it.correcta],
+          xp: it.estrellas * 5,
+          explicacionIa: it.expl,
+          banco: 'examen',
+        },
+      });
+      totalExamen++;
+    }
+  }
+
+  console.log(`[seed] UPEA: ${PLAN_UPEA.length} unidades, ${totalTemas} temas | práctica=${totalPractica} | diagnóstico=${totalDiag} (${temasDiagnostico.length} temas) | examen=${totalExamen} | postest=${POSTEST.length}`);
 
   // ── Emblemas (catálogo compartido) y rangos ──
   await prisma.logro.createMany({
@@ -250,20 +303,63 @@ async function main() {
   });
 
   // ── Demo: progreso real de Juan ──
+  //  El historial se siembra como el de un estudiante REAL para que los
+  //  indicadores de hábitos (autonomía/eficiencia) tengan algo que describir:
+  //   · la fecha avanza en ORDEN (antes era aleatoria, así que la "tendencia"
+  //     no guardaba relación con la secuencia de práctica y salía plana);
+  //   · al principio necesita pistas y falla algún intento; al final resuelve solo;
+  //   · el tiempo varía y se acorta un poco, sin ser monótono.
+  //  Cada ejercicio termina SIEMPRE resuelto: los fallos son intentos previos, así
+  //  el dominio/desbloqueo por ejercicios distintos correctos no cambia.
   const juan = uid['juan@upea.edu.bo'];
   let xpJuan = 0;
+  const totalPrevisto = idsPorNivel[1].length + 6;
+  const inicioHistorial = Date.now() - 6 * 86_400_000;
+  let seq = 0;
   const resolver = async (ids: number[], cuantos: number) => {
     for (const id of ids.slice(0, cuantos)) {
       const ej = await prisma.ejercicio.findUnique({ where: { id }, select: { xp: true } });
       const xp = ej?.xp ?? 0;
+      const avance = totalPrevisto > 1 ? seq / (totalPrevisto - 1) : 1; // 0 = primeros, 1 = últimos
+      const fecha = new Date(inicioHistorial + avance * 6 * 86_400_000);
+      // Pistas: de necesitar 2 al empezar a ninguna al final.
+      const pistas = avance < 0.25 ? 2 : avance < 0.5 ? 1 : avance < 0.75 ? (seq % 3 === 0 ? 1 : 0) : 0;
+      // Tiempo: ~95s → ~50s con oscilación determinista (sin Math.random: el seed
+      // debe ser reproducible para la tesis).
+      const tiempo = Math.round(95 - avance * 45 + ((seq * 37) % 19) - 9);
+
+      // Intento fallido PREVIO en la primera mitad: así la tasa de acierto
+      // arranca más baja y mejora, que es lo que el indicador debe mostrar.
+      if (avance < 0.45 && seq % 3 === 0) {
+        await prisma.intento.create({
+          data: {
+            usuarioId: juan, ejercicioId: id, respuestaDada: 'B', correcto: false,
+            tiempoSeg: tiempo + 20, pistasUsadas: pistas, xpOtorgado: 0,
+            fecha: new Date(fecha.getTime() - 120_000),
+          },
+        });
+      }
+
       xpJuan += xp;
       await prisma.intento.create({
         data: {
           usuarioId: juan, ejercicioId: id, respuestaDada: 'A', correcto: true,
-          tiempoSeg: 45, xpOtorgado: xp,
-          fecha: new Date(Date.now() - Math.random() * 6 * 86_400_000),
+          tiempoSeg: tiempo, pistasUsadas: pistas, xpOtorgado: xp, fecha,
         },
       });
+
+      // Consultas a ALVARO coherentes con las pistas pedidas.
+      for (let p = 1; p <= pistas; p++) {
+        await prisma.consultaIa.create({
+          data: { usuarioId: juan, tipo: 'pista', endpoint: '/tutor-ia/pista', ejercicioId: id, nivelPista: p, fecha },
+        });
+      }
+      if (avance < 0.4 && seq % 5 === 0) {
+        await prisma.consultaIa.create({
+          data: { usuarioId: juan, tipo: 'asistente', endpoint: '/tutor-ia/asistente', ejercicioId: id, pregunta: '¿Por dónde empiezo?', fecha },
+        });
+      }
+      seq++;
     }
   };
   await resolver(idsPorNivel[1], idsPorNivel[1].length);
@@ -408,45 +504,103 @@ async function main() {
     await evalDemoPost(uid[email], postA, postT);
   }
 
+  // ── Examen de fin de unidad demo: repaso + intento APROBADO de la Unidad 1 ──
+  //  Con el nuevo gate, avanzar a la Unidad 2 exige un ExamenUnidad aprobado. Se
+  //  siembra para los estudiantes demo un intento aprobado de la Unidad 1 (y de la
+  //  Unidad 2 para Juan) para que su progreso siga siendo coherente.
+  const unidad1 = await prisma.unidad.findFirst({ where: { numero: 1 }, select: { id: true } });
+  const unidad2 = await prisma.unidad.findFirst({ where: { numero: 2 }, select: { id: true } });
+  async function examenDemo(usuarioId: number, unidadId: number, theta: number) {
+    const nivel = nivelDesdeTheta(theta);
+    await prisma.repasoUnidad.upsert({
+      where: { usuarioId_unidadId: { usuarioId, unidadId } },
+      create: { usuarioId, unidadId },
+      update: {},
+    });
+    await prisma.examenUnidad.create({
+      data: { usuarioId, unidadId, theta: redondearTheta(theta), nivel, puntaje: 88, aprobado: true, aciertos: 7, total: 8 },
+    });
+  }
+  for (const email of ['juan@upea.edu.bo', 'ana@upea.edu.bo', 'carlos@upea.edu.bo', 'maria@upea.edu.bo']) {
+    if (unidad1) await examenDemo(uid[email], unidad1.id, 0.6);
+  }
+  if (unidad2) await examenDemo(uid['juan@upea.edu.bo'], unidad2.id, 0.4);
+
   // ── Documentos demo (subidos por el docente) ──
+  //  Se asocian a un TEMA real del plan (por su `numero`): de ahí cuelga la unidad
+  //  con la que el estudiante los ve agrupados. Uno apunta a un SUBTEMA (1.5.2) y
+  //  otro se deja sin tema a propósito, para representar "General / Sin categoría".
   const docente = uid['docente@upea.edu.bo'];
-  const docs: Array<[string, number, number]> = [
-    // [titulo, nivelNumero, MB]
-    ['Introducción a Variables y Tipos de Datos', 1, 1.8],
-    ['Ejercicios resueltos de Condicionales', 2, 3.2],
-    ['Guía de Bucles FOR y WHILE', 3, 2.4],
-    ['Funciones en Python — Teoría y práctica', 4, 4.1],
+  const docs: Array<[string, number, number, string | null, string]> = [
+    // [titulo, nivelNumero, MB, numeroTema, descripcion]
+    ['Introducción a Variables y Tipos de Datos', 1, 1.8, '1.5',
+      'Qué es una variable, cómo se declara y los tipos básicos (int, float, str, bool) con ejemplos comentados.'],
+    ['Tabla de operadores de Python', 1, 0.6, '1.5.2',
+      'Referencia rápida de operadores aritméticos, de comparación y lógicos, con su precedencia.'],
+    ['Ejercicios resueltos de Condicionales', 2, 3.2, '2.3',
+      '20 ejercicios de if/elif/else resueltos paso a paso, con los errores más frecuentes al anidar condiciones.'],
+    ['Guía de Bucles FOR y WHILE', 3, 2.4, '2.4',
+      'Cuándo usar for y cuándo while, recorrido de secuencias, acumuladores y control de bucles infinitos.'],
+    ['Funciones en Python — Teoría y práctica', 4, 4.1, '3.2',
+      'Definición de funciones, parámetros, valores de retorno y alcance de las variables.'],
+    ['Reglamento de laboratorio y guía de entregas', 1, 0.4, null,
+      'Normas de las sesiones de laboratorio, formato de entrega y criterios de evaluación de la materia.'],
   ];
-  for (const [titulo, nivelN, mb] of docs) {
+  for (const [titulo, nivelN, mb, numeroTema, descripcion] of docs) {
+    const tema = numeroTema ? await prisma.tema.findFirst({ where: { numero: numeroTema } }) : null;
     await prisma.documento.create({
       data: {
-        titulo, descripcion: 'Material compartido por tus docentes.',
+        titulo, descripcion,
         archivo: `/docs/${titulo.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`,
-        tamanoBytes: Math.round(mb * 1024 * 1024), nivelId: nid[nivelN], subidoPorId: docente,
+        tamanoBytes: Math.round(mb * 1024 * 1024), nivelId: nid[nivelN],
+        temaId: tema?.id ?? null, subidoPorId: docente,
       },
     });
   }
 
   // ── Retos demo (ejercicios extra del docente) ──
-  await prisma.reto.createMany({
-    data: [
-      {
-        titulo: 'FizzBuzz', categoria: 'Bucles', estrellas: 3, tipo: 'completar_codigo', autorId: docente, xp: 80,
-        enunciado: 'Imprime los números del 1 al 20. Para múltiplos de 3 imprime "Fizz", de 5 "Buzz", y de ambos "FizzBuzz".',
-        codigoInicial: 'for i in range(1, 21):\n    # tu código aquí\n    pass',
-      },
-      {
-        titulo: 'Invertir una cadena', categoria: 'Estructuras', estrellas: 2, tipo: 'completar_codigo', autorId: docente, xp: 60,
-        enunciado: 'Escribe una función que reciba un texto y devuelva la cadena invertida (sin usar reversed).',
-        codigoInicial: 'def invertir(texto):\n    # tu código aquí\n    return ""\n\nprint(invertir("python"))',
-      },
-      {
-        titulo: 'Número primo', categoria: 'Funciones', estrellas: 4, tipo: 'completar_codigo', autorId: docente, xp: 100,
-        enunciado: 'Escribe una función es_primo(n) que devuelva True si n es primo y False en caso contrario.',
-        codigoInicial: 'def es_primo(n):\n    # tu código aquí\n    return False\n\nprint(es_primo(7))',
-      },
-    ],
-  });
+  //  Se asocian a un TEMA real del plan (por su `numero`): de ahí cuelga la unidad
+  //  con la que el estudiante los ve AGRUPADOS. Uno apunta a un SUBTEMA (2.5) y
+  //  otro se deja sin tema (representa "General / Sin categoría").
+  const retosDemo: Array<Prisma.RetoCreateManyInput & { numeroTema: string | null }> = [
+    {
+      numeroTema: '2.4',
+      titulo: 'FizzBuzz', categoria: 'Bucles', estrellas: 3, tipo: 'completar_codigo', autorId: docente, xp: 80,
+      enunciado: 'Imprime los números del 1 al 20. Para múltiplos de 3 imprime "Fizz", de 5 "Buzz", y de ambos "FizzBuzz".',
+      codigoInicial: 'for i in range(1, 21):\n    # tu código aquí\n    pass',
+    },
+    {
+      numeroTema: null,
+      titulo: 'Invertir una cadena', categoria: 'Estructuras', estrellas: 2, tipo: 'completar_codigo', autorId: docente, xp: 60,
+      enunciado: 'Escribe una función que reciba un texto y devuelva la cadena invertida (sin usar reversed).',
+      codigoInicial: 'def invertir(texto):\n    # tu código aquí\n    return ""\n\nprint(invertir("python"))',
+    },
+    {
+      numeroTema: '3.2',
+      titulo: 'Número primo', categoria: 'Funciones', estrellas: 4, tipo: 'completar_codigo', autorId: docente, xp: 100,
+      enunciado: 'Escribe una función es_primo(n) que devuelva True si n es primo y False en caso contrario.',
+      codigoInicial: 'def es_primo(n):\n    # tu código aquí\n    return False\n\nprint(es_primo(7))',
+    },
+    // ── Misiones de depuración (bug‑hunt): auto‑validadas por salida esperada ──
+    {
+      numeroTema: '2.4',
+      titulo: 'Bug: suma del 1 al 5', categoria: 'Bucles', estrellas: 2, autorId: docente, xp: 70, esBugHunt: true,
+      enunciado: 'Este código debería imprimir la suma de 1 a 5 (=15), pero da otro resultado. Encuentra y corrige el bug.',
+      codigoInicial: 'total = 0\nfor n in range(1, 5):\n    total = total + n\nprint(total)',
+      ejemploSalida: '15',
+    },
+    {
+      numeroTema: '2.3',
+      titulo: 'Bug: contar pares', categoria: 'Condicionales', estrellas: 3, autorId: docente, xp: 80, esBugHunt: true,
+      enunciado: 'Debe contar cuántos números pares hay en la lista (=3), pero el conteo está mal. Corrige el bug.',
+      codigoInicial: 'nums = [4, 7, 10, 3, 8]\npares = 0\nfor x in nums:\n    if x % 2 == 1:\n        pares = pares + 1\nprint(pares)',
+      ejemploSalida: '3',
+    },
+  ];
+  for (const { numeroTema, ...reto } of retosDemo) {
+    const tema = numeroTema ? await prisma.tema.findFirst({ where: { numero: numeroTema } }) : null;
+    await prisma.reto.create({ data: { ...reto, temaId: tema?.id ?? null } });
+  }
 
   // ── Demo: insignias desbloqueadas de Juan ──
   const logrosJuan = await prisma.logro.findMany({ where: { clave: { in: ['primer_acierto', 'tema_completado', 'mente_brillante'] } } });

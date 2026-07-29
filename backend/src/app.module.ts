@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
+import { OrigenGuard } from './common/auth/origen.guard';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { EjerciciosModule } from './ejercicios/ejercicios.module';
+import { FlashcardsModule } from './flashcards/flashcards.module';
 import { IntroduccionModule } from './mediciones/introduccion/introduccion.module';
 import { PretestModule } from './mediciones/pretest/pretest.module';
 import { PostestModule } from './mediciones/postest/postest.module';
@@ -16,6 +19,7 @@ import { ProgresoModule } from './modulos/progreso/progreso.module';
 import { DocumentosModule } from './documentos/documentos.module';
 import { RetosModule } from './modulos/retos/retos.module';
 import { UnidadesModule } from './modulos/unidades/unidades.module';
+import { ExamenUnidadModule } from './modulos/examen-unidad/examen-unidad.module';
 import { DocenteDashboardModule } from './docente/docente-dashboard/docente-dashboard.module';
 import { DocenteUnidadesModule } from './docente/docente-unidades/docente-unidades.module';
 import { DocentePreguntasIaModule } from './docente/docente-preguntas-ia/docente-preguntas-ia.module';
@@ -49,6 +53,7 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     PrismaModule,
     AuthModule,
     EjerciciosModule,
+    FlashcardsModule,
     IntroduccionModule,
     PretestModule,
     PostestModule,
@@ -61,6 +66,7 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     DocumentosModule,
     RetosModule,
     UnidadesModule,
+    ExamenUnidadModule,
     DocenteDashboardModule,
     DocenteUnidadesModule,
     DocentePreguntasIaModule,
@@ -82,5 +88,10 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     AdminDashboardModule,
   ],
   controllers: [AppController],
+  providers: [
+    // CSRF: toda mutación debe venir de un origen propio (ver OrigenGuard).
+    // Se registra GLOBAL para no depender de recordar decorarlo ruta por ruta.
+    { provide: APP_GUARD, useClass: OrigenGuard },
+  ],
 })
 export class AppModule {}

@@ -6,11 +6,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
 import { api } from '@/lib/api';
 import { ThemeToggle } from './theme-toggle';
+import { SonidoToggle } from './sonido-toggle';
 import { NotificacionesBell } from './notificaciones-bell';
 import {
-  LayoutDashboard, Code, Play, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
+  LayoutDashboard, Code, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
   Search, LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
-  Layers, Bot, Inbox,
+  Layers, Bot, Inbox, Sparkles,
 } from './icons';
 
 type Area = 'estudiante' | 'docente' | 'investigador' | 'admin';
@@ -36,9 +37,11 @@ function areaPermite(area: Area, rol: Rol): boolean {
 const NAV_ESTUDIANTE: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ejercicios', label: 'Ejercicios', icon: Code },
-  { href: '/practica', label: 'Práctica', icon: Play },
-  { href: '/documentos', label: 'Documentos', icon: BookOpen },
+  // El editor de código vive dentro de un reto (ya no hay "Práctica" suelta).
   { href: '/retos', label: 'Retos', icon: Target },
+  // Repaso libre con flashcards (apoyo; no puntúa ni afecta al θ).
+  { href: '/flashcards', label: 'Repaso', icon: Sparkles },
+  { href: '/documentos', label: 'Documentos', icon: BookOpen },
   { href: '/progreso', label: 'Progreso', icon: TrendingUp },
   { href: '/ranking', label: 'Ranking', icon: Trophy },
   { href: '/perfil', label: 'Perfil', icon: UserIcon },
@@ -135,13 +138,15 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
         <button onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 hover:bg-white/10 lg:hidden"><X className="h-5 w-5" /></button>
       </div>
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
-        <p className="px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-blue-300/50">Menú</p>
+        <p className="px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]/60">Menú</p>
         {nav.map(({ href, label, icon: Icon }) => {
           const activo = pathname === href || pathname.startsWith(href + '/');
           return (
-            <Link key={href} href={href}
-              className={`group flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium transition ${activo ? 'bg-prexi-blue text-white shadow-md shadow-blue-900/40' : 'text-blue-100/75 hover:bg-white/10 hover:text-white'}`}>
-              <Icon className={`h-[22px] w-[22px] transition-transform group-hover:scale-110 ${activo ? '' : 'text-blue-200/70 group-hover:text-white'}`} /> {label}
+            <Link key={href} href={href} aria-current={activo ? 'page' : undefined}
+              className={`group relative flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium transition ${activo
+                ? 'bg-[rgb(var(--sidebar-active))] text-[rgb(var(--sidebar-active-ink))] shadow-[0_0_22px_-6px_rgb(var(--sidebar-bar)/0.7)] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[rgb(var(--sidebar-bar))] before:content-[""]'
+                : 'text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.06] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
+              <Icon className={`h-[22px] w-[22px] transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} /> {label}
             </Link>
           );
         })}
@@ -174,6 +179,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
             <input placeholder="Buscar…" className="w-full rounded-xl border border-line bg-subtle py-2.5 pl-10 pr-3 text-sm text-fg outline-none transition placeholder:text-muted focus:border-prexi-blue focus:bg-card focus:ring-2 focus:ring-prexi-blue/20" />
           </div>
           <div className="ml-auto flex items-center gap-1.5">
+            <SonidoToggle />
             <ThemeToggle />
             {(area === 'estudiante' || area === 'docente') && <NotificacionesBell />}
             <Link href={homeHref} className="flex items-center gap-2.5 rounded-xl py-1 pl-1 pr-2.5 transition hover:bg-subtle">

@@ -261,16 +261,29 @@ describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
     expect(q.status).toBe(400);
   });
 
-  it('BUG conocido: finalizar sin haber abierto preguntas NO salta al resultado', async () => {
+  it('GATE de repaso: habilitado por el docente pero aún NO disponible hasta repasar', async () => {
     // El docente/admin HABILITA la evaluación final para el paralelo del estudiante (gate principal).
     const hab = await req('POST', '/docente/postest', { token: admin.token, body: { paralelo: 'A', habilitado: true } });
     expect(hab.status).toBe(201);
 
-    const estado = await req('GET', '/postest/estado', { token: estudiante.token });
-    expect(estado.data.disponible).toBe(true);
-    expect(estado.data.habilitado).toBe(true);
+    const antes = await req('GET', '/postest/estado', { token: estudiante.token });
+    expect(antes.data.habilitado).toBe(true);
+    expect(antes.data.repasoCompletado).toBe(false);
+    expect(antes.data.disponible).toBe(false); // falta revisar el repaso de cierre
 
-    // Habilitado pero en BLANCO (sin responder) → finalizar debe rechazarse.
+    // El repaso trae las 5 unidades con su contenido; completarlo habilita el postest.
+    const repaso = await req('GET', '/postest/repaso', { token: estudiante.token });
+    expect(repaso.status).toBe(200);
+    expect(repaso.data.unidades.length).toBeGreaterThanOrEqual(5);
+    const ok = await req('POST', '/postest/repaso/completar', { token: estudiante.token, body: {} });
+    expect(ok.status).toBe(201);
+
+    const despues = await req('GET', '/postest/estado', { token: estudiante.token });
+    expect(despues.data.disponible).toBe(true);
+  });
+
+  it('BUG conocido: finalizar sin haber abierto preguntas NO salta al resultado', async () => {
+    // Habilitado + repaso hecho, pero en BLANCO (sin responder) → finalizar debe rechazarse.
     const fin = await req('POST', '/postest/finalizar', { token: estudiante.token, body: {} });
     expect(fin.status).toBe(400);
     expect(fin.data.message).toMatch(/Responde al menos una pregunta/);
@@ -321,6 +334,58 @@ describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
     expect(r.data.pretest_total).toBe(puntajePretest);
     expect(r.data.postest_total).toBe(puntajePostest);
     expect(r.data.ganancia).toBe(puntajePostest - puntajePretest);
+  });
+});
+
+describe('5b · Examen de fin de unidad: repaso, IRT y gate de avance', () => {
+  let unidad1 = -1;
+
+  it('la Unidad 1 tiene examen; el gate de avance parte cerrado', async () => {
+    const r = await req('GET', '/unidades', { token: estudiante.token });
+    expect(r.status).toBe(200);
+    const u1 = r.data.unidades.find((u: { numero: number }) => u.numero === 1);
+    expect(u1).toBeTruthy();
+    unidad1 = u1.id;
+    expect(u1.examen_disponible).toBe(true);
+    expect(u1.examen_aprobado).toBe(false);
+  });
+
+  it('iniciar exige repaso; tras completarlo entrega preguntas SIN la respuesta correcta', async () => {
+    const bloqueado = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
+    expect(bloqueado.status).toBe(400);
+    const repaso = await req('GET', `/examen-unidad/${unidad1}/repaso`, { token: estudiante.token });
+    expect(repaso.status).toBe(200);
+    const ok = await req('POST', `/examen-unidad/${unidad1}/repaso/completar`, { token: estudiante.token, body: {} });
+    expect(ok.status).toBe(201);
+    const ini = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
+    expect(ini.status).toBe(200);
+    expect(ini.data.preguntas.length).toBeGreaterThanOrEqual(3);
+    expect(JSON.stringify(ini.data)).not.toMatch(/respuestaCorrecta|respuesta_correcta/);
+  });
+
+  it('aprobar el examen (θ ≥ Intermedio) desbloquea la siguiente unidad', async () => {
+    const ini = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
+    const preguntas: { id: number }[] = ini.data.preguntas;
+    // El banco de examen sembrado tiene la opción correcta en 'A' → acertar todo.
+    const respuestas = preguntas.map((p) => ({ ejercicioId: p.id, respuesta: 'A' }));
+    const ev = await req('POST', `/examen-unidad/${unidad1}/evaluar`, { token: estudiante.token, body: { respuestas } });
+    expect(ev.status).toBe(201);
+    const res = ev.data.resultado;
+    expect(res.aprobado).toBe(true);
+    expect(['intermedio', 'avanzado']).toContain(res.nivel);
+    expect(typeof res.theta === 'number' || res.theta === null).toBe(true);
+
+    // El gate de avance ahora refleja el examen aprobado.
+    const r = await req('GET', '/unidades', { token: estudiante.token });
+    const u1 = r.data.unidades.find((u: { numero: number }) => u.numero === 1);
+    expect(u1.examen_aprobado).toBe(true);
+    const u2 = r.data.unidades.find((u: { numero: number }) => u.numero === 2);
+    if (u2) expect(u2.desbloqueada).toBe(true);
+  });
+
+  it('no permite repetir el examen ya aprobado', async () => {
+    const ini = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
+    expect(ini.status).toBe(400);
   });
 });
 

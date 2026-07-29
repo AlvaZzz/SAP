@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { DocenteDocumento, OpcionTema } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, Select, EmptyState, ResponsiveTable } from '@/components/ui';
+import { SelectorTema } from '@/components/docente/selector-tema';
 import { Upload, FileText, Trash2, Edit, Download, Bot } from '@/components/icons';
 
 const MAX_MB = 15;
@@ -18,7 +19,7 @@ export default function DocenteDocumentosPage() {
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [nivel, setNivel] = useState('');
-  const [temaId, setTemaId] = useState('');
+  const [temaId, setTemaId] = useState<number | null>(null);
   const [archivo, setArchivo] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +30,7 @@ export default function DocenteDocumentosPage() {
   const [editTitulo, setEditTitulo] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editNivel, setEditNivel] = useState('');
-  const [editTemaId, setEditTemaId] = useState('');
+  const [editTemaId, setEditTemaId] = useState<number | null>(null);
 
   async function cargar() {
     setCargando(true);
@@ -57,13 +58,13 @@ export default function DocenteDocumentosPage() {
     fd.append('titulo', titulo.trim());
     if (descripcion.trim()) fd.append('descripcion', descripcion.trim());
     if (nivel) fd.append('nivel', nivel);
-    if (temaId) fd.append('temaId', temaId);
+    if (temaId != null) fd.append('temaId', String(temaId));
     fd.append('archivo', archivo);
     try {
       // Multipart: fetch directo (no el cliente JSON) para que el navegador fije el boundary.
       const res = await fetch('/api/docente/documentos', { method: 'POST', body: fd, credentials: 'include' });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.message || 'No se pudo subir'); }
-      setTitulo(''); setDescripcion(''); setNivel(''); setTemaId(''); setArchivo(null);
+      setTitulo(''); setDescripcion(''); setNivel(''); setTemaId(null); setArchivo(null);
       if (fileRef.current) fileRef.current.value = '';
       await cargar();
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo subir'); }
@@ -71,13 +72,15 @@ export default function DocenteDocumentosPage() {
   }
 
   function abrirEditar(d: DocenteDocumento) {
-    setEditDoc(d); setEditTitulo(d.titulo); setEditDesc(d.descripcion ?? ''); setEditNivel(d.nivel ? String(d.nivel) : ''); setEditTemaId(d.temaId ? String(d.temaId) : '');
+    setEditDoc(d); setEditTitulo(d.titulo); setEditDesc(d.descripcion ?? ''); setEditNivel(d.nivel ? String(d.nivel) : ''); setEditTemaId(d.temaId);
   }
   async function guardarEdicion() {
     if (!editDoc) return;
     await api.put(`/docente/documentos/${editDoc.id}`, {
       titulo: editTitulo.trim(), descripcion: editDesc.trim() || undefined, nivel: editNivel ? Number(editNivel) : undefined,
-      temaId: editTemaId ? Number(editTemaId) : undefined,
+      // `null` (no `undefined`) para poder DESASIGNAR el tema: undefined significa
+      // "no tocar el campo" y dejaba el documento pegado a su tema para siempre.
+      temaId: editTemaId,
     }).catch((e) => setError(e instanceof ApiError ? e.message : 'Error'));
     setEditDoc(null); await cargar();
   }
@@ -113,12 +116,12 @@ export default function DocenteDocumentosPage() {
               <option value="">Sin nivel</option>
               {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}
             </Select></Field>
-            <Field label="Tema asociado (opcional)" hint="ALVARO usará este material como referencia para el tema, y podrás generar preguntas desde él.">
-              <Select value={temaId} onChange={(e) => setTemaId(e.target.value)}>
-                <option value="">Sin tema</option>
-                {temas.map((t) => <option key={t.id} value={t.id}>{t.etiqueta}</option>)}
-              </Select>
-            </Field>
+            <SelectorTema
+              temas={temas}
+              valor={temaId}
+              onChange={setTemaId}
+              hint="Ubica el material en el temario: así tus estudiantes lo encuentran junto al tema que estudian. ALVARO también lo usará como referencia y podrás generar preguntas desde él."
+            />
             <Field label="Descripción (opcional)"><Textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Breve descripción del material." /></Field>
             <button onClick={subir} disabled={subiendo} className="btn-primary w-full">{subiendo ? 'Subiendo…' : <><Upload className="h-4 w-4" /> Subir documento</>}</button>
           </div>
@@ -178,10 +181,7 @@ export default function DocenteDocumentosPage() {
             <option value="">Sin nivel</option>
             {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}
           </Select></Field>
-          <Field label="Tema asociado"><Select value={editTemaId} onChange={(e) => setEditTemaId(e.target.value)}>
-            <option value="">Sin tema</option>
-            {temas.map((t) => <option key={t.id} value={t.id}>{t.etiqueta}</option>)}
-          </Select></Field>
+          <SelectorTema temas={temas} valor={editTemaId} onChange={setEditTemaId} />
           <Field label="Descripción"><Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} /></Field>
         </div>
       </Modal>

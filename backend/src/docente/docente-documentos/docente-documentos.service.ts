@@ -28,6 +28,14 @@ export class DocenteDocumentosService {
     return nivel.id;
   }
 
+  /** El tema (o subtema) asociado debe existir: de él cuelga la unidad con la
+   *  que se agrupa el material en la vista del estudiante. */
+  private async validarTema(temaId?: number) {
+    if (!temaId) return;
+    const tema = await this.prisma.tema.findUnique({ where: { id: temaId } });
+    if (!tema) throw new BadRequestException('El tema seleccionado no existe');
+  }
+
   /** Valida el PDF (tipo declarado, firma binaria y tamaño). */
   private validarPdf(archivo?: ArchivoSubido) {
     if (!archivo) throw new BadRequestException('Falta el archivo PDF');
@@ -59,10 +67,7 @@ export class DocenteDocumentosService {
   async subir(autorId: number, dto: CrearDocumentoDto, archivo?: ArchivoSubido) {
     this.validarPdf(archivo);
     const nivelId = await this.nivelId(dto.nivel);
-    if (dto.temaId) {
-      const tema = await this.prisma.tema.findUnique({ where: { id: dto.temaId } });
-      if (!tema) throw new BadRequestException('El tema seleccionado no existe');
-    }
+    await this.validarTema(dto.temaId);
 
     await fs.mkdir(UPLOAD_DIR, { recursive: true });
     const nombreArchivo = `${randomUUID()}.pdf`;
@@ -97,6 +102,9 @@ export class DocenteDocumentosService {
   async editar(id: number, autorId: number, dto: EditarDocumentoDto) {
     await this.propio(id, autorId);
     const nivelId = dto.nivel !== undefined ? await this.nivelId(dto.nivel) : undefined;
+    // `null` explícito = DESASIGNAR (el documento pasa a "General / Sin categoría");
+    // `undefined` = no tocar el campo.
+    await this.validarTema(dto.temaId ?? undefined);
     await this.prisma.documento.update({
       where: { id },
       data: {

@@ -7,6 +7,8 @@ import { api, ApiError } from '@/lib/api';
 import { Ejercicio, Opcion } from '@/lib/types';
 import { CodeViewer } from '@/components/code-viewer';
 import { Skeleton } from '@/components/ui';
+import { useAuth } from '@/providers/auth-provider';
+import { reproducir } from '@/lib/sonidos';
 import { ChevronLeft, ChevronUp, ChevronDown, GripVertical, TrendingUp, CheckCircle, X, ArrowRight, RotateCcw } from '@/components/icons';
 
 interface MiniDiag {
@@ -32,6 +34,7 @@ function barajar<T>(arr: T[]): T[] {
  */
 export default function SubirNivelPage() {
   const router = useRouter();
+  const { usuario } = useAuth();
   const temaId = Number(useParams().id);
 
   const [diag, setDiag] = useState<MiniDiag | null>(null);
@@ -80,7 +83,11 @@ export default function SubirNivelPage() {
     try {
       const r = await api.post<ResultadoSubida>('/ejercicios/subir-nivel', { temaId, respuestas: payload });
       setResultado(r);
-      if (r.aprobado) confetti({ particleCount: 140, spread: 100, origin: { y: 0.5 }, colors: ['#2C4A6E', '#2E7D5B', '#B5822E'] });
+      if (r.aprobado) {
+        // Subida de nivel (Básico → Intermedio → Avanzado): confeti + sonido.
+        reproducir('nivel', usuario?.sonidosActivados ?? true);
+        confetti({ particleCount: 140, spread: 100, origin: { y: 0.5 }, colors: ['#3B82F6', '#10B981', '#F59E0B'] });
+      }
     } catch (e) {
       alert(e instanceof ApiError ? e.message : 'Error al enviar el mini-diagnóstico.');
     } finally { setEnviando(false); }
@@ -162,7 +169,7 @@ export default function SubirNivelPage() {
             ) : p.tipo === 'ordenar_lineas' ? (
               <div className="space-y-2">
                 {(ordenables[p.id] ?? []).map((o, idx) => (
-                  <div key={o.id} className="flex items-center gap-2 rounded-xl border border-[#24466B] bg-[#0F1B2D] p-2.5">
+                  <div key={o.id} className="flex items-center gap-2 rounded-xl border border-[#0E3F7E] bg-[#04162E] p-2.5">
                     <GripVertical className="h-4 w-4 shrink-0 text-slate-500" />
                     <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/10 text-sm font-bold text-slate-300">{idx + 1}</span>
                     <span className="flex-1 whitespace-pre font-mono text-sm text-slate-100">{o.texto}</span>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
-import { Card, StatCard, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
+import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
 import { EstadoBadge } from '@/components/docente/estado-badge';
 import { Users, UserCheck, CheckCircle, AlertTriangle, Star, Code, Target, FileText, BarChart3, ClipboardList } from '@/components/icons';
 
@@ -44,7 +44,7 @@ export default function DocenteDashboardPage() {
       <p className="mb-7 mt-1 text-[15px] text-muted">Resumen del grupo, {usuario?.nombre.split(' ')[0]}.</p>
 
       {/* Stat cards */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5">
+      <StatGrid className="mb-6">
         {cargando ? [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
           <>
             <StatCard icon={<UserCheck className="h-7 w-7" />} accent="blue" label="Estudiantes activos" value={`${d?.stats.estudiantes_activos ?? 0}/${d?.stats.estudiantes_total ?? 0}`} />
@@ -56,11 +56,11 @@ export default function DocenteDashboardPage() {
             </Link>
           </>
         )}
-      </div>
+      </StatGrid>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Distribución por nivel */}
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <SectionTitle className="mb-5">Distribución de estudiantes por nivel</SectionTitle>
           {cargando ? <div className="space-y-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8" />)}</div> : (
             <div className="space-y-3.5">
@@ -68,7 +68,7 @@ export default function DocenteDashboardPage() {
                 <div key={n.numero} className="flex items-center gap-3">
                   <span className="w-28 shrink-0 text-sm font-medium text-fg">Nivel {n.numero}</span>
                   <div className="h-7 flex-1 overflow-hidden rounded-lg bg-subtle">
-                    <div className="flex h-full items-center justify-end rounded-lg bg-gradient-to-r from-prexi-navy to-prexi-blue px-2 text-xs font-bold text-white transition-all duration-700"
+                    <div className="flex h-full items-center justify-end rounded-lg bg-prexi-blue px-2 text-xs font-bold text-accent-on transition-all duration-700"
                       style={{ width: `${Math.max(6, (n.estudiantes / maxNivel) * 100)}%` }}>
                       {n.estudiantes > 0 && n.estudiantes}
                     </div>
@@ -80,7 +80,7 @@ export default function DocenteDashboardPage() {
         </Card>
 
         {/* En riesgo */}
-        <Card>
+        <Card className="min-w-0">
           <div className="mb-4 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-prexi-amber" /><SectionTitle>Requieren atención</SectionTitle></div>
           {cargando ? <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div>
             : d && d.en_riesgo.length > 0 ? (
@@ -92,13 +92,13 @@ export default function DocenteDashboardPage() {
                   </Link>
                 ))}
               </div>
-            ) : <p className="py-6 text-center text-sm text-muted">Ningún estudiante en riesgo. 🎉</p>}
+            ) : <p className="py-6 text-center text-sm text-muted">Ningún estudiante en riesgo.</p>}
         </Card>
       </div>
 
       {/* Actividad reciente + accesos rápidos */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="min-w-0 lg:col-span-2">
           <SectionTitle className="mb-4">Actividad reciente del grupo</SectionTitle>
           {cargando ? <div className="space-y-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-11" />)}</div>
             : d && d.actividad_reciente.length > 0 ? (

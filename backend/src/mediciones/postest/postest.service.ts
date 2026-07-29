@@ -46,11 +46,12 @@ export class PostestService {
     const desdeNivel = cfg?.postestDesdeNivel ?? 3;
     const umbralPct = cfg?.umbralPorcentaje ?? 80;
 
-    const usuario = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { paralelo: true } });
+    const usuario = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { paralelo: true, repasoPostestCompletado: true } });
     const control = usuario?.paralelo
       ? await this.prisma.postestControl.findUnique({ where: { paralelo: usuario.paralelo } })
       : null;
     const habilitadoPorDocente = control?.habilitado ?? false;
+    const repasoCompletado = usuario?.repasoPostestCompletado ?? false;
 
     const niveles = await this.prisma.nivel.findMany({
       orderBy: { numero: 'asc' },
@@ -61,16 +62,33 @@ export class PostestService {
       return (n.progreso[0]?.ejerciciosCompletados ?? 0) >= req;
     }).length;
 
-    // El docente decide cuándo abrir la evaluación final: su switch es el gate.
+    // El docente decide cuándo abrir la evaluación final (switch), y el estudiante
+    // debe haber revisado el REPASO de cierre. Ambos son gate del postest.
     return {
-      disponible: habilitadoPorDocente,
+      disponible: habilitadoPorDocente && repasoCompletado,
       habilitadoPorDocente,
+      repasoCompletado,
       desdeNivel,
       nivelesCompletados: completados,
     };
   }
 
-  async estado(usuarioId: number): Promise<{ disponible: boolean; habilitado: boolean; completado: boolean; desdeNivel: number; resultado: ResultadoPostest | null }> {
+  /** Las 5 unidades con su contenido de REPASO/cierre (una pestaña por unidad). */
+  async repaso() {
+    const unidades = await this.prisma.unidad.findMany({
+      orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+      select: { id: true, numero: true, titulo: true, repaso: true },
+    });
+    return unidades;
+  }
+
+  /** Marca el repaso del postest como revisado (idempotente). */
+  async completarRepaso(usuarioId: number): Promise<{ completado: boolean }> {
+    await this.prisma.usuario.update({ where: { id: usuarioId }, data: { repasoPostestCompletado: true } });
+    return { completado: true };
+  }
+
+  async estado(usuarioId: number): Promise<{ disponible: boolean; habilitado: boolean; repasoCompletado: boolean; completado: boolean; desdeNivel: number; resultado: ResultadoPostest | null }> {
     const disp = await this.disponibilidad(usuarioId);
     const [evalPost, evalPre, u] = await Promise.all([
       this.prisma.evaluacion.findUnique({ where: { usuarioId_tipo: { usuarioId, tipo: 'post' } } }),
@@ -80,6 +98,7 @@ export class PostestService {
     return {
       disponible: disp.disponible,
       habilitado: disp.habilitadoPorDocente,
+      repasoCompletado: disp.repasoCompletado,
       completado: !!evalPost,
       desdeNivel: disp.desdeNivel,
       // El resultado de un postest COMPLETADO se lee del dato PERSISTIDO
@@ -122,7 +141,8 @@ export class PostestService {
   /** Fija (una vez) y devuelve las 20 preguntas del postest del usuario. */
   async preguntas(usuarioId: number) {
     const disp = await this.disponibilidad(usuarioId);
-    if (!disp.disponible) throw new BadRequestException('La evaluación final estará disponible cuando tu docente la habilite.');
+    if (!disp.habilitadoPorDocente) throw new BadRequestException('La evaluación final estará disponible cuando tu docente la habilite.');
+    if (!disp.repasoCompletado) throw new BadRequestException('Revisa el repaso de cierre antes de comenzar la evaluación final.');
     const yaHecho = await this.prisma.evaluacion.findUnique({ where: { usuarioId_tipo: { usuarioId, tipo: 'post' } } });
     if (yaHecho) throw new BadRequestException('Ya completaste el postest');
 

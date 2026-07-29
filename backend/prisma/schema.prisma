@@ -49,6 +49,7 @@ enum Banco {
   practica
   pretest
   postest
+  examen // examen de fin de unidad (instrumento interno de avance, gestionado por el docente)
 }
 
 enum TipoTest {
@@ -90,6 +91,9 @@ model Usuario {
   // Gate de la fase de INTRODUCCIÓN didáctica: el diagnóstico (pretest) solo se
   // habilita una vez que el estudiante revisa las introducciones de las 5 unidades.
   introduccionCompletada Boolean          @default(false) @map("introduccion_completada")
+  // Gate del REPASO previo al postest (evaluación final): el postest solo se
+  // habilita tras revisar el repaso de cierre (además del switch del docente).
+  repasoPostestCompletado Boolean         @default(false) @map("repaso_postest_completado")
   pretestCompletado      Boolean          @default(false) @map("pretest_completado")
   nivelInicial           Int              @default(1) @map("nivel_inicial")
   // Clasificación adaptativa PERMANENTE del pretest (Básico/Intermedio/Avanzado):
@@ -127,6 +131,13 @@ model Usuario {
   // no en localStorage). "Volver a ver los tutoriales" del perfil lo vacía.
   toursVistos String[] @default([]) @map("tours_vistos")
 
+  // Preferencias de AUDIO (persistidas por usuario, respetan el contexto de aula):
+  //  · sonidos de gamificación (logros/rango/nivel) — ACTIVADOS por defecto.
+  //  · lectura en voz alta automática de ALVARO (Web Speech API) — DESACTIVADA
+  //    por defecto; el estudiante la activa si quiere.
+  sonidosActivados Boolean @default(true) @map("sonidos_activados")
+  vozAutomatica    Boolean @default(false) @map("voz_automatica")
+
   creadoEn DateTime @default(now()) @map("creado_en")
 
   intentos            Intento[]
@@ -152,8 +163,11 @@ model Usuario {
   pasosRuta           PasoRuta[]
   intentosSubidaNivel IntentoSubidaNivel[]
   tokensRecuperacion  TokenRecuperacion[]
+  refreshTokens       RefreshToken[]
   historialTheta      HistorialTheta[]
   diagnosticoTemas    DiagnosticoTema[]
+  repasosUnidad       RepasoUnidad[]
+  examenesUnidad      ExamenUnidad[]
 
   @@map("usuarios")
 }
@@ -197,6 +211,31 @@ model TokenRecuperacion {
   @@map("tokens_recuperacion")
 }
 
+// ── Sesión larga: REFRESH TOKEN (rotatorio, revocable) ──────
+//  El access token (JWT en cookie httpOnly) vive 15 min; para no expulsar al
+//  estudiante cada 15 minutos se emite además un refresh token opaco.
+//
+//  Igual que TokenRecuperacion, en la BD se guarda SOLO el hash (sha256): si se
+//  filtra la tabla no se puede reconstruir ninguna sesión. Cada uso ROTA el token
+//  (se revoca el anterior y se emite uno nuevo), de modo que un token robado y
+//  reutilizado se detecta: al llegar uno ya revocado se cortan todas las sesiones
+//  del usuario.
+model RefreshToken {
+  id         Int       @id @default(autoincrement())
+  usuarioId  Int       @map("usuario_id")
+  tokenHash  String    @unique @map("token_hash")
+  expiraEn   DateTime  @map("expira_en")
+  revocadoEn DateTime? @map("revocado_en")
+  // "Recordarme": sesión larga (30 días) frente a la corta (1 día).
+  recordado  Boolean   @default(false)
+  creadoEn   DateTime  @default(now()) @map("creado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, revocadoEn])
+  @@map("refresh_tokens")
+}
+
 // ── Unidades académicas (jerarquía UNIDAD → TEMA → SUBTEMA) ─
 //  Estructura curricular real, en paralelo a los 5 "niveles" del sistema de
 //  gamificación (que se mantienen para pretest/postest y XP por nivel).
@@ -209,6 +248,16 @@ model Unidad {
   // docente. Alimenta las pestañas de la fase de introducción previa al
   // diagnóstico (objetivos, conceptos clave, ejemplo, cierre).
   introduccion String? @db.Text
+  // Contenido de REPASO/cierre de la unidad (Markdown), editable por el docente.
+  // Alimenta la fase de repaso previa al postest (una pestaña por unidad).
+  repaso       String? @db.Text
+  // ── DASHBOARD DE DESTINO (Preview de Unidad) ──
+  //  Se muestra al entrar a la unidad. Objetivos y analogías (Markdown) los edita
+  //  el docente; los ejemplos se siembran; el mapa conceptual se deriva del temario.
+  dashObjetivos String? @db.Text @map("dash_objetivos")
+  dashAnalogias String? @db.Text @map("dash_analogias")
+  dashEjemplos  Json?   @map("dash_ejemplos") // [{ titulo, codigo, diagrama, salida }]
+  dashMinutos   Int?    @map("dash_minutos")  // tiempo estimado de la unidad (min)
   // Plan/institución del currículo. Permite convivir varios planes (UPEA PRG-111,
   // EMI, preuniversitario…) SIN reescribir: el numero es único POR institución.
   institucion String   @default("UPEA")
@@ -216,11 +265,17 @@ model Unidad {
   // XP adicional que se otorga al completar TODOS los temas publicados de la unidad.
   xp          Int      @default(0)
   orden       Int      @default(0)
+  // Imagen de PORTADA de la unidad (banner). Guarda solo el nombre de archivo
+  // OPACO (UUID); el binario vive fuera de src y se sirve por streaming desde
+  // GET /unidades/:id/portada — la ruta interna nunca se expone al cliente.
+  imagenUrl   String?  @map("imagen_url")
   creadoEn    DateTime @default(now()) @map("creado_en")
 
   temas       Tema[]
   completadas UnidadCompletada[]
   desempenos  DesempenoUnidad[]
+  repasos     RepasoUnidad[]
+  examenes    ExamenUnidad[]
 
   @@unique([institucion, numero])
   @@map("unidades")
@@ -236,6 +291,9 @@ model Tema {
   numero      String   @db.VarChar(20)
   titulo      String
   descripcion String?
+  // Contenido de REPASO/cierre del tema (Markdown), editable por el docente.
+  // Alimenta la fase de repaso previa al examen de fin de unidad (pestaña por tema).
+  repaso      String?  @db.Text
   // Denormalizado desde la unidad para filtrar el contenido por institución/plan.
   institucion String   @default("UPEA")
   orden       Int      @default(0)
@@ -254,6 +312,7 @@ model Tema {
 
   ejercicios          Ejercicio[]
   documentos          Documento[]
+  retos               Reto[]
   progreso            ProgresoTema[]
   preguntasGeneradas  PreguntaGenerada[]
   intentosSubidaNivel IntentoSubidaNivel[]
@@ -444,6 +503,9 @@ model Ejercicio {
   banco             Banco           @default(practica)
   // El docente puede activar/desactivar un ejercicio. El estudiante solo ve los activos.
   activo            Boolean         @default(true)
+  // TRAZABILIDAD al material oficial del docente (tesis): de qué parte de SU
+  // documento salió este ítem. Forma: { unidad, tema, subtema?, paginaPDF, citaBreve }.
+  fuenteDoc         Json?           @map("fuente_doc")
   creadoEn          DateTime        @default(now()) @map("creado_en")
 
   nivel             Nivel              @relation(fields: [nivelId], references: [id], onDelete: Cascade)
@@ -451,6 +513,7 @@ model Ejercicio {
   intentos          Intento[]
   pretestRespuestas PretestRespuesta[]
   pasosRuta         PasoRuta[]
+  retosDerivados    Reto[]             @relation("RetosDerivados")
 
   @@index([nivelId])
   @@index([temaId])
@@ -556,6 +619,44 @@ model DiagnosticoTema {
   @@map("diagnostico_temas")
 }
 
+// ── Repaso previo al EXAMEN DE FIN DE UNIDAD (gate por unidad) ──
+//  Marca que el estudiante revisó el repaso de la unidad; el examen solo se
+//  habilita tras ello (análogo a Usuario.repasoPostestCompletado, pero por unidad).
+model RepasoUnidad {
+  usuarioId Int      @map("usuario_id")
+  unidadId  Int      @map("unidad_id")
+  revisadoEn DateTime @default(now()) @map("revisado_en")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  unidad  Unidad  @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, unidadId])
+  @@map("repasos_unidad")
+}
+
+// ── EXAMEN DE FIN DE UNIDAD (instrumento interno de avance) ──
+//  Cada intento del estudiante en el examen de una unidad. Es la FUENTE DEL GATE
+//  de avance (existe un intento aprobado ⇒ se desbloquea la siguiente unidad) y
+//  el registro para la investigación (θ IRT, nivel, puntaje, aprobado, fecha).
+model ExamenUnidad {
+  id        Int             @id @default(autoincrement())
+  usuarioId Int             @map("usuario_id")
+  unidadId  Int             @map("unidad_id")
+  theta     Float? // habilidad estimada por IRT (Rasch) en el examen
+  nivel     NivelDificultad @default(basico) // nivel de dominio derivado de θ
+  puntaje   Int             @default(0) // 0-100
+  aprobado  Boolean         @default(false) // nivel ≥ Intermedio
+  aciertos  Int             @default(0)
+  total     Int             @default(0)
+  fecha     DateTime        @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  unidad  Unidad  @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, unidadId, fecha])
+  @@map("examenes_unidad")
+}
+
 // ── Ranking ─────────────────────────────────────────────────
 model Ranking {
   usuarioId       Int       @id @map("usuario_id")
@@ -581,7 +682,7 @@ model Logro {
   nombre      String
   condicion   String // requisito legible: "Completa un tema sin fallar"
   descripcion String         @default("") // texto motivador adicional
-  icono       String         @default("🏅") // emoji de respaldo
+  icono       String         @default("") // compatibilidad; la interfaz usa svgKey.
   svgKey      String         @default("estrella") // ícono SVG original a renderizar
   categoria   String         @default("general") // constancia | precision | velocidad | maestria | especial
   orden       Int            @default(0)
@@ -693,12 +794,30 @@ model Documento {
 }
 
 // ── Retos del docente (ejercicios extra) ────────────────────
+// Catálogo de bugs que el generador puede introducir en un reto de depuración.
+// Se guarda cuál se aplicó para que el docente (y ALVARO) sepan qué se busca.
+enum TipoBug {
+  operador_aritmetico_invertido
+  operador_relacional_invertido
+  limite_rango_corrido
+  orden_lineas_intercambiado
+  variable_trocada
+}
+
 model Reto {
   id                Int           @id @default(autoincrement())
+  // Código de negocio del reto DERIVADO del banco (ej. "R1.5.I.06-DEP"). Null en
+  // los retos que escribe el docente a mano. Es la clave del upsert del generador.
+  codigo            String?       @unique
   titulo            String
   categoria         String
   // Nivel temático asociado (opcional). Solo referencia; el reto vive fuera de los 5 niveles.
   nivelId           Int?          @map("nivel_id")
+  // Tema (jerarquía académica) al que pertenece el reto. El estudiante ve los
+  // retos AGRUPADOS por Unidad → Tema → Subtema a partir de este campo (un
+  // subtema es un Tema con padre_id, igual que en Documento). Opcional: sin tema
+  // → sección "General".
+  temaId            Int?          @map("tema_id")
   estrellas         Int           @default(3)
   tipo              TipoEjercicio @default(completar_codigo)
   enunciado         String
@@ -714,12 +833,42 @@ model Reto {
   autorId           Int           @map("autor_id")
   // Publicar/despublicar un reto. El estudiante solo ve los publicados (activos).
   activo            Boolean       @default(true)
+  // MISIÓN DE DEPURACIÓN (bug‑hunt): el código inicial trae un bug plantado; el
+  // estudiante lo corrige y el sistema AUTO‑VALIDA comparando la salida con
+  // `ejemploSalida` (sin revisión del docente). Otorga el emblema "Cazador de Bugs".
+  esBugHunt         Boolean       @default(false) @map("es_bug_hunt")
+
+  // ── RETOS DERIVADOS DEL BANCO (generados por prisma/generar-retos.ts) ──
+  //  Un reto derivado NUNCA inventa contenido: nace de un Ejercicio ya validado
+  //  del banco oficial y reutiliza sus valores y su salida esperada. El enlace al
+  //  origen es lo que permite (1) citar la teoría correcta desde ALVARO y (2)
+  //  ofrecer al estudiante "repasa el ejercicio del que salió este reto".
+  origenEjercicioId Int?          @map("origen_ejercicio_id")
+  // Nivel adaptativo del reto: SIEMPRE el del ejercicio origen. Gobierna a quién
+  // se le muestra (debe coincidir con ProgresoTema.nivelActual de ese tema).
+  nivelDificultad   NivelDificultad @default(basico) @map("nivel_dificultad")
+  // Qué transformación se aplicó al código original (solo en depuración).
+  tipoBug           TipoBug?      @map("tipo_bug")
+  // Pistas progresivas 1→3 redactadas desde el material del ejercicio origen.
+  // ALVARO las usa como plan de escalamiento (nunca salta a la 3 de entrada).
+  pistas            Json          @default("[]")
+  // Se corrige SOLO comparando la salida (sin revisión docente). Los retos
+  // derivados nacen así; los del docente siguen yendo a revisión manual.
+  autoCalificable   Boolean       @default(false) @map("auto_calificable")
+
+  // TRAZABILIDAD al material oficial (Guía de Práctica): { unidad, tema, subtema?, paginaPDF, citaBreve }.
+  fuenteDoc         Json?         @map("fuente_doc")
   creadoEn          DateTime      @default(now()) @map("creado_en")
 
-  autor     Usuario       @relation("DocenteRetos", fields: [autorId], references: [id], onDelete: Cascade)
-  nivel     Nivel?        @relation(fields: [nivelId], references: [id], onDelete: SetNull)
-  resueltos RetoUsuario[]
+  autor           Usuario       @relation("DocenteRetos", fields: [autorId], references: [id], onDelete: Cascade)
+  nivel           Nivel?        @relation(fields: [nivelId], references: [id], onDelete: SetNull)
+  tema            Tema?         @relation(fields: [temaId], references: [id], onDelete: SetNull)
+  origenEjercicio Ejercicio?    @relation("RetosDerivados", fields: [origenEjercicioId], references: [id], onDelete: SetNull)
+  resueltos       RetoUsuario[]
 
+  @@index([temaId])
+  @@index([temaId, nivelDificultad])
+  @@index([origenEjercicioId])
   @@map("retos")
 }
 
@@ -821,10 +970,24 @@ model ConfiguracionSistema {
   subirNivelPreguntas   Int @default(5) @map("subir_nivel_preguntas") // nº de ítems del mini-diagnóstico
   subirNivelUmbral      Int @default(80) @map("subir_nivel_umbral") // % para aprobar y subir de nivel
   subirNivelEsperaHoras Int @default(0) @map("subir_nivel_espera_horas") // cooldown entre intentos (0 = sin espera)
+  // Examen de FIN DE UNIDAD (gate de avance a la siguiente unidad).
+  examenUnidadPreguntas   Int @default(8) @map("examen_unidad_preguntas") // nº de ítems del examen
+  examenUnidadEsperaHoras Int @default(0) @map("examen_unidad_espera_horas") // cooldown entre reintentos
   // XP: estar en un nivel más alto otorga MÁS XP (porcentaje sobre el XP base;
   // básico = 100%). Incentivo a esforzarse (hipótesis de la tesis).
   xpFactorIntermedio    Int @default(125) @map("xp_factor_intermedio")
   xpFactorAvanzado      Int @default(150) @map("xp_factor_avanzado")
+
+  // ── Acceso a RETOS (editor de código libre) ──
+  //  INTERRUPTOR GENERAL: el docente decide si el módulo Retos está activo. Ya NO
+  //  decide el nivel: cada reto se muestra al estudiante cuyo nivel EN ESE TEMA
+  //  (ProgresoTema.nivelActual) coincide con el del reto, igual que los ejercicios.
+  //  Lo gobierna el motor adaptativo, no una lista de permisos.
+  retosHabilitado Boolean @default(false) @map("retos_habilitado")
+  // OBSOLETOS (regla anterior: θ global + habilitación por nivel). Se conservan
+  // para no perder la configuración del docente al migrar; no gobiernan el acceso.
+  retosIntermedioHabilitado Boolean @default(false) @map("retos_intermedio_habilitado")
+  retosAvanzadoHabilitado   Boolean @default(false) @map("retos_avanzado_habilitado")
 
   // Inteligencia Artificial (ALVARO).
   iaActiva              Boolean @default(true) @map("ia_activa")

@@ -16,10 +16,10 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     service = new PostestService(prisma as never, emblemas as never, rangos as never);
   });
 
-  /** Config + niveles + control docente HABILITADO para que el postest esté disponible. */
+  /** Config + niveles + control docente HABILITADO + repaso revisado → postest disponible. */
   function habilitarPostest() {
     prisma.configuracionSistema.findUnique.mockResolvedValue({ postestDesdeNivel: 3, umbralPorcentaje: 80 });
-    prisma.usuario.findUnique.mockResolvedValue({ paralelo: 'A' });
+    prisma.usuario.findUnique.mockResolvedValue({ paralelo: 'A', repasoPostestCompletado: true });
     prisma.postestControl.findUnique.mockResolvedValue({ paralelo: 'A', habilitado: true });
     prisma.nivel.findMany.mockResolvedValue([
       { id: 1, numero: 1, umbral: 10, progreso: [{ ejerciciosCompletados: 10 }] },
@@ -69,6 +69,34 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     expect(d.disponible).toBe(false);
   });
 
+  it('disponibilidad: NO disponible si el estudiante no revisó el repaso (aunque el docente habilitó)', async () => {
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ postestDesdeNivel: 3, umbralPorcentaje: 80 });
+    prisma.usuario.findUnique.mockResolvedValue({ paralelo: 'A', repasoPostestCompletado: false });
+    prisma.postestControl.findUnique.mockResolvedValue({ paralelo: 'A', habilitado: true });
+    prisma.nivel.findMany.mockResolvedValue([]);
+    const d = await service.disponibilidad(7);
+    expect(d.habilitadoPorDocente).toBe(true);
+    expect(d.repasoCompletado).toBe(false);
+    expect(d.disponible).toBe(false);
+  });
+
+  it('preguntas: rechaza si no se revisó el repaso de cierre', async () => {
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ postestDesdeNivel: 3, umbralPorcentaje: 80 });
+    prisma.usuario.findUnique.mockResolvedValue({ paralelo: 'A', repasoPostestCompletado: false });
+    prisma.postestControl.findUnique.mockResolvedValue({ paralelo: 'A', habilitado: true });
+    prisma.nivel.findMany.mockResolvedValue([]);
+    await expect(service.preguntas(7)).rejects.toThrow('Revisa el repaso');
+  });
+
+  it('completarRepaso marca el repaso del postest como revisado', async () => {
+    prisma.usuario.update.mockResolvedValue({});
+    const r = await service.completarRepaso(7);
+    expect(r).toEqual({ completado: true });
+    expect(prisma.usuario.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { repasoPostestCompletado: true } }),
+    );
+  });
+
   it('finalizar calcula la GANANCIA real: postest − pretest', async () => {
     habilitarPostest();
     simularRespuestasPost([{ categoria: 'Variables', aciertos: 17, total: 20 }]);
@@ -96,7 +124,7 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     );
     // θ_inicial guardado del pretest.
     prisma.usuario.findUnique.mockImplementation((args: { select?: { thetaInicial?: boolean } }) =>
-      Promise.resolve(args.select?.thetaInicial ? { thetaInicial: -1 } : { paralelo: 'A' }),
+      Promise.resolve(args.select?.thetaInicial ? { thetaInicial: -1 } : { paralelo: 'A', repasoPostestCompletado: true }),
     );
     prisma.pretestRespuesta.findMany.mockResolvedValue([
       { correcto: true, ejercicio: { dificultadB: 1 } },

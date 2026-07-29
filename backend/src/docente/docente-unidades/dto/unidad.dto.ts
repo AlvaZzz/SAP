@@ -37,6 +37,17 @@ export class EditarUnidadDto {
   // al diagnóstico. Amplia (hasta ~8k caracteres) porque incluye ejemplos.
   @IsOptional() @IsString() @MaxLength(8000)
   introduccion?: string;
+
+  // Repaso/cierre de la unidad (Markdown) para la fase previa al postest.
+  @IsOptional() @IsString() @MaxLength(8000)
+  repaso?: string;
+
+  // Dashboard de Destino: objetivos y analogías (Markdown), editables por el docente.
+  @IsOptional() @IsString() @MaxLength(8000)
+  dashObjetivos?: string;
+
+  @IsOptional() @IsString() @MaxLength(8000)
+  dashAnalogias?: string;
 }
 
 export class CrearTemaDto {
@@ -83,4 +94,8 @@ export class EditarTemaDto {
   // El docente marca/desmarca este tema para el DIAGNÓSTICO inicial.
   @IsOptional() @IsBoolean()
   enDiagnostico?: boolean;
+
+  // Repaso/cierre del tema (Markdown) para la fase previa al examen de fin de unidad.
+  @IsOptional() @IsString() @MaxLength(8000)
+  repaso?: string;
 }

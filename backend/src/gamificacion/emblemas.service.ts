@@ -24,6 +24,14 @@ const VELOZ_MIN = 10; // "Estudiante veloz": completar un tema en < 10 minutos
 export class EmblemasService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Otorga emblemas por clave (envuelve `otorgar` en su propia transacción). Para
+   * casos fuera del flujo de intentos, p. ej. las misiones de depuración (bug‑hunt).
+   */
+  async otorgarClaves(usuarioId: number, claves: string[]): Promise<EmblemaOtorgado[]> {
+    return this.prisma.$transaction((tx) => this.otorgar(tx, usuarioId, claves));
+  }
+
   /** Inserta los emblemas nuevos (idempotente) y devuelve los que no tenía. */
   private async otorgar(tx: Prisma.TransactionClient, usuarioId: number, claves: string[]): Promise<EmblemaOtorgado[]> {
     const unicas = [...new Set(claves)];

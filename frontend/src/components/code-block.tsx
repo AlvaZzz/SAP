@@ -32,7 +32,7 @@ function clase(token: string): string {
 export function CodeBlock({ code }: { code: string }) {
   const lineas = code.split('\n');
   return (
-    <pre className="overflow-x-auto rounded-xl bg-[#0F1B2D] p-4 font-mono text-[13px] leading-relaxed">
+    <pre className="overflow-x-auto rounded-xl bg-[#04162E] p-4 font-mono text-[13px] leading-relaxed">
       <code>
         {lineas.map((linea, li) => {
           const tokens = linea.match(/("[^"]*"|[A-Za-zÁ-ÿ_][A-Za-zÁ-ÿ0-9_]*|\d+(?:\.\d+)?|\s+|[^\sA-Za-z0-9"]+)/g) ?? [];

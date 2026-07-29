@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Card, StatCard, SectionTitle, Skeleton, ProgressBar, EmptyState, ResponsiveTable, PageHeader } from '@/components/ui';
+import { Card, StatCard, StatGrid, SectionTitle, Skeleton, ProgressBar, EmptyState, ResponsiveTable, PageHeader } from '@/components/ui';
 import { Users, UserCheck, GraduationCap, CheckCircle, ClipboardList, Calendar } from '@/components/icons';
 
 interface Panel {
@@ -27,7 +27,7 @@ export default function PanelEstudioPage() {
       <PageHeader title="Panel del estudio" subtitle="Resumen de la muestra y avance de la recolección de datos (solo lectura)." />
 
       {/* Muestra */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+      <StatGrid className="mb-6">
         {cargando ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
           <>
             <StatCard icon={<Users className="h-7 w-7" />} accent="blue" label="Muestra total (n)" value={d?.muestra.total ?? 0} />
@@ -36,7 +36,7 @@ export default function PanelEstudioPage() {
             <StatCard icon={<CheckCircle className="h-7 w-7" />} accent="blue" label="Completaron intervención" value={d?.avance.completaron_intervencion ?? 0} />
           </>
         )}
-      </div>
+      </StatGrid>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Avance de la recolección */}

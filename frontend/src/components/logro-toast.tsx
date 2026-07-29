@@ -12,6 +12,8 @@ import confetti from 'canvas-confetti';
 import { X } from 'lucide-react';
 import { EmblemaIcon } from './emblema-icon';
 import { RangoIcon } from './rango-icon';
+import { useAuth } from '@/providers/auth-provider';
+import { reproducir } from '@/lib/sonidos';
 
 export interface LogroCelebracion {
   tipo: 'emblema' | 'rango';
@@ -21,8 +23,14 @@ export interface LogroCelebracion {
   color?: string;
 }
 
-interface Ctx { celebrar: (items: LogroCelebracion[]) => void }
-const LogrosContext = createContext<Ctx>({ celebrar: () => undefined });
+interface Ctx {
+  celebrar: (items: LogroCelebracion[]) => void;
+  /** Hay un logro ocupando el slot superior ahora mismo. Lo usa la tarjeta de
+   *  ánimo de ALVARO para colocarse DEBAJO en vez de encima (al acertar suelen
+   *  dispararse los dos a la vez: emblema + felicitación del tutor). */
+  visible: boolean;
+}
+const LogrosContext = createContext<Ctx>({ celebrar: () => undefined, visible: false });
 export const useLogros = () => useContext(LogrosContext);
 
 // Tiempos (ms) del ciclo de vida del toast.
@@ -30,6 +38,7 @@ const VISIBLE_MS = 4500; // cuánto permanece antes de auto-cerrarse
 const SALIDA_MS = 400;   // debe coincidir con la animación logro-pop-out
 
 export function LogrosProvider({ children }: { children: ReactNode }) {
+  const { usuario } = useAuth();
   const [cola, setCola] = useState<LogroCelebracion[]>([]);
   const [actual, setActual] = useState<LogroCelebracion | null>(null);
   const [saliendo, setSaliendo] = useState(false);
@@ -48,14 +57,17 @@ export function LogrosProvider({ children }: { children: ReactNode }) {
     setCola(resto);
   }, [actual, cola]);
 
-  // Al mostrar un logro: confeti + temporizador de auto-cierre.
+  // Al mostrar un logro: confeti + SONIDO (si el usuario los tiene activados) +
+  // temporizador de auto-cierre. El sonido se sintetiza (libre de derechos) y
+  // nunca rompe: si el audio falla, la celebración visual sigue igual.
   useEffect(() => {
     if (!actual) return;
     setSaliendo(false);
-    confetti({ particleCount: 110, spread: 75, origin: { y: 0.35 }, colors: ['#2C4A6E', '#2E7D5B', '#B5822E', '#3B6291'] });
+    confetti({ particleCount: 110, spread: 75, origin: { y: 0.35 }, colors: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'] });
+    reproducir(actual.tipo === 'rango' ? 'rango' : 'emblema', usuario?.sonidosActivados ?? true);
     const t = setTimeout(() => setSaliendo(true), VISIBLE_MS);
     return () => clearTimeout(t);
-  }, [actual]);
+  }, [actual, usuario?.sonidosActivados]);
 
   // Tras disparar la animación de salida, desmonta y libera la cola.
   useEffect(() => {
@@ -68,7 +80,7 @@ export function LogrosProvider({ children }: { children: ReactNode }) {
   }, [saliendo]);
 
   return (
-    <LogrosContext.Provider value={{ celebrar }}>
+    <LogrosContext.Provider value={{ celebrar, visible: actual != null }}>
       {children}
       {actual && (
         <div className="pointer-events-none fixed inset-x-0 top-20 z-[120] flex justify-center px-4">

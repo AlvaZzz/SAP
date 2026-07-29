@@ -73,24 +73,65 @@ export class PistonService implements OnModuleInit {
     return (this.versionPython = version);
   }
 
-  /** Ejecuta código Python en el sandbox y devuelve la salida. */
-  async ejecutar(codigo: string, stdin = ''): Promise<{ stdout: string; stderr: string; code: number; ok: boolean }> {
-    const version = await this.ensurePython();
-    const r = (await this.req('POST', '/api/v2/execute', {
-      language: 'python',
-      version,
-      files: [{ name: 'main.py', content: codigo }],
-      stdin,
-      run_timeout: 3000,      // 3s máx (límite configurado de Piston)
-      compile_timeout: 3000,
-      run_memory_limit: 128 * 1024 * 1024, // 128 MB
-    })) as { run: { stdout: string; stderr: string; code: number; signal: string | null } };
+  /**
+   * Firmas de un FALLO DE INFRAESTRUCTURA del sandbox (isolate/Piston), a
+   * diferencia de un error del código del alumno. El síntoma clásico en
+   * Docker Desktop/WSL2 es "Sandbox keeper received fatal signal 6" (SIGABRT del
+   * proceso keeper de isolate) cuando varias jaulas se limpian a la vez bajo
+   * carga. Son transitorios: conviene reintentar y, si persisten, mostrar un
+   * mensaje claro en vez de la salida cruda del sandbox.
+   */
+  private esFalloSandbox(run: { stdout?: string; stderr?: string; message?: string | null }): boolean {
+    const txt = `${run.stdout ?? ''}\n${run.stderr ?? ''}\n${run.message ?? ''}`.toLowerCase();
+    return txt.includes('sandbox keeper') || txt.includes('received fatal signal') || txt.includes('isolate:');
+  }
 
+  /**
+   * Ejecuta código Python en el sandbox y devuelve la salida. Reintenta ante
+   * fallos transitorios de infraestructura del sandbox (no ante errores del
+   * código del alumno). `sandboxError` != null indica que el sandbox mismo falló.
+   */
+  async ejecutar(
+    codigo: string,
+    stdin = '',
+  ): Promise<{ stdout: string; stderr: string; code: number; ok: boolean; timeout: boolean; sandboxError: string | null }> {
+    const version = await this.ensurePython();
+    const runMemory = Number(this.config.get('PISTON_RUN_MEMORY_LIMIT') ?? 128 * 1024 * 1024);
+
+    let ultimo: { stdout: string; stderr: string; code: number; signal: string | null; status: string | null; message: string | null } | null = null;
+    for (let intento = 1; intento <= 3; intento++) {
+      const r = (await this.req('POST', '/api/v2/execute', {
+        language: 'python',
+        version,
+        files: [{ name: 'main.py', content: codigo }],
+        stdin,
+        run_timeout: 3000,      // 3s máx de reloj
+        compile_timeout: 3000,
+        run_memory_limit: runMemory, // 128 MB por defecto
+      })) as { run: { stdout: string; stderr: string; code: number; signal: string | null; status: string | null; message: string | null } };
+      ultimo = { stdout: r.run.stdout ?? '', stderr: r.run.stderr ?? '', code: r.run.code ?? 0, signal: r.run.signal ?? null, status: r.run.status ?? null, message: r.run.message ?? null };
+
+      if (!this.esFalloSandbox(ultimo)) break; // salida válida (ok o error del alumno)
+      this.logger.warn(`Fallo transitorio del sandbox (intento ${intento}/3): ${ultimo.message ?? ultimo.stderr}`);
+      if (intento < 3) await new Promise((res) => setTimeout(res, 150 * intento));
+    }
+
+    if (!ultimo) throw new HttpException('El entorno de ejecución no está disponible. Intenta de nuevo.', HttpStatus.SERVICE_UNAVAILABLE);
+
+    // El sandbox falló de forma persistente: no es culpa del código del alumno.
+    if (this.esFalloSandbox(ultimo)) {
+      return { stdout: '', stderr: '', code: -1, ok: false, timeout: false, sandboxError: 'El entorno de ejecución tuvo un problema temporal. Intenta de nuevo en unos segundos.' };
+    }
+
+    // Timeout por reloj (bucle infinito del alumno): SIGKILL + status/message de tiempo.
+    const timeout = ultimo.status === 'TO' || /time limit/i.test(ultimo.message ?? '');
     return {
-      stdout: r.run.stdout ?? '',
-      stderr: r.run.stderr ?? '',
-      code: r.run.code ?? 0,
-      ok: (r.run.code ?? 0) === 0 && !r.run.signal,
+      stdout: ultimo.stdout,
+      stderr: ultimo.stderr,
+      code: ultimo.code,
+      ok: ultimo.code === 0 && !ultimo.signal,
+      timeout,
+      sandboxError: null,
     };
   }
 

@@ -19,12 +19,21 @@ export class DocenteRetosService {
     return nivel.id;
   }
 
+  /** El tema (o subtema) asociado debe existir: de él cuelga la unidad con la que
+   *  se agrupa el reto en la vista del estudiante. */
+  private async validarTema(temaId?: number | null) {
+    if (!temaId) return;
+    const tema = await this.prisma.tema.findUnique({ where: { id: temaId } });
+    if (!tema) throw new BadRequestException('El tema seleccionado no existe');
+  }
+
   async listar(autorId: number) {
     const retos = await this.prisma.reto.findMany({
       where: { autorId },
       orderBy: { creadoEn: 'desc' },
       include: {
         nivel: { select: { numero: true, titulo: true } },
+        tema: { select: { numero: true, titulo: true } },
         _count: { select: { resueltos: { where: { resuelto: true } } } },
       },
     });
@@ -38,9 +47,10 @@ export class DocenteRetosService {
     return retos.map((r) => ({
       id: r.id, titulo: r.titulo, categoria: r.categoria,
       nivel: r.nivel?.numero ?? null, nivel_titulo: r.nivel?.titulo ?? null,
+      temaId: r.temaId, tema_titulo: r.tema ? `${r.tema.numero} ${r.tema.titulo}` : null,
       estrellas: r.estrellas, tipo: r.tipo, enunciado: r.enunciado, codigoInicial: r.codigoInicial,
       ejemploEntrada: r.ejemploEntrada, ejemploSalida: r.ejemploSalida,
-      xp: r.xp, fechaLimite: r.fechaLimite, activo: r.activo,
+      xp: r.xp, fechaLimite: r.fechaLimite, activo: r.activo, esBugHunt: r.esBugHunt,
       resueltos: r._count.resueltos, pendientes: pendMap.get(r.id) ?? 0, creadoEn: r.creadoEn,
     }));
   }
@@ -54,11 +64,13 @@ export class DocenteRetosService {
   }
 
   async crear(autorId: number, dto: CrearRetoDto) {
+    await this.validarTema(dto.temaId);
     const r = await this.prisma.reto.create({
       data: {
         titulo: dto.titulo,
         categoria: dto.categoria,
         nivelId: await this.nivelId(dto.nivel),
+        temaId: dto.temaId ?? null,
         estrellas: dto.estrellas,
         tipo: dto.tipo ?? 'completar_codigo',
         enunciado: dto.enunciado,
@@ -68,6 +80,7 @@ export class DocenteRetosService {
         xp: dto.xp,
         fechaLimite: dto.fechaLimite ? new Date(dto.fechaLimite) : null,
         activo: dto.activo ?? true,
+        esBugHunt: dto.esBugHunt ?? false,
         autorId,
       },
     });
@@ -76,12 +89,14 @@ export class DocenteRetosService {
 
   async editar(id: number, autorId: number, dto: EditarRetoDto) {
     await this.propio(id, autorId);
+    await this.validarTema(dto.temaId ?? undefined);
     await this.prisma.reto.update({
       where: { id },
       data: {
         ...(dto.titulo !== undefined ? { titulo: dto.titulo } : {}),
         ...(dto.categoria !== undefined ? { categoria: dto.categoria } : {}),
         ...(dto.nivel !== undefined ? { nivelId: await this.nivelId(dto.nivel) } : {}),
+        ...(dto.temaId !== undefined ? { temaId: dto.temaId } : {}),
         ...(dto.estrellas !== undefined ? { estrellas: dto.estrellas } : {}),
         ...(dto.tipo !== undefined ? { tipo: dto.tipo } : {}),
         ...(dto.enunciado !== undefined ? { enunciado: dto.enunciado } : {}),
@@ -91,6 +106,7 @@ export class DocenteRetosService {
         ...(dto.xp !== undefined ? { xp: dto.xp } : {}),
         ...(dto.fechaLimite !== undefined ? { fechaLimite: dto.fechaLimite ? new Date(dto.fechaLimite) : null } : {}),
         ...(dto.activo !== undefined ? { activo: dto.activo } : {}),
+        ...(dto.esBugHunt !== undefined ? { esBugHunt: dto.esBugHunt } : {}),
       },
     });
     return { ok: true };
@@ -106,5 +122,38 @@ export class DocenteRetosService {
     await this.propio(id, autorId);
     await this.prisma.reto.delete({ where: { id } });
     return { ok: true };
+  }
+
+  // ── Habilitación del módulo RETOS (interruptor único del docente) ──
+  //  El docente decide SI el módulo está activo; ya NO decide para qué niveles.
+  //  Cada reto se muestra al estudiante cuyo nivel EN ESE TEMA coincide con el del
+  //  reto (motor adaptativo, ver modulos/retos/retos.service.ts).
+  async configuracion() {
+    const cfg = await this.prisma.configuracionSistema.findUnique({
+      where: { id: 1 },
+      select: { retosHabilitado: true, retosIntermedioHabilitado: true, retosAvanzadoHabilitado: true },
+    });
+    return {
+      habilitado: cfg?.retosHabilitado ?? false,
+      // Se siguen devolviendo por compatibilidad con la interfaz anterior; ya no
+      // gobiernan el acceso (ver nota en el esquema).
+      intermedio: cfg?.retosIntermedioHabilitado ?? false,
+      avanzado: cfg?.retosAvanzadoHabilitado ?? false,
+    };
+  }
+
+  async actualizarConfiguracion(dto: { habilitado?: boolean; intermedio?: boolean; avanzado?: boolean }) {
+    await this.prisma.configuracionSistema.update({
+      where: { id: 1 },
+      data: {
+        ...(dto.habilitado !== undefined ? { retosHabilitado: dto.habilitado } : {}),
+        // Compat: si una interfaz antigua manda solo los flags por nivel, se
+        // interpreta que quiere el módulo activo.
+        ...(dto.habilitado === undefined && (dto.intermedio || dto.avanzado) ? { retosHabilitado: true } : {}),
+        ...(dto.intermedio !== undefined ? { retosIntermedioHabilitado: dto.intermedio } : {}),
+        ...(dto.avanzado !== undefined ? { retosAvanzadoHabilitado: dto.avanzado } : {}),
+      },
+    });
+    return this.configuracion();
   }
 }

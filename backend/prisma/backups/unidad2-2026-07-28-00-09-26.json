@@ -1,0 +1,2603 @@
+{
+  "fecha": "2026-07-28T00:09:26.433Z",
+  "unidad": {
+    "id": 166,
+    "numero": 2,
+    "titulo": "Programación Estructurada",
+    "descripcion": "Estructuras secuenciales, selectivas (if/elif/else, match-case) y repetitivas (for, while), además de patrones numéricos.",
+    "introduccion": "## Objetivos de la unidad\nDominar las tres estructuras de control de la **programación estructurada**: secuencia, **selección** (condicionales) y **repetición** (bucles).\n\n## Conceptos clave\n- **Secuencia:** las instrucciones se ejecutan una tras otra, de arriba hacia abajo.\n- **Selección:** `if`, `elif` y `else` permiten tomar decisiones según una condición.\n- **Repetición:** `for` (cuando sabes cuántas veces) y `while` (mientras se cumpla una condición).\n- La **indentación** (sangría) define qué instrucciones pertenecen a cada bloque.\n\n## Ejemplo ilustrativo\n```python\nfor i in range(1, 6):\n    if i % 2 == 0:\n        print(i, \"es par\")\n    else:\n        print(i, \"es impar\")\n```\n\n## Idea de cierre\nCon secuencia, decisión y repetición puedes construir la lógica de casi cualquier programa. La clave está en elegir la estructura correcta para cada problema.",
+    "repaso": "## Lo esencial que ya dominas\nLa **programación estructurada**: secuencia, **decisiones** (`if/elif/else`) y **repetición** (`for/while`). Con estas tres estructuras se construye casi cualquier lógica.\n\n## Conceptos clave a recordar\n- `if/elif/else` elige un camino según una condición.\n- `for` cuando conoces las repeticiones; `while` mientras se cumpla algo.\n- **Acumuladores** y **contadores** dentro de bucles resuelven sumas y conteos.\n\n## Antes de la evaluación final\nTen claro cuándo usar cada estructura y cómo combinar condición + repetición.",
+    "dashObjetivos": "## Al final de esta unidad podrás…\n- [ ] Tomar decisiones con `if`, `elif` y `else`.\n- [ ] Repetir acciones un número conocido de veces con `for` y `range()`.\n- [ ] Repetir mientras se cumpla una condición con `while`.\n- [ ] Controlar el flujo con `break` y `continue`.\n- [ ] Construir un **acumulador/contador** para resolver un caso real.",
+    "dashAnalogias": "## Analogías para entenderlo\n- **Condicional `if` = bifurcación en el camino.** Según la señal, tomas la ruta izquierda o la derecha.\n- **Bucle `for` = línea de ensamblaje.** Cada pieza pasa por la misma estación y recibe el mismo trabajo.\n- **Bucle `while` = grifo abierto.** El agua fluye *mientras* la llave siga abierta (la condición sea verdadera).\n- **Acumulador = alcancía.** Cada moneda se suma al total que ya tenías dentro.",
+    "dashEjemplos": [
+      {
+        "codigo": "n = 7\nif n % 2 == 0:\n    print(\"Par\")\nelse:\n    print(\"Impar\")",
+        "salida": "Impar",
+        "titulo": "Decidir si un número es par o impar",
+        "diagrama": "( inicio )\n    │\n  ¿n % 2 == 0?\n   ╱      ╲\n  Sí       No\n  │         │\nprint(Par) print(Impar)\n   ╲      ╱\n   ( fin )"
+      },
+      {
+        "codigo": "total = 0\nfor n in range(1, 6):\n    total = total + n\nprint(total)",
+        "salida": "15",
+        "titulo": "Sumar del 1 al 5 con un acumulador",
+        "diagrama": "( inicio )\n    │\n total = 0\n    │\n┌▶ ¿quedan n? ─No─▶ print(total) ─▶( fin )\n│      │Sí\n│ total = total + n\n└──────┘"
+      }
+    ],
+    "dashMinutos": 80,
+    "institucion": "UPEA",
+    "plan": "PRG-111",
+    "xp": 100,
+    "orden": 2,
+    "imagenUrl": null,
+    "creadoEn": "2026-07-16T11:54:26.820Z"
+  },
+  "temas": [
+    {
+      "id": 662,
+      "unidadId": 166,
+      "padreId": null,
+      "numero": "2.1",
+      "titulo": "Conceptos de programación estructurada",
+      "descripcion": "Secuencia, selección y repetición.",
+      "repaso": null,
+      "institucion": "UPEA",
+      "orden": 0,
+      "umbral": 10,
+      "publicado": true,
+      "enDiagnostico": false,
+      "creadoEn": "2026-07-16T11:54:26.824Z"
+    },
+    {
+      "id": 663,
+      "unidadId": 166,
+      "padreId": null,
+      "numero": "2.2",
+      "titulo": "Estructuras secuenciales",
+      "descripcion": "Ejecución paso a paso, entrada/proceso/salida.",
+      "repaso": null,
+      "institucion": "UPEA",
+      "orden": 1,
+      "umbral": 10,
+      "publicado": true,
+      "enDiagnostico": false,
+      "creadoEn": "2026-07-16T11:54:26.885Z"
+    },
+    {
+      "id": 666,
+      "unidadId": 166,
+      "padreId": null,
+      "numero": "2.5",
+      "titulo": "Procesamiento y patrones numéricos",
+      "descripcion": "Descomposición de números, series y sucesiones.",
+      "repaso": null,
+      "institucion": "UPEA",
+      "orden": 4,
+      "umbral": 10,
+      "publicado": true,
+      "enDiagnostico": false,
+      "creadoEn": "2026-07-16T11:54:27.093Z"
+    },
+    {
+      "id": 664,
+      "unidadId": 166,
+      "padreId": null,
+      "numero": "2.3",
+      "titulo": "Estructuras selectivas o condicionales",
+      "descripcion": "if, if-else, if-elif-else, anidadas y match-case.",
+      "repaso": "**Condicionales.** `if/elif/else` evalúa condiciones en orden y ejecuta la **primera** rama verdadera. La indentación define el bloque de cada rama.",
+      "institucion": "UPEA",
+      "orden": 2,
+      "umbral": 10,
+      "publicado": true,
+      "enDiagnostico": true,
+      "creadoEn": "2026-07-16T11:54:26.955Z"
+    },
+    {
+      "id": 665,
+      "unidadId": 166,
+      "padreId": null,
+      "numero": "2.4",
+      "titulo": "Estructuras repetitivas o bucles",
+      "descripcion": "for, while, range, break y continue.",
+      "repaso": "**Bucles.** `for i in range(n)` repite n veces (0..n-1); `while` repite mientras la condición sea verdadera. Usa un **acumulador** para sumar dentro del bucle.",
+      "institucion": "UPEA",
+      "orden": 3,
+      "umbral": 10,
+      "publicado": true,
+      "enDiagnostico": true,
+      "creadoEn": "2026-07-16T11:54:27.023Z"
+    }
+  ],
+  "ejercicios": [
+    {
+      "id": 8421,
+      "titulo": "Las tres estructuras de control básicas son:",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "opcion_multiple",
+      "enunciado": "Las tres estructuras de control básicas son:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Suma, resta y división"
+        },
+        {
+          "id": "B",
+          "texto": "int, float y str"
+        },
+        {
+          "id": "C",
+          "texto": "CPU, RAM y disco"
+        },
+        {
+          "id": "D",
+          "texto": "Secuencial, selectiva y repetitiva"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 10,
+      "explicacionIa": "La programación estructurada usa secuencia, selección y repetición.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.828Z"
+    },
+    {
+      "id": 8422,
+      "titulo": "a = 3",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "a = 3\nb = 4\nc = a + b\nprint(c)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "7"
+        },
+        {
+          "id": "B",
+          "texto": "34"
+        },
+        {
+          "id": "C",
+          "texto": "12"
+        },
+        {
+          "id": "D",
+          "texto": "a+b"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 10,
+      "explicacionIa": "Secuencial: se ejecutan las líneas en orden; 3+4=7.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.833Z"
+    },
+    {
+      "id": 8423,
+      "titulo": "¿Qué garantiza la programación estructurada?",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué garantiza la programación estructurada?",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Que el código sea más largo."
+        },
+        {
+          "id": "B",
+          "texto": "Código con un solo punto de entrada y salida por bloque."
+        },
+        {
+          "id": "C",
+          "texto": "Uso obligatorio de goto."
+        },
+        {
+          "id": "D",
+          "texto": "Que no haya funciones."
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 20,
+      "explicacionIa": "Cada estructura tiene una entrada y una salida bien definidas.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.837Z"
+    },
+    {
+      "id": 8424,
+      "titulo": "x = 10",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "x = 10\nx = x + 5\nx = x * 2\nprint(x)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "20"
+        },
+        {
+          "id": "B",
+          "texto": "25"
+        },
+        {
+          "id": "C",
+          "texto": "30"
+        },
+        {
+          "id": "D",
+          "texto": "15"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 20,
+      "explicacionIa": "Paso a paso: 10 → 15 → 30.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.842Z"
+    },
+    {
+      "id": 8425,
+      "titulo": "La indentación (sangría) en Python:",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "La indentación (sangría) en Python:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Es decorativa y opcional."
+        },
+        {
+          "id": "B",
+          "texto": "Solo sirve para comentarios."
+        },
+        {
+          "id": "C",
+          "texto": "Genera errores siempre."
+        },
+        {
+          "id": "D",
+          "texto": "Define los bloques de código (es obligatoria)."
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 20,
+      "explicacionIa": "En Python la indentación delimita los bloques; no es opcional.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.846Z"
+    },
+    {
+      "id": 8426,
+      "titulo": "Ordena las instrucciones secuenciales para ca…",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "ordenar_lineas",
+      "enunciado": "Ordena las instrucciones secuenciales para calcular el perímetro de un cuadrado:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "lado = 5"
+        },
+        {
+          "id": "B",
+          "texto": "perimetro = lado * 4"
+        },
+        {
+          "id": "C",
+          "texto": "print(perimetro)"
+        }
+      ],
+      "respuestaCorrecta": "A,B,C",
+      "xp": 20,
+      "explicacionIa": "Se asigna, se calcula y se muestra, en ese orden.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.850Z"
+    },
+    {
+      "id": 8427,
+      "titulo": "nombre = \"Ana\"",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "nombre = \"Ana\"\nsaludo = \"Hola \" + nombre\nprint(saludo)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Hola Ana"
+        },
+        {
+          "id": "B",
+          "texto": "Hola nombre"
+        },
+        {
+          "id": "C",
+          "texto": "HolaAna"
+        },
+        {
+          "id": "D",
+          "texto": "Error"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 10,
+      "explicacionIa": "La concatenación une \"Hola \" con el valor de nombre.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.855Z"
+    },
+    {
+      "id": 8428,
+      "titulo": "¿Cuál rompe el paradigma estructurado?",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Cuál rompe el paradigma estructurado?",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Usar if/else."
+        },
+        {
+          "id": "B",
+          "texto": "Saltar arbitrariamente con goto a cualquier línea."
+        },
+        {
+          "id": "C",
+          "texto": "Usar while."
+        },
+        {
+          "id": "D",
+          "texto": "Usar funciones."
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 30,
+      "explicacionIa": "Los saltos incondicionales (goto) rompen el flujo estructurado.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.859Z"
+    },
+    {
+      "id": 8429,
+      "titulo": "total = 0",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "total = 0\ntotal += 100\ntotal -= 30\nprint(total)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "130"
+        },
+        {
+          "id": "B",
+          "texto": "30"
+        },
+        {
+          "id": "C",
+          "texto": "70"
+        },
+        {
+          "id": "D",
+          "texto": "100"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 20,
+      "explicacionIa": "total: 0 → 100 → 70.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.863Z"
+    },
+    {
+      "id": 8430,
+      "titulo": "n = 6",
+      "categoria": "Prog. estructurada",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa para mostrar el doble de un número leído secuencialmente.",
+      "codigoPython": "n = 6\ndoble = n * 2\n____(doble)",
+      "opciones": [],
+      "respuestaCorrecta": "print",
+      "xp": 10,
+      "explicacionIa": "La salida secuencial se hace con print(doble).",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.868Z"
+    },
+    {
+      "id": 8431,
+      "titulo": "El teorema de Böhm-Jacopini afirma que todo a…",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "El teorema de Böhm-Jacopini afirma que todo algoritmo puede escribirse usando solo:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Secuencia, selección e iteración."
+        },
+        {
+          "id": "B",
+          "texto": "Recursividad y GOTO."
+        },
+        {
+          "id": "C",
+          "texto": "Únicamente secuencia."
+        },
+        {
+          "id": "D",
+          "texto": "Solo funciones anónimas."
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 40,
+      "explicacionIa": "Es el fundamento teórico de la programación estructurada.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.872Z"
+    },
+    {
+      "id": 8432,
+      "titulo": "Una función con \"una sola entrada y una sola …",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "Una función con \"una sola entrada y una sola salida\" facilita:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "El uso obligatorio de GOTO."
+        },
+        {
+          "id": "B",
+          "texto": "El razonamiento y la verificación del flujo de control."
+        },
+        {
+          "id": "C",
+          "texto": "Duplicar el código."
+        },
+        {
+          "id": "D",
+          "texto": "Ocultar los parámetros."
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 40,
+      "explicacionIa": "El principio de entrada/salida única es central en la programación estructurada.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.876Z"
+    },
+    {
+      "id": 8433,
+      "titulo": "El código difícil de seguir por saltos arbitr…",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 662,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "El código difícil de seguir por saltos arbitrarios del flujo se apoda coloquialmente código:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Modular"
+        },
+        {
+          "id": "B",
+          "texto": "Estructurado"
+        },
+        {
+          "id": "C",
+          "texto": "Espagueti"
+        },
+        {
+          "id": "D",
+          "texto": "Refactorizado"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 40,
+      "explicacionIa": "El \"código espagueti\" enreda el flujo; la programación estructurada lo evita.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.881Z"
+    },
+    {
+      "id": 8434,
+      "titulo": "a = 5",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "a = 5\nb = 3\nprint(a - b)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "8"
+        },
+        {
+          "id": "B",
+          "texto": "-2"
+        },
+        {
+          "id": "C",
+          "texto": "15"
+        },
+        {
+          "id": "D",
+          "texto": "2"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 10,
+      "explicacionIa": "Resta secuencial: 5-3=2.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.889Z"
+    },
+    {
+      "id": 8435,
+      "titulo": "precio = 50",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "precio = 50\ncantidad = 3\ntotal = precio * cantidad\nprint(total)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "150"
+        },
+        {
+          "id": "B",
+          "texto": "53"
+        },
+        {
+          "id": "C",
+          "texto": "15"
+        },
+        {
+          "id": "D",
+          "texto": "503"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "total = 50*3 = 150.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.894Z"
+    },
+    {
+      "id": 8436,
+      "titulo": "edad = int(____(\"Edad: \"))",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa para leer un número entero desde el teclado.",
+      "codigoPython": "edad = int(____(\"Edad: \"))\nprint(edad)",
+      "opciones": [],
+      "respuestaCorrecta": "input",
+      "xp": 20,
+      "explicacionIa": "int(input(...)) lee texto y lo convierte a entero.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.898Z"
+    },
+    {
+      "id": 8437,
+      "titulo": "base = 4",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "base = 4\naltura = 5\narea = base * altura / 2\nprint(area)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "20"
+        },
+        {
+          "id": "B",
+          "texto": "10.0"
+        },
+        {
+          "id": "C",
+          "texto": "10"
+        },
+        {
+          "id": "D",
+          "texto": "9"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 20,
+      "explicacionIa": "Área del triángulo = 4*5/2 = 10.0 (float por /).",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.903Z"
+    },
+    {
+      "id": 8438,
+      "titulo": "x = 7",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "x = 7\ny = x\nx = 2\nprint(y)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "2"
+        },
+        {
+          "id": "B",
+          "texto": "9"
+        },
+        {
+          "id": "C",
+          "texto": "7"
+        },
+        {
+          "id": "D",
+          "texto": "0"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 10,
+      "explicacionIa": "y copió el valor 7 antes de que x cambiara a 2.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.907Z"
+    },
+    {
+      "id": 8439,
+      "titulo": "Ordena para convertir minutos a segundos:",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "ordenar_lineas",
+      "enunciado": "Ordena para convertir minutos a segundos:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "minutos = 3"
+        },
+        {
+          "id": "B",
+          "texto": "segundos = minutos * 60"
+        },
+        {
+          "id": "C",
+          "texto": "print(segundos)"
+        }
+      ],
+      "respuestaCorrecta": "A,B,C",
+      "xp": 20,
+      "explicacionIa": "Entrada, proceso (×60) y salida en secuencia.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.912Z"
+    },
+    {
+      "id": 8440,
+      "titulo": "c = 20",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "c = 20\nf = c * 9 / 5 + 32\nprint(f)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "68"
+        },
+        {
+          "id": "B",
+          "texto": "52"
+        },
+        {
+          "id": "C",
+          "texto": "36"
+        },
+        {
+          "id": "D",
+          "texto": "68.0"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 30,
+      "explicacionIa": "Celsius→Fahrenheit: 20*9/5+32 = 36+32 = 68.0.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.916Z"
+    },
+    {
+      "id": 8441,
+      "titulo": "a = 1",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa para intercambiar los valores de a y b.",
+      "codigoPython": "a = 1\nb = 2\na, b = ____\nprint(a, b)",
+      "opciones": [],
+      "respuestaCorrecta": "b, a",
+      "xp": 20,
+      "explicacionIa": "La asignación múltiple a, b = b, a intercambia los valores.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.920Z"
+    },
+    {
+      "id": 8442,
+      "titulo": "suma = 10 + 20",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "suma = 10 + 20\npromedio = suma / 2\nprint(promedio)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "15.0"
+        },
+        {
+          "id": "B",
+          "texto": "30"
+        },
+        {
+          "id": "C",
+          "texto": "15"
+        },
+        {
+          "id": "D",
+          "texto": "10"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "suma=30; promedio=30/2=15.0.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.925Z"
+    },
+    {
+      "id": 8443,
+      "titulo": "msg = \"Py\" + \"thon\"",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "msg = \"Py\" + \"thon\"\nprint(msg)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Py thon"
+        },
+        {
+          "id": "B",
+          "texto": "Python"
+        },
+        {
+          "id": "C",
+          "texto": "Pythonthon"
+        },
+        {
+          "id": "D",
+          "texto": "Error"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 10,
+      "explicacionIa": "La concatenación une \"Py\" y \"thon\" → \"Python\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.929Z"
+    },
+    {
+      "id": 8444,
+      "titulo": "a = 2",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "a = 2\nb = 3\na, b = b, a\nprint(a, b)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "2 3"
+        },
+        {
+          "id": "B",
+          "texto": "3 3"
+        },
+        {
+          "id": "C",
+          "texto": "2 2"
+        },
+        {
+          "id": "D",
+          "texto": "3 2"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 40,
+      "explicacionIa": "La asignación múltiple intercambia los valores en una sola instrucción.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.934Z"
+    },
+    {
+      "id": 8445,
+      "titulo": "x = 10",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "x = 10\nx += 5\nx //= 3\nprint(x)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "5"
+        },
+        {
+          "id": "B",
+          "texto": "3"
+        },
+        {
+          "id": "C",
+          "texto": "15"
+        },
+        {
+          "id": "D",
+          "texto": "4"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 40,
+      "explicacionIa": "x=10 → 15 → 15//3 = 5.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.944Z"
+    },
+    {
+      "id": 8446,
+      "titulo": "Ordena las instrucciones para intercambiar do…",
+      "categoria": "Estructuras secuenciales",
+      "nivelId": 122,
+      "temaId": 663,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "ordenar_lineas",
+      "enunciado": "Ordena las instrucciones para intercambiar dos variables usando una auxiliar:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "aux = a"
+        },
+        {
+          "id": "B",
+          "texto": "a = b"
+        },
+        {
+          "id": "C",
+          "texto": "b = aux"
+        }
+      ],
+      "respuestaCorrecta": "A,B,C",
+      "xp": 40,
+      "explicacionIa": "Se guarda a en aux, se copia b en a y finalmente aux (el a original) en b.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.949Z"
+    },
+    {
+      "id": 8447,
+      "titulo": "x = 8",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "x = 8\nif x > 5:\n    print(\"Grande\")\nelse:\n    print(\"Chico\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Chico"
+        },
+        {
+          "id": "B",
+          "texto": "Error"
+        },
+        {
+          "id": "C",
+          "texto": "Grande"
+        },
+        {
+          "id": "D",
+          "texto": "Grande\nChico"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 10,
+      "explicacionIa": "8>5 es True, se ejecuta el bloque if → \"Grande\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.961Z"
+    },
+    {
+      "id": 8448,
+      "titulo": "n = 4",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "n = 4\nif n % 2 == 0:\n    print(\"Par\")\nelse:\n    print(\"Impar\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Impar"
+        },
+        {
+          "id": "B",
+          "texto": "Error"
+        },
+        {
+          "id": "C",
+          "texto": "0"
+        },
+        {
+          "id": "D",
+          "texto": "Par"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 20,
+      "explicacionIa": "4 % 2 == 0 es True → \"Par\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.966Z"
+    },
+    {
+      "id": 8449,
+      "titulo": "nota = 51",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "nota = 51\nif nota >= 51:\n    print(\"Aprobado\")\nelse:\n    print(\"Reprobado\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Aprobado"
+        },
+        {
+          "id": "B",
+          "texto": "Reprobado"
+        },
+        {
+          "id": "C",
+          "texto": "Error"
+        },
+        {
+          "id": "D",
+          "texto": "51"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "51>=51 es True → \"Aprobado\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.972Z"
+    },
+    {
+      "id": 8450,
+      "titulo": "x = 0",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "x = 0\nif x > 0:\n    print(\"Positivo\")\nelif x < 0:\n    print(\"Negativo\")\nelse:\n    print(\"Cero\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Positivo"
+        },
+        {
+          "id": "B",
+          "texto": "Cero"
+        },
+        {
+          "id": "C",
+          "texto": "Negativo"
+        },
+        {
+          "id": "D",
+          "texto": "Error"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 30,
+      "explicacionIa": "x no es >0 ni <0, cae en el else → \"Cero\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.978Z"
+    },
+    {
+      "id": 8451,
+      "titulo": "if x > 0:",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa la palabra clave para la condición alternativa múltiple.",
+      "codigoPython": "if x > 0:\n    print(\"pos\")\n____ x < 0:\n    print(\"neg\")\nelse:\n    print(\"cero\")",
+      "opciones": [],
+      "respuestaCorrecta": "elif",
+      "xp": 20,
+      "explicacionIa": "elif encadena condiciones alternativas.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.983Z"
+    },
+    {
+      "id": 8452,
+      "titulo": "edad = 20",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "edad = 20\nif edad >= 18 and edad < 65:\n    print(\"Adulto\")\nelse:\n    print(\"Otro\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Otro"
+        },
+        {
+          "id": "B",
+          "texto": "Error"
+        },
+        {
+          "id": "C",
+          "texto": "Adulto"
+        },
+        {
+          "id": "D",
+          "texto": "Adulto\nOtro"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 30,
+      "explicacionIa": "20>=18 y 20<65 son True → \"Adulto\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.989Z"
+    },
+    {
+      "id": 8453,
+      "titulo": "Ordena para clasificar un número como positiv…",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "ordenar_lineas",
+      "enunciado": "Ordena para clasificar un número como positivo o no:",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "numero = 5"
+        },
+        {
+          "id": "B",
+          "texto": "if numero > 0:"
+        },
+        {
+          "id": "C",
+          "texto": "    print(\"Positivo\")"
+        },
+        {
+          "id": "D",
+          "texto": "else:"
+        },
+        {
+          "id": "E",
+          "texto": "    print(\"No positivo\")"
+        }
+      ],
+      "respuestaCorrecta": "A,B,C,D,E",
+      "xp": 20,
+      "explicacionIa": "Se lee el dato, se evalúa la condición y se elige la rama.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:26.995Z"
+    },
+    {
+      "id": 8454,
+      "titulo": "x = 15",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "x = 15\nif x > 10:\n    if x > 20:\n        print(\"A\")\n    else:\n        print(\"B\")\nelse:\n    print(\"C\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "A"
+        },
+        {
+          "id": "B",
+          "texto": "C"
+        },
+        {
+          "id": "C",
+          "texto": "Error"
+        },
+        {
+          "id": "D",
+          "texto": "B"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 40,
+      "explicacionIa": "x>10 True; dentro x>20 False → \"B\" (condicional anidada).",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.001Z"
+    },
+    {
+      "id": 8455,
+      "titulo": "dia = 3",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "dia = 3\nif dia == 1:\n    print(\"Lun\")\nelif dia == 3:\n    print(\"Mie\")\nelse:\n    print(\"Otro\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Mie"
+        },
+        {
+          "id": "B",
+          "texto": "Lun"
+        },
+        {
+          "id": "C",
+          "texto": "Otro"
+        },
+        {
+          "id": "D",
+          "texto": "Error"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 30,
+      "explicacionIa": "dia==3 coincide con el segundo elif → \"Mie\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.006Z"
+    },
+    {
+      "id": 8456,
+      "titulo": "a = 5",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa el operador para verificar si dos valores son iguales.",
+      "codigoPython": "a = 5\nif a ____ 5:\n    print(\"igual\")",
+      "opciones": [],
+      "respuestaCorrecta": "==",
+      "xp": 20,
+      "explicacionIa": "== compara igualdad; = es asignación.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.012Z"
+    },
+    {
+      "id": 8457,
+      "titulo": "temp = 30",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "temp = 30\nif temp > 25:\n    print(\"Calor\")\nprint(\"Fin\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Calor"
+        },
+        {
+          "id": "B",
+          "texto": "Calor\nFin"
+        },
+        {
+          "id": "C",
+          "texto": "Fin"
+        },
+        {
+          "id": "D",
+          "texto": "Error"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 20,
+      "explicacionIa": "La condición imprime \"Calor\" y luego el print de afuera imprime \"Fin\".",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.018Z"
+    },
+    {
+      "id": 8458,
+      "titulo": "for i in range(3):",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 1,
+      "nivelDificultad": "basico",
+      "dificultadB": -1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "for i in range(3):\n    print(i)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "1\n2\n3"
+        },
+        {
+          "id": "B",
+          "texto": "0\n1\n2\n3"
+        },
+        {
+          "id": "C",
+          "texto": "0\n1\n2"
+        },
+        {
+          "id": "D",
+          "texto": "3"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 10,
+      "explicacionIa": "range(3) genera 0, 1, 2.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.029Z"
+    },
+    {
+      "id": 8459,
+      "titulo": "suma = 0",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "suma = 0\nfor i in range(1, 5):\n    suma += i\nprint(suma)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "15"
+        },
+        {
+          "id": "B",
+          "texto": "4"
+        },
+        {
+          "id": "C",
+          "texto": "5"
+        },
+        {
+          "id": "D",
+          "texto": "10"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 20,
+      "explicacionIa": "range(1,5) = 1,2,3,4; su suma es 10.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.036Z"
+    },
+    {
+      "id": 8460,
+      "titulo": "i = 0",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "i = 0\nwhile i < 3:\n    print(i)\n    i += 1",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "0\n1\n2"
+        },
+        {
+          "id": "B",
+          "texto": "0\n1\n2\n3"
+        },
+        {
+          "id": "C",
+          "texto": "1\n2\n3"
+        },
+        {
+          "id": "D",
+          "texto": "bucle infinito"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "while imprime mientras i<3: 0,1,2.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.041Z"
+    },
+    {
+      "id": 8461,
+      "titulo": "for letra in \"abc\":",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "for letra in \"abc\":\n    print(letra)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "abc"
+        },
+        {
+          "id": "B",
+          "texto": "a\nb\nc"
+        },
+        {
+          "id": "C",
+          "texto": "0\n1\n2"
+        },
+        {
+          "id": "D",
+          "texto": "a b c"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 20,
+      "explicacionIa": "El for recorre cada carácter del string.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.047Z"
+    },
+    {
+      "id": 8462,
+      "titulo": "for i in ____(10):",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa para repetir 10 veces (índices 0 a 9).",
+      "codigoPython": "for i in ____(10):\n    print(i)",
+      "opciones": [],
+      "respuestaCorrecta": "range",
+      "xp": 20,
+      "explicacionIa": "range(10) genera los números de 0 a 9.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.053Z"
+    },
+    {
+      "id": 8463,
+      "titulo": "total = 0",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "total = 0\nfor i in range(1, 6):\n    total += i\nprint(total)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "10"
+        },
+        {
+          "id": "B",
+          "texto": "21"
+        },
+        {
+          "id": "C",
+          "texto": "15"
+        },
+        {
+          "id": "D",
+          "texto": "6"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 30,
+      "explicacionIa": "1+2+3+4+5 = 15.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.059Z"
+    },
+    {
+      "id": 8464,
+      "titulo": "for i in range(0, 10, 2):",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "for i in range(0, 10, 2):\n    print(i, end=\" \")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "0 2 4 6 8 10 "
+        },
+        {
+          "id": "B",
+          "texto": "1 3 5 7 9 "
+        },
+        {
+          "id": "C",
+          "texto": "2 4 6 8 "
+        },
+        {
+          "id": "D",
+          "texto": "0 2 4 6 8 "
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 30,
+      "explicacionIa": "range(0,10,2) avanza de 2 en 2: 0,2,4,6,8.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.064Z"
+    },
+    {
+      "id": 8465,
+      "titulo": "i = 1",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "i = 1\nwhile i <= 5:\n    if i == 3:\n        break\n    print(i)\n    i += 1",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "1\n2"
+        },
+        {
+          "id": "B",
+          "texto": "1\n2\n3"
+        },
+        {
+          "id": "C",
+          "texto": "1\n2\n3\n4\n5"
+        },
+        {
+          "id": "D",
+          "texto": "3"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 40,
+      "explicacionIa": "break corta el bucle cuando i==3, tras imprimir 1 y 2.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.070Z"
+    },
+    {
+      "id": 8466,
+      "titulo": "for i in range(5):",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa la instrucción que salta a la siguiente iteración sin terminar el bucle.",
+      "codigoPython": "for i in range(5):\n    if i == 2:\n        ____\n    print(i)",
+      "opciones": [],
+      "respuestaCorrecta": "continue",
+      "xp": 30,
+      "explicacionIa": "continue omite el resto de la iteración y sigue con la próxima.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.076Z"
+    },
+    {
+      "id": 8467,
+      "titulo": "cuenta = 0",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "cuenta = 0\nfor i in range(1, 8):\n    if i % 2 == 0:\n        cuenta += 1\nprint(cuenta)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "4"
+        },
+        {
+          "id": "B",
+          "texto": "3"
+        },
+        {
+          "id": "C",
+          "texto": "7"
+        },
+        {
+          "id": "D",
+          "texto": "2"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 40,
+      "explicacionIa": "Pares en 1..7: 2,4,6 → 3.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.082Z"
+    },
+    {
+      "id": 8468,
+      "titulo": "Ordena para imprimir la tabla del 5 (del 5 al…",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "ordenar_lineas",
+      "enunciado": "Ordena para imprimir la tabla del 5 (del 5 al 50):",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "for i in range(1, 11):"
+        },
+        {
+          "id": "B",
+          "texto": "    resultado = 5 * i"
+        },
+        {
+          "id": "C",
+          "texto": "    print(resultado)"
+        }
+      ],
+      "respuestaCorrecta": "A,B,C",
+      "xp": 30,
+      "explicacionIa": "Se recorre 1..10 multiplicando por 5 e imprimiendo.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.088Z"
+    },
+    {
+      "id": 8469,
+      "titulo": "n = 253",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "n = 253\nunidades = n % 10\nprint(unidades)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "2"
+        },
+        {
+          "id": "B",
+          "texto": "5"
+        },
+        {
+          "id": "C",
+          "texto": "3"
+        },
+        {
+          "id": "D",
+          "texto": "253"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 30,
+      "explicacionIa": "n % 10 extrae el último dígito (unidades): 253 → 3.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.099Z"
+    },
+    {
+      "id": 8470,
+      "titulo": "n = 253",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "n = 253\ndecenas = (n // 10) % 10\nprint(decenas)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "3"
+        },
+        {
+          "id": "B",
+          "texto": "2"
+        },
+        {
+          "id": "C",
+          "texto": "25"
+        },
+        {
+          "id": "D",
+          "texto": "5"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 30,
+      "explicacionIa": "(253//10)=25; 25%10 = 5 (dígito de las decenas).",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.110Z"
+    },
+    {
+      "id": 8471,
+      "titulo": "n = 47",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "n = 47\nprint(n // 10, n % 10)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "4 7"
+        },
+        {
+          "id": "B",
+          "texto": "7 4"
+        },
+        {
+          "id": "C",
+          "texto": "47 0"
+        },
+        {
+          "id": "D",
+          "texto": "4.7"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "47//10=4 (decenas), 47%10=7 (unidades).",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.116Z"
+    },
+    {
+      "id": 8472,
+      "titulo": "suma = 0",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "suma = 0\nfor i in range(1, 11):\n    suma += i\nprint(suma)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "45"
+        },
+        {
+          "id": "B",
+          "texto": "55"
+        },
+        {
+          "id": "C",
+          "texto": "10"
+        },
+        {
+          "id": "D",
+          "texto": "100"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 40,
+      "explicacionIa": "Suma de 1 a 10 = 55.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.122Z"
+    },
+    {
+      "id": 8473,
+      "titulo": "resultado = 1",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "resultado = 1\nfor i in range(1, 5):\n    resultado *= i\nprint(resultado)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "10"
+        },
+        {
+          "id": "B",
+          "texto": "20"
+        },
+        {
+          "id": "C",
+          "texto": "24"
+        },
+        {
+          "id": "D",
+          "texto": "120"
+        }
+      ],
+      "respuestaCorrecta": "C",
+      "xp": 40,
+      "explicacionIa": "Factorial de 4 = 1*2*3*4 = 24.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.127Z"
+    },
+    {
+      "id": 8474,
+      "titulo": "n = 189",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "completar_codigo",
+      "enunciado": "Completa para obtener el último dígito de un número.",
+      "codigoPython": "n = 189\nultimo = n ____ 10\nprint(ultimo)",
+      "opciones": [],
+      "respuestaCorrecta": "%",
+      "xp": 30,
+      "explicacionIa": "n % 10 devuelve el dígito de las unidades.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.133Z"
+    },
+    {
+      "id": 8475,
+      "titulo": "serie = 0",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "serie = 0\nfor i in range(2, 11, 2):\n    serie += i\nprint(serie)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "20"
+        },
+        {
+          "id": "B",
+          "texto": "25"
+        },
+        {
+          "id": "C",
+          "texto": "2"
+        },
+        {
+          "id": "D",
+          "texto": "30"
+        }
+      ],
+      "respuestaCorrecta": "D",
+      "xp": 30,
+      "explicacionIa": "Pares 2+4+6+8+10 = 30.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.138Z"
+    },
+    {
+      "id": 8476,
+      "titulo": "a, b = 0, 1",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 5,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 1.5,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "a, b = 0, 1\nfor _ in range(5):\n    a, b = b, a + b\nprint(a)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "5"
+        },
+        {
+          "id": "B",
+          "texto": "3"
+        },
+        {
+          "id": "C",
+          "texto": "8"
+        },
+        {
+          "id": "D",
+          "texto": "13"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 50,
+      "explicacionIa": "Fibonacci: tras 5 pasos a=5 (0,1,1,2,3,5).",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.144Z"
+    },
+    {
+      "id": 8477,
+      "titulo": "Ordena para sumar los dígitos de un número de…",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "ordenar_lineas",
+      "enunciado": "Ordena para sumar los dígitos de un número de 3 cifras (n=347):",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "n = 347"
+        },
+        {
+          "id": "B",
+          "texto": "suma = n // 100 + (n // 10) % 10 + n % 10"
+        },
+        {
+          "id": "C",
+          "texto": "print(suma)"
+        }
+      ],
+      "respuestaCorrecta": "A,B,C",
+      "xp": 40,
+      "explicacionIa": "Se extrae cada dígito con // y % y se suman: 3+4+7=14.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.150Z"
+    },
+    {
+      "id": 8478,
+      "titulo": "cont = 0",
+      "categoria": "Patrones numéricos",
+      "nivelId": 122,
+      "temaId": 666,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "predecir_salida",
+      "enunciado": "¿Qué imprime el siguiente código?",
+      "codigoPython": "cont = 0\nfor i in range(1, 21):\n    if i % 3 == 0:\n        cont += 1\nprint(cont)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "7"
+        },
+        {
+          "id": "B",
+          "texto": "6"
+        },
+        {
+          "id": "C",
+          "texto": "5"
+        },
+        {
+          "id": "D",
+          "texto": "3"
+        }
+      ],
+      "respuestaCorrecta": "B",
+      "xp": 40,
+      "explicacionIa": "Múltiplos de 3 entre 1 y 20: 3,6,9,12,15,18 → 6.",
+      "maxPistas": 3,
+      "banco": "practica",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:27.156Z"
+    },
+    {
+      "id": 8627,
+      "titulo": "x = 5",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué imprime?",
+      "codigoPython": "x = 5\nif x > 3:\n    print(\"A\")\nelse:\n    print(\"B\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "A"
+        },
+        {
+          "id": "B",
+          "texto": "B"
+        },
+        {
+          "id": "C",
+          "texto": "AB"
+        },
+        {
+          "id": "D",
+          "texto": "Nada"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 10,
+      "explicacionIa": "5 > 3 es verdadero → imprime \"A\".",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.164Z"
+    },
+    {
+      "id": 8628,
+      "titulo": "n = 0",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué imprime?",
+      "codigoPython": "n = 0\nif n > 0:\n    print(\"pos\")\nelif n == 0:\n    print(\"cero\")\nelse:\n    print(\"neg\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "cero"
+        },
+        {
+          "id": "B",
+          "texto": "pos"
+        },
+        {
+          "id": "C",
+          "texto": "neg"
+        },
+        {
+          "id": "D",
+          "texto": "Error"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 15,
+      "explicacionIa": "n no es > 0 pero sí == 0 → entra en el elif e imprime \"cero\".",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.169Z"
+    },
+    {
+      "id": 8629,
+      "titulo": "¿Qué condición es verdadera si edad está entr…",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué condición es verdadera si edad está entre 18 y 65 (inclusive)?",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "18 <= edad <= 65"
+        },
+        {
+          "id": "B",
+          "texto": "edad > 18 or edad < 65"
+        },
+        {
+          "id": "C",
+          "texto": "edad == 18 and 65"
+        },
+        {
+          "id": "D",
+          "texto": "18 < edad > 65"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "Python permite encadenar: 18 <= edad <= 65.",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.173Z"
+    },
+    {
+      "id": 8630,
+      "titulo": "a = 7",
+      "categoria": "Condicionales",
+      "nivelId": 122,
+      "temaId": 664,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué imprime?",
+      "codigoPython": "a = 7\nif a % 2 == 0:\n    print(\"par\")\nelif a > 5:\n    print(\"grande\")\nelse:\n    print(\"otro\")",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "grande"
+        },
+        {
+          "id": "B",
+          "texto": "par"
+        },
+        {
+          "id": "C",
+          "texto": "otro"
+        },
+        {
+          "id": "D",
+          "texto": "Nada"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "7 no es par; 7 > 5 → \"grande\".",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.179Z"
+    },
+    {
+      "id": 8631,
+      "titulo": "for i in range(2, 6):",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 2,
+      "nivelDificultad": "basico",
+      "dificultadB": -0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Cuántas veces se ejecuta el bucle?",
+      "codigoPython": "for i in range(2, 6):\n    print(i)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "4"
+        },
+        {
+          "id": "B",
+          "texto": "6"
+        },
+        {
+          "id": "C",
+          "texto": "3"
+        },
+        {
+          "id": "D",
+          "texto": "5"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 10,
+      "explicacionIa": "range(2,6) genera 2,3,4,5 → 4 iteraciones.",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.184Z"
+    },
+    {
+      "id": 8632,
+      "titulo": "p = 1",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 4,
+      "nivelDificultad": "avanzado",
+      "dificultadB": 0.75,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué imprime?",
+      "codigoPython": "p = 1\nfor i in range(1, 4):\n    p = p * i\nprint(p)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "6"
+        },
+        {
+          "id": "B",
+          "texto": "3"
+        },
+        {
+          "id": "C",
+          "texto": "4"
+        },
+        {
+          "id": "D",
+          "texto": "1"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 20,
+      "explicacionIa": "1*1*2*3 = 6 (factorial de 3).",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.189Z"
+    },
+    {
+      "id": 8633,
+      "titulo": "c = 0",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué imprime?",
+      "codigoPython": "c = 0\nn = 5\nwhile n > 0:\n    c += 1\n    n -= 1\nprint(c)",
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "5"
+        },
+        {
+          "id": "B",
+          "texto": "0"
+        },
+        {
+          "id": "C",
+          "texto": "4"
+        },
+        {
+          "id": "D",
+          "texto": "infinito"
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 15,
+      "explicacionIa": "El while resta 1 a n en cada vuelta y suma 1 a c: 5 vueltas → c=5.",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.194Z"
+    },
+    {
+      "id": 8634,
+      "titulo": "¿Qué hace break dentro de un for?",
+      "categoria": "Bucles",
+      "nivelId": 122,
+      "temaId": 665,
+      "estrellas": 3,
+      "nivelDificultad": "intermedio",
+      "dificultadB": 0,
+      "tipo": "opcion_multiple",
+      "enunciado": "¿Qué hace break dentro de un for?",
+      "codigoPython": null,
+      "opciones": [
+        {
+          "id": "A",
+          "texto": "Corta el bucle inmediatamente."
+        },
+        {
+          "id": "B",
+          "texto": "Salta a la siguiente vuelta."
+        },
+        {
+          "id": "C",
+          "texto": "Reinicia el bucle."
+        },
+        {
+          "id": "D",
+          "texto": "No hace nada."
+        }
+      ],
+      "respuestaCorrecta": "A",
+      "xp": 15,
+      "explicacionIa": "break termina el bucle; continue salta a la siguiente iteración.",
+      "maxPistas": 3,
+      "banco": "examen",
+      "activo": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:28.199Z"
+    }
+  ],
+  "retos": [
+    {
+      "id": 114,
+      "titulo": "🐛 Bug: suma del 1 al 5",
+      "categoria": "Bucles",
+      "nivelId": null,
+      "temaId": 665,
+      "estrellas": 2,
+      "tipo": "completar_codigo",
+      "enunciado": "Este código debería imprimir la suma de 1 a 5 (=15), pero da otro resultado. Encuentra y corrige el bug.",
+      "codigoInicial": "total = 0\nfor n in range(1, 5):\n    total = total + n\nprint(total)",
+      "ejemploEntrada": null,
+      "ejemploSalida": "15",
+      "opciones": [],
+      "respuestaCorrecta": null,
+      "xp": 70,
+      "fechaLimite": null,
+      "autorId": 410,
+      "activo": true,
+      "esBugHunt": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:30.945Z"
+    },
+    {
+      "id": 115,
+      "titulo": "🐛 Bug: contar pares",
+      "categoria": "Condicionales",
+      "nivelId": null,
+      "temaId": 664,
+      "estrellas": 3,
+      "tipo": "completar_codigo",
+      "enunciado": "Debe contar cuántos números pares hay en la lista (=3), pero el conteo está mal. Corrige el bug.",
+      "codigoInicial": "nums = [4, 7, 10, 3, 8]\npares = 0\nfor x in nums:\n    if x % 2 == 1:\n        pares = pares + 1\nprint(pares)",
+      "ejemploEntrada": null,
+      "ejemploSalida": "3",
+      "opciones": [],
+      "respuestaCorrecta": null,
+      "xp": 80,
+      "fechaLimite": null,
+      "autorId": 410,
+      "activo": true,
+      "esBugHunt": true,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:30.950Z"
+    },
+    {
+      "id": 111,
+      "titulo": "FizzBuzz",
+      "categoria": "Bucles",
+      "nivelId": null,
+      "temaId": 665,
+      "estrellas": 3,
+      "tipo": "completar_codigo",
+      "enunciado": "Imprime los números del 1 al 20. Para múltiplos de 3 imprime \"Fizz\", de 5 \"Buzz\", y de ambos \"FizzBuzz\".",
+      "codigoInicial": "for i in range(1, 21):\n    # tu código aquí\n    pass",
+      "ejemploEntrada": null,
+      "ejemploSalida": null,
+      "opciones": [],
+      "respuestaCorrecta": null,
+      "xp": 80,
+      "fechaLimite": null,
+      "autorId": 410,
+      "activo": true,
+      "esBugHunt": false,
+      "fuenteDoc": null,
+      "creadoEn": "2026-07-16T11:54:30.929Z"
+    }
+  ]
+}
