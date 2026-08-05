@@ -11,6 +11,15 @@
 const BASE = process.env.E2E_API_URL ?? 'http://localhost:4000/api';
 const PASS_SEED = 'Prexi123*';
 
+/**
+ * `respuestaCorrecta` puede traer VARIANTES equivalentes separadas por "|"
+ * (ej. "i in range(10)|i in range(0,10)"). Reenviar la cadena completa no
+ * coincide con ninguna: hay que mandar una sola variante.
+ */
+function primeraVariante(respuesta: string): string {
+  return String(respuesta).split('|')[0];
+}
+
 async function req(method: string, path: string, opts: { token?: string; body?: unknown } = {}) {
   const res = await fetch(`${BASE}${path}`, {
     method,
@@ -68,7 +77,7 @@ describe('2 · Otorgamiento en el backend al resolver', () => {
     // Aprende la respuesta con un intento inválido.
     const mal = await req('POST', '/intentos', { token: estudianteTk, body: { ejercicioId, respuestaDada: '~~' } });
     expect(mal.data.correcto).toBe(false);
-    const bien = await req('POST', '/intentos', { token: estudianteTk, body: { ejercicioId, respuestaDada: mal.data.respuesta_correcta } });
+    const bien = await req('POST', '/intentos', { token: estudianteTk, body: { ejercicioId, respuestaDada: primeraVariante(mal.data.respuesta_correcta) } });
     expect(bien.status).toBe(201);
     expect(bien.data.correcto).toBe(true);
     // El resultado trae los emblemas nuevos para la animación de "¡Logro desbloqueado!".
@@ -80,7 +89,7 @@ describe('2 · Otorgamiento en el backend al resolver', () => {
     const lista = await req('GET', '/ejercicios?nivel=1', { token: estudianteTk });
     const otro = lista.data.ejercicios[1].id;
     const mal = await req('POST', '/intentos', { token: estudianteTk, body: { ejercicioId: otro, respuestaDada: '~~' } });
-    const bien = await req('POST', '/intentos', { token: estudianteTk, body: { ejercicioId: otro, respuestaDada: mal.data.respuesta_correcta } });
+    const bien = await req('POST', '/intentos', { token: estudianteTk, body: { ejercicioId: otro, respuestaDada: primeraVariante(mal.data.respuesta_correcta) } });
     expect(bien.data.emblemas_nuevos.map((e: { clave: string }) => e.clave)).not.toContain('primer_acierto');
 
     // Y en el catálogo ya figura como desbloqueado (persistido, sin duplicar).

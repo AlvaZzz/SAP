@@ -58,8 +58,15 @@ export const tarjetaAuthCls =
   'dark:bg-card/80 dark:supports-[backdrop-filter]:bg-card/70';
 
 /** Clases de INPUT translúcido coherente con los tokens (foco de acento; error rojo). */
+/**
+ * Clase común de los campos de autenticación (input y select).
+ *
+ * `min-h-[3rem]` iguala la altura de `<select>` e `<input>`: con solo `py-2.5` el
+ * select queda ~4px más bajo (su alto intrínseco no es el del input) y la rejilla
+ * se veía desalineada. Al ir en rem acompaña la escala responsiva del root.
+ */
 export function inputAuthCls(error: boolean) {
-  return `w-full rounded-xl border bg-app/70 px-4 py-2.5 text-fg outline-none transition placeholder:text-muted focus:ring-2 ${
+  return `w-full min-h-[3rem] rounded-xl border bg-app/70 px-4 py-2.5 text-fg outline-none transition placeholder:text-muted focus:ring-2 ${
     error
       ? 'border-red-400 focus:border-red-400 focus:ring-red-500/25'
       : 'border-line focus:border-prexi-blue focus:ring-prexi-blue/25'

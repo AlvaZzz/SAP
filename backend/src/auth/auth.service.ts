@@ -95,9 +95,12 @@ export class AuthService {
    * fallidos filtraría a la tabla de auditoría datos que no queremos conservar.
    */
   private async auditar(actorId: number, accion: string, detalle: string) {
-    await this.prisma.logAuditoria
-      .create({ data: { actorId, accion, entidad: 'usuario', entidadId: actorId, detalle } })
-      .catch(() => undefined); // la auditoría nunca debe tumbar el login
+    // La auditoría NUNCA debe tumbar un login: si falla el registro, se ignora.
+    try {
+      await this.prisma.logAuditoria.create({
+        data: { actorId, accion, entidad: 'usuario', entidadId: actorId, detalle },
+      });
+    } catch { /* registro de auditoría no disponible */ }
   }
 
   async login(dto: LoginDto, contexto: { ip?: string } = {}) {

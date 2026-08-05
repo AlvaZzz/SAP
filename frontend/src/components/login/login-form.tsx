@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, ArrowRight, GraduationCap } from '@/components/icons';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, ArrowRight, GraduationCap, Clock } from '@/components/icons';
 import { PrexiLogo } from './prexi-logo';
 import { useLogin } from './use-login';
 import { loginSchema, validarLogin, type LoginErrores } from '@/lib/validation';
@@ -11,7 +11,7 @@ import { loginSchema, validarLogin, type LoginErrores } from '@/lib/validation';
 const RECUERDO_KEY = 'prexi_login_email';
 
 /** Botón primario con efecto ripple (Framer Motion) + estado de carga. */
-function BotonIngresar({ loading }: { loading: boolean }) {
+function BotonIngresar({ loading, bloqueado }: { loading: boolean; bloqueado?: boolean }) {
   const [ondas, setOndas] = useState<{ id: number; x: number; y: number }[]>([]);
   const onDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -20,7 +20,7 @@ function BotonIngresar({ loading }: { loading: boolean }) {
     setTimeout(() => setOndas((o) => o.filter((w) => w.id !== id)), 620);
   };
   return (
-    <button type="submit" disabled={loading} aria-busy={loading} onPointerDown={onDown}
+    <button type="submit" disabled={loading || bloqueado} aria-busy={loading} onPointerDown={onDown}
       className="btn-primary relative h-[58px] w-full overflow-hidden rounded-2xl text-base">
       {ondas.map((w) => (
         <motion.span key={w.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 4, opacity: 0 }} transition={{ duration: 0.6 }}
@@ -35,13 +35,17 @@ function BotonIngresar({ loading }: { loading: boolean }) {
 }
 
 export function LoginForm() {
-  const { login, isLoading, error } = useLogin();
+  const { login, isLoading, error, bloqueoSeg } = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [verPass, setVerPass] = useState(false);
   const [recordar, setRecordar] = useState(true);
   const [tocado, setTocado] = useState<{ email?: boolean; password?: boolean }>({});
   const [errores, setErrores] = useState<LoginErrores>({});
+  // "Tu sesión expiró": llega por ?motivo=expirada (lo pone Shell al redirigir
+  // tras un refresh silencioso fallido). Se lee del URL directamente (sin
+  // useSearchParams) para no exigir un límite de Suspense en esta página.
+  const [sesionExpirada, setSesionExpirada] = useState(false);
 
   // "Recordarme" NO persiste nada en el navegador (ni correo ni contraseña ni
   // tokens): solo alarga la vida del refresh token en el backend. Se limpia el
@@ -49,6 +53,11 @@ export function LoginForm() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try { localStorage.removeItem(RECUERDO_KEY); } catch { /* sin acceso a storage */ }
+    if (new URLSearchParams(window.location.search).get('motivo') === 'expirada') {
+      setSesionExpirada(true);
+      // Limpia el parámetro para que un refresh de la página no repita el aviso.
+      window.history.replaceState(null, '', window.location.pathname);
+    }
   }, []);
 
   const emailValido = loginSchema.shape.email.safeParse(email).success;
@@ -67,12 +76,15 @@ export function LoginForm() {
 
   const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
 
+  // El padding interno baja en laptop: con la escala del root al 135%, `p-12`
+  // computa 64.8px por lado y dejaba los inputs en 284px dentro de una card de
+  // 416px. El aire lo da el espacio entre bloques, no el marco.
   return (
     <motion.form
       onSubmit={onSubmit} noValidate
       initial="hidden" animate="show"
       variants={{ show: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } } }}
-      className="w-full max-w-[440px] rounded-3xl border border-prexi-blue/35 bg-card/85 p-8 pt-20 shadow-lift backdrop-blur-xl supports-[backdrop-filter]:bg-[#07142b]/85 lg:max-w-none lg:min-h-[720px] lg:p-10 xl:p-12">
+      className="w-full max-w-[440px] rounded-3xl border border-prexi-blue/35 bg-card/85 p-8 pt-20 shadow-lift backdrop-blur-xl supports-[backdrop-filter]:bg-[#07142b]/85 lg:max-w-none lg:min-h-[720px] lg:p-8 xl:p-10 2xl:p-12">
 
       <motion.div variants={item} className="mb-6 flex justify-center">
         <div className="lg:hidden"><PrexiLogo /></div>
@@ -87,25 +99,35 @@ export function LoginForm() {
         Inicia sesión para continuar tu aprendizaje personalizado.
       </motion.p>
 
+      {/* Aviso NEUTRO (no es un error): había sesión y venció, distinto de un
+          visitante que simplemente aún no inició sesión. */}
+      {!error && sesionExpirada && (
+        <motion.p variants={item} role="status" className="mb-4 flex items-start gap-2 rounded-xl border border-prexi-blue/30 bg-prexi-blue/10 px-3 py-2.5 text-sm font-medium text-prexi-blue-deep">
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" /> Tu sesión expiró. Ingresa nuevamente.
+        </motion.p>
+      )}
+
       {error && (
         <motion.p variants={item} role="alert" className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm font-medium text-red-500">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
         </motion.p>
       )}
 
-      {/* Correo institucional */}
+      {/* Correo electrónico — cualquier dominio (es el canal de contacto). */}
       <motion.label variants={item} className="mb-4 block">
-        <span className="mb-1.5 block text-sm font-medium text-fg">Correo institucional</span>
+        <span className="mb-1.5 block text-sm font-medium text-fg">Correo electrónico</span>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
           <input type="email" autoComplete="email" inputMode="email" value={email}
             onChange={(e) => { setEmail(e.target.value); if (tocado.email) revalidar(); }}
             onBlur={() => { setTocado((t) => ({ ...t, email: true })); revalidar(); }}
-            aria-invalid={!!tocado.email && !!errores.email} aria-label="Correo institucional"
-            className={campo(!!tocado.email && !!errores.email)} placeholder="tucorreo@upea.edu.bo" />
-          {emailValido && <CheckCircle className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-prexi-green" aria-label="Correo válido" />}
+            aria-invalid={!!tocado.email && !!errores.email} aria-label="Correo electrónico"
+            className={campo(!!tocado.email && !!errores.email) + ' pr-12'} placeholder="tucorreo@ejemplo.com" />
+          {emailValido && <CheckCircle className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-prexi-green" aria-label="Correo válido" />}
         </div>
-        {tocado.email && errores.email && <span className="mt-1 block text-xs font-medium text-red-500">{errores.email}</span>}
+        {tocado.email && errores.email
+          ? <span className="mt-1 block text-xs font-medium text-red-500">{errores.email}</span>
+          : <span className="mt-1 block text-xs text-muted">Usaremos este correo para contactarte.</span>}
       </motion.label>
 
       {/* Contraseña */}
@@ -139,7 +161,7 @@ export function LoginForm() {
         </Link>
       </motion.div>
 
-      <motion.div variants={item}><BotonIngresar loading={isLoading} /></motion.div>
+      <motion.div variants={item}><BotonIngresar loading={isLoading} bloqueado={bloqueoSeg > 0} /></motion.div>
 
       <motion.p variants={item} className="mt-8 border-t border-line/70 pt-6 text-center text-sm text-muted">
         ¿No tienes cuenta? <Link href="/registro" className="font-semibold text-prexi-blue-deep hover:underline">Regístrate</Link>

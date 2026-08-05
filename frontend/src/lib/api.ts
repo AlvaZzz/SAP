@@ -35,6 +35,21 @@ function esRutaDeSesion(path: string): boolean {
   return path.startsWith('/auth/login') || path.startsWith('/auth/refresh') || path.startsWith('/auth/logout');
 }
 
+/**
+ * Aviso de "sesión expirada": se dispara SOLO cuando había una sesión (se
+ * intentó un refresh) y el refresh también falló. Lo escucha `auth-provider`
+ * para distinguir, al mandar al usuario a /login, "tu sesión expiró" de
+ * "nunca iniciaste sesión" — son dos mensajes distintos para el usuario.
+ */
+const listenersSesionExpirada = new Set<() => void>();
+export function onSesionExpirada(cb: () => void): () => void {
+  listenersSesionExpirada.add(cb);
+  return () => listenersSesionExpirada.delete(cb);
+}
+function emitirSesionExpirada() {
+  listenersSesionExpirada.forEach((cb) => cb());
+}
+
 async function request<T>(method: string, path: string, body?: unknown, reintento = false): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method,
@@ -47,6 +62,9 @@ async function request<T>(method: string, path: string, body?: unknown, reintent
   // 401 por access token caducado → refrescar UNA vez y repetir la petición.
   if (res.status === 401 && !reintento && !esRutaDeSesion(path)) {
     if (await intentarRefresh()) return request<T>(method, path, body, true);
+    // El refresh también falló: había una sesión y ya no es válida (distinto de
+    // un visitante que nunca inició sesión).
+    emitirSesionExpirada();
   }
 
   if (!res.ok) {

@@ -65,7 +65,7 @@ services:
       CLIENT_ORIGIN: http://localhost:3000
       DATABASE_URL: postgresql://prexi:prexi@db:5432/prexi?schema=public
       JWT_SECRET: ${JWT_SECRET:-dev_secret_cambia_en_produccion}
-      JWT_EXPIRES_IN: 7d
+      JWT_EXPIRES_IN: 15m
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
       AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}

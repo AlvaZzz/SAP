@@ -49,6 +49,15 @@ let puntajePostest = -1;
 let configOriginal: { umbralPorcentaje: number; postestDesdeNivel: number };
 
 /**
+ * `respuestaCorrecta` puede traer VARIANTES equivalentes separadas por "|"
+ * (ej. "i in range(10)|i in range(0,10)"). Reenviar la cadena completa no
+ * coincide con ninguna: hay que mandar una sola variante.
+ */
+function primeraVariante(respuesta: string): string {
+  return String(respuesta).split('|')[0];
+}
+
+/**
  * Responde un ejercicio de práctica: primero con una opción inválida (aprende
  * la respuesta correcta que devuelve el backend) y luego correctamente.
  */
@@ -57,7 +66,7 @@ async function resolverEjercicio(id: number) {
   expect(mal.status).toBe(201);
   expect(mal.data.correcto).toBe(false);
   expect(mal.data.xp.xpOtorgado).toBe(0);
-  const bien = await req('POST', '/intentos', { token: estudiante.token, body: { ejercicioId: id, respuestaDada: mal.data.respuesta_correcta, tiempoSeg: 8 } });
+  const bien = await req('POST', '/intentos', { token: estudiante.token, body: { ejercicioId: id, respuestaDada: primeraVariante(mal.data.respuesta_correcta), tiempoSeg: 8 } });
   expect(bien.status).toBe(201);
   expect(bien.data.correcto).toBe(true);
   expect(bien.data.xp.xpOtorgado).toBeGreaterThan(0);
@@ -110,7 +119,7 @@ describe('1 · Registro con validaciones', () => {
   });
 
   it('rechaza un registro duplicado con mensaje claro', async () => {
-    const r = await req('POST', '/auth/register', { body: { nombre: 'Otro', email: EMAIL, password: '123456', cedula: '99999903', carrera: 'Sistemas', paralelo: 'A' } });
+    const r = await req('POST', '/auth/register', { body: { nombre: 'Otro', email: EMAIL, password: 'segura123', cedula: '99999903', carrera: 'Sistemas', paralelo: 'A' } });
     expect(r.status).toBe(400);
     expect(r.data.message).toMatch(/Ya existe/);
   });

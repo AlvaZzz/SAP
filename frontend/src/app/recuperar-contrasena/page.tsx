@@ -103,8 +103,11 @@ export default function RecuperarContrasenaPage() {
   );
 }
 
+/** `min-h-[3rem]` iguala la altura de los campos con el resto del sistema
+ *  (ver inputAuthCls en components/fondo-auth). Colores intactos: estas
+ *  pantallas viven en el tema CLARO, no en el grupo (auth) oscuro. */
 function inputCls(error: boolean) {
-  return `w-full rounded-xl border px-4 py-2.5 outline-none transition focus:ring-2 ${
+  return `w-full min-h-[3rem] rounded-xl border px-4 py-2.5 outline-none transition focus:ring-2 ${
     error ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-slate-300 focus:border-prexi-blue focus:ring-blue-100'
   }`;
 }

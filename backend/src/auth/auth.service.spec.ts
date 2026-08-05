@@ -76,13 +76,15 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
         .rejects.toThrow('Correo o contraseña incorrectos');
     });
 
-    it('al 5.º intento fallido bloquea la cuenta 15 minutos (código 423)', async () => {
+    // El bloqueo responde 429 (no 423) con `retryAfterSeconds`: el frontend
+    // distingue los casos por código de estado y muestra la cuenta atrás.
+    it('al 5.º intento fallido bloquea la cuenta 15 minutos (código 429)', async () => {
       prisma.usuario.findUnique.mockResolvedValue({ ...usuario, failedLoginCount: 4 });
       try {
         await service.login({ email: usuario.email, password: 'incorrecta' });
         fail('debió lanzar');
       } catch (e) {
-        expect((e as HttpException).getStatus()).toBe(423);
+        expect((e as HttpException).getStatus()).toBe(429);
       }
       expect(prisma.usuario.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -93,12 +95,109 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
 
     it('cuenta bloqueada no puede entrar aunque la contraseña sea correcta', async () => {
       prisma.usuario.findUnique.mockResolvedValue({ ...usuario, lockedUntil: new Date(Date.now() + 60_000) });
-      await expect(service.login({ email: usuario.email, password: 'correcta' })).rejects.toThrow(/bloqueada/);
+      await expect(service.login({ email: usuario.email, password: 'correcta' }))
+        .rejects.toMatchObject({ status: 429 });
     });
 
     it('cuenta desactivada por el admin (soft-disable) no puede entrar', async () => {
       prisma.usuario.findUnique.mockResolvedValue({ ...usuario, activo: false });
       await expect(service.login({ email: usuario.email, password: 'correcta' })).rejects.toThrow(/desactivada/);
+    });
+
+    // LoginDto no tiene ningún campo de "rol": no hay nada que el formulario
+    // pueda enviar para influir en él. El rol de la respuesta es SIEMPRE el que
+    // ya estaba en la fila de la BD, sin importar qué pestaña/rol tuviera
+    // seleccionado el usuario al enviar el formulario.
+    it('el rol de la respuesta viene de la BD, no de nada que envíe el cliente', async () => {
+      const docente = { ...usuario, id: 8, rol: 'docente' };
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce(docente)
+        .mockResolvedValueOnce({ id: 8, nombre: 'Ana', rol: 'docente' });
+      const r = await service.login({ email: docente.email, password: 'correcta' });
+      expect(r.usuario?.rol).toBe('docente');
+    });
+
+    it('emite también un refresh token (opaco, hasheado) junto al access token', async () => {
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce(usuario)
+        .mockResolvedValueOnce({ id: 7, nombre: 'Ana', rol: 'estudiante' });
+      const r = await service.login({ email: usuario.email, password: 'correcta' });
+      expect(r.refresh.token).toBeTruthy();
+      const dataCreada = prisma.refreshToken.create.mock.calls[0][0].data;
+      expect(dataCreada.tokenHash).toHaveLength(64); // sha256 hex, nunca el valor en claro
+      expect(dataCreada.tokenHash).not.toBe(r.refresh.token);
+    });
+
+    it('"recordarme" alarga el refresh token a 30 días; sin marcarlo, dura 1 día', async () => {
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce(usuario)
+        .mockResolvedValueOnce({ id: 7, nombre: 'Ana', rol: 'estudiante' });
+      const corto = await service.login({ email: usuario.email, password: 'correcta' });
+      expect(corto.refresh.recordado).toBe(false);
+
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce(usuario)
+        .mockResolvedValueOnce({ id: 7, nombre: 'Ana', rol: 'estudiante' });
+      const largo = await service.login({ email: usuario.email, password: 'correcta', recordarme: true });
+      expect(largo.refresh.recordado).toBe(true);
+      expect(largo.refresh.maxAgeMs).toBeGreaterThan(corto.refresh.maxAgeMs);
+    });
+  });
+
+  describe('refrescar (refresh token rotatorio)', () => {
+    it('sin cookie de refresh: sesión expirada', async () => {
+      await expect(service.refrescar(undefined)).rejects.toThrow('Sesión expirada');
+    });
+
+    it('token que no existe en BD: sesión expirada', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue(null);
+      await expect(service.refrescar('lo-que-sea')).rejects.toThrow('Sesión expirada');
+    });
+
+    it('token EXPIRADO: sesión expirada', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 1, usuarioId: 7, revocadoEn: null, recordado: false,
+        expiraEn: new Date(Date.now() - 1000),
+      });
+      await expect(service.refrescar('viejo')).rejects.toThrow('Sesión expirada');
+    });
+
+    it('token válido: ROTA (revoca el usado, emite uno nuevo) y devuelve un access token nuevo', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 1, usuarioId: 7, revocadoEn: null, recordado: false,
+        expiraEn: new Date(Date.now() + 60_000),
+      });
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce({ id: 7, activo: true, rol: 'estudiante', nombre: 'Ana' }) // valida usuario
+        .mockResolvedValueOnce({ id: 7, nombre: 'Ana', rol: 'estudiante' }); // SELECT_PUBLICO de salida
+
+      const r = await service.refrescar('actual');
+      expect(r.token).toBeTruthy();
+      expect(prisma.refreshToken.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 1 }, data: expect.objectContaining({ revocadoEn: expect.any(Date) }) }),
+      );
+      // El nuevo refresh es un valor DISTINTO al presentado (rotación real).
+      expect(r.refresh.token).not.toBe('actual');
+    });
+
+    it('token YA REVOCADO reutilizado: se asume robo → se cierran TODAS las sesiones del usuario', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 1, usuarioId: 7, revocadoEn: new Date(), recordado: false,
+        expiraEn: new Date(Date.now() + 60_000),
+      });
+      await expect(service.refrescar('robado')).rejects.toThrow('Sesión expirada');
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { usuarioId: 7, revocadoEn: null }, data: expect.objectContaining({ revocadoEn: expect.any(Date) }) }),
+      );
+    });
+
+    it('usuario desactivado entre medio: sesión expirada aunque el refresh sea válido', async () => {
+      prisma.refreshToken.findUnique.mockResolvedValue({
+        id: 1, usuarioId: 7, revocadoEn: null, recordado: false,
+        expiraEn: new Date(Date.now() + 60_000),
+      });
+      prisma.usuario.findUnique.mockResolvedValueOnce({ id: 7, activo: false, rol: 'estudiante', nombre: 'Ana' });
+      await expect(service.refrescar('actual')).rejects.toThrow('Sesión expirada');
     });
   });
 
@@ -172,9 +271,41 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
       );
     });
 
-    it('restablecer: token inválido/expirado es rechazado', async () => {
+    it('restablecer: token que no existe es rechazado', async () => {
       prisma.tokenRecuperacion.findUnique.mockResolvedValue(null);
       await expect(service.restablecerPassword('malo', 'nuevaClave123')).rejects.toThrow(BadRequestException);
+    });
+
+    // Caso explícito pedido: el token SÍ existe (se emitió bien) pero ya venció.
+    // Debe rechazarse igual que uno inexistente, con el mismo mensaje genérico.
+    it('restablecer: token EXPIRADO (existe pero venció) es rechazado', async () => {
+      prisma.tokenRecuperacion.findUnique.mockResolvedValue({
+        id: 1, usuarioId: 7, usadoEn: null, expiraEn: new Date(Date.now() - 1000),
+      });
+      await expect(service.restablecerPassword('vencido', 'nuevaClave123'))
+        .rejects.toThrow(/no es válido o ya expiró/);
+      expect(prisma.usuario.update).not.toHaveBeenCalled();
+    });
+
+    // Un token ya USADO (segundo intento con el mismo enlace) tampoco sirve:
+    // es de un solo uso.
+    it('restablecer: token ya USADO no puede reutilizarse', async () => {
+      prisma.tokenRecuperacion.findUnique.mockResolvedValue({
+        id: 1, usuarioId: 7, usadoEn: new Date(), expiraEn: new Date(Date.now() + 60_000),
+      });
+      await expect(service.restablecerPassword('ya-usado', 'nuevaClave123')).rejects.toThrow(BadRequestException);
+    });
+
+    it('restablecer: además de cambiar la contraseña, cierra todas las sesiones abiertas', async () => {
+      prisma.tokenRecuperacion.findUnique.mockResolvedValue({ id: 1, usuarioId: 7, usadoEn: null, expiraEn: new Date(Date.now() + 60_000) });
+      prisma.usuario.update.mockResolvedValue({});
+      prisma.tokenRecuperacion.updateMany.mockResolvedValue({ count: 1 });
+      prisma.refreshToken.updateMany.mockResolvedValue({ count: 2 });
+
+      await service.restablecerPassword('token-en-claro', 'nuevaClave123');
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { usuarioId: 7, revocadoEn: null }, data: expect.objectContaining({ revocadoEn: expect.any(Date) }) }),
+      );
     });
   });
 });

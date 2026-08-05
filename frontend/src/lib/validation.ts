@@ -2,17 +2,18 @@ import { z } from 'zod';
 
 /**
  * Validación del módulo de autenticación (login).
- * Mantiene el CONTRATO real de PREXI: correo institucional @upea.edu.bo y
- * contraseña de mínimo 6 caracteres (lo que exige el backend NestJS).
+ *
+ * SE ACEPTA CUALQUIER CORREO VÁLIDO (Gmail, Outlook…), no solo el institucional:
+ * el correo es el canal de contacto con la persona, y debe poder ser el que ya
+ * usa. Así queda alineado con el backend (`RegisterDto` no restringe dominio) y
+ * con la pantalla de registro, que nunca lo exigió — el login era el único
+ * desincronizado. NO reintroducir aquí una restricción de dominio.
  */
-export const DOMINIO_INSTITUCIONAL = '@upea.edu.bo';
-
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'Ingresa tu correo institucional.')
-    .email('Formato de correo inválido.')
-    .refine((v) => v.toLowerCase().endsWith(DOMINIO_INSTITUCIONAL), `Usa tu correo institucional (${DOMINIO_INSTITUCIONAL}).`),
+    .min(1, 'Ingresa tu correo electrónico.')
+    .email('Escribe un correo válido, por ejemplo tucorreo@ejemplo.com.'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
 });
 

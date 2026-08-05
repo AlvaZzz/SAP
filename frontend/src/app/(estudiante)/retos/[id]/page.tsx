@@ -6,19 +6,19 @@ import { api, ApiError } from '@/lib/api';
 import { CodeEditor } from '@/components/code-editor';
 import { TraceViewer, PasoTraza } from '@/components/trace-viewer';
 import { AlvaroRetoPanel } from '@/components/alvaro-reto-panel';
+import { OrigenEjercicio, type OrigenReto } from '@/components/origen-ejercicio';
 import { useAnimo } from '@/components/animo-alvaro';
-import { Play, RotateCcw, Upload, CheckCircle, Clock, AlertTriangle, ChevronLeft, Layers, BookOpen } from '@/components/icons';
+import { Play, RotateCcw, Upload, CheckCircle, Clock, AlertTriangle, ChevronLeft, Layers } from '@/components/icons';
 
 type EstadoEntrega = 'sin_entregar' | 'pendiente_revision' | 'aprobado' | 'necesita_mejorar';
 interface Entrega { estado: EstadoEntrega; xp_obtenido: number; feedback: string | null; codigo?: string | null }
-interface OrigenEjercicio { ejercicio_id: number; codigo: string | null; enunciado: string }
 interface Reto {
   titulo: string; enunciado: string; codigoInicial: string | null;
   ejemploEntrada: string | null; ejemploSalida: string | null; fechaLimite: string | null;
   esBugHunt?: boolean; autoCalificable?: boolean; contextoTema?: string;
   nivelDificultad?: 'basico' | 'intermedio' | 'avanzado';
   /** Ejercicio del banco del que se derivó este reto (trazabilidad). */
-  origen?: OrigenEjercicio | null;
+  origen?: OrigenReto | null;
 }
 interface Emblema { clave: string; nombre: string; descripcion: string; icono: string }
 
@@ -163,17 +163,7 @@ export default function RetoEditorPage() {
 
         {/* TRAZABILIDAD: de qué ejercicio del banco salió este reto. Si falla, es
             el material que debe repasar — no una explicación genérica. */}
-        {reto.origen && (
-          <div className="mt-2 rounded-xl border border-line bg-subtle px-4 py-2.5 text-sm">
-            <p className="text-fg">
-              <BookOpen className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px text-muted" />
-              Este reto se basa en el ejercicio{' '}
-              {reto.origen.codigo && <span className="font-mono font-semibold text-prexi-blue-deep">{reto.origen.codigo}</span>}
-              {reto.contextoTema && <> de <b>{reto.contextoTema}</b></>}.
-            </p>
-            <p className="mt-1 text-xs text-muted">{reto.origen.enunciado}</p>
-          </div>
-        )}
+        {reto.origen && <OrigenEjercicio origen={reto.origen} />}
 
         {entrega && entrega.estado !== 'sin_entregar' && (
           <div className={`mt-3 flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm ${

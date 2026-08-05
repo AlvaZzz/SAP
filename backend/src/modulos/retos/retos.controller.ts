@@ -77,7 +77,18 @@ export class RetosController {
       include: {
         autor: { select: { nombre: true } },
         tema: { select: { numero: true, titulo: true, unidad: { select: { numero: true } } } },
-        origenEjercicio: { select: { id: true, enunciado: true, fuenteDoc: true } },
+        // Campos del ejercicio ORIGEN que ya son públicos en el resto del sistema
+        // (son los mismos con los que se renderiza un ejercicio normal).
+        // `respuestaCorrecta` y `explicacionIa` NO se piden: la solución del origen
+        // resolvería el reto de un vistazo.
+        origenEjercicio: {
+          select: {
+            id: true, enunciado: true, fuenteDoc: true,
+            tipo: true, codigoPython: true, opciones: true,
+            nivelDificultad: true,
+            tema: { select: { numero: true, titulo: true, unidad: { select: { numero: true } } } },
+          },
+        },
       },
     });
     if (!r) return { reto: null, entrega: null };
@@ -97,8 +108,20 @@ export class RetosController {
         ...publico,
         contextoTema,
         // Trazabilidad visible: "este reto se basa en el ejercicio E1.5.I.06".
+        // Se manda lo necesario para MOSTRAR el ejercicio origen (enunciado
+        // completo, tipo, snippet y opciones), nunca su respuesta correcta.
         origen: origenEjercicio
-          ? { ejercicio_id: origenEjercicio.id, codigo: fd.codigo ?? null, enunciado: origenEjercicio.enunciado }
+          ? {
+              ejercicio_id: origenEjercicio.id,
+              codigo: fd.codigo ?? null,
+              enunciado: origenEjercicio.enunciado,
+              tipo: origenEjercicio.tipo,
+              nivel: origenEjercicio.nivelDificultad,
+              codigo_python: origenEjercicio.codigoPython,
+              opciones: origenEjercicio.opciones,
+              unidad: origenEjercicio.tema?.unidad.numero ?? null,
+              tema: origenEjercicio.tema ? `${origenEjercicio.tema.numero} ${origenEjercicio.tema.titulo}` : null,
+            }
           : null,
         total_pistas: Array.isArray(r.pistas) ? r.pistas.length : 0,
       },

@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { NivelDificultad, NIVEL_COLOR, Habitos, Tendencia } from '@/lib/types';
 import { Card, Skeleton, Select } from '@/components/ui';
 import { RangoIcon } from '@/components/rango-icon';
+import { EscaleraRangos } from '@/components/escalera-rangos';
 import { Sparkline } from '@/components/sparkline';
 import { TrendingUp, TrendingDown, Minus, Sparkles, Flame, Bot, Clock, Target } from '@/components/icons';
 
@@ -75,6 +76,10 @@ export default function ProgresoPage() {
     <div className="animate-fade-up">
       {/* ══ BLOQUE A — CÓMO VOY (resultado) ══ */}
       <BannerAprendizaje d={d} rangos={rangos} />
+
+      {/* La escalera completa vive aquí y no en un ítem nuevo del menú: el banner
+          de arriba ya dice QUÉ rango tiene; esto muestra HACIA DÓNDE va. */}
+      <div className="mt-6"><EscaleraRangos /></div>
 
       <div className="mt-6" data-tour="progreso-dominio">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">

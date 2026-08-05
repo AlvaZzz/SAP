@@ -192,7 +192,7 @@ describe('5 · Asignación de grupos de investigación por paralelo', () => {
     for (let i = 0; i < 2; i++) {
       const r = await req('POST', '/auth/register', {
         body: {
-          nombre: `Paralelo Test ${i}`, email: `paralelo${stamp}.${i}@test.bo`, password: '123456',
+          nombre: `Paralelo Test ${i}`, email: `paralelo${stamp}.${i}@test.bo`, password: 'segura123',
           cedula: `${stamp}${i}`.slice(-9), carrera: 'Sistemas', paralelo,
         },
       });

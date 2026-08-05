@@ -110,8 +110,11 @@ export default function DashboardPage() {
       </StatGrid>
 
       {/* ── Zona prioritaria: recomendaciones + evolución + progreso ── */}
-      <div className="grid items-start gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
-        <Card className="min-w-0 border-l-4 border-l-prexi-blue">
+      {/* Sin `items-start`: con él cada columna tomaba solo el alto de su propio
+          contenido y la fila quedaba despareja. El valor por defecto de la
+          rejilla (stretch) iguala las tres tarjetas, también en `lg` (2 col). */}
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
+        <Card className="flex h-full min-w-0 flex-col border-l-4 border-l-prexi-blue">
           <div className="mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-blue-deep" /><h2 className="font-display text-xl font-bold text-prexi-blue-deep">Recomendado por ALVARO</h2></div>
           <p className="mb-4 text-sm text-muted">Elegidos según tu desempeño real: refuerzan tus puntos débiles y te acercan al siguiente nivel.</p>
           <div className="space-y-2.5">
@@ -148,7 +151,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="min-w-0">
+        <Card className="flex h-full min-w-0 flex-col">
           <div className="mb-1 flex flex-wrap items-start justify-between gap-3">
             <div><SectionTitle>Tu evolución</SectionTitle><p className="mt-0.5 text-xs text-muted">Habilidad estimada (θ) en cada medición · comparada con tu grupo</p></div>
             <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-subtle px-3 py-1.5 text-xs font-semibold text-fg"><TrendingUp className="h-3.5 w-3.5" style={{ color: AZUL }} /> IRT · Rasch</span>
@@ -160,7 +163,7 @@ export default function DashboardPage() {
           <ChartEvolucion evo={evo} cargando={cargando} />
         </Card>
 
-        <Card className="min-w-0">
+        <Card className="flex h-full min-w-0 flex-col">
           <SectionTitle>Progreso por unidad</SectionTitle>
           <p className="mb-4 mt-0.5 text-xs text-muted">Dominio estimado en cada unidad del plan</p>
           {cargando ? <div className="space-y-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10" />)}</div>

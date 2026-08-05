@@ -8,9 +8,10 @@ import { api } from '@/lib/api';
 import { ThemeToggle } from './theme-toggle';
 import { SonidoToggle } from './sonido-toggle';
 import { NotificacionesBell } from './notificaciones-bell';
+import { BuscadorNav } from './buscador-nav';
 import {
   LayoutDashboard, Code, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
-  Search, LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
+  LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
   Layers, Bot, Inbox, Sparkles,
 } from './icons';
 
@@ -82,7 +83,7 @@ const NAV_ADMIN: NavItem[] = [
 const SIDEBAR_BG = 'bg-gradient-to-b from-[rgb(var(--sidebar-from))] to-[rgb(var(--sidebar-to))]';
 
 export function Shell({ children, area = 'estudiante' }: { children: ReactNode; area?: Area }) {
-  const { usuario, cargando, logout } = useAuth();
+  const { usuario, cargando, sesionExpirada, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [nivelActual, setNivelActual] = useState<number | null>(null);
@@ -100,12 +101,14 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   // Control de acceso en la UI (el backend lo refuerza con guard de rol).
   useEffect(() => {
     if (cargando) return;
-    if (!usuario) { router.replace('/login'); return; }
+    // Si había sesión y el refresh silencioso ya no pudo renovarla, es un caso
+    // distinto de "nunca inició sesión": se lo decimos explícitamente en /login.
+    if (!usuario) { router.replace(sesionExpirada ? '/login?motivo=expirada' : '/login'); return; }
     const rol = usuario.rol as Rol;
     if (!areaPermite(area, rol)) { router.replace(HOME_ROL[rol]); return; }
     if (area === 'estudiante' && !usuario.introduccionCompletada) router.replace('/introduccion');
     else if (area === 'estudiante' && !usuario.pretestCompletado) router.replace('/pretest');
-  }, [usuario, cargando, router, area]);
+  }, [usuario, cargando, sesionExpirada, router, area]);
 
   useEffect(() => {
     if (!usuario || area !== 'estudiante' || usuario.rol !== 'estudiante') return;
@@ -136,6 +139,11 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
           </div>
         </Link>
         <button onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 hover:bg-white/10 lg:hidden"><X className="h-5 w-5" /></button>
+      </div>
+      {/* En móvil el buscador del header está oculto (sm:block); aquí, dentro del
+          drawer, es donde el usuario de celular puede filtrar el menú. */}
+      <div className="mb-3 px-1 lg:hidden">
+        <BuscadorNav items={nav} onNavegar={() => setMenuAbierto(false)} />
       </div>
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
         <p className="px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]/60">Menú</p>
@@ -174,10 +182,8 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-card/80 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
           <button onClick={() => setMenuAbierto(true)} aria-label="Abrir menú" className="grid h-9 w-9 place-items-center rounded-xl text-muted transition hover:bg-subtle lg:hidden"><Menu className="h-5 w-5" /></button>
-          <div className="relative hidden max-w-md flex-1 sm:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
-            <input placeholder="Buscar…" className="w-full rounded-xl border border-line bg-subtle py-2.5 pl-10 pr-3 text-sm text-fg outline-none transition placeholder:text-muted focus:border-prexi-blue focus:bg-card focus:ring-2 focus:ring-prexi-blue/20" />
-          </div>
+          {/* Buscador de secciones del rol activo (ver components/buscador-nav). */}
+          <BuscadorNav items={nav} className="hidden max-w-md flex-1 sm:block" />
           <div className="ml-auto flex items-center gap-1.5">
             <SonidoToggle />
             <ThemeToggle />

@@ -64,7 +64,13 @@ export default function RegistroPage() {
     cedula: !/^\d{4,12}$/.test(f.cedula.trim()) ? 'Escribe solo los números de tu cédula (4 a 12 dígitos).' : '',
     carrera: !f.carrera ? 'Selecciona tu carrera de la lista.' : '',
     paralelo: !/^[A-Za-z0-9]{1,10}$/.test(f.paralelo.trim()) ? 'Escribe tu paralelo, por ejemplo A, B o C.' : '',
-    password: f.password.length < 6 ? 'La contraseña debe tener al menos 6 caracteres.' : '',
+    // Coincide con la regla real del backend (RegisterDto.password): 8
+    // caracteres, con al menos una letra y un número.
+    password: f.password.length < 8
+      ? 'La contraseña debe tener al menos 8 caracteres.'
+      : !/[A-Za-z]/.test(f.password) || !/\d/.test(f.password)
+        ? 'Incluye al menos una letra y un número.'
+        : '',
     confirmar: !f.confirmar ? 'Vuelve a escribir tu contraseña.' : f.confirmar !== f.password ? 'Las contraseñas no coinciden.' : '',
   };
   const formOk = Object.values(errores).every((e) => !e) && acepta;
@@ -100,17 +106,23 @@ export default function RegistroPage() {
       <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(74,144,226,0.16),transparent_70%)] blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.16),transparent_70%)] blur-3xl" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-6 sm:px-8 lg:flex-row lg:gap-6 lg:px-12">
-        {/* Panel visual izquierdo (reutiliza el hero del login), fijo al hacer scroll.
-            Mismo ancho que en login (58%) para que la mascota no se cruce con el texto. */}
-        <div className="hidden lg:block lg:h-screen lg:w-[60%] lg:self-start lg:sticky lg:top-0">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-6 sm:px-8 lg:flex-row lg:px-12">
+        {/* Panel visual izquierdo — MISMA ESTRUCTURA QUE EL LOGIN a propósito.
+            `LoginHero` coloca la mascota y la lista de beneficios con posiciones
+            absolutas en PORCENTAJE, afinadas para el panel del login. Antes este
+            contenedor usaba `h-screen` + `sticky` + `self-start`: con un alto fijo
+            de 100vh (y sin estirarse con la fila) esos porcentajes caían en otro
+            sitio y el título, la mascota y los beneficios se superponían.
+            Al reproducir el contenedor del login, vuelven a caer donde deben. */}
+        <div className="relative z-20 hidden lg:sticky lg:top-0 lg:block lg:h-[100svh] lg:w-[57%] lg:self-start lg:z-auto lg:pl-10 xl:pl-14 2xl:pl-16">
           <LoginHero />
         </div>
 
-        {/* Tarjeta de registro (derecha) */}
-        <div className="flex items-center justify-center py-8 lg:w-[40%] lg:py-10">
+        {/* Tarjeta de registro (derecha). El panel toma algo más de ancho entre
+            1024 y 1536px: ahí es donde los campos se quedaban sin espacio. */}
+        <div className="flex items-center justify-center py-8 lg:w-[43%] lg:py-10">
           <form onSubmit={onSubmit} noValidate
-            className="w-full max-w-[600px] rounded-3xl border border-line bg-card/80 p-6 shadow-lift backdrop-blur-xl supports-[backdrop-filter]:bg-card/70 sm:p-8">
+            className="w-full max-w-[600px] 2xl:max-w-[700px] rounded-3xl border border-line bg-card/80 p-6 shadow-lift backdrop-blur-xl supports-[backdrop-filter]:bg-card/70 sm:p-8">
 
             {/* Logo (centrado en móvil; en desktop el hero ya lo muestra) */}
             <div className="mb-5 flex justify-center lg:hidden"><PrexiLogo subtitle /></div>
@@ -124,9 +136,13 @@ export default function RegistroPage() {
               </p>
             )}
 
-            <div className="grid grid-cols-1 gap-x-5 gap-y-3 md:grid-cols-2">
+            {/* Dos columnas SOLO cuando el panel es de verdad ancho (2xl). Entre
+                1024 y 1536px la tarjeta ocupa ~44% del viewport: partirla en dos
+                dejaba los inputs en ~113px, imposibles de leer al escribir un
+                correo. Una columna cómoda vale más que dos columnas apretadas. */}
+            <div className="grid grid-cols-1 gap-x-5 gap-y-3 2xl:grid-cols-2">
               {/* Tipo de cuenta (full-width) */}
-              <div className="md:col-span-2">
+              <div className="2xl:col-span-2">
                 <span className="mb-1.5 block text-sm font-medium text-fg">Tipo de cuenta</span>
                 <div role="radiogroup" aria-label="Tipo de cuenta" className="grid grid-cols-3 gap-2">
                   {['estudiante', 'docente', 'admin'].map((r) => {
@@ -168,7 +184,7 @@ export default function RegistroPage() {
                   placeholder="Ej.: A" className={inputAuthCls(!!tocado.paralelo && !!errores.paralelo) + ' pl-11'} />
               </Campo>
 
-              <Campo className="md:col-span-2" label="Carrera" icon={GraduationCap} error={tocado.carrera ? errores.carrera : ''}>
+              <Campo className="2xl:col-span-2" label="Carrera" icon={GraduationCap} error={tocado.carrera ? errores.carrera : ''}>
                 <select value={f.carrera} onChange={set('carrera')} onBlur={toca('carrera')}
                   className={inputAuthCls(!!tocado.carrera && !!errores.carrera) + ' max-w-full pl-11'}>
                   <option value="">Selecciona tu carrera…</option>
@@ -178,7 +194,7 @@ export default function RegistroPage() {
 
               {/* Contraseña + medidor de fuerza (en su propia celda) */}
               <Campo label="Contraseña" icon={Lock} error={tocado.password ? errores.password : ''}
-                hint={f.password ? undefined : 'Mínimo 6 caracteres; combina letras y números.'}
+                hint={f.password ? undefined : 'Mínimo 8 caracteres; combina letras y números.'}
                 footer={f.password ? (
                   <div className="mt-2">
                     <div className="flex gap-1">
@@ -206,7 +222,7 @@ export default function RegistroPage() {
               </Campo>
 
               {/* Consentimiento (full-width) */}
-              <div className="md:col-span-2">
+              <div className="2xl:col-span-2">
                 <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-muted">
                   <input type="checkbox" checked={acepta}
                     onChange={(e) => { setAcepta(e.target.checked); setTocado((t) => ({ ...t, terminos: true })); }}
@@ -218,7 +234,7 @@ export default function RegistroPage() {
 
               {/* Botón "Crear cuenta" (full-width, ripple + loading) */}
               <button type="submit" disabled={cargando} aria-busy={cargando} onPointerDown={onDown}
-                className="btn-primary relative col-span-1 mt-1 h-[52px] w-full overflow-hidden md:col-span-2">
+                className="btn-primary relative col-span-1 mt-1 h-[52px] w-full overflow-hidden 2xl:col-span-2">
                 {ondas.map((w) => (
                   <motion.span key={w.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 4, opacity: 0 }} transition={{ duration: 0.6 }}
                     className="pointer-events-none absolute h-24 w-24 rounded-full bg-white/40" style={{ left: w.x - 48, top: w.y - 48 }} />
@@ -228,7 +244,7 @@ export default function RegistroPage() {
                   : 'Crear cuenta'}
               </button>
 
-              <p className="mt-1 text-center text-sm text-muted md:col-span-2">
+              <p className="mt-1 text-center text-sm text-muted 2xl:col-span-2">
                 ¿Ya tienes cuenta? <Link href="/login" className="font-semibold text-prexi-blue-deep hover:underline">Inicia sesión</Link>
               </p>
             </div>

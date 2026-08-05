@@ -1,5 +1,15 @@
 import { IsEmail, IsString, MinLength, MaxLength, IsOptional, IsInt, Min, Max, IsBoolean, Matches } from 'class-validator';
 
+/**
+ * Complejidad mínima de contraseña: 8 caracteres con al menos una letra y un
+ * número. Deliberadamente sencilla — son estudiantes de primer semestre; exigir
+ * símbolos y mayúsculas produce contraseñas apuntadas en papel, no más seguras.
+ * Declarada ANTES de las clases que la usan: los decoradores se evalúan al
+ * cargar el módulo y necesitan la constante ya inicializada.
+ */
+export const PASSWORD_REGEX = /^(?=.*[A-Za-zÁÉÍÓÚáéíóúÑñ])(?=.*\d).{8,}$/;
+export const PASSWORD_MENSAJE = 'La contraseña debe tener al menos 8 caracteres, una letra y un número';
+
 // Nota: por ahora se acepta cualquier correo válido (p. ej. Gmail). La
 // restricción al dominio institucional @upea.edu.bo está deshabilitada
 // a pedido del usuario; reactivarla aquí si la tesis lo requiere.
@@ -10,7 +20,7 @@ export class RegisterDto {
   @IsEmail({}, { message: 'Correo inválido' })
   email!: string;
 
-  @IsString() @MinLength(6) @MaxLength(100)
+  @IsString() @MaxLength(100) @Matches(PASSWORD_REGEX, { message: PASSWORD_MENSAJE })
   password!: string;
 
   @IsString() @MinLength(4) @MaxLength(20)
@@ -70,7 +80,7 @@ export class PasswordDto {
   @IsString() @MinLength(1)
   actual!: string;
 
-  @IsString() @MinLength(6) @MaxLength(100)
+  @IsString() @MaxLength(100) @Matches(PASSWORD_REGEX, { message: PASSWORD_MENSAJE })
   nueva!: string;
 }
 
@@ -84,14 +94,6 @@ export class ValidarTokenDto {
   @IsString() @MinLength(10) @MaxLength(200)
   token!: string;
 }
-
-/**
- * Complejidad mínima de contraseña: 8 caracteres con al menos una letra y un
- * número. Deliberadamente sencilla — son estudiantes de primer semestre; exigir
- * símbolos y mayúsculas produce contraseñas apuntadas en papel, no más seguras.
- */
-export const PASSWORD_REGEX = /^(?=.*[A-Za-zÁÉÍÓÚáéíóúÑñ])(?=.*\d).{8,}$/;
-export const PASSWORD_MENSAJE = 'La contraseña debe tener al menos 8 caracteres, una letra y un número';
 
 export class RestablecerDto {
   @IsString() @MinLength(10) @MaxLength(200)

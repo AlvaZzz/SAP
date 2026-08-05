@@ -44,6 +44,7 @@ export function crearPrismaMock() {
     codigoPractica: delegate(),
     configuracionSistema: delegate(),
     logAuditoria: delegate(),
+    refreshToken: delegate(),
     unidad: delegate(),
     tema: delegate(),
     progresoTema: delegate(),

@@ -1,34 +1,32 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { PrismaService } from '../../common/prisma/prisma.service';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
+import { RankingService, Ambito, Periodo } from './ranking.service';
 
+/**
+ * RANKING del estudiante. Todo el cálculo (posiciones, XP del periodo, movimiento
+ * y rango cruzado) vive en el BACKEND; el cliente solo pinta lo que recibe.
+ *
+ * `ambito=paralelo` filtra por el paralelo del PROPIO usuario y no devuelve el
+ * paralelo de nadie: los grupos del estudio se asignan por paralelo completo, así
+ * que etiquetarlos permitiría deducirlos (ver la nota en RankingService).
+ */
 @Controller('ranking')
 @UseGuards(JwtAuthGuard)
 export class RankingController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly ranking: RankingService) {}
 
   @Get()
-  async ranking(@CurrentUser('sub') usuarioId: number, @Query('limite') limite?: string) {
-    const take = Math.min(Number(limite) || 20, 100);
-    const filas = await this.prisma.ranking.findMany({
-      where: { usuario: { rol: 'estudiante' } },
-      orderBy: [{ xpTotal: 'desc' }, { usuarioId: 'asc' }],
-      take,
-      include: { usuario: { select: { id: true, nombre: true } } },
+  async tabla(
+    @CurrentUser('sub') usuarioId: number,
+    @Query('ambito') ambito?: string,
+    @Query('periodo') periodo?: string,
+    @Query('limite') limite?: string,
+  ) {
+    return this.ranking.tabla(usuarioId, {
+      ambito: ambito as Ambito,
+      periodo: periodo as Periodo,
+      limite: Number(limite) || 20,
     });
-    const ranking = filas.map((r) => ({
-      posicion: r.posicion, usuario_id: r.usuarioId, nombre: r.usuario.nombre,
-      xp_total: r.xpTotal, racha_dias: r.rachaDias,
-    }));
-
-    const mio = await this.prisma.ranking.findUnique({
-      where: { usuarioId }, include: { usuario: { select: { nombre: true } } },
-    });
-    const yo = mio
-      ? { posicion: mio.posicion, nombre: mio.usuario.nombre, xp_total: mio.xpTotal, racha_dias: mio.rachaDias }
-      : null;
-
-    return { ranking, yo };
   }
 }

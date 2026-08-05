@@ -41,7 +41,13 @@ function Restablecer() {
   }, [token]);
 
   const nivel = fuerza(pass);
-  const passError = !pass ? 'Ingresa una contraseña.' : pass.length < 6 ? 'Mínimo 6 caracteres.' : '';
+  // Debe coincidir con la regla real del backend (RestablecerDto.nueva): 8
+  // caracteres, con al menos una letra y un número.
+  const passError = !pass
+    ? 'Ingresa una contraseña.'
+    : pass.length < 8 ? 'Mínimo 8 caracteres.'
+    : !/[A-Za-z]/.test(pass) || !/\d/.test(pass) ? 'Incluye al menos una letra y un número.'
+    : '';
   const confirmarError = !confirmar ? 'Confirma la contraseña.' : confirmar !== pass ? 'Las contraseñas no coinciden.' : '';
 
   async function onSubmit(e: FormEvent) {
@@ -120,7 +126,7 @@ function Restablecer() {
                   <input
                     type={verPass ? 'text' : 'password'} autoComplete="new-password" value={pass}
                     onChange={(e) => setPass(e.target.value)} onBlur={() => setTocado((t) => ({ ...t, pass: true }))}
-                    className={inputCls(!!tocado.pass && !!passError) + ' pl-10 pr-11'} placeholder="Mínimo 6 caracteres"
+                    className={inputCls(!!tocado.pass && !!passError) + ' pl-10 pr-11'} placeholder="Mínimo 8 caracteres, con letra y número"
                   />
                   <button type="button" onClick={() => setVerPass((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
@@ -177,8 +183,11 @@ export default function RestablecerContrasenaPage() {
   );
 }
 
+/** `min-h-[3rem]` iguala la altura de los campos con el resto del sistema
+ *  (ver inputAuthCls en components/fondo-auth). Colores intactos: estas
+ *  pantallas viven en el tema CLARO, no en el grupo (auth) oscuro. */
 function inputCls(error: boolean) {
-  return `w-full rounded-xl border px-4 py-2.5 outline-none transition focus:ring-2 ${
+  return `w-full min-h-[3rem] rounded-xl border px-4 py-2.5 outline-none transition focus:ring-2 ${
     error ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : 'border-slate-300 focus:border-prexi-blue focus:ring-blue-100'
   }`;
 }
