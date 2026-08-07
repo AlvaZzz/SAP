@@ -13,7 +13,7 @@ Sistema adaptativo con **Inteligencia Artificial (ALVARO/Gemini)** y **gamificac
 | ORM / BD | **Prisma** + PostgreSQL |
 | Auth | JWT en **cookie httpOnly** + bcrypt |
 | IA | **Google Gemini** (variante Flash, `gemini-2.5-flash-lite`), solo en el backend |
-| Sandbox de código | **Piston** self-hosted (ejecuta el Python del estudiante aislado) |
+| Ejecución de código | **Pyodide** en el navegador del estudiante (CPython compilado a WebAssembly) |
 
 Backend y frontend **completamente separados**: [`backend/`](backend) (NestJS) y [`frontend/`](frontend) (Next.js).
 
@@ -28,7 +28,9 @@ backend/src/
   ranking/       progreso/               gamificacion/  common/ (prisma, guards)
 ```
 
-Regla clave: **toda** decisión (corrección de respuestas, XP, desbloqueo de nivel, ranking) se calcula en el backend. El frontend solo muestra. El código del estudiante **nunca** se ejecuta en el backend: va al contenedor **Piston** aislado (límites de tiempo/memoria).
+Regla clave: **toda** decisión (corrección de respuestas, XP, desbloqueo de nivel, ranking) se calcula en el backend. El frontend solo muestra.
+
+El código del estudiante **nunca** se ejecuta en el backend: corre en **su propio navegador** con [Pyodide](https://pyodide.org) (CPython compilado a WebAssembly), dentro de un *web worker* aislado del hilo principal ([`python-runtime.ts`](frontend/src/lib/python-runtime.ts) + [`pyodide-worker.js`](frontend/public/pyodide-worker.js)). El servidor nunca recibe ni ejecuta código de terceros, así que no hace falta ningún sandbox privilegiado — y por eso PREXI puede desplegarse en plataformas gestionadas gratuitas (Render/Vercel/Neon) en lugar de exigir un VPS.
 
 ## Puesta en marcha (Docker — recomendado)
 
@@ -44,11 +46,10 @@ docker compose up --build
 | Frontend (Next.js) | http://localhost:3000 |
 | API (NestJS)       | http://localhost:4000/api/health |
 | Postgres           | localhost:**5433** (`prexi`/`prexi`) |
-| Piston (sandbox)   | http://localhost:2000 |
 
 > El puerto **5433** evita chocar con un PostgreSQL local en el 5432.
 
-El contenedor `api` aplica el esquema (`prisma db push`) y **siembra el contenido Python** (69 ejercicios + bancos pretest/postest) solo si la BD está vacía. La primera ejecución de código instala el runtime de Python en Piston (warm-up automático).
+El contenedor `api` aplica las **migraciones versionadas** (`prisma migrate deploy`, carpeta [`backend/prisma/migrations/`](backend/prisma/migrations)) y **siembra el contenido Python** solo si la BD está vacía. La primera ejecución de código en el navegador descarga Pyodide (unos segundos, una sola vez por sesión).
 
 ### Cuentas demo (clave `Prexi123*`)
 `juan@upea.edu.bo` (estudiante) · `docente@upea.edu.bo` · `admin@upea.edu.bo`
@@ -79,8 +80,8 @@ SMTP_HOST=                     # vacío → el enlace se imprime en los logs (de
 ```bash
 # Backend
 cd backend && npm install && npx prisma generate
-cp .env.example .env           # DATABASE_URL, JWT_SECRET, GEMINI_API_KEY, PISTON_URL
-npx prisma db push && npm run seed && npm run dev   # :4000
+cp .env.example .env           # DATABASE_URL, DIRECT_URL, JWT_SECRET, GEMINI_API_KEY
+npx prisma migrate deploy && npm run seed && npm run dev   # :4000
 
 # Frontend
 cd frontend && npm install && npm run dev           # :3000 (proxy /api → :4000)
@@ -100,7 +101,7 @@ cd frontend && npm install && npm run dev           # :3000 (proxy /api → :400
 |---|---|
 | R1–R2 | Scaffold NestJS + schema Prisma + auth |
 | R3 | pretest + ejercicios + seed Python |
-| R4 | Zona de Práctica + tutor-ia (Gemini) + sandbox Piston |
+| R4 | Zona de Práctica + tutor-ia (Gemini) + ejecución de Python |
 | R5 | gamificación, ranking, progreso, documentos, retos + export CSV |
 | R6 | Frontend Next.js — 11 vistas del estudiante |
 
@@ -189,4 +190,4 @@ Con Docker: `docker compose up -d --build` (ajustando en `docker-compose.yml` `N
 - ✅ Errores no controlados: log interno completo, **sin stack traces al cliente**.
 - ✅ Revisión de pretest/postest bloqueada hasta finalizar el examen (no expone respuestas).
 - ✅ Subida de archivos restringida a PDF y validada en el servidor.
-- ✅ El código del estudiante se ejecuta SOLO en el sandbox Piston aislado.
+- ✅ El código del estudiante NUNCA llega al servidor: se ejecuta en su navegador (Pyodide), en un worker aislado y bajo el sandbox del propio navegador.

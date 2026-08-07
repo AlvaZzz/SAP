@@ -96,19 +96,28 @@ export class DocumentosController {
     return { documentos: salida.map(({ _orden, ...d }) => d) };
   }
 
-  // Sirve el PDF por streaming (inline). Accesible a cualquier usuario autenticado.
+  /**
+   * Sirve el PDF (inline) a cualquier usuario autenticado. El binario vive en la
+   * columna `contenido`; se lee del disco solo como RESPALDO, para los
+   * documentos subidos antes de que el almacenamiento se moviera a la base.
+   */
   @Get(':id/archivo')
   async archivo(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
     const doc = await this.prisma.documento.findUnique({ where: { id } });
     if (!doc) throw new NotFoundException('Documento no encontrado');
 
-    // basename evita cualquier path traversal por más que el registro se altere.
-    const ruta = join(UPLOAD_DIR, basename(doc.archivo));
-    await access(ruta).catch(() => { throw new NotFoundException('Archivo no disponible'); });
-
     const nombreDescarga = `${doc.titulo.replace(/[^\w\-. ]+/g, '_')}.pdf`;
     res.setHeader('Content-Type', PDF_MIME);
     res.setHeader('Content-Disposition', `inline; filename="${nombreDescarga}"`);
+
+    if (doc.contenido) {
+      res.end(Buffer.from(doc.contenido));
+      return;
+    }
+
+    // basename evita cualquier path traversal por más que el registro se altere.
+    const ruta = join(UPLOAD_DIR, basename(doc.archivo));
+    await access(ruta).catch(() => { throw new NotFoundException('Archivo no disponible'); });
     createReadStream(ruta).pipe(res);
   }
 }

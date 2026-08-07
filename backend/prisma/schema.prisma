@@ -7,9 +7,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// `url` la usa la APLICACIÓN; en Neon debe ser la cadena POOLED (host con
+// `-pooler`). `directUrl` la usan las MIGRACIONES y el seed, que necesitan una
+// conexión directa sin pooler para hacer DDL. Ambas exigen `sslmode=require`
+// en Neon. En local las dos apuntan a la misma base.
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ── Enums ───────────────────────────────────────────────────
@@ -265,10 +270,13 @@ model Unidad {
   // XP adicional que se otorga al completar TODOS los temas publicados de la unidad.
   xp          Int      @default(0)
   orden       Int      @default(0)
-  // Imagen de PORTADA de la unidad (banner). Guarda solo el nombre de archivo
-  // OPACO (UUID); el binario vive fuera de src y se sirve por streaming desde
-  // GET /unidades/:id/portada — la ruta interna nunca se expone al cliente.
+  // Imagen de PORTADA de la unidad (banner). `imagenUrl` guarda el nombre
+  // OPACO (UUID.ext) y `imagenDatos` el binario, que vive DENTRO de la base por
+  // el mismo motivo que el PDF de los documentos: el filesystem del hosting
+  // gratuito es efímero. Se sirve por streaming desde GET /unidades/:id/portada.
   imagenUrl   String?  @map("imagen_url")
+  imagenDatos Bytes?   @map("imagen_datos")
+  imagenMime  String?  @map("imagen_mime")
   creadoEn    DateTime @default(now()) @map("creado_en")
 
   temas       Tema[]
@@ -772,7 +780,13 @@ model Documento {
   id            Int      @id @default(autoincrement())
   titulo        String
   descripcion   String?
-  archivo       String // ruta o URL del PDF
+  archivo       String // nombre OPACO (UUID.pdf); identifica el archivo, no una ruta
+  // Binario del PDF. Vive DENTRO de la base y no en disco: el hosting gratuito
+  // (Render Free) tiene filesystem efímero y perdería el archivo en cada
+  // reinicio. Como efecto secundario, el PDF entra en el respaldo `pg_dump`.
+  // Nullable solo por los registros anteriores a este cambio, que aún leen de
+  // disco como respaldo.
+  contenido     Bytes?
   tamanoBytes   Int      @map("tamano_bytes")
   nivelId       Int?     @map("nivel_id")
   // Tema asociado: ALVARO lo usa como CONTEXTO (estilo/sintaxis del docente) y

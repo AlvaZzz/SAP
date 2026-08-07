@@ -1,12 +1,19 @@
 # ════════════════════════════════════════════════════════════
-#  PREXI UPEA — Despliegue en un VPS (producción)
+#  PREXI UPEA — Despliegue en un VPS (RUTA ALTERNATIVA)
+#
+#  ⚠ Esta NO es la ruta de despliegue vigente. La producción de PREXI vive en
+#  Render (backend) + Vercel (frontend) + Neon (PostgreSQL), sin VPS y sin
+#  coste: ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md
+#
+#  Este archivo se conserva por si algún día se quiere auto-hospedar todo en
+#  un servidor propio (control total de los datos, sin arranques en frío).
 #
 #  Uso en el servidor:
 #    cp .env.prod.example .env      # edita DOMINIO, JWT_SECRET, GEMINI_API_KEY…
 #    docker compose -f docker-compose.prod.yml up -d --build
 #
 #  Caddy publica HTTPS automático (Let's Encrypt) en https://$DOMINIO y hace de
-#  proxy al frontend. NADA más queda expuesto a internet (db/api/piston son
+#  proxy al frontend. NADA más queda expuesto a internet (db y api son
 #  internos). El frontend reenvía /api → api internamente.
 # ════════════════════════════════════════════════════════════
 services:
@@ -26,17 +33,6 @@ services:
       timeout: 5s
       retries: 12
 
-  # Sandbox aislado para ejecutar el código Python del estudiante (Zona de
-  # práctica). Si tu servidor es ARM y esta imagen falla, coméntalo: el resto
-  # del sistema (pretest, ejercicios, postest, IA, gamificación) funciona igual.
-  piston:
-    image: ghcr.io/engineer-man/piston:latest
-    container_name: prexi-piston
-    restart: unless-stopped
-    privileged: true
-    volumes:
-      - piston_packages:/piston/packages
-
   api:
     build: ./backend
     container_name: prexi-api
@@ -46,12 +42,13 @@ services:
       PORT: 4000
       CLIENT_ORIGIN: https://${DOMINIO}
       DATABASE_URL: postgresql://prexi:${DB_PASSWORD:-prexi}@db:5432/prexi?schema=public
+      DIRECT_URL: postgresql://prexi:${DB_PASSWORD:-prexi}@db:5432/prexi?schema=public
+      APP_URL: https://${DOMINIO}
       JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env}
       JWT_EXPIRES_IN: 15m
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
       AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}
-      PISTON_URL: http://piston:2000
     depends_on:
       db:
         condition: service_healthy
@@ -85,6 +82,5 @@ services:
 
 volumes:
   pgdata:
-  piston_packages:
   caddy_data:
   caddy_config:

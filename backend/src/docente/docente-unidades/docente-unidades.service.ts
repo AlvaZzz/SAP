@@ -84,14 +84,19 @@ export class DocenteUnidadesService {
     const formato = detectarFormatoImagen(archivo.buffer);
     if (!formato) throw new BadRequestException('Formato no válido. Solo se aceptan imágenes JPG, PNG o WebP.');
 
-    await fs.mkdir(UPLOAD_IMG_DIR, { recursive: true });
+    // El binario va a la BASE DE DATOS por el mismo motivo que el PDF de los
+    // documentos: el filesystem del hosting gratuito no sobrevive a un reinicio.
     const nombreArchivo = `${randomUUID()}.${formato.ext}`;
-    await fs.writeFile(join(UPLOAD_IMG_DIR, nombreArchivo), archivo.buffer);
 
-    // Borra la portada anterior (best-effort) para no dejar huérfanos.
+    // Borra la portada anterior del disco (best-effort): solo aplica a las
+    // subidas antes de este cambio; las nuevas se reemplazan en el propio UPDATE.
     if (unidad.imagenUrl) await fs.unlink(join(UPLOAD_IMG_DIR, basename(unidad.imagenUrl))).catch(() => undefined);
 
-    await this.prisma.unidad.update({ where: { id }, data: { imagenUrl: nombreArchivo } });
+    await this.prisma.unidad.update({
+      where: { id },
+      // Uint8Array.from: el tipo `Bytes` de Prisma 6 exige Uint8Array<ArrayBuffer>.
+      data: { imagenUrl: nombreArchivo, imagenDatos: Uint8Array.from(archivo.buffer), imagenMime: formato.mime },
+    });
     return { imagen_url: `/api/unidades/${id}/portada` };
   }
 
@@ -101,7 +106,10 @@ export class DocenteUnidadesService {
     if (!unidad) throw new NotFoundException('Unidad no encontrada');
     if (unidad.imagenUrl) {
       await fs.unlink(join(UPLOAD_IMG_DIR, basename(unidad.imagenUrl))).catch(() => undefined);
-      await this.prisma.unidad.update({ where: { id }, data: { imagenUrl: null } });
+      await this.prisma.unidad.update({
+        where: { id },
+        data: { imagenUrl: null, imagenDatos: null, imagenMime: null },
+      });
     }
     return { ok: true };
   }

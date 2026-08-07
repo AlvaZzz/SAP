@@ -1,0 +1,86 @@
+# ════════════════════════════════════════════════════════════
+#  PREXI — Backend NestJS en Render (capa gratuita)
+#
+#  Se despliega con el runtime nativo de Node, NO con el Dockerfile:
+#    · el Dockerfile del repo es de desarrollo (hot-reload, bind mounts)
+#    · Render cachea node_modules entre despliegues con el runtime nativo,
+#      lo que acorta bastante los builds del plan gratuito
+#    · ya no hay contenedor privilegiado que justifique Docker: el Python del
+#      estudiante corre en su navegador con Pyodide
+#
+#  El frontend NO está aquí: va a Vercel (ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md).
+#  La base de datos tampoco: va a Neon.
+# ════════════════════════════════════════════════════════════
+services:
+  - type: web
+    name: prexi-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+
+    # `--include=dev` es OBLIGATORIO: Render define NODE_ENV=production, y con
+    # esa variable npm omite las devDependencies — entre ellas @nestjs/cli, sin
+    # el cual `nest build` no existe y el despliegue falla.
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+
+    # `migrate deploy` aplica las migraciones versionadas de prisma/migrations.
+    # Es idempotente: si no hay nada pendiente, no toca la base. NUNCA `db push`.
+    # El SEED no está aquí a propósito: se ejecuta una sola vez y a mano.
+    startCommand: npx prisma migrate deploy && node dist/src/main.js
+
+    healthCheckPath: /api/health
+
+    envVars:
+      # NODE_ENV=production es lo que activa `secure: true` en las cookies de
+      # sesión. Sin esto el navegador descarta la cookie sobre HTTPS.
+      - key: NODE_ENV
+        value: production
+
+      # Cadena POOLED de Neon (host con `-pooler`), con ?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # Cadena DIRECTA de Neon (sin `-pooler`), para migraciones y seed
+      - key: DIRECT_URL
+        sync: false
+
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+
+      # Ambas deben ser la URL REAL del frontend en Vercel, sin barra final.
+      # CLIENT_ORIGIN gobierna el CORS; APP_URL gobierna el OrigenGuard (CSRF) y
+      # el enlace de recuperación de contraseña. Si APP_URL no coincide con el
+      # dominio de Vercel, TODAS las mutaciones responden 403.
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: APP_URL
+        sync: false
+
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash-lite
+      - key: AI_RATE_LIMIT_PER_HOUR
+        value: "20"
+
+      # Tamaño máximo del PDF del docente. Ojo: los PDF se guardan DENTRO de
+      # PostgreSQL y Neon Free tiene 0.5 GB para toda la base.
+      - key: MAX_PDF_BYTES
+        value: "15728640"
+
+      # SMTP opcional. Si SMTP_HOST queda vacío, el enlace de recuperación se
+      # escribe en los logs de Render en vez de enviarse por correo.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false

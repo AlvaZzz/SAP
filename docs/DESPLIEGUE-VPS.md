@@ -1,5 +1,11 @@
 # Desplegar PREXI en un VPS (Oracle Cloud gratis) + DuckDNS + HTTPS
 
+> ⚠️ **Ruta alternativa, no la vigente.** El despliegue actual de PREXI es
+> Render + Vercel + Neon, sin servidor propio:
+> **[DESPLIEGUE_RENDER_VERCEL_NEON.md](DESPLIEGUE_RENDER_VERCEL_NEON.md)**.
+> Esta guía se conserva por si algún día quieres auto-hospedar todo (control
+> total de los datos y sin arranques en frío, a cambio de administrar el servidor).
+
 Guía para dejar PREXI corriendo 24/7 y entrar desde el celular sin tu PC.
 Resultado final: `https://tuprexi.duckdns.org` accesible desde cualquier lado.
 
@@ -171,12 +177,10 @@ docker compose -f docker-compose.prod.yml exec db \
 
 ## Notas importantes
 
-- **Piston en ARM:** el sandbox que ejecuta el código Python de la *Zona de
-  práctica* usa una imagen que podría no tener versión ARM. Si en los logs ves
-  que `prexi-piston` no arranca, **coméntalo** en `docker-compose.prod.yml` (bloque
-  `piston:`) y vuelve a levantar. Todo lo demás —pretest, ejercicios, postest,
-  ALVARO, gamificación, rangos, emblemas— **funciona igual**; solo se desactiva la
-  ejecución de código libre.
+- **Ejecución de Python:** ya no hay sandbox en el servidor. El código del
+  estudiante corre en su navegador con Pyodide, así que no hay nada que instalar
+  ni ninguna imagen que pueda fallar en ARM. Lo único que necesita el estudiante
+  es acceso a `cdn.jsdelivr.net`, de donde se descarga Pyodide.
 - **HTTPS:** el login usa cookie segura, por eso necesitas el dominio DuckDNS con
   HTTPS (ya incluido con Caddy). Por IP pelada sin HTTPS el login no funcionaría.
 - **Seguridad mínima:** cambia `JWT_SECRET` y `DB_PASSWORD` por valores propios; no

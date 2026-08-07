@@ -69,9 +69,10 @@ export class DocenteDocumentosService {
     const nivelId = await this.nivelId(dto.nivel);
     await this.validarTema(dto.temaId);
 
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    // El binario va a la BASE DE DATOS, no al disco: en el hosting gratuito el
+    // filesystem es efímero y el PDF desaparecería en cada reinicio del
+    // servicio. El nombre opaco se conserva como identificador del archivo.
     const nombreArchivo = `${randomUUID()}.pdf`;
-    await fs.writeFile(join(UPLOAD_DIR, nombreArchivo), archivo!.buffer);
 
     // Extracción de texto best-effort (para ALVARO y la generación de preguntas).
     // Nunca bloquea la subida si el PDF no tiene texto extraíble (ej. escaneado).
@@ -82,6 +83,10 @@ export class DocenteDocumentosService {
         titulo: dto.titulo,
         descripcion: dto.descripcion ?? null,
         archivo: nombreArchivo, // solo el nombre opaco, nunca la ruta absoluta
+        // Uint8Array.from y no el Buffer directo: el tipo `Bytes` de Prisma 6
+        // exige Uint8Array<ArrayBuffer>, y Buffer puede respaldarse en un
+        // SharedArrayBuffer.
+        contenido: Uint8Array.from(archivo!.buffer),
         tamanoBytes: archivo!.size,
         nivelId,
         temaId: dto.temaId ?? null,
@@ -119,7 +124,8 @@ export class DocenteDocumentosService {
 
   async eliminar(id: number, autorId: number) {
     const d = await this.propio(id, autorId);
-    // Borra el binario del disco (best-effort) y luego el registro.
+    // El binario se va con el registro (columna `contenido`). El unlink cubre
+    // los documentos anteriores a la migración, que aún tienen archivo en disco.
     await fs.unlink(join(UPLOAD_DIR, basename(d.archivo))).catch(() => undefined);
     await this.prisma.documento.delete({ where: { id } });
     return { ok: true };

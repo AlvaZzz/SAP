@@ -1,7 +1,14 @@
 # Despliegue: frontend en Vercel + backend fuera de Vercel
 
-Procedimiento repetible. Complementa a [DESPLIEGUE-VPS.md](DESPLIEGUE-VPS.md), que
-describe el despliegue completo en un VPS con Docker Compose.
+> ⚠️ **Documento parcialmente superado.** El procedimiento de Vercel de la
+> sección 2 sigue siendo válido, pero la guía vigente y completa (Render + Vercel
+> + Neon, sin VPS) es **[DESPLIEGUE_RENDER_VERCEL_NEON.md](DESPLIEGUE_RENDER_VERCEL_NEON.md)**.
+>
+> Corrección importante: la tabla de abajo decía que sin el sandbox Piston no hay
+> ejecución de código del estudiante. **Ya no es cierto.** Piston fue eliminado y
+> el Python del estudiante corre en su navegador con Pyodide, así que el backend
+> ya no necesita contenedores privilegiados ni un VPS. El resto de los bloqueos
+> para llevar el backend a *funciones serverless* sí siguen vigentes.
 
 ---
 
@@ -12,14 +19,15 @@ es cuestión de configuración sino de arquitectura:
 
 | Bloqueo | Detalle |
 |---|---|
-| **Sandbox Piston** | `docker-compose.prod.yml` lo corre con `privileged: true` porque isolate necesita cgroups y namespaces propios. El runtime de Vercel no da contenedores privilegiados. Sin Piston no hay ejecución de código del estudiante. |
+| ~~**Sandbox Piston**~~ | ~~Requiere `privileged: true`.~~ **YA NO APLICA:** Piston fue eliminado; el Python del estudiante corre en su navegador con Pyodide. Este era el bloqueo que obligaba a un VPS. |
 | **Postgres + Prisma** | Cada invocación serverless abre su propia conexión; sin un pooler externo se agota `max_connections`. Requiere Postgres persistente de todos modos. |
-| **Warm-up con estado** | `PistonService.onModuleInit()` precarga el runtime de Python al arrancar. En serverless no hay "arranque" único. |
+| ~~**Warm-up con estado**~~ | ~~`PistonService.onModuleInit()` precargaba el runtime de Python.~~ **YA NO APLICA:** ese servicio no existe. |
 | **Rate limit en memoria** | El límite de login por IP y el de recuperación viven en un `Map` del proceso (`auth.controller.ts`). Con N lambdas cada una tendría su propio contador. **Ojo: esto también aplica a cualquier despliegue multi-instancia del backend** — ahí habría que moverlos a Redis. |
 | **Streaming de ALVARO** | `tutor-ia` usa respuestas en streaming de larga duración. |
 
-**Conclusión:** a Vercel va **solo `frontend/`**. Backend + Postgres + Piston van al
-VPS (o a Railway/Render/Fly.io, que sí dan contenedores de larga vida).
+**Conclusión:** a Vercel va **solo `frontend/`**. El backend necesita un proceso de
+larga vida (Render, Railway, Fly.io o un VPS) y un Postgres persistente — pero ya
+**no** hace falta ningún contenedor privilegiado.
 
 ---
 
@@ -39,8 +47,9 @@ curl -s https://api.tudominio.com/api/health
 ```
 
 Opción B — servicio administrado (Railway / Render / Fly.io): desplegar
-`backend/Dockerfile` + un Postgres gestionado + un servicio aparte para Piston.
-Requisito: contenedores de larga duración y Postgres persistente.
+el backend + un Postgres gestionado. Requisito: proceso de larga duración y
+Postgres persistente. Esta es la ruta que se acabó eligiendo: ver
+[DESPLIEGUE_RENDER_VERCEL_NEON.md](DESPLIEGUE_RENDER_VERCEL_NEON.md).
 
 ---
 
@@ -118,15 +127,14 @@ curl -s -i -c ck.txt -X POST $WEB/api/auth/login \
 curl -s -b ck.txt $WEB/api/auth/me
 # 4) Refresh silencioso: 201 y cookie de refresh ROTADA
 curl -s -i -b ck.txt -c ck.txt -X POST $WEB/api/auth/refresh -H "Origin: $WEB" | head -1
-# 5) Piston (ejecución real de código del estudiante)
-curl -s -b ck.txt -X POST $WEB/api/practica/ejecutar -H 'Content-Type: application/json' \
-  -H "Origin: $WEB" -d '{"codigo":"print(2+3)","contexto":"libre"}'
+# 5) (La ejecución de código ya NO se prueba por API: corre en el navegador
+#     con Pyodide. Se verifica abriendo un reto y pulsando "Ejecutar".)
 # 6) Postest disponible
 curl -s -b ck.txt $WEB/api/postest/disponibilidad
 ```
 
 Qué debe verse: (2) `HttpOnly; SameSite=Strict` en ambas cookies · (4) `201` con un
-valor de `prexi_refresh` distinto al anterior · (5) `stdout: "5"`.
+valor de `prexi_refresh` distinto al anterior.
 
 En el navegador, además: entrar, esperar a que caduque el access token (15 min) y
 comprobar que la sesión **no** salta a `/login` — el refresh silencioso de
@@ -139,7 +147,7 @@ comprobar que la sesión **no** salta a `/login` — el refresh silencioso de
 | `/api/*` da 404 en Vercel | `API_URL` mal puesta o con barra final |
 | Login 201 pero `/auth/me` 401 | La cookie no se guardó: revisa que la llamada salga al dominio de Vercel y no directo a la API |
 | 403 "Origen no permitido" | Falta `APP_URL`/`ORIGENES_PERMITIDOS` en el backend con el dominio de Vercel |
-| Ejecutar código da 503 | Piston no está arriba o no corre `privileged` |
+| Ejecutar código no hace nada | Pyodide se descarga del CDN `cdn.jsdelivr.net`: revisa la consola del navegador y que la red no lo bloquee |
 
 ---
 

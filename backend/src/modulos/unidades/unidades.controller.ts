@@ -33,19 +33,32 @@ export class UnidadesController {
   }
 
   /**
-   * Sirve la imagen de PORTADA por streaming (inline). El cliente solo conoce
-   * esta URL, nunca la ruta física; `basename` evita cualquier path traversal.
+   * Sirve la imagen de PORTADA (inline). El binario vive en la columna
+   * `imagenDatos`; el disco solo se consulta como RESPALDO para las portadas
+   * subidas antes de que el almacenamiento se moviera a la base de datos.
+   * El cliente nunca conoce la ruta física; `basename` corta cualquier traversal.
    */
   @Get(':id/portada')
   async portada(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    const unidad = await this.prisma.unidad.findUnique({ where: { id }, select: { imagenUrl: true } });
+    const unidad = await this.prisma.unidad.findUnique({
+      where: { id },
+      select: { imagenUrl: true, imagenDatos: true, imagenMime: true },
+    });
     if (!unidad?.imagenUrl) throw new NotFoundException('La unidad no tiene portada');
+
+    const tipo = unidad.imagenMime
+      ?? MIME_POR_EXT[extname(unidad.imagenUrl).toLowerCase()]
+      ?? 'application/octet-stream';
+    res.setHeader('Content-Type', tipo);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+
+    if (unidad.imagenDatos) {
+      res.end(Buffer.from(unidad.imagenDatos));
+      return;
+    }
 
     const ruta = join(UPLOAD_IMG_DIR, basename(unidad.imagenUrl));
     await access(ruta).catch(() => { throw new NotFoundException('Imagen no disponible'); });
-
-    res.setHeader('Content-Type', MIME_POR_EXT[extname(unidad.imagenUrl).toLowerCase()] ?? 'application/octet-stream');
-    res.setHeader('Cache-Control', 'private, max-age=3600');
     createReadStream(ruta).pipe(res);
   }
 }

@@ -12,3 +12,8 @@ coverage/
 *.tsbuildinfo
 client/.vite/
 exports/
+# Respaldos de la base: contienen DATOS PERSONALES de los estudiantes de la
+# investigación (correos, hashes de contraseña, desempeño). Nunca a git.
+backups/
+*.dump
+

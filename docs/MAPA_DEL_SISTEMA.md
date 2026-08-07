@@ -43,15 +43,16 @@ Cada módulo NestJS agrupa su `*.controller.ts`, `*.service.ts`, `*.module.ts` y
 | **Backend (API)** | `backend/` | NestJS + Prisma | Toda la lógica: validación, cálculo de puntajes/XP, desbloqueos, ranking, guards de rol. **El frontend nunca calcula nada sensible.** |
 | **Frontend (Web)** | `frontend/` | Next.js (App Router) | Solo muestra datos y envía peticiones. Grupos de ruta por rol. |
 | **Base de datos** | PostgreSQL | Prisma ORM | Única fuente de verdad. |
-| **Sandbox** | Piston | Contenedor aislado | Ejecuta el código Python del estudiante. |
+| **Ejecución de Python** | Pyodide | Navegador del estudiante | El código nunca llega al servidor: corre en un web worker con CPython/WebAssembly. |
 | **IA (ALVARO)** | Google Gemini | `tutor-ia/` | La API key vive solo en el backend; nunca se expone al cliente. |
 
 ### Stack completo
 - **Backend:** NestJS, Prisma ORM, PostgreSQL, JWT (cookie httpOnly), class-validator.
 - **Frontend:** Next.js App Router, React, Tailwind (tokens de tema claro/oscuro), lucide-react.
 - **IA:** Google Gemini (`@google/generative-ai`).
-- **Ejecución de código:** Piston (sandbox de Python 3).
-- **Infra:** Docker Compose (`db`, `api`, `web`, `piston`). El `docker-entrypoint.sh` aplica el schema (`prisma db push`) y siembra la BD al arrancar.
+- **Ejecución de código:** Pyodide (CPython 3 en WebAssembly), en el navegador del estudiante.
+- **Infra (desarrollo):** Docker Compose (`db`, `api`, `web`). El `docker-entrypoint.sh` aplica las migraciones versionadas (`prisma migrate deploy`) y siembra la BD si está vacía.
+- **Infra (producción):** Render (backend) + Vercel (frontend) + Neon (PostgreSQL). Ver [DESPLIEGUE_RENDER_VERCEL_NEON.md](DESPLIEGUE_RENDER_VERCEL_NEON.md).
 
 ### Convención de rutas del frontend
 Los grupos `(estudiante)`, `(docente)`, `(investigador)`, `(admin)` son **transparentes en la URL**:
@@ -123,7 +124,7 @@ aprendizaje adaptativa y gamificada de Python, apoyado por el tutor IA ALVARO.
 | **Revisión de respuestas** | `/pretest/revision`, `/postest/revision` | Enumera cada pregunta: opción elegida, correcta y **explicación** (`explicacionIa`). Filtro correctas/incorrectas. | — | Lee `PretestRespuesta` + `Ejercicio`. |
 | **Dashboard** | `/dashboard` | Resumen: XP, posición, racha, meta, actividad semanal, comparativa pre/post, recomendados de ALVARO. Tarjeta destacada del postest cuando se desbloquea. | Recomendados usan la actividad real. | Lee `Ranking`, `Intento`, `Evaluacion`. |
 | **Ejercicios (5 niveles)** | `/ejercicios`, `/ejercicios/[id]` | Resolver ejercicios de práctica. La **corrección, el XP y el desbloqueo se calculan en el backend**. ALVARO da pistas (penalizan XP). | El **docente** crea/edita/activa estos ejercicios. | Escribe `Intento`, actualiza `ProgresoNivel`, `Ranking`, `LogroUsuario`. |
-| **Zona de práctica** | `/practica` | Editor de código + ejecución en sandbox (Piston) + chat con ALVARO que **orienta sobre el código, no lo resuelve**. Aquí se **entregan los retos**. | ALVARO (`tutor-ia`); retos del docente. | Escribe `CodigoPractica`, `ConsultaIa`; al entregar, `RetoUsuario`. |
+| **Zona de práctica** | `/practica` | Editor de código + ejecución en el navegador (Pyodide) + chat con ALVARO que **orienta sobre el código, no lo resuelve**. Aquí se **entregan los retos**. | ALVARO (`tutor-ia`); retos del docente. | Escribe `CodigoPractica`, `ConsultaIa`; al entregar, `RetoUsuario`. |
 | **Documentos** | `/documentos` | Ver/descargar PDFs del curso con "Subido por · fecha · tamaño". | El **docente** los sube. | Lee `Documento` (stream seguro). |
 | **Retos** | `/retos` | Retos extra del docente. Estado por reto: nuevo / en revisión / aprobado / a mejorar, con feedback y XP. | Se resuelven en `/practica`; los revisa el **docente**. | Lee/escribe `RetoUsuario`. |
 | **Progreso** | `/progreso` | Comparativa pretest vs postest por categoría del propio estudiante. | — | Lee `Evaluacion`. |

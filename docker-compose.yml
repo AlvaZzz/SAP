@@ -1,15 +1,21 @@
 # ════════════════════════════════════════════════════════════
-#  PREXI UPEA — Stack de la reescritura (NestJS + Prisma + Piston)
-#  Rama: rewrite/nest-next-prisma
+#  PREXI UPEA — Stack de DESARROLLO local (NestJS + Next.js + Prisma)
 #
 #  Uso:
 #    cp .env.docker.example .env   # JWT_SECRET, GEMINI_API_KEY
 #    docker compose up --build
 #
 #  API:      http://localhost:4000/api/health
+#  Web:      http://localhost:3000
 #  Postgres: localhost:5433  (5432 lo usa tu Postgres local)
-#  Piston:   http://localhost:2000  (sandbox de ejecución)
-#  El frontend Next.js (web) se agrega en R6.
+#
+#  EJECUCIÓN DE PYTHON: ocurre en el NAVEGADOR del estudiante con Pyodide
+#  (frontend/src/lib/python-runtime.ts + frontend/public/pyodide-worker.js).
+#  No hay sandbox del lado del servidor, y por eso el sistema puede desplegarse
+#  en plataformas gestionadas (Render/Vercel/Neon) sin necesitar un VPS ni
+#  contenedores privilegiados.
+#
+#  PRODUCCIÓN: no se usa este archivo. Ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md
 # ════════════════════════════════════════════════════════════
 services:
   db:
@@ -30,8 +36,18 @@ services:
       timeout: 5s
       retries: 12
 
-  # Sandbox aislado para ejecutar el código Python del estudiante.
+  # ── HERRAMIENTA OPCIONAL, no se levanta con `docker compose up` ──────────
+  # Sandbox Piston. La ejecución del código del estudiante ya NO pasa por aquí
+  # (corre en su navegador con Pyodide). Sobrevive solo porque
+  # `prisma/generar-retos.ts` lo usa para calcular la salida esperada al sembrar
+  # los retos derivados. Nunca se despliega.
+  #
+  # Para usarlo puntualmente:
+  #   docker compose --profile herramientas up -d piston
+  #   docker compose exec api npx ts-node prisma/generar-retos.ts
+  #   docker compose --profile herramientas down piston
   piston:
+    profiles: ["herramientas"]
     image: ghcr.io/engineer-man/piston:latest
     container_name: prexi-piston
     privileged: true # Piston requiere aislamiento a nivel de kernel
@@ -64,19 +80,20 @@ services:
       PORT: 4000
       CLIENT_ORIGIN: http://localhost:3000
       DATABASE_URL: postgresql://prexi:prexi@db:5432/prexi?schema=public
+      # En local no hay pooler: la conexión directa es la misma. En Neon serán
+      # dos cadenas distintas (ver backend/.env.example).
+      DIRECT_URL: postgresql://prexi:prexi@db:5432/prexi?schema=public
+      APP_URL: http://localhost:3000
       JWT_SECRET: ${JWT_SECRET:-dev_secret_cambia_en_produccion}
       JWT_EXPIRES_IN: 15m
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
       AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}
-      PISTON_URL: http://piston:2000
     ports:
       - "4000:4000"
     depends_on:
       db:
         condition: service_healthy
-      piston:
-        condition: service_started
     volumes:
       - ./backend:/app
       - api_node_modules:/app/node_modules

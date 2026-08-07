@@ -47,7 +47,7 @@ backend/src/
   auth/                  Registro, login, JWT, recuperación de contraseña
   pretest/  postest/     Evaluaciones diagnósticas (datos de la investigación)
   ejercicios/            Corrección, XP, desbloqueo y ruta ADAPTATIVA (motor de reglas)
-  practica/              Zona de práctica + ejecución en Piston (sandbox)
+  practica/              Retos, traza paso a paso y validación de entregas
   tutor-ia/              ALVARO (Gemini): asistente, pistas, retro, RAG del PDF
   gamificacion/          Emblemas y rangos (derivados del desempeño real)
   ranking/  progreso/    Ranking global y progreso por nivel/tema
@@ -105,8 +105,10 @@ La `GEMINI_API_KEY` vive **solo** en el backend.
 - **Recuperación de contraseña**: token aleatorio de un solo uso con expiración
   corta; en la BD se guarda solo su **hash sha256** (nunca el token en claro);
   respuesta genérica que no revela si el correo existe; rate-limit de la solicitud.
-- El **código del estudiante nunca se ejecuta en el backend**: va al contenedor
-  **Piston** aislado (límites de tiempo/memoria).
+- El **código del estudiante nunca se ejecuta en el backend** ni llega a él:
+  corre en su navegador con **Pyodide** (WebAssembly) dentro de un web worker.
+  El servidor no ejecuta código de terceros, así que no necesita ningún sandbox
+  privilegiado — de ahí que el despliegue no requiera un VPS.
 - Errores no controlados: log interno completo, **sin stack traces al cliente**
   ([`common/filters/http-exception.filter.ts`](backend/src/common/filters/http-exception.filter.ts)).
 

@@ -8,11 +8,13 @@ import type { Usuario } from '@/lib/types';
 
 /**
  * Lógica de autenticación del login. Envuelve el `login()` real de PREXI
- * (POST ${NEXT_PUBLIC_API_URL}/auth/login → JWT en cookie httpOnly, gestionado
- * por el cliente `api` y `auth-provider`) y resuelve la redirección por ROL.
+ * (POST /api/auth/login → JWT en cookie httpOnly, gestionado por el cliente
+ * `api` y `auth-provider`) y resuelve la redirección por ROL.
  *
- * ⚠️ AJUSTAR si tu endpoint difiere: el POST se hace en `auth-provider.login`
- * usando `NEXT_PUBLIC_API_URL` (ver src/lib/api.ts). Cambia allí la ruta base.
+ * La ruta es RELATIVA a propósito: `next.config.js` reenvía /api → API_URL, así
+ * que el navegador solo ve su propio dominio y la cookie httpOnly sigue siendo
+ * de primera parte (`sameSite: 'strict'`) aunque el backend viva en otro host.
+ * No introducir aquí una URL absoluta ni NEXT_PUBLIC_API_URL: rompería la sesión.
  */
 const LOGIN_ENDPOINT = '/auth/login'; // referencia (lo llama auth-provider)
 const REDIRECT_AFTER_LOGIN = '/dashboard'; // destino por defecto (estudiante listo)
