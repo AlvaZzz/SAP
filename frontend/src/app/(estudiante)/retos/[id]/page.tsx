@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { CodeEditor } from '@/components/code-editor';
 import { TraceViewer, PasoTraza } from '@/components/trace-viewer';
+import { ejecutarPython, trazarPython, precargarPython, onCargaRuntime } from '@/lib/python-runtime';
 import { AlvaroRetoPanel } from '@/components/alvaro-reto-panel';
 import { OrigenEjercicio, type OrigenReto } from '@/components/origen-ejercicio';
 import { useAnimo } from '@/components/animo-alvaro';
@@ -48,6 +49,9 @@ export default function RetoEditorPage() {
   // Bug‑hunt: resultado de la auto‑validación
   const [verif, setVerif] = useState<{ correcto: boolean; salida: string; esperado: string; xp: number; emblemas: Emblema[] } | null>(null);
   const [verificando, setVerificando] = useState(false);
+  // Carga del runtime de Python en el navegador (la primera vez tarda unos
+  // segundos: se descarga Pyodide desde el CDN y se cachea para la sesión).
+  const [cargandoPython, setCargandoPython] = useState(false);
 
   useEffect(() => {
     if (!Number.isFinite(retoId)) { router.replace('/retos'); return; }
@@ -66,15 +70,29 @@ export default function RetoEditorPage() {
       .finally(() => setCargando(false));
   }, [retoId, router]);
 
+  // Se precarga al entrar al reto para que el primer "Ejecutar" no espere la
+  // descarga completa del runtime.
+  useEffect(() => {
+    const off = onCargaRuntime(setCargandoPython);
+    precargarPython();
+    return off;
+  }, []);
+
   async function ejecutar() {
     setEjecutando(true); setSalida(null);
     try {
-      const r = await api.post<{ ok: boolean; stdout: string; stderr: string; salida?: string; sandboxError?: string | null }>('/practica/ejecutar', { codigo, contexto: 'reto', refId: retoId });
-      // sandboxError: fallo del entorno (no del código) → mensaje claro y reintentable (vuelve a pulsar Ejecutar).
-      const texto = r.sandboxError || r.salida || (r.ok ? r.stdout : r.stderr || r.stdout) || '(sin salida)';
-      setSalida({ texto, ok: r.ok && !r.sandboxError });
-    } catch (err) {
-      setSalida({ texto: err instanceof ApiError ? err.message : 'Error al ejecutar. Intenta de nuevo.', ok: false });
+      // La ejecución ocurre EN EL NAVEGADOR (Pyodide en un Web Worker): el código
+      // del estudiante no viaja al backend.
+      const r = await ejecutarPython(codigo);
+      const texto = r.sandboxError
+        || (r.timeout ? 'Tu código tardó demasiado (posible bucle infinito). Revisa la condición de corte.' : '')
+        || (r.ok ? r.stdout : r.stderr || r.stdout)
+        || '(sin salida)';
+      setSalida({ texto, ok: r.ok && !r.sandboxError && !r.timeout });
+      // Persistir es "mejor esfuerzo": si falla, la ejecución ya se mostró.
+      void api.post('/practica/ejecucion', { codigo, salida: texto, contexto: 'reto', refId: retoId }).catch(() => undefined);
+    } catch {
+      setSalida({ texto: 'Error al ejecutar. Intenta de nuevo.', ok: false });
     } finally { setEjecutando(false); }
   }
 
@@ -93,17 +111,23 @@ export default function RetoEditorPage() {
   async function verTraza() {
     setTrazando(true); setTraza(null);
     try {
-      const r = await api.post<{ ok: boolean; error: string | null; pasos: PasoTraza[] }>('/practica/traza', { codigo });
+      const r = await trazarPython(codigo);
       setTraza({ pasos: r.pasos, error: r.error });
-    } catch (err) {
-      setTraza({ pasos: [], error: err instanceof ApiError ? err.message : 'No se pudo generar la traza.' });
+    } catch {
+      setTraza({ pasos: [], error: 'No se pudo generar la traza.' });
     } finally { setTrazando(false); }
   }
 
   async function verificarBug() {
     setVerificando(true); setAvisoEntrega(''); setVerif(null);
     try {
-      const r = await api.post<{ correcto: boolean; salida: string; esperado: string; xp: number; emblemas_nuevos: Emblema[] }>('/practica/verificar-reto', { retoId, codigo });
+      // Se ejecuta aquí y se manda SOLO la salida: el backend compara contra la
+      // esperada. Ya no otorga XP (esa salida la produce el cliente).
+      const ej = await ejecutarPython(codigo);
+      const salidaObtenida = ej.sandboxError
+        || (ej.timeout ? 'Tu código tardó demasiado (posible bucle infinito).' : '')
+        || (ej.ok ? ej.stdout : ej.stderr || ej.stdout);
+      const r = await api.post<{ correcto: boolean; salida: string; esperado: string; xp: number; emblemas_nuevos: Emblema[] }>('/practica/verificar-reto', { retoId, salida: salidaObtenida });
       setVerif({ correcto: r.correcto, salida: r.salida, esperado: r.esperado, xp: r.xp, emblemas: r.emblemas_nuevos });
       if (r.correcto) {
         setEntrega({ estado: 'aprobado', xp_obtenido: r.xp, feedback: null });
@@ -201,8 +225,8 @@ export default function RetoEditorPage() {
             <CodeEditor value={codigo} onChange={setCodigo} height="100%" className="h-full" />
           </div>
           <div className="flex flex-wrap items-center gap-2 border-t border-slate-700/80 px-4 py-3">
-            <button onClick={ejecutar} disabled={ejecutando} className="inline-flex items-center gap-2 rounded-xl bg-prexi-green px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60">
-              <Play className="h-4 w-4" /> {ejecutando ? 'Ejecutando…' : 'Ejecutar'}
+            <button onClick={ejecutar} disabled={ejecutando || cargandoPython} className="inline-flex items-center gap-2 rounded-xl bg-prexi-green px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60">
+              <Play className="h-4 w-4" /> {cargandoPython ? 'Preparando Python…' : ejecutando ? 'Ejecutando…' : 'Ejecutar'}
             </button>
             <button onClick={verTraza} disabled={trazando} title="Ejecuta paso a paso mostrando las variables"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 disabled:opacity-60">
@@ -233,7 +257,7 @@ export default function RetoEditorPage() {
           <div className="border-t border-slate-700/80 px-4 py-3">
             <p className="mb-1.5 font-mono text-xs text-slate-400">▸ Consola</p>
             <pre className={`max-h-44 overflow-auto whitespace-pre-wrap font-mono text-sm ${salida ? (salida.ok ? 'text-green-300' : 'text-red-300') : 'text-slate-500'}`}>
-              {salida ? salida.texto : 'Esperando ejecución…'}
+              {salida ? salida.texto : cargandoPython ? 'Preparando el entorno de Python… (solo la primera vez)' : 'Esperando ejecución…'}
             </pre>
           </div>
         </div>

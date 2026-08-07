@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, GoneException, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { IsString, IsOptional, IsInt, IsEnum, MinLength, Min } from 'class-validator';
 import { ContextoCodigo } from '@prisma/client';
 import { PracticaService } from './practica.service';
@@ -12,24 +12,22 @@ class GuardarCodigoDto {
   @IsOptional() @IsInt() refId?: number;
   @IsString() codigo!: string;
 }
-class EjecutarDto {
+/** Persistencia del código + la salida que produjo el NAVEGADOR (no se ejecuta aquí). */
+class GuardarEjecucionDto {
   @IsString() @MinLength(1) codigo!: string;
   @IsEnum(ContextoCodigo) contexto!: ContextoCodigo;
   @IsOptional() @IsInt() refId?: number;
-  @IsOptional() @IsString() stdin?: string;
+  @IsOptional() @IsString() salida?: string;
 }
 class AsistirDto {
   @IsString() @MinLength(1) codigo!: string;
   @IsOptional() @IsString() enunciado?: string;
   @IsOptional() @IsString() pregunta?: string;
 }
-class TrazaDto {
-  @IsString() @MinLength(1) codigo!: string;
-  @IsOptional() @IsString() stdin?: string;
-}
 class VerificarRetoDto {
   @IsInt() @Min(1) retoId!: number;
-  @IsString() @MinLength(1) codigo!: string;
+  /** Salida que produjo la ejecución en el NAVEGADOR (el código no se envía). */
+  @IsOptional() @IsString() salida?: string;
 }
 
 // El editor de código solo se usa dentro de un reto → requiere acceso a retos
@@ -54,9 +52,14 @@ export class PracticaController {
     return { codigo: await this.practica.guardarCodigo(usuarioId, dto.contexto, dto.codigo, dto.refId) };
   }
 
-  @Post('ejecutar')
-  ejecutar(@CurrentUser('sub') usuarioId: number, @Body() dto: EjecutarDto) {
-    return this.practica.ejecutar(usuarioId, dto.codigo, dto.contexto, dto.refId, dto.stdin ?? '');
+  /**
+   * Guarda el código y su última salida. La EJECUCIÓN ya no ocurre en el servidor:
+   * corre en el navegador con Pyodide (frontend/src/lib/python-runtime.ts), así que
+   * el código del estudiante nunca viaja aquí para ejecutarse.
+   */
+  @Post('ejecucion')
+  guardarEjecucion(@CurrentUser('sub') usuarioId: number, @Body() dto: GuardarEjecucionDto) {
+    return this.practica.guardarEjecucion(usuarioId, dto.codigo, dto.salida ?? '', dto.contexto, dto.refId);
   }
 
   // ALVARO contextual sobre el código: cuenta para el límite de IA.
@@ -66,15 +69,23 @@ export class PracticaController {
     return this.practica.asistir(dto.codigo, dto.enunciado, dto.pregunta);
   }
 
-  /** Visualizador de traza: ejecución paso a paso (línea + variables). */
+  /**
+   * COMPATIBILIDAD: la traza paso a paso se calcula ahora en el navegador. Se
+   * mantiene la ruta para que un cliente antiguo reciba un mensaje claro en vez
+   * de un 404, pero NUNCA se ejecuta código en el servidor.
+   */
   @Post('traza')
-  traza(@Body() dto: TrazaDto) {
-    return this.practica.traza(dto.codigo, dto.stdin ?? '');
+  traza() {
+    throw new GoneException('La ejecución paso a paso ahora ocurre en tu navegador. Actualiza la página.');
   }
 
-  /** Auto‑validación de una misión de depuración (bug‑hunt). */
+  /**
+   * AUTOCOMPROBACIÓN de un reto: compara la salida que reporta el navegador con la
+   * esperada. NO otorga XP (ver PracticaService.comprobarReto): esa salida la
+   * genera el cliente y sería falsificable.
+   */
   @Post('verificar-reto')
-  verificarReto(@CurrentUser('sub') usuarioId: number, @Body() dto: VerificarRetoDto) {
-    return this.practica.verificarReto(usuarioId, dto.retoId, dto.codigo);
+  verificarReto(@Body() dto: VerificarRetoDto) {
+    return this.practica.comprobarReto(dto.retoId, dto.salida ?? '');
   }
 }
