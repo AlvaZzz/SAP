@@ -28,8 +28,12 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
     prisma = crearPrismaMock();
     // Config central: IA activa. getModel hace .catch() → debe resolver.
     prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.0-flash', maxPistasIa: 3 });
-    // Perfil del estudiante (pretest bajo → nivel básico).
-    prisma.usuario.findUnique.mockResolvedValue({ nombre: 'Juan Pérez', nivelInicial: 1 });
+    // Perfil del estudiante. El nivel sale de la clasificación YA PERSISTIDA
+    // (derivada de θ), NO del % del pretest: ALVARO no clasifica por su cuenta.
+    // Ver docs/CLASIFICACION_NIVELES.md.
+    prisma.usuario.findUnique.mockResolvedValue({
+      nombre: 'Juan Pérez', nivelInicialAdaptativo: 'basico', thetaActual: -1.2,
+    });
     prisma.evaluacion.findUnique.mockResolvedValue({ puntajeTotal: 40, porCategoria: [{ categoria: 'Bucles', porcentaje: 20 }] });
     prisma.tema.findUnique.mockResolvedValue(null);
     prisma.documento.findFirst.mockResolvedValue(null);
@@ -48,6 +52,48 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
     expect(prisma.consultaIa.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ tipo: 'asistente' }) }),
     );
+  });
+
+  /**
+   * REGLA ÚNICA DE CLASIFICACIÓN. ALVARO clasificaba antes por su cuenta con
+   * cortes propios sobre el % del pretest (<50 / ≤75 / >75), lo que podía
+   * contradecir al resto del sistema. Ahora lee la clasificación persistida.
+   */
+  it('usa la clasificación persistida y NO el porcentaje del pretest', async () => {
+    // Pretest bajo (30 %) pero clasificado AVANZADO por θ: manda la clasificación.
+    prisma.usuario.findUnique.mockResolvedValue({
+      nombre: 'Ana', nivelInicialAdaptativo: 'avanzado', thetaActual: 1.4,
+    });
+    prisma.evaluacion.findUnique.mockResolvedValue({ puntajeTotal: 30, porCategoria: [] });
+
+    const model = inyectarGeminiFake(service, 'ok');
+    await service.asistente(7, '¿Qué es un for?', 'Bucles');
+    const systemEnviado = model.generateContent.mock.calls[0][0][0].text as string;
+    expect(systemEnviado).toContain('NIVEL DEL ESTUDIANTE: avanzado');
+  });
+
+  it('sin clasificación persistida deriva el nivel de θ', async () => {
+    prisma.usuario.findUnique.mockResolvedValue({
+      nombre: 'Luis', nivelInicialAdaptativo: null, thetaActual: -2,
+    });
+    prisma.evaluacion.findUnique.mockResolvedValue(null);
+
+    const model = inyectarGeminiFake(service, 'ok');
+    await service.asistente(7, 'hola', 'Bucles');
+    const systemEnviado = model.generateContent.mock.calls[0][0][0].text as string;
+    expect(systemEnviado).toContain('NIVEL DEL ESTUDIANTE: principiante');
+  });
+
+  it('sin ningún dato no asume nivel: trata al estudiante como intermedio', async () => {
+    prisma.usuario.findUnique.mockResolvedValue({
+      nombre: 'Sin diagnóstico', nivelInicialAdaptativo: null, thetaActual: null,
+    });
+    prisma.evaluacion.findUnique.mockResolvedValue(null);
+
+    const model = inyectarGeminiFake(service, 'ok');
+    await service.asistente(7, 'hola', 'Bucles');
+    const systemEnviado = model.generateContent.mock.calls[0][0][0].text as string;
+    expect(systemEnviado).toContain('NIVEL DEL ESTUDIANTE: intermedio');
   });
 
   it('asistenteStream: emite chunks en orden y registra el texto completo', async () => {

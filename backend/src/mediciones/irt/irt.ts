@@ -40,8 +40,56 @@ export const B_POR_NIVEL: Record<NivelDificultad, number> = {
   avanzado: 1,
 };
 
-// ── Umbrales θ → nivel adaptativo ──
-// θ < −0.5 → Básico ; −0.5 ≤ θ ≤ 0.5 → Intermedio ; θ > 0.5 → Avanzado.
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  UMBRALES θ → NIVEL ADAPTATIVO  ·  POR QUÉ ±0.5 Y NO OTRO NÚMERO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ *  θ < −0.5 → Básico · −0.5 ≤ θ ≤ 0.5 → Intermedio · θ > 0.5 → Avanzado
+ *
+ *  Estos cortes son la ÚNICA regla de clasificación de estudiantes del sistema.
+ *  Justificación completa y citable en docs/CLASIFICACION_NIVELES.md; resumen:
+ *
+ *  1) θ Y b VIVEN EN LA MISMA ESCALA (logits). Es la propiedad que distingue al
+ *     modelo de Rasch de una calificación. Por eso el corte no es un percentil
+ *     ni un porcentaje: es una afirmación sobre lo que la persona PUEDE HACER.
+ *
+ *         P(acierto) = 1 / (1 + e^(−(θ − b)))     y     θ = b  ⇒  P = 0.5
+ *
+ *     Un estudiante con θ = 0.5 tiene, por definición del modelo, probabilidad
+ *     ≥ 50 % de resolver cualquier ítem de dificultad b ≤ 0.5.
+ *
+ *  2) LOS CORTES COINCIDEN CON LA DIFICULTAD REAL DEL BANCO. Las dificultades b
+ *     no son libres: se derivan del nivel y de las estrellas del ítem
+ *     (`dificultadDesdeNivel`, `dificultadDesdeEstrellas`, más abajo).
+ *
+ *         Ítems Básicos      b = −1.5 … −0.75   (★1–★2)   y  b = −1 por nivel
+ *         Ítems Intermedios  b = 0              (★3)      y  b =  0 por nivel
+ *         Ítems Avanzados    b = +0.75 … +1.5   (★4–★5)   y  b = +1 por nivel
+ *
+ *     Los umbrales ±0.5 caen exactamente en los PUNTOS MEDIOS entre las
+ *     dificultades ancla de niveles contiguos:
+ *
+ *         básico (−1) ── −0.5 ── intermedio (0) ── +0.5 ── avanzado (+1)
+ *
+ *     Es decir: se clasifica a alguien como Avanzado cuando su habilidad está
+ *     más cerca del ancla de dificultad avanzada (+1) que de la intermedia (0).
+ *     Ese es el vínculo que convierte el umbral en un CRITERIO DE CONTENIDO —
+ *     "domina el material de este nivel"— y no en un número suelto.
+ *
+ *  3) NO SE USA UNA PARTICIÓN EN TERCIOS DE PORCENTAJE (33/66 o 40/70) porque
+ *     asumiría una distribución uniforme de puntajes que no ocurre en pruebas
+ *     reales, porque un porcentaje depende de la dificultad de la prueba
+ *     concreta, y porque no admite justificación sustantiva más allá de "es un
+ *     tercio". Ver docs/CLASIFICACION_NIVELES.md.
+ *
+ *  ⚠️ NO MODIFICAR estos valores a mitad del estudio: cambiarlos reclasifica
+ *  retroactivamente a los participantes e invalida las comparaciones pre/post.
+ *  El procedimiento de revisión está en la sección "Cuándo revisarlos" del
+ *  documento, y exige evidencia empírica previa (rol investigador →
+ *  Validación de la clasificación).
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
 export const THETA_UMBRAL_BASICO = -0.5;
 export const THETA_UMBRAL_AVANZADO = 0.5;
 

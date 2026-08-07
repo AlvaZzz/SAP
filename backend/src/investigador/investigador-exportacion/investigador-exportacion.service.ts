@@ -325,6 +325,66 @@ export class InvestigadorExportacionService {
     };
   }
 
+  /**
+   * DESEMPEÑO POR NIVEL DE ÍTEM de cada estudiante, anonimizado.
+   *
+   * Materia prima de la VALIDACIÓN DE LA CLASIFICACIÓN: permite comprobar si el
+   * nivel asignado predice el desempeño posterior (validez predictiva). Se
+   * construye aquí, junto al resto del dataset, para no abrir una fuente de
+   * verdad paralela.
+   *
+   * Excluye los intentos de ejercicios del PRETEST: son los que produjeron la
+   * clasificación, así que usarlos para validarla sería circular.
+   */
+  async desempenoPorNivelItem() {
+    const [estudiantes, intentos] = await Promise.all([
+      this.prisma.usuario.findMany({
+        where: { rol: 'estudiante' },
+        orderBy: { id: 'asc' },
+        select: {
+          id: true, grupo: true,
+          nivelInicialAdaptativo: true, thetaInicial: true, thetaActual: true,
+          progresoTemas: { select: { temaId: true, nivelActual: true } },
+        },
+      }),
+      this.prisma.intento.findMany({
+        where: { ejercicio: { banco: { not: 'pretest' } } },
+        select: { usuarioId: true, correcto: true, ejercicio: { select: { nivelDificultad: true } } },
+      }),
+    ]);
+
+    const porUsuario = new Map<number, Record<string, { aciertos: number; total: number }>>();
+    for (const it of intentos) {
+      const nivel = it.ejercicio.nivelDificultad;
+      if (!nivel) continue;
+      const e = porUsuario.get(it.usuarioId) ?? {};
+      e[nivel] = e[nivel] ?? { aciertos: 0, total: 0 };
+      e[nivel].total++;
+      if (it.correcto) e[nivel].aciertos++;
+      porUsuario.set(it.usuarioId, e);
+    }
+
+    return estudiantes.map((u, i) => {
+      const d = porUsuario.get(u.id) ?? {};
+      const tasa = (n: string) => (d[n]?.total ? d[n].aciertos / d[n].total : null);
+      return {
+        id_anonimo: `E-${String(i + 1).padStart(3, '0')}`,
+        grupo: u.grupo,
+        nivel_asignado: u.nivelInicialAdaptativo ?? null,
+        theta_inicial: u.thetaInicial ?? null,
+        theta_actual: u.thetaActual ?? null,
+        // Niveles ALCANZADOS después, por tema: evidencia de movilidad.
+        niveles_por_tema: u.progresoTemas.map((p) => p.nivelActual),
+        tasa_basico: tasa('basico'),
+        tasa_intermedio: tasa('intermedio'),
+        tasa_avanzado: tasa('avanzado'),
+        intentos_basico: d['basico']?.total ?? 0,
+        intentos_intermedio: d['intermedio']?.total ?? 0,
+        intentos_avanzado: d['avanzado']?.total ?? 0,
+      };
+    });
+  }
+
   // ══════════════════ DATOS IRT PARA LA INVESTIGACIÓN ══════════════════
 
   /**

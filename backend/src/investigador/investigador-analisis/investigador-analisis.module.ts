@@ -4,6 +4,7 @@ import { InvestigadorFiabilidadService } from './investigador-fiabilidad.service
 import { InvestigadorInferencialService } from './investigador-inferencial.service';
 import { InvestigadorValidezService } from './investigador-validez.service';
 import { InvestigadorReproducibilidadService } from './investigador-reproducibilidad.service';
+import { InvestigadorClasificacionService } from './investigador-clasificacion.service';
 import { AuthModule } from '../../auth/auth.module';
 import { InvestigadorExportacionModule } from '../investigador-exportacion/investigador-exportacion.module';
 
@@ -20,6 +21,7 @@ import { InvestigadorExportacionModule } from '../investigador-exportacion/inves
     InvestigadorInferencialService,
     InvestigadorValidezService,
     InvestigadorReproducibilidadService,
+    InvestigadorClasificacionService,
   ],
 })
 export class InvestigadorAnalisisModule {}

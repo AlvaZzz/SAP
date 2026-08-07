@@ -10,6 +10,9 @@
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NivelAlumno, TurnoMemoria } from './prompts';
 import { detectarPatrones, PatronError } from './patrones-error';
+// Regla ÚNICA de clasificación del estudiante. ALVARO no clasifica por su
+// cuenta: lee la misma clasificación que el resto del sistema.
+import { nivelDesdeTheta } from '../mediciones/irt/irt';
 
 export interface PerfilEstudiante {
   nombre: string;
@@ -44,16 +47,44 @@ const PERFIL_MINIMO: PerfilEstudiante = {
   resumen: '',
 };
 
-/** Nivel pedagogico a partir del % del pretest (o del nivel inicial si no hay pretest). */
-function nivelDesde(pretestPct: number | null, nivelInicial: number): { nivel: NivelAlumno; etiqueta: string } {
-  if (pretestPct == null) {
-    if (nivelInicial >= 3) return { nivel: 'avanzado', etiqueta: 'Sin diagnostico' };
-    if (nivelInicial === 2) return { nivel: 'intermedio', etiqueta: 'Sin diagnostico' };
-    return { nivel: 'basico', etiqueta: 'Sin diagnostico' };
+/** Etiqueta legible del nivel, para el prompt de ALVARO. */
+const ETIQUETA_POR_NIVEL: Record<NivelAlumno, string> = {
+  basico: 'Bajo',
+  intermedio: 'Medio',
+  avanzado: 'Alto',
+};
+
+/**
+ * Nivel pedagógico del estudiante para adaptar el tono de ALVARO.
+ *
+ * IMPORTANTE — UNIFICADO EL 2026-08-07. Antes esta función clasificaba por su
+ * cuenta con cortes propios sobre el % del pretest (<50 / ≤75 / >75), lo que
+ * convertía a ALVARO en una CUARTA regla de clasificación que podía contradecir
+ * al resto del sistema: un estudiante clasificado Intermedio por θ podía ser
+ * tratado como Básico por el tutor. Ahora se lee la clasificación YA PERSISTIDA,
+ * que proviene siempre de `nivelDesdeTheta` (ver docs/CLASIFICACION_NIVELES.md).
+ *
+ * Orden de preferencia, del dato más específico al más general:
+ *   1. `ProgresoTema.nivelActual` — el nivel del estudiante EN ESTE tema, que es
+ *      el que corresponde cuando la consulta es sobre un tema concreto.
+ *   2. `Usuario.nivelInicialAdaptativo` — la clasificación global del pretest.
+ *   3. `nivelDesdeTheta(thetaActual)` — por si hay θ pero aún no se persistió nivel.
+ *   4. Intermedio, declarado como "Sin diagnóstico": ante la duda no se asume ni
+ *      lo mejor ni lo peor del estudiante.
+ */
+function nivelDesde(fuentes: {
+  nivelTema: NivelAlumno | null;
+  nivelAdaptativo: NivelAlumno | null;
+  thetaActual: number | null;
+}): { nivel: NivelAlumno; etiqueta: string } {
+  const { nivelTema, nivelAdaptativo, thetaActual } = fuentes;
+  if (nivelTema) return { nivel: nivelTema, etiqueta: ETIQUETA_POR_NIVEL[nivelTema] };
+  if (nivelAdaptativo) return { nivel: nivelAdaptativo, etiqueta: ETIQUETA_POR_NIVEL[nivelAdaptativo] };
+  if (thetaActual != null) {
+    const n = nivelDesdeTheta(thetaActual);
+    return { nivel: n, etiqueta: ETIQUETA_POR_NIVEL[n] };
   }
-  if (pretestPct < 50) return { nivel: 'basico', etiqueta: 'Bajo' };
-  if (pretestPct <= 75) return { nivel: 'intermedio', etiqueta: 'Medio' };
-  return { nivel: 'avanzado', etiqueta: 'Alto' };
+  return { nivel: 'intermedio', etiqueta: 'Sin diagnostico' };
 }
 
 /** Extrae categorias flojas (porcentaje < 60) del JSON porCategoria del pretest. */
@@ -99,8 +130,14 @@ export async function construirPerfil(
 ): Promise<PerfilEstudiante> {
   if (!usuarioId) return PERFIL_MINIMO;
   try {
-    const [usuario, pre, tema] = await Promise.all([
-      prisma.usuario.findUnique({ where: { id: usuarioId }, select: { nombre: true, nivelInicial: true } }),
+    const [usuario, pre, tema, progresoTema] = await Promise.all([
+      prisma.usuario.findUnique({
+        where: { id: usuarioId },
+        // nivelInicialAdaptativo y thetaActual son la clasificación canónica
+        // (derivada de θ). `nivelInicial` es OTRA cosa: el número de nivel del
+        // currículo (1-5), no el nivel adaptativo — no sirve para clasificar.
+        select: { nombre: true, nivelInicialAdaptativo: true, thetaActual: true },
+      }),
       prisma.evaluacion.findUnique({ where: { usuarioId_tipo: { usuarioId, tipo: 'pre' } }, select: { puntajeTotal: true, porCategoria: true } }).catch(() => null),
       opts.temaId
         ? prisma.tema.findUnique({
@@ -108,10 +145,20 @@ export async function construirPerfil(
             select: { numero: true, titulo: true, unidad: { select: { numero: true, titulo: true } }, padre: { select: { numero: true, titulo: true } } },
           }).catch(() => null)
         : Promise.resolve(null),
+      opts.temaId
+        ? prisma.progresoTema.findUnique({
+            where: { usuarioId_temaId: { usuarioId, temaId: opts.temaId } },
+            select: { nivelActual: true },
+          }).catch(() => null)
+        : Promise.resolve(null),
     ]);
 
     const pretestPct = pre?.puntajeTotal ?? null;
-    const { nivel, etiqueta } = nivelDesde(pretestPct, usuario?.nivelInicial ?? 1);
+    const { nivel, etiqueta } = nivelDesde({
+      nivelTema: progresoTema?.nivelActual ?? null,
+      nivelAdaptativo: usuario?.nivelInicialAdaptativo ?? null,
+      thetaActual: usuario?.thetaActual ?? null,
+    });
 
     // Desempeno reciente + patrones: intentos del tema (o de la categoria) del estudiante.
     let desempenoTema: PerfilEstudiante['desempenoTema'] = null;

@@ -23,15 +23,19 @@ export const ETIQUETA_NIVEL: Record<NivelDificultad, string> = {
 export const NIVELES: NivelDificultad[] = ['basico', 'intermedio', 'avanzado'];
 
 /**
- * Clasifica el NIVEL INICIAL del estudiante a partir del puntaje del pretest
- * (0-100). Alineado con la clasificación legible Bajo/Medio/Alto ya existente:
- * <40 Básico, 40–70 Intermedio, >70 Avanzado.
+ * ⚠️ NO AGREGUES AQUÍ UNA FUNCIÓN QUE CLASIFIQUE AL ESTUDIANTE POR PORCENTAJE.
+ *
+ * Existió una `clasificarNivel(puntaje)` con cortes en 40/70 sobre el % del
+ * pretest. Se eliminó el 2026-08-07 porque era código muerto que contradecía a
+ * la ÚNICA regla válida: `nivelDesdeTheta(θ)` en `mediciones/irt/irt.ts`.
+ *
+ * El estudiante se clasifica SIEMPRE por su habilidad θ estimada con el modelo
+ * de Rasch, nunca por el porcentaje de aciertos. Motivo (ver
+ * docs/CLASIFICACION_NIVELES.md): un porcentaje depende de la dificultad de la
+ * prueba concreta —60 % en un examen fácil no equivale a 60 % en uno difícil—,
+ * mientras que θ vive en la misma escala logit que la dificultad b de los ítems
+ * y por tanto expresa qué puede resolver la persona.
  */
-export function clasificarNivel(puntaje: number): NivelDificultad {
-  if (puntaje < 40) return 'basico';
-  if (puntaje <= 70) return 'intermedio';
-  return 'avanzado';
-}
 
 /**
  * Deriva el NIVEL de dificultad adaptativo desde las estrellas (1-5) del
@@ -86,9 +90,34 @@ export function nivelDominioAgregado(
 }
 
 /**
- * Clasifica el DOMINIO agregado (0-100) en un nivel. Umbrales alineados con los
- * scores por nivel (Básico 0 / Intermedio 50 / Avanzado 100): todo en Básico (0)
- * queda `basico`; alcanzar el promedio de Intermedio (≥34) desbloquea la
+ * Clasifica el DOMINIO agregado (0-100) de una unidad en un nivel.
+ *
+ * ⚠️ ESTO NO CLASIFICA AL ESTUDIANTE. Clasifica un PROMEDIO DE NIVELES ya
+ * asignados, que es otra cosa. La clasificación de la persona la hace
+ * `nivelDesdeTheta(θ)` y solo ella.
+ *
+ * POR QUÉ 34 Y 67 NO SON UN TERCIL ARBITRARIO
+ * ────────────────────────────────────────────
+ * La escala de dominio no es un porcentaje de aciertos: se construye
+ * promediando los niveles de los temas, donde cada nivel vale exactamente
+ * Básico = 0 · Intermedio = 0.5 · Avanzado = 1 (ver `nivelDominioAgregado`).
+ *
+ * Esa escala tiene TRES puntos de anclaje sustantivos, no un continuo:
+ *   · 0   = todos los temas en Básico
+ *   · 50  = todos los temas en Intermedio
+ *   · 100 = todos los temas en Avanzado
+ *
+ * Los cortes en 34 y 67 son simplemente los puntos medios entre esos anclajes
+ * (0↔50 → 25… se elige 34, y 50↔100 → 75… se elige 67), de modo que la partición
+ * en tercios AQUÍ sí es la natural: cada tercio contiene uno de los tres valores
+ * de anclaje y ninguno queda en la frontera. Es una consecuencia aritmética de
+ * la codificación 0/0.5/1, no una elección de conveniencia.
+ *
+ * Contrasta con clasificar a un estudiante por su % de aciertos, donde los
+ * tercios SÍ serían arbitrarios porque no hay ningún anclaje sustantivo en 33
+ * ni en 66. Ver docs/CLASIFICACION_NIVELES.md, sección "Por qué no tercios".
+ *
+ * Efecto práctico: alcanzar el promedio de Intermedio (≥34) desbloquea la
  * siguiente unidad; el promedio de Avanzado (≥67) queda `avanzado`.
  */
 export function clasificarDominio(dominioPct: number): NivelDificultad {

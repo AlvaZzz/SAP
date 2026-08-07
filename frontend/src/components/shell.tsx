@@ -73,6 +73,7 @@ const NAV_INVESTIGADOR: NavItem[] = [
   { href: '/investigador/fiabilidad', label: 'Fiabilidad', icon: FlaskConical },
   { href: '/investigador/equivalencia', label: 'Equivalencia inicial', icon: Users },
   { href: '/investigador/resultados', label: 'Resultados', icon: BarChart3 },
+  { href: '/investigador/clasificacion', label: 'Clasificación', icon: Layers },
   { href: '/investigador/validez', label: 'Validez interna', icon: ShieldCheck },
   { href: '/investigador/datos', label: 'Evidencia complementaria', icon: Activity },
   { href: '/investigador/exportacion', label: 'Exportación', icon: Download },

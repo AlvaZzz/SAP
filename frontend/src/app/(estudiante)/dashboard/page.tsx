@@ -118,7 +118,7 @@ export default function DashboardPage() {
           <div className="mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-blue-deep" /><h2 className="font-display text-xl font-bold text-prexi-blue-deep">Recomendado por ALVARO</h2></div>
           <p className="mb-4 text-sm text-muted">Elegidos según tu desempeño real: refuerzan tus puntos débiles y te acercan al siguiente nivel.</p>
           <div className="space-y-2.5">
-            {rec.slice(0, 3).map((e) => {
+            {rec.slice(0, 2).map((e) => {
               const cU = colorUnidad(e.unidad_numero);
               return (
               <div key={e.id} className="rounded-xl border border-line bg-subtle p-3 transition hover:border-prexi-blue/40">
@@ -160,7 +160,9 @@ export default function DashboardPage() {
             <span className="flex items-center gap-1.5"><i className="inline-block w-4 rounded border-t-[2.5px]" style={{ borderColor: AZUL }} /> Tu habilidad (θ)</span>
             <span className="flex items-center gap-1.5"><i className="inline-block w-4 rounded border-t-[2.5px] border-dashed border-muted" /> Promedio del grupo</span>
           </div>
-          <ChartEvolucion evo={evo} cargando={cargando} />
+          <div className="flex-1">
+            <ChartEvolucion evo={evo} cargando={cargando} />
+          </div>
         </Card>
 
         <Card className="flex h-full min-w-0 flex-col">
@@ -169,7 +171,7 @@ export default function DashboardPage() {
           {cargando ? <div className="space-y-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10" />)}</div>
             : unidades.length === 0 ? <p className="py-8 text-center text-sm text-muted">Aún no hay unidades publicadas.</p>
               : (
-                <div className="space-y-1">
+                <div className="flex flex-1 flex-col justify-between gap-1">
                   {unidades.map((u) => <FilaUnidad key={u.id} u={u} actual={u.id === unidadActualId} onClick={() => router.push(`/ejercicios/unidad/${u.id}`)} />)}
                 </div>
               )}
@@ -271,7 +273,7 @@ function ChartEvolucion({ evo, cargando }: { evo: Evolucion | null; cargando: bo
   const paso = Math.max(1, Math.ceil(serie.length / 7));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img"
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-full min-h-[220px] w-full" role="img"
       aria-label={`Tu habilidad estimada actual es θ ${ult.theta}, medida en ${serie.length} momentos`}>
       <defs>
         <linearGradient id="evoFill" x1="0" y1="0" x2="0" y2="1">

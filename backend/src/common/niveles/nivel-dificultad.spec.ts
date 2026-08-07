@@ -1,5 +1,5 @@
+import * as nivelDificultad from './nivel-dificultad';
 import {
-  clasificarNivel,
   clasificarDominio,
   siguienteNivel,
   nivelInferior,
@@ -10,18 +10,20 @@ import {
 } from './nivel-dificultad';
 
 describe('nivel-dificultad (lógica pura de niveles adaptativos)', () => {
-  describe('clasificarNivel (pretest → nivel inicial)', () => {
-    it('<40 → básico', () => {
-      expect(clasificarNivel(0)).toBe('basico');
-      expect(clasificarNivel(39)).toBe('basico');
+  describe('regla ÚNICA de clasificación del estudiante', () => {
+    /**
+     * `clasificarNivel(puntaje)` clasificaba por % del pretest (40/70) y
+     * contradecía a `nivelDesdeTheta`. Se eliminó el 2026-08-07. Este test
+     * impide que reaparezca: si alguien la vuelve a añadir aquí, falla y obliga
+     * a leer docs/CLASIFICACION_NIVELES.md antes de introducir una segunda regla.
+     */
+    it('este módulo NO clasifica estudiantes por porcentaje', () => {
+      expect('clasificarNivel' in nivelDificultad).toBe(false);
     });
-    it('40–70 → intermedio', () => {
-      expect(clasificarNivel(40)).toBe('intermedio');
-      expect(clasificarNivel(70)).toBe('intermedio');
-    });
-    it('>70 → avanzado', () => {
-      expect(clasificarNivel(71)).toBe('avanzado');
-      expect(clasificarNivel(100)).toBe('avanzado');
+
+    it('solo expone clasificación de DOMINIO agregado, no de personas', () => {
+      const exportadas = Object.keys(nivelDificultad).filter((k) => k.startsWith('clasificar'));
+      expect(exportadas).toEqual(['clasificarDominio']);
     });
   });
 

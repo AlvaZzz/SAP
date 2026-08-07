@@ -11,6 +11,8 @@ import {
   RespuestaIrt,
   THETA_MIN,
   THETA_MAX,
+  THETA_UMBRAL_BASICO,
+  THETA_UMBRAL_AVANZADO,
 } from './irt';
 
 describe('IRT — modelo de Rasch (matemática pura)', () => {
@@ -84,6 +86,61 @@ describe('IRT — modelo de Rasch (matemática pura)', () => {
     it('θ > 0.5 → avanzado', () => {
       expect(nivelDesdeTheta(0.51)).toBe('avanzado');
       expect(nivelDesdeTheta(3)).toBe('avanzado');
+    });
+  });
+
+  /**
+   * BORDES EXACTOS DE LA CLASIFICACIÓN — contrato explícito y verificado.
+   *
+   * Los límites son CERRADOS hacia Intermedio: θ = −0.5 y θ = +0.5 pertenecen
+   * ambos a Intermedio, no a los extremos. Es una decisión, no un accidente: en
+   * el borde exacto el estudiante está equidistante de las dos anclas de
+   * dificultad, y ante el empate se prefiere el nivel central (ni se le sube de
+   * golpe a contenido para el que no hay evidencia, ni se le retiene abajo).
+   *
+   * Estos tests existen para que nadie cambie el criterio sin darse cuenta:
+   * mover un `<` a un `<=` reclasificaría estudiantes en silencio.
+   */
+  describe('bordes exactos de la clasificación (contrato)', () => {
+    it('θ = -0.5 exacto pertenece a INTERMEDIO (límite cerrado por abajo)', () => {
+      expect(nivelDesdeTheta(THETA_UMBRAL_BASICO)).toBe('intermedio');
+    });
+
+    it('θ = +0.5 exacto pertenece a INTERMEDIO (límite cerrado por arriba)', () => {
+      expect(nivelDesdeTheta(THETA_UMBRAL_AVANZADO)).toBe('intermedio');
+    });
+
+    it('apenas por debajo de -0.5 ya es básico', () => {
+      expect(nivelDesdeTheta(THETA_UMBRAL_BASICO - 1e-9)).toBe('basico');
+    });
+
+    it('apenas por encima de +0.5 ya es avanzado', () => {
+      expect(nivelDesdeTheta(THETA_UMBRAL_AVANZADO + 1e-9)).toBe('avanzado');
+    });
+
+    it('los umbrales son SIMÉTRICOS respecto del cero', () => {
+      // La simetría no es estética: refleja que Intermedio es el ancla central
+      // (b = 0) y que básico (−1) y avanzado (+1) están a la misma distancia.
+      expect(THETA_UMBRAL_BASICO).toBe(-THETA_UMBRAL_AVANZADO);
+    });
+
+    it('cada umbral es el PUNTO MEDIO entre las anclas de dificultad contiguas', () => {
+      // Es la justificación de por qué ±0.5 y no otro número: ver el bloque de
+      // documentación sobre THETA_UMBRAL_* en irt.ts y docs/CLASIFICACION_NIVELES.md
+      const bBasico = dificultadDesdeNivel('basico');       // -1
+      const bIntermedio = dificultadDesdeNivel('intermedio'); //  0
+      const bAvanzado = dificultadDesdeNivel('avanzado');    // +1
+      expect(THETA_UMBRAL_BASICO).toBeCloseTo((bBasico + bIntermedio) / 2, 10);
+      expect(THETA_UMBRAL_AVANZADO).toBeCloseTo((bIntermedio + bAvanzado) / 2, 10);
+    });
+
+    it('en el umbral avanzado, P(acierto) de un ítem intermedio supera el 50 %', () => {
+      // Traducción del corte a una afirmación sobre lo que el estudiante PUEDE
+      // hacer, que es el argumento central ante un tribunal.
+      const p = probabilidadAcierto(THETA_UMBRAL_AVANZADO, dificultadDesdeNivel('intermedio'));
+      expect(p).toBeGreaterThan(0.5);
+      // Y exactamente 50 % frente a un ítem cuya dificultad iguale su habilidad.
+      expect(probabilidadAcierto(THETA_UMBRAL_AVANZADO, THETA_UMBRAL_AVANZADO)).toBeCloseTo(0.5, 12);
     });
   });
 

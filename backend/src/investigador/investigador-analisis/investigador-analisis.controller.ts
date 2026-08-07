@@ -5,6 +5,7 @@ import { InvestigadorFiabilidadService } from './investigador-fiabilidad.service
 import { InvestigadorInferencialService } from './investigador-inferencial.service';
 import { InvestigadorValidezService } from './investigador-validez.service';
 import { InvestigadorReproducibilidadService } from './investigador-reproducibilidad.service';
+import { InvestigadorClasificacionService } from './investigador-clasificacion.service';
 
 /**
  * Análisis del estudio (rol investigador). TODO es de SOLO LECTURA: no existe
@@ -19,7 +20,14 @@ export class InvestigadorAnalisisController {
     private readonly inferencial: InvestigadorInferencialService,
     private readonly validez: InvestigadorValidezService,
     private readonly reproducibilidad: InvestigadorReproducibilidadService,
+    private readonly clasificacion: InvestigadorClasificacionService,
   ) {}
+
+  /** Validación empírica de la clasificación por niveles (umbrales θ). */
+  @Get('clasificacion')
+  getClasificacion() {
+    return this.clasificacion.resumen();
+  }
 
   /** Fiabilidad del instrumento: KR-20, análisis de ítems y ajuste de Rasch. */
   @Get('fiabilidad')
