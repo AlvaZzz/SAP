@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, ProgressBar, EmptyState, ResponsiveTable, PageHeader } from '@/components/ui';
-import { Users, UserCheck, GraduationCap, CheckCircle, ClipboardList, Calendar } from '@/components/icons';
+import { Users, UserCheck, GraduationCap, CheckCircle, ClipboardList, Calendar, FlaskConical } from '@/components/icons';
 
 interface Panel {
   muestra: { total: number; control: number; experimental: number };
+  demo: { cuentas: number; modo_demo: boolean; aviso: string | null };
   instituciones: { institucion: string; total: number; control: number; experimental: number }[];
   avance: { con_pretest: number; con_postest: number; completaron_intervencion: number; pct_pretest: number; pct_postest: number };
   recoleccion: { inicio: string | null; fin: string | null };
@@ -43,6 +44,27 @@ export default function PanelEstudioPage() {
   return (
     <div className="animate-fade-up">
       <PageHeader title="Panel del estudio" subtitle="Resumen de la muestra y avance de la recolección de datos (solo lectura)." />
+
+      {/* CANDADO 3: si hay cuentas sintéticas en la base, se dice. Nada oculto.
+          Si además el MODO DEMOSTRACIÓN está activo, las cifras de pantalla las
+          incluyen y el aviso pasa a rojo: no puede pasar desapercibido. */}
+      {d?.demo.aviso && (
+        <div className={`mb-6 flex gap-3 rounded-2xl border p-4 ${
+          d.demo.modo_demo
+            ? 'border-prexi-red/50 bg-prexi-red/10'
+            : 'border-prexi-amber/40 bg-prexi-amber/10'}`}
+        >
+          <FlaskConical className={`mt-0.5 h-5 w-5 shrink-0 ${d.demo.modo_demo ? 'text-prexi-red' : 'text-prexi-amber'}`} />
+          <div>
+            <p className="font-display text-sm font-bold text-fg">
+              {d.demo.modo_demo
+                ? 'MODO DEMOSTRACIÓN — lo que ves NO son resultados del estudio'
+                : 'Datos de demostración presentes en la base'}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-fg">{d.demo.aviso}</p>
+          </div>
+        </div>
+      )}
 
       {/* Muestra */}
       <StatGrid className="mb-6">

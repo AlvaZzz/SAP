@@ -1,6 +1,6 @@
 import { Controller, Get, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
-import { InvestigadorExportacionService } from './investigador-exportacion.service';
+import { InvestigadorExportacionService, MODO_DEMO } from './investigador-exportacion.service';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 
@@ -24,8 +24,14 @@ export class InvestigadorExportacionController {
   @Get('export.csv')
   async exportCsv(@Res() res: Response) {
     const csv = await this.service.exportCsv();
+    // Si el modo demostración está activo, el archivo lo dice en su propio
+    // nombre: un CSV con datos sintéticos jamás debe poder confundirse con el
+    // dataset del estudio, ni siquiera meses después en la carpeta de descargas.
+    const nombre = MODO_DEMO
+      ? 'prexi_DEMOSTRACION_NO_ES_EL_ESTUDIO.csv'
+      : 'prexi_dataset_estudio.csv';
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="prexi_dataset_estudio.csv"');
+    res.setHeader('Content-Disposition', `attachment; filename="${nombre}"`);
     res.send(csv);
   }
 

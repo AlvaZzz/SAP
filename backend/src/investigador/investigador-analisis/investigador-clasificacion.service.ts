@@ -119,7 +119,7 @@ export class InvestigadorClasificacionService {
     const orden: Record<NivelDificultad, number> = { basico: 1, intermedio: 2, avanzado: 3 };
     for (const f of clasificados) {
       if (f.niveles_por_tema.length === 0) { sinTemas++; continue; }
-      const maxAlcanzado = Math.max(...f.niveles_por_tema.map((n) => orden[n]));
+      const maxAlcanzado = Math.max(...f.niveles_por_tema.map((n: NivelDificultad) => orden[n]));
       if (maxAlcanzado > orden[f.nivel_asignado as NivelDificultad]) subieron++;
       else mantuvieron++;
     }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { gananciaTheta } from '../../mediciones/irt/irt';
 import { MIN_INTENTOS_TENDENCIA, deltaMitades, promedio, redondear } from '../../common/estadistica/tendencia';
@@ -59,6 +60,72 @@ export interface FilaDataset {
 
 interface CatRaw { categoria: string; aciertos: number; total: number; porcentaje: number }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EXCLUSIÓN DE LAS CUENTAS DE DEMOSTRACIÓN  (candado 2 de 3)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ *  `prisma/seed-demo.ts` crea estudiantes SINTÉTICOS para poder probar y
+ *  demostrar el sistema sin participantes reales. No son sujetos de la
+ *  investigación y NO pueden aparecer en ningún resultado de la tesis.
+ *
+ *  Este filtro es el candado central: como TODAS las pantallas del rol
+ *  investigador derivan de este servicio, excluirlos aquí los excluye de una
+ *  sola vez de resultados, fiabilidad, inferencial, validez y exportaciones.
+ *
+ *  Los otros dos candados: (1) los datos se autoidentifican —correo bajo
+ *  `@demo.prexi.local` e `institucion = 'DEMO'`— y (3) el Panel del
+ *  investigador avisa de forma visible cuántas cuentas demo hay en la base.
+ *
+ *  Se comprueban AMBAS marcas (correo e institución) a propósito: si alguien
+ *  editara una, la otra sigue excluyendo al registro.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export const DOMINIO_DEMO = '@demo.prexi.local';
+export const INSTITUCION_DEMO = 'DEMO';
+
+/**
+ * MODO DEMOSTRACIÓN — la única forma de que las cuentas sintéticas aparezcan.
+ *
+ * Se activa con la variable de entorno `PREXI_MODO_DEMO=1`, nunca desde la
+ * interfaz. Existe porque los datos de demostración no sirven de nada si no se
+ * pueden ver: permite poblar las pantallas para probarlas y tomar capturas del
+ * sistema funcionando.
+ *
+ * Es deliberadamente incómodo de activar: no hay botón, no hay parámetro de URL
+ * y no se puede encender por accidente desde el navegador. Requiere reiniciar el
+ * backend con la variable puesta, que es una decisión consciente.
+ *
+ * Con el modo activo, el Panel muestra una advertencia permanente y el CSV se
+ * descarga con "DEMOSTRACION" en el nombre del archivo, para que ninguna captura
+ * ni exportación pueda confundirse con resultados del estudio.
+ *
+ * En producción NUNCA debe estar definida.
+ */
+export const MODO_DEMO = process.env.PREXI_MODO_DEMO === '1';
+
+/**
+ * Filtro Prisma: estudiantes del estudio. Excluye las cuentas de demostración
+ * salvo que el modo demostración esté explícitamente activo.
+ */
+export const SOLO_ESTUDIANTES_DEL_ESTUDIO: Prisma.UsuarioWhereInput = MODO_DEMO
+  ? { rol: 'estudiante' }
+  : {
+      rol: 'estudiante',
+      // Cada marca se niega por separado (AND), no con `NOT: [a, b]`, que en
+      // Prisma significa "no cumple AMBAS" y dejaría pasar a quien tuviera solo
+      // una de las dos marcas — justo lo contrario de lo que se quiere.
+      email: { not: { endsWith: DOMINIO_DEMO } },
+      // TRAMPA DE SQL: `institucion` es NULLABLE, y `institucion <> 'DEMO'`
+      // evalúa a NULL —no a TRUE— cuando el campo está vacío, así que un filtro
+      // ingenuo descartaría a TODOS los estudiantes sin institución declarada.
+      // Por eso se acepta explícitamente el caso nulo.
+      OR: [
+        { institucion: null },
+        { institucion: { not: INSTITUCION_DEMO } },
+      ],
+    };
+
 /** Matriz de respuestas por ítem, base del análisis de fiabilidad del instrumento. */
 export interface MatrizRespuestas {
   /** Una fila por estudiante, una columna por ítem; true = acertó. */
@@ -116,7 +183,7 @@ export class InvestigadorExportacionService {
   async construirDataset(): Promise<FilaDataset[]> {
     const [estudiantes, intentos, consultas, entregas, subidas] = await Promise.all([
       this.prisma.usuario.findMany({
-        where: { rol: 'estudiante' },
+        where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
         include: { ranking: true, evaluaciones: true },
       }),
@@ -277,7 +344,7 @@ export class InvestigadorExportacionService {
   async matrizRespuestas(tipo: 'pre' | 'post'): Promise<MatrizRespuestas> {
     const [estudiantes, respuestas] = await Promise.all([
       this.prisma.usuario.findMany({
-        where: { rol: 'estudiante' },
+        where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
         select: { id: true },
       }),
@@ -339,7 +406,7 @@ export class InvestigadorExportacionService {
   async desempenoPorNivelItem() {
     const [estudiantes, intentos] = await Promise.all([
       this.prisma.usuario.findMany({
-        where: { rol: 'estudiante' },
+        where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
         select: {
           id: true, grupo: true,
@@ -418,7 +485,7 @@ export class InvestigadorExportacionService {
    */
   async diagnosticoTemas() {
     const estudiantes = await this.prisma.usuario.findMany({
-      where: { rol: 'estudiante' },
+      where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
       orderBy: { id: 'asc' },
       select: {
         id: true,
@@ -474,7 +541,7 @@ export class InvestigadorExportacionService {
    */
   async examenesUnidad() {
     const estudiantes = await this.prisma.usuario.findMany({
-      where: { rol: 'estudiante' },
+      where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
       orderBy: { id: 'asc' },
       select: {
         id: true,
@@ -533,7 +600,7 @@ export class InvestigadorExportacionService {
    */
   async evolucionTheta() {
     const estudiantes = await this.prisma.usuario.findMany({
-      where: { rol: 'estudiante' },
+      where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
       orderBy: { id: 'asc' },
       select: { id: true, historialTheta: { orderBy: { fecha: 'asc' } } },
     });

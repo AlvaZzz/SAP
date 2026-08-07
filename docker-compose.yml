@@ -84,6 +84,15 @@ services:
       # dos cadenas distintas (ver backend/.env.example).
       DIRECT_URL: postgresql://prexi:prexi@db:5432/prexi?schema=public
       APP_URL: http://localhost:3000
+      # MODO DEMOSTRACIÓN. Vacío = apagado (comportamiento normal: las cuentas
+      # sintéticas de `npm run seed:demo` quedan FUERA de todos los cálculos del
+      # estudio). Con "1" el rol investigador las INCLUYE, para poder ver las
+      # pantallas pobladas y tomar capturas del sistema funcionando:
+      #   PREXI_MODO_DEMO=1 docker compose up -d api
+      # Con el modo activo el Panel muestra una advertencia roja y el CSV se
+      # descarga como "prexi_DEMOSTRACION_NO_ES_EL_ESTUDIO.csv".
+      # NUNCA definir esta variable en producción.
+      PREXI_MODO_DEMO: ${PREXI_MODO_DEMO:-}
       JWT_SECRET: ${JWT_SECRET:-dev_secret_cambia_en_produccion}
       JWT_EXPIRES_IN: 15m
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}

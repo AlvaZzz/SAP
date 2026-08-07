@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InvestigadorExportacionService } from '../investigador-exportacion/investigador-exportacion.service';
+import {
+  InvestigadorExportacionService, SOLO_ESTUDIANTES_DEL_ESTUDIO,
+} from '../investigador-exportacion/investigador-exportacion.service';
 import { ajusteRasch, analisisItems, kr20 } from '../../common/estadistica/fiabilidad';
 import { probabilidadAcierto } from '../../mediciones/irt/irt';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -85,7 +87,7 @@ export class InvestigadorFiabilidadService {
 
     // θ de cada persona incluida, en el mismo orden que las filas de la matriz.
     const usuarios = await this.prisma.usuario.findMany({
-      where: { rol: 'estudiante' },
+      where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
       orderBy: { id: 'asc' },
       select: { thetaInicial: true, thetaFinal: true },
     });
