@@ -36,6 +36,16 @@ export class RegisterDto {
 
   @IsOptional() @IsInt() @Min(1) @Max(12)
   semestre?: number;
+
+  /**
+   * CONSENTIMIENTO INFORMADO. El formulario ya obligaba a marcar la casilla,
+   * pero hasta ahora no llegaba al servidor y no quedaba constancia de nada.
+   * Es opcional en el DTO para no romper a los clientes que aún no lo envían;
+   * solo se registra la fecha cuando llega explícitamente en `true`, de modo
+   * que un consentimiento no declarado nunca se dé por otorgado.
+   */
+  @IsOptional() @IsBoolean()
+  aceptaTerminos?: boolean;
 }
 
 export class LoginDto {

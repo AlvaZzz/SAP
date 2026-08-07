@@ -12,12 +12,30 @@ interface Panel {
   recoleccion: { inicio: string | null; fin: string | null };
 }
 
+interface Ficha {
+  diseno: { tipo: string; esquema: string; por_que_cuasi: string };
+  poblacion: {
+    descripcion: string; instituciones: string[]; paralelos: string[];
+    n_registrados: number; n_control: number; n_experimental: number; n_casos_completos: number;
+  };
+  muestreo: { tipo: string; implicacion: string };
+  instrumentos: { nombre: string; tipo: string; areas: string; fiabilidad: string; calibracion: string }[];
+  variables: { independiente: string; dependientes: string[]; intervinientes: string };
+  hipotesis: {
+    nula: string; alterna: string; nivel_significancia: number;
+    criterio_decision: string; potencia: string;
+  };
+  tratamiento_datos: { faltantes: string; anonimizacion: string; supuestos: string };
+}
+
 export default function PanelEstudioPage() {
   const [d, setD] = useState<Panel | null>(null);
+  const [ficha, setFicha] = useState<Ficha | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     api.get<Panel>('/investigador/panel').then(setD).catch(() => undefined).finally(() => setCargando(false));
+    api.get<Ficha>('/investigador/ficha-metodologica').then(setFicha).catch(() => undefined);
   }, []);
 
   const fecha = (f: string | null) => (f ? new Date(f).toLocaleDateString('es-BO', { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
@@ -87,6 +105,83 @@ export default function PanelEstudioPage() {
             </>
           )}
       </div>
+
+      {/* Ficha metodológica: diseño, hipótesis e instrumentos del estudio */}
+      {ficha && (
+        <div className="mt-8">
+          <SectionTitle className="mb-1">Ficha metodológica</SectionTitle>
+          <p className="mb-4 text-sm text-muted">
+            El diseño del estudio, tal como el sistema lo aplica. Se genera desde los datos reales, así
+            que no puede desincronizarse de lo que realmente se hizo.
+          </p>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <SectionTitle className="mb-3">Diseño</SectionTitle>
+              <Dato etiqueta="Tipo" valor={ficha.diseno.tipo} />
+              <Dato etiqueta="Esquema" valor={ficha.diseno.esquema} />
+              <Dato etiqueta="Muestreo" valor={ficha.muestreo.tipo} />
+              <div className="mt-3 rounded-xl bg-subtle p-3 text-xs leading-relaxed text-muted">
+                <p className="mb-2">{ficha.diseno.por_que_cuasi}</p>
+                <p>{ficha.muestreo.implicacion}</p>
+              </div>
+            </Card>
+
+            <Card>
+              <SectionTitle className="mb-3">Hipótesis</SectionTitle>
+              <Dato etiqueta="H₀ (nula)" valor={ficha.hipotesis.nula} />
+              <Dato etiqueta="H₁ (alterna)" valor={ficha.hipotesis.alterna} />
+              <Dato etiqueta="Nivel de significancia" valor={`α = ${ficha.hipotesis.nivel_significancia}`} />
+              <div className="mt-3 rounded-xl bg-subtle p-3 text-xs leading-relaxed text-muted">
+                <p className="mb-2">{ficha.hipotesis.criterio_decision}</p>
+                <p>{ficha.hipotesis.potencia}</p>
+              </div>
+            </Card>
+
+            <Card>
+              <SectionTitle className="mb-3">Variables</SectionTitle>
+              <Dato etiqueta="Independiente" valor={ficha.variables.independiente} />
+              <div className="mb-2">
+                <p className="text-[10px] uppercase tracking-wide text-muted">Dependientes</p>
+                <ul className="mt-1 space-y-0.5">
+                  {ficha.variables.dependientes.map((v) => (
+                    <li key={v} className="flex gap-1.5 text-sm text-fg"><span className="text-prexi-blue-deep">•</span> {v}</li>
+                  ))}
+                </ul>
+              </div>
+              <Dato etiqueta="Intervinientes" valor={ficha.variables.intervinientes} />
+            </Card>
+
+            <Card>
+              <SectionTitle className="mb-3">Instrumentos</SectionTitle>
+              {ficha.instrumentos.map((i) => (
+                <div key={i.nombre} className="mb-3 rounded-xl border border-line p-3">
+                  <p className="text-sm font-semibold text-fg">{i.nombre}</p>
+                  <p className="text-xs text-muted">{i.tipo}</p>
+                  <p className="mt-1 text-xs text-muted">Áreas: {i.areas}</p>
+                  <p className="mt-1 text-xs text-muted">{i.fiabilidad}</p>
+                </div>
+              ))}
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <SectionTitle className="mb-3">Tratamiento de los datos</SectionTitle>
+              <Dato etiqueta="Datos faltantes" valor={ficha.tratamiento_datos.faltantes} />
+              <Dato etiqueta="Anonimización" valor={ficha.tratamiento_datos.anonimizacion} />
+              <Dato etiqueta="Supuestos" valor={ficha.tratamiento_datos.supuestos} />
+            </Card>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <div className="mb-2">
+      <p className="text-[10px] uppercase tracking-wide text-muted">{etiqueta}</p>
+      <p className="text-sm leading-relaxed text-fg">{valor}</p>
     </div>
   );
 }

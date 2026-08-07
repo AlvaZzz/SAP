@@ -123,6 +123,15 @@ model Usuario {
   paralelo String? // solo aplica a estudiantes; null en docente/admin/investigador
   semestre Int     @default(1)
 
+  // CONSENTIMIENTO INFORMADO (ética de la investigación). La casilla de
+  // aceptación siempre fue obligatoria en el formulario de registro, pero hasta
+  // la incorporación de estos campos NO quedaba constancia en la base: por eso
+  // son nullables y las cuentas anteriores quedan sin registro verificable, algo
+  // que el rol investigador declara explícitamente como limitación en vez de
+  // dar por supuesto. Nunca se rellenan retroactivamente.
+  consentimientoEn      DateTime? @map("consentimiento_en")
+  consentimientoVersion String?   @map("consentimiento_version")
+
   // Gestión del administrador: soft-disable (no borrar → conserva datos del estudio)
   // y forzado de cambio de contraseña tras un reseteo.
   activo             Boolean @default(true)

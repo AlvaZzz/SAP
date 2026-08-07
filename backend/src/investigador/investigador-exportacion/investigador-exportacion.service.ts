@@ -59,12 +59,22 @@ export interface FilaDataset {
 
 interface CatRaw { categoria: string; aciertos: number; total: number; porcentaje: number }
 
+/** Matriz de respuestas por ítem, base del análisis de fiabilidad del instrumento. */
+export interface MatrizRespuestas {
+  /** Una fila por estudiante, una columna por ítem; true = acertó. */
+  matriz: boolean[][];
+  /** Ítems (columnas) en el mismo orden que la matriz. */
+  items: { ejercicioId: number; titulo: string; categoria: string; dificultadB: number | null }[];
+  /** id_anonimo de cada fila, en el mismo orden. */
+  personas: string[];
+}
+
 /**
  * Exportación del estudio (rol investigador, SOLO LECTURA). Construye el dataset
  * consolidado y ANONIMIZADO (id_anonimo, sin nombres/correos/cédulas) desde la
- * actividad REAL registrada. Es la ÚNICA fuente de verdad: resultados y datos
- * complementarios reutilizan `construirDataset()`. La estadística inferencial
- * (prueba t) se hace fuera del sistema con este CSV.
+ * actividad REAL registrada. Es la ÚNICA fuente de verdad: resultados, datos
+ * complementarios, fiabilidad e inferencial derivan todos de este servicio; no
+ * existen consultas paralelas que puedan contradecirlo.
  */
 @Injectable()
 export class InvestigadorExportacionService {
@@ -249,6 +259,70 @@ export class InvestigadorExportacionService {
       f.autonomia_delta, f.tasa_acierto_delta, f.tiempo_medio_delta,
     ].map(esc).join(','));
     return [cols.join(','), ...lineas].join('\n');
+  }
+
+  /**
+   * MATRIZ DE RESPUESTAS POR ÍTEM (pretest o postest), anonimizada.
+   *
+   * Es la materia prima del análisis de fiabilidad: KR-20, dificultad y
+   * discriminación por ítem, y ajuste al modelo de Rasch. Se construye aquí,
+   * junto al resto del dataset, para que la fiabilidad NO salga de una consulta
+   * paralela que pudiera discrepar de los demás resultados.
+   *
+   * Solo entra quien respondió el examen: un estudiante que no lo rindió no es
+   * un cero, es un dato ausente, y meterlo como cero falsearía la dificultad de
+   * todos los ítems. Se incluyen únicamente los ítems que ESE conjunto de
+   * estudiantes respondió (una matriz rectangular completa, sin huecos).
+   */
+  async matrizRespuestas(tipo: 'pre' | 'post'): Promise<MatrizRespuestas> {
+    const [estudiantes, respuestas] = await Promise.all([
+      this.prisma.usuario.findMany({
+        where: { rol: 'estudiante' },
+        orderBy: { id: 'asc' },
+        select: { id: true },
+      }),
+      this.prisma.pretestRespuesta.findMany({
+        where: { tipo },
+        select: {
+          usuarioId: true, ejercicioId: true, correcto: true,
+          ejercicio: { select: { titulo: true, categoria: true, dificultadB: true } },
+        },
+      }),
+    ]);
+
+    // id_anonimo estable: mismo criterio que `construirDataset` (orden por id).
+    const anonimo = new Map<number, string>();
+    estudiantes.forEach((u, i) => anonimo.set(u.id, `E-${String(i + 1).padStart(3, '0')}`));
+
+    // Respuestas indexadas por persona×ítem.
+    const porPersona = new Map<number, Map<number, boolean>>();
+    const metaItem = new Map<number, { titulo: string; categoria: string; dificultadB: number | null }>();
+    for (const r of respuestas) {
+      if (!porPersona.has(r.usuarioId)) porPersona.set(r.usuarioId, new Map());
+      porPersona.get(r.usuarioId)!.set(r.ejercicioId, r.correcto);
+      if (!metaItem.has(r.ejercicioId)) {
+        metaItem.set(r.ejercicioId, {
+          titulo: r.ejercicio.titulo,
+          categoria: r.ejercicio.categoria,
+          dificultadB: r.ejercicio.dificultadB ?? null,
+        });
+      }
+    }
+
+    const personasIds = [...porPersona.keys()].sort((a, b) => a - b);
+    if (personasIds.length === 0) return { matriz: [], items: [], personas: [] };
+
+    // Solo los ítems respondidos por TODAS las personas incluidas: la matriz
+    // debe ser completa para que KR-20 y la correlación ítem-total sean válidos.
+    const itemsIds = [...metaItem.keys()]
+      .filter((id) => personasIds.every((p) => porPersona.get(p)!.has(id)))
+      .sort((a, b) => a - b);
+
+    return {
+      matriz: personasIds.map((p) => itemsIds.map((i) => porPersona.get(p)!.get(i) === true)),
+      items: itemsIds.map((id) => ({ ejercicioId: id, ...metaItem.get(id)! })),
+      personas: personasIds.map((p) => anonimo.get(p) ?? `E-?`),
+    };
   }
 
   // ══════════════════ DATOS IRT PARA LA INVESTIGACIÓN ══════════════════

@@ -23,6 +23,12 @@ export interface RegistroData {
   cedula: string;
   carrera: string;
   paralelo: string;
+  /**
+   * Aceptación del consentimiento informado. El formulario ya obligaba a
+   * marcarla, pero antes se quedaba en el navegador: ahora viaja al servidor
+   * para que quede constancia con fecha (dato de ética de la investigación).
+   */
+  aceptaTerminos: boolean;
 }
 
 interface AuthState {

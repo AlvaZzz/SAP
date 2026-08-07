@@ -16,6 +16,12 @@ import { RegisterDto, LoginDto, PerfilDto, PasswordDto } from './dto/auth.dto';
 
 const MAX_FALLIDOS = 5;
 const BLOQUEO_MIN = 15;
+/**
+ * Versión del texto de términos y política de privacidad que el estudiante
+ * acepta al registrarse. Se guarda junto a la fecha para que quede constancia
+ * de QUÉ se consintió, no solo de que se consintió. Súbela si cambia el texto.
+ */
+export const VERSION_TERMINOS = '2026-08-v1';
 // Vida útil del enlace de recuperación (corta, por seguridad).
 const RECUPERACION_MIN = 45;
 // Sesión larga (refresh token): con "Recordarme" dura 30 días; sin él, 1 día.
@@ -75,6 +81,12 @@ export class AuthService {
         nombre: dto.nombre, email: dto.email, cedula: dto.cedula,
         carrera: dto.carrera, passwordHash, rol: 'estudiante',
         paralelo: dto.paralelo.trim().toUpperCase(), semestre: dto.semestre ?? 1,
+        // Constancia del consentimiento informado, con fecha. Solo si el cliente
+        // lo declara de forma explícita: si no llega, queda sin registro y el
+        // rol investigador lo reporta como tal (no se presume otorgado).
+        ...(dto.aceptaTerminos === true
+          ? { consentimientoEn: new Date(), consentimientoVersion: VERSION_TERMINOS }
+          : {}),
         ranking: { create: { xpTotal: 0, rachaDias: 0 } },
       },
       select: SELECT_PUBLICO,

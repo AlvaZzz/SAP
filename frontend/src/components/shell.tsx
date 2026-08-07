@@ -12,7 +12,7 @@ import { BuscadorNav } from './buscador-nav';
 import {
   LayoutDashboard, Code, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
   LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
-  Layers, Bot, Inbox, Sparkles,
+  Layers, Bot, Inbox, Sparkles, ShieldCheck,
 } from './icons';
 
 type Area = 'estudiante' | 'docente' | 'investigador' | 'admin';
@@ -64,10 +64,17 @@ const NAV_DOCENTE: NavItem[] = [
   { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
 ];
 
+/**
+ * Navegación del rol INVESTIGADOR, en el orden real de un capítulo de tesis:
+ * recorrerla de arriba abajo es recorrer el capítulo de resultados.
+ */
 const NAV_INVESTIGADOR: NavItem[] = [
-  { href: '/investigador/panel', label: 'Panel del estudio', icon: LayoutDashboard },
+  { href: '/investigador/panel', label: 'Muestra y diseño', icon: LayoutDashboard },
+  { href: '/investigador/fiabilidad', label: 'Fiabilidad', icon: FlaskConical },
+  { href: '/investigador/equivalencia', label: 'Equivalencia inicial', icon: Users },
   { href: '/investigador/resultados', label: 'Resultados', icon: BarChart3 },
-  { href: '/investigador/datos', label: 'Datos complementarios', icon: Activity },
+  { href: '/investigador/validez', label: 'Validez interna', icon: ShieldCheck },
+  { href: '/investigador/datos', label: 'Evidencia complementaria', icon: Activity },
   { href: '/investigador/exportacion', label: 'Exportación', icon: Download },
 ];
 

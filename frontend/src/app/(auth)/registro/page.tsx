@@ -84,7 +84,7 @@ export default function RegistroPage() {
     setError('');
     setCargando(true);
     try {
-      const u = await register({ nombre: f.nombre, email: f.email, password: f.password, cedula: f.cedula, carrera: f.carrera, paralelo: f.paralelo.trim().toUpperCase() });
+      const u = await register({ nombre: f.nombre, email: f.email, password: f.password, cedula: f.cedula, carrera: f.carrera, paralelo: f.paralelo.trim().toUpperCase(), aceptaTerminos: acepta });
       router.replace(!u.introduccionCompletada ? '/introduccion' : !u.pretestCompletado ? '/pretest' : '/dashboard');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo crear la cuenta');
