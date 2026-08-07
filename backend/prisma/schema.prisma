@@ -387,6 +387,19 @@ model IntentoSubidaNivel {
 //  El banco de ejercicios es EL MISMO para todos; lo que se personaliza es el
 //  ORDEN y el ritmo. `dificultadObjetivo` (1-5) parte del pretest y el motor de
 //  reglas la sube con aciertos y la baja con fallos tras cada intento.
+//
+//  ⚠️ OBSOLETA (constatado el 2026-08-07). NINGÚN servicio la escribe y NADIE la
+//  lee: no queda una sola referencia en `backend/src` fuera de los mocks de
+//  prueba. La adaptatividad terminó implementándose sobre el nivel POR TEMA
+//  (`ProgresoTema.nivelActual`, derivado de θ) en lugar de una dificultad
+//  objetivo global, y esta tabla quedó atrás sin que nadie la retirara.
+//
+//  NO se elimina todavía a propósito: quitarla exige una migración, y no
+//  conviene tocar el esquema justo antes de desplegar y empezar a recolectar
+//  datos reales. Retirarla cuando la recolección haya terminado.
+//
+//  El seed de demostración NO la puebla: inventar filas en una tabla que el
+//  sistema real nunca escribe sería fabricar un estado imposible.
 model PerfilAdaptativo {
   usuarioId          Int      @id @map("usuario_id")
   dificultadObjetivo Int      @default(1) @map("dificultad_objetivo")
