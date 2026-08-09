@@ -46,14 +46,26 @@ function archivosFuente(dir: string): string[] {
 }
 
 /**
- * Quita comentarios de bloque y de línea. Sin esto, la propia documentación que
- * explica POR QUÉ no debe aparecer `grupo` haría fallar la prueba — un guardián
- * que castiga documentar el motivo no dura ni una semana.
+ * Quita comentarios y textos literales simples ('…' y "…").
+ *
+ * POR QUÉ SE IGNORAN ESOS DOS Y NO MÁS. La fuga que importa es la del DATO: un
+ * campo `grupo:` en una respuesta o una lectura `usuario.grupo`. Mencionar la
+ * palabra en una explicación dirigida al docente ("si el abandono se concentra
+ * en un grupo, sesga la comparación") no revela la asignación de nadie.
+ *
+ * Un guardián que castiga documentar el motivo no dura ni una semana: alguien
+ * lo relaja con prisa y deja de proteger nada. Así que se ignora la prosa y se
+ * sigue vigilando TODO lo demás.
+ *
+ * Las plantillas (backticks) NO se ignoran a propósito: ahí sí puede colarse una
+ * interpolación real como `${u.grupo}`.
  */
-function sinComentarios(codigo: string): string {
+function sinComentariosNiTextos(codigo: string): string {
   return codigo
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+    .replace(/(^|[^:])\/\/.*$/gm, '$1')
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''")
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""');
 }
 
 /**
@@ -69,10 +81,31 @@ describe('el rol DOCENTE es ciego al grupo del estudio', () => {
     expect(fuentes.length).toBeGreaterThan(5);
   });
 
+  /**
+   * El guardián solo sirve si sigue detectando las formas REALES de fuga
+   * después de haberlo afinado para ignorar la prosa. Estos casos lo prueban.
+   */
+  it('sigue detectando las formas reales de fuga pese a ignorar los textos', () => {
+    const detecta = (codigo: string) => /\bgrupo\b/i.test(
+      sinComentariosNiTextos(codigo).replace(FALSOS_POSITIVOS, ''),
+    );
+    // Lo que DEBE seguir cazando:
+    expect(detecta('return { id: u.id, grupo: u.grupo };')).toBe(true);
+    expect(detecta('const g = usuario.grupo;')).toBe(true);
+    expect(detecta('select: { grupo: true }')).toBe(true);
+    expect(detecta('const s = `asignado a ${u.grupo}`;')).toBe(true); // plantilla
+    // Lo que puede pasar (prosa y documentación):
+    expect(detecta("mensaje: 'el abandono por grupo sesga la comparación'")).toBe(false);
+    expect(detecta('// no exponer el grupo del estudio')).toBe(false);
+    expect(detecta('/* el grupo pertenece al rol investigador */')).toBe(false);
+    // Y las agrupaciones de UI, que no tienen nada que ver:
+    expect(detecta('const grupos = agruparPorUnidad(x);')).toBe(false);
+  });
+
   it.each(fuentes.map((f) => [f.replace(RAIZ_DOCENTE, 'docente'), f]))(
     '%s no menciona el grupo del estudio',
     (_etiqueta, ruta) => {
-      const codigo = sinComentarios(readFileSync(ruta, 'utf8')).replace(FALSOS_POSITIVOS, '');
+      const codigo = sinComentariosNiTextos(readFileSync(ruta, 'utf8')).replace(FALSOS_POSITIVOS, '');
       const lineas = codigo.split('\n');
       const ofensivas = lineas
         .map((l, i) => ({ n: i + 1, texto: l }))

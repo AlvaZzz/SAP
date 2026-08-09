@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Put, Patch, Delete, Param, Query, Body, ParseIntPipe, UseGuards,
 } from '@nestjs/common';
 import { DocenteEjerciciosService } from './docente-ejercicios.service';
+import { DocenteCoberturaService } from './docente-cobertura.service';
 import { CrearEjercicioDto, EditarEjercicioDto, BANCOS_DOCENTE } from './dto/ejercicio.dto';
 import { Banco } from '@prisma/client';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
@@ -15,7 +16,16 @@ import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('docente', 'admin')
 export class DocenteEjerciciosController {
-  constructor(private readonly service: DocenteEjerciciosService) {}
+  constructor(
+    private readonly service: DocenteEjerciciosService,
+    private readonly cobertura_: DocenteCoberturaService,
+  ) {}
+
+  /** Cobertura del banco por unidad/tema/nivel, con los huecos detectados. */
+  @Get('cobertura')
+  async cobertura() {
+    return this.cobertura_.resumen();
+  }
 
   /** Normaliza el query `banco` a uno gestionable (practica | examen). */
   private banco(b?: string): Banco | undefined {

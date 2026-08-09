@@ -19,11 +19,19 @@ import type { Usuario } from '@/lib/types';
 const LOGIN_ENDPOINT = '/auth/login'; // referencia (lo llama auth-provider)
 const REDIRECT_AFTER_LOGIN = '/dashboard'; // destino por defecto (estudiante listo)
 
-/** Destino post-login según rol y estado de onboarding del estudiante. */
+/**
+ * Destino post-login según rol y estado de onboarding del estudiante.
+ *
+ * Debe coincidir con `HOME_ROL` de `components/shell.tsx`: son dos mapas
+ * distintos (uno redirige tras el login, el otro tras un acceso no permitido) y
+ * si divergen, el usuario aterriza en sitios distintos según por dónde entre.
+ * Docente e investigador llegan a su ÍNDICE de módulos numerados, que muestra el
+ * recorrido completo en vez de un fragmento.
+ */
 function destinoPorRol(u: Usuario): string {
   if (u.rol === 'admin') return '/admin/dashboard';
-  if (u.rol === 'investigador') return '/investigador/panel';
-  if (u.rol === 'docente') return '/docente/dashboard';
+  if (u.rol === 'investigador') return '/investigador/indice';
+  if (u.rol === 'docente') return '/docente/indice';
   if (!u.introduccionCompletada) return '/introduccion';
   if (!u.pretestCompletado) return '/pretest';
   return REDIRECT_AFTER_LOGIN;

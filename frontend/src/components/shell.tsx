@@ -12,7 +12,7 @@ import { BuscadorNav } from './buscador-nav';
 import {
   LayoutDashboard, Code, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
   LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
-  Layers, Bot, Inbox, Sparkles, ShieldCheck,
+  Layers, Bot, Inbox, Sparkles, ShieldCheck, AlertTriangle,
 } from './icons';
 
 type Area = 'estudiante' | 'docente' | 'investigador' | 'admin';
@@ -22,9 +22,11 @@ interface NavItem { href: string; label: string; icon: ComponentType<{ className
 // Home por rol (adónde llega/redirige cada rol).
 const HOME_ROL: Record<Rol, string> = {
   estudiante: '/dashboard',
-  docente: '/docente/dashboard',
+  // Ambos roles entran por su ÍNDICE de módulos numerados: la primera pantalla
+  // debe mostrar el recorrido completo, no un fragmento de él.
+  docente: '/docente/indice',
   admin: '/admin/dashboard',
-  investigador: '/investigador/panel',
+  investigador: '/investigador/indice',
 };
 // ¿El rol puede ver esta área? El admin (máximo privilegio) puede ver todas.
 function areaPermite(area: Area, rol: Rol): boolean {
@@ -50,18 +52,28 @@ const NAV_ESTUDIANTE: NavItem[] = [
   { href: '/postest', label: 'Evaluación final', icon: GraduationCap },
 ];
 
+/**
+ * Navegación del rol DOCENTE. Los seis primeros son los módulos numerados del
+ * índice —los que documentan la fidelidad de la intervención—; debajo quedan
+ * las herramientas de autoría del curso, que se usan a diario pero no forman
+ * parte de ese recorrido.
+ */
 const NAV_DOCENTE: NavItem[] = [
-  { href: '/docente/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/docente/indice', label: 'Índice', icon: LayoutDashboard },
+  { href: '/docente/unidades', label: '1 · Control del curso', icon: Layers },
+  { href: '/docente/estudiantes', label: '2 · Seguimiento', icon: Users },
+  { href: '/docente/riesgo', label: '3 · En riesgo', icon: AlertTriangle },
+  { href: '/docente/revisiones', label: '4 · Revisiones', icon: ClipboardList },
+  { href: '/docente/cobertura', label: '5 · Cobertura del banco', icon: Code },
+  { href: '/docente/reportes', label: '6 · Reportes', icon: BarChart3 },
+  // ── Herramientas de autoría ──
+  { href: '/docente/dashboard', label: 'Resumen del día', icon: Activity },
   { href: '/docente/pendientes', label: 'Pendientes', icon: Inbox },
-  { href: '/docente/unidades', label: 'Unidades y temas', icon: Layers },
   { href: '/docente/ejercicios', label: 'Ejercicios', icon: Code },
   { href: '/docente/preguntas-ia', label: 'Preguntas IA', icon: Bot },
   { href: '/docente/retos', label: 'Retos', icon: Target },
   { href: '/docente/documentos', label: 'Documentos', icon: FileText },
-  { href: '/docente/estudiantes', label: 'Estudiantes', icon: Users },
-  { href: '/docente/revisiones', label: 'Revisiones', icon: ClipboardList },
   { href: '/docente/postest', label: 'Evaluación final', icon: GraduationCap },
-  { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
 ];
 
 /**
@@ -69,14 +81,15 @@ const NAV_DOCENTE: NavItem[] = [
  * recorrerla de arriba abajo es recorrer el capítulo de resultados.
  */
 const NAV_INVESTIGADOR: NavItem[] = [
-  { href: '/investigador/panel', label: 'Muestra y diseño', icon: LayoutDashboard },
-  { href: '/investigador/fiabilidad', label: 'Fiabilidad', icon: FlaskConical },
-  { href: '/investigador/equivalencia', label: 'Equivalencia inicial', icon: Users },
-  { href: '/investigador/resultados', label: 'Resultados', icon: BarChart3 },
-  { href: '/investigador/clasificacion', label: 'Clasificación', icon: Layers },
-  { href: '/investigador/validez', label: 'Validez interna', icon: ShieldCheck },
-  { href: '/investigador/datos', label: 'Evidencia complementaria', icon: Activity },
-  { href: '/investigador/exportacion', label: 'Exportación', icon: Download },
+  { href: '/investigador/indice', label: 'Índice', icon: LayoutDashboard },
+  { href: '/investigador/panel', label: '1 · Diseño y muestra', icon: ClipboardList },
+  { href: '/investigador/validez', label: '2 · Flujo de participantes', icon: ShieldCheck },
+  { href: '/investigador/fiabilidad', label: '3 · Fiabilidad', icon: FlaskConical },
+  { href: '/investigador/equivalencia', label: '4 · Equivalencia inicial', icon: Users },
+  { href: '/investigador/resultados', label: '5 · Resultados', icon: BarChart3 },
+  { href: '/investigador/datos', label: '6 · Dosis-respuesta', icon: Activity },
+  { href: '/investigador/clasificacion', label: '7 · Mecanismo adaptativo', icon: Layers },
+  { href: '/investigador/exportacion', label: '8 · Exportación', icon: Download },
 ];
 
 const NAV_ADMIN: NavItem[] = [

@@ -38,13 +38,30 @@ export class DocenteRevisionesService {
         usuario: { select: { id: true, nombre: true, email: true } },
       },
     });
-    return entregas.map((e) => ({
-      retoId: e.retoId, retoTitulo: e.reto.titulo, categoria: e.reto.categoria,
-      enunciado: e.reto.enunciado, xpSugerido: e.reto.xp,
-      estudianteId: e.usuario.id, estudiante: e.usuario.nombre, email: e.usuario.email,
-      estado: e.estado, codigo: e.codigoEntregado, xp_obtenido: e.xpObtenido,
-      feedback: e.feedbackDocente, entregado_en: e.entregadoEn, revisado_en: e.revisadoEn,
-    }));
+    const ahora = Date.now();
+    return entregas.map((e) => {
+      // TIEMPO DE ESPERA. No es un adorno: la retroalimentación oportuna forma
+      // parte del tratamiento. Si unas entregas se corrigen en un día y otras
+      // en dos semanas, la intervención NO fue uniforme entre estudiantes, y
+      // eso hay que poder verlo mientras aún se puede corregir.
+      const referencia = e.revisadoEn ?? new Date(ahora);
+      const horas = e.entregadoEn
+        ? Math.max(0, Math.round((referencia.getTime() - e.entregadoEn.getTime()) / 3_600_000))
+        : null;
+
+      return {
+        retoId: e.retoId, retoTitulo: e.reto.titulo, categoria: e.reto.categoria,
+        enunciado: e.reto.enunciado, xpSugerido: e.reto.xp,
+        estudianteId: e.usuario.id, estudiante: e.usuario.nombre, email: e.usuario.email,
+        estado: e.estado, codigo: e.codigoEntregado, xp_obtenido: e.xpObtenido,
+        feedback: e.feedbackDocente, entregado_en: e.entregadoEn, revisado_en: e.revisadoEn,
+        /** Horas esperando (si sigue pendiente) o que esperó (si ya se revisó). */
+        horas_espera: horas,
+        dias_espera: horas === null ? null : Math.floor(horas / 24),
+        /** Marca las que llevan más de 72 h sin revisar: ahí la demora ya es notable. */
+        demorada: e.estado === 'pendiente_revision' && horas !== null && horas > 72,
+      };
+    });
   }
 
   /** Conteo de entregas pendientes (para el stat card del dashboard). */

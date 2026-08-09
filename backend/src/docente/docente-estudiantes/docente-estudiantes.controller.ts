@@ -1,5 +1,6 @@
 import { Controller, Get, Put, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { DocenteEstudiantesService } from './docente-estudiantes.service';
+import { DocenteRiesgoService } from './docente-riesgo.service';
 import { NotaDto } from './dto/nota.dto';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
@@ -9,7 +10,16 @@ import { CurrentUser } from '../../common/auth/current-user.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('docente', 'admin')
 export class DocenteEstudiantesController {
-  constructor(private readonly service: DocenteEstudiantesService) {}
+  constructor(
+    private readonly service: DocenteEstudiantesService,
+    private readonly riesgo: DocenteRiesgoService,
+  ) {}
+
+  /** Estudiantes en riesgo, con TODOS sus motivos y los umbrales a la vista. */
+  @Get('riesgo')
+  async enRiesgo() {
+    return this.riesgo.listar();
+  }
 
   @Get()
   async listar() {
