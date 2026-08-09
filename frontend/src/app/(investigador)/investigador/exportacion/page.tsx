@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Card, SectionTitle, Skeleton, Badge, EmptyState, ResponsiveTable, PageHeader } from '@/components/ui';
 import { Download, Database, CheckCircle, AlertTriangle, ShieldCheck } from '@/components/icons';
-import { AvisoMuestra, Explicacion } from '@/components/investigador/estadistica';
+import { ActualizarDatos, AvisoMuestra, Explicacion } from '@/components/investigador/estadistica';
 
 interface PorCat { variables: number | null; condicionales: number | null; bucles: number | null; funciones: number | null; estructuras: number | null }
 interface Fila {
@@ -43,21 +43,33 @@ interface Etica {
 
 export default function ExportacionPage() {
   const [filas, setFilas] = useState<Fila[] | null>(null);
+  const [calculadoEn, setCalculadoEn] = useState<string | null>(null);
   const [meta, setMeta] = useState<Metadatos | null>(null);
   const [codebook, setCodebook] = useState<Variable[] | null>(null);
   const [etica, setEtica] = useState<Etica | null>(null);
 
-  useEffect(() => {
-    api.get<{ dataset: Fila[] }>('/investigador/exportacion/dataset').then((r) => setFilas(r.dataset)).catch(() => setFilas([]));
+  const cargar = useCallback(() => {
+    api.get<{ dataset: Fila[]; calculado_en: string | null }>('/investigador/exportacion/dataset')
+      .then((r) => { setFilas(r.dataset); setCalculadoEn(r.calculado_en); })
+      .catch(() => setFilas([]));
     api.get<Metadatos>('/investigador/metadatos-corte').then(setMeta).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    cargar();
     api.get<{ variables: Variable[] }>('/investigador/codebook').then((r) => setCodebook(r.variables)).catch(() => undefined);
     api.get<Etica>('/investigador/etica').then(setEtica).catch(() => undefined);
-  }, []);
+  }, [cargar]);
 
   return (
     <div className="animate-fade-up">
       <PageHeader title="Exportación y reproducibilidad" subtitle="Dataset anonimizado, diccionario de variables y metadatos del corte, para que cualquier resultado reportado se pueda reproducir después."
-        action={<a href="/api/investigador/exportacion/export.csv" className="btn-primary"><Download className="h-4 w-4" /> Exportar CSV</a>} />
+        action={
+          <div className="flex flex-wrap items-center gap-3">
+            <ActualizarDatos calculadoEn={calculadoEn} onActualizado={cargar} />
+            <a href="/api/investigador/exportacion/export.csv" className="btn-primary"><Download className="h-4 w-4" /> Exportar CSV</a>
+          </div>
+        } />
 
       {/* Metadatos del corte + hash: lo que hace reproducible un resultado */}
       {meta && (

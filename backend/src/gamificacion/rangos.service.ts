@@ -116,13 +116,27 @@ export class RangosService {
    * progreso hacia el siguiente. Para el banner de "Tu progreso académico".
    */
   async resumen(usuarioId: number) {
-    // Asegura que el desempeño esté al día (por si nunca se calculó).
-    await this.recalcular(usuarioId).catch(() => undefined);
+    // ── POR QUÉ ESTO YA NO RECALCULA SIEMPRE ──────────────────────────────
+    // Antes se llamaba a `recalcular()` en CADA lectura, lo que convertía una
+    // simple visita al dashboard en un puñado de ESCRITURAS a la base. Con
+    // varios estudiantes conectados a la vez, esa escritura-en-lectura es lo
+    // primero que satura la capa gratuita de Neon.
+    //
+    // No hace falta: `recalcular()` ya se invoca en los eventos que de verdad
+    // cambian el desempeño — tras cada intento (`ejercicios.service.ts`) y al
+    // finalizar el postest. Aquí solo se recalcula en el caso que esos eventos
+    // no cubren: que el estudiante NUNCA haya tenido un cálculo (por ejemplo,
+    // datos migrados o una unidad publicada después).
+    let desempenos = await this.prisma.desempenoUnidad.findMany({ where: { usuarioId } });
+    if (desempenos.length === 0) {
+      await this.recalcular(usuarioId).catch(() => undefined);
+      desempenos = await this.prisma.desempenoUnidad.findMany({ where: { usuarioId } });
+    }
 
-    const [desempenos, unidades] = await Promise.all([
-      this.prisma.desempenoUnidad.findMany({ where: { usuarioId } }),
-      this.prisma.unidad.findMany({ orderBy: [{ orden: 'asc' }, { numero: 'asc' }], select: { id: true, numero: true, titulo: true } }),
-    ]);
+    const unidades = await this.prisma.unidad.findMany({
+      orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+      select: { id: true, numero: true, titulo: true },
+    });
 
     const porUnidad = unidades.map((u) => {
       const d = desempenos.find((x) => x.unidadId === u.id);

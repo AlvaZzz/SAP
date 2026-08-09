@@ -122,7 +122,10 @@ function DetalleEstudiante({ id, onClose }: { id: number; onClose: () => void })
           {/* Cabecera */}
           <div className="flex flex-wrap items-center gap-3">
             <EstadoBadge estado={d.estudiante.estado} />
-            <Badge tone="blue">Grupo {d.estudiante.grupo}</Badge>
+            {/* Aquí NO se muestra el grupo del estudio: el docente debe
+                permanecer ciego a la asignación control/experimental para no
+                tratar distinto a los dos grupos. Ver la nota en
+                docente-estudiantes.service.ts. */}
             <span className="text-sm text-muted">{d.estudiante.email}</span>
           </div>
 

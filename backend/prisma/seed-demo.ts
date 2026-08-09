@@ -322,6 +322,30 @@ async function sellarFechas(
   );
 }
 
+/**
+ * Sella una tanda ESPACIÁNDOLA en el tiempo: cada fila queda unos minutos
+ * después de la anterior, dentro de la misma sesión.
+ *
+ * Importa más de lo que parece. Si todos los intentos de una sesión comparten
+ * la misma marca de tiempo, no hay huecos entre eventos y el tiempo estimado en
+ * plataforma sale 0 para todo el mundo — la métrica se ve rota aunque el
+ * cálculo sea correcto. Un estudiante real tarda minutos entre un ejercicio y
+ * el siguiente, y así debe reflejarlo el dato.
+ */
+async function sellarTanda(
+  prisma: PrismaClient, tabla: string, columna: string,
+  ids: number[], inicio: Date, minutosPorPaso: () => number,
+) {
+  let t = inicio.getTime();
+  for (const id of ids) {
+    await prisma.$executeRawUnsafe(
+      `UPDATE ${tabla} SET ${columna} = $1 WHERE id = $2`,
+      new Date(t), id,
+    );
+    t += minutosPorPaso() * 60_000;
+  }
+}
+
 /** Elimina TODAS las cuentas de demostración. Nunca puede tocar un usuario real. */
 async function limpiar(prisma: PrismaClient): Promise<number> {
   // Filtro basado EXCLUSIVAMENTE en el dominio reservado del correo, que ninguna
@@ -615,7 +639,11 @@ async function main() {
           select: { id: true },
         });
         idsSesion.push(...nuevos.map((n) => n.id));
-        await sellarFechas(prisma, 'intentos', 'fecha', idsSesion, fechaSesion);
+        // Espaciados 2–9 min entre ejercicios: dentro del umbral de sesión
+        // (30 min), así que siguen contando como UNA sesión, pero generan los
+        // huecos de los que se estima el tiempo en plataforma.
+        await sellarTanda(prisma, 'intentos', 'fecha', idsSesion, fechaSesion,
+          () => enteroEntre(2, 9));
         await prisma.$executeRawUnsafe(
           `UPDATE pasos_ruta SET fecha = $1 WHERE usuario_id = $2 AND fecha > $3`,
           fechaSesion, usuario.id, new Date(Date.now() - 600_000),

@@ -9,7 +9,8 @@ type Tab = 'prepost' | 'progreso' | 'actividad';
 
 interface PrePost {
   por_categoria: { categoria: string; pretest: number | null; postest: number | null }[];
-  tabla: { id: number; nombre: string; grupo: string; pretest: number | null; postest: number | null; ganancia: number | null; categoria_mas_debil: string | null }[];
+  // Sin `grupo`: el rol docente es ciego a la asignación control/experimental.
+  tabla: { id: number; nombre: string; pretest: number | null; postest: number | null; ganancia: number | null; categoria_mas_debil: string | null }[];
   resumen: { estudiantes_con_pretest: number; estudiantes_con_postest: number; promedio_pretest: number | null; promedio_postest: number | null; ganancia_promedio: number | null };
 }
 interface Progreso { total_estudiantes: number; niveles: { numero: number; titulo: string; estudiantes: number; tiempo_promedio_seg: number }[] }
@@ -26,8 +27,10 @@ export default function DocenteReportesPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Reportes del grupo" subtitle="Insumo para el análisis estadístico de la investigación."
-        action={<a href="/api/docente/reportes/export.csv" className="btn-primary"><Download className="h-4 w-4" /> Exportar CSV</a>} />
+      {/* Sin botón de exportación: el CSV de pretest/postest se retiró de este
+          rol porque revelaba el grupo del estudio y duplicaba el dataset
+          canónico. El análisis se exporta desde el rol investigador. */}
+      <PageHeader title="Reportes del curso" subtitle="Avance del curso para el seguimiento pedagógico." />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {TABS.map(({ id, label, icon: Icon }) => (
@@ -102,7 +105,6 @@ function TabPrePost() {
         rowKey={(r) => r.id}
         cols={[
           { header: 'Estudiante', cell: (r) => <span className="font-medium text-fg">{r.nombre}</span> },
-          { header: 'Grupo', cell: (r) => <Badge tone={r.grupo === 'experimental' ? 'blue' : 'slate'}>{r.grupo}</Badge> },
           { header: 'Pretest', cell: (r) => <span className="text-muted">{r.pretest ?? '—'}</span> },
           { header: 'Postest', cell: (r) => <span className="text-muted">{r.postest ?? '—'}</span> },
           {

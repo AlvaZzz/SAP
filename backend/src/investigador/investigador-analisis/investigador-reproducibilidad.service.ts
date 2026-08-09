@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { InvestigadorExportacionService } from '../investigador-exportacion/investigador-exportacion.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ALFA, MIN_INTERPRETABLE } from '../../common/estadistica/contraste';
+import { UMBRAL_SESION_MIN, TOPE_HUECO_MIN, NOTA_TIEMPO_ESTIMADO } from '../../common/estadistica/uso';
 
 /** Una entrada del diccionario de variables (codebook). */
 export interface VariableCodebook {
@@ -68,6 +69,15 @@ export class InvestigadorReproducibilidadService {
       { variable: 'tiempo_medio_delta', descripcion: 'Cambio en el tiempo medio por intento entre mitades.', tipo: 'entero', unidad: 'segundos', rango: 'negativo = más rápido', calculo: 'Ídem sobre tiempoSeg de intentos con tiempo > 0.' },
       { variable: 'subidas_nivel_intentos', descripcion: 'Mini-diagnósticos de subida de nivel rendidos.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Registros de IntentoSubidaNivel.' },
       { variable: 'subidas_nivel_aprobadas', descripcion: 'Subidas de nivel superadas.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Subconjunto aprobado de lo anterior.' },
+      // ── DOSIS DE LA INTERVENCIÓN ──
+      { variable: 'dias_activos', descripcion: 'Días distintos con actividad en la plataforma. Medida principal de DOSIS.', tipo: 'entero', unidad: 'días', rango: '≥ 0', calculo: `Fechas únicas (calendario local) con al menos un evento, uniendo intentos, consultas al tutor, entregas de retos y código guardado.` },
+      { variable: 'primer_dia', descripcion: 'Fecha del primer evento registrado.', tipo: 'fecha', unidad: 'AAAA-MM-DD', rango: '—', calculo: 'Mínimo de las fechas de sus eventos.' },
+      { variable: 'ultimo_dia', descripcion: 'Fecha del último evento registrado.', tipo: 'fecha', unidad: 'AAAA-MM-DD', rango: '—', calculo: 'Máximo de las fechas de sus eventos.' },
+      { variable: 'periodo_dias', descripcion: 'Duración de la participación.', tipo: 'entero', unidad: 'días', rango: '≥ 1', calculo: 'Días calendario entre el primer y el último evento, INCLUSIVE (quien entró un solo día tiene 1, no 0).' },
+      { variable: 'sesiones', descripcion: 'Bloques de trabajo estimados.', tipo: 'entero', unidad: 'sesiones', rango: '≥ 0', calculo: `Eventos consecutivos separados por MÁS de ${UMBRAL_SESION_MIN} minutos abren una sesión nueva. El umbral de ${UMBRAL_SESION_MIN} min es la convención habitual en analítica de aprendizaje; en el borde exacto se considera la MISMA sesión.` },
+      { variable: 'minutos_estimados', descripcion: 'Tiempo estimado en plataforma. NO es una medición directa.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: `Suma de los huecos entre eventos consecutivos de una misma sesión, acotando cada hueco a ${TOPE_HUECO_MIN} min para que una pausa larga no infle el total. El sistema no puede saber si el navegador quedó abierto sin nadie delante.` },
+      { variable: 'minutos_por_sesion', descripcion: 'Duración media estimada de una sesión.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: 'minutos_estimados ÷ sesiones.' },
+      { variable: 'regularidad', descripcion: 'Constancia de uso: distingue el trabajo sostenido del atracón concentrado.', tipo: 'decimal', unidad: 'proporción', rango: '0 a 1', calculo: 'dias_activos ÷ periodo_dias. Cerca de 1 = usó el sistema casi todos los días de su periodo; cerca de 0 = concentró la actividad en pocos días. Null si no hay actividad.' },
     ];
   }
 

@@ -1,5 +1,4 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { DocenteReportesService } from './docente-reportes.service';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
@@ -25,11 +24,6 @@ export class DocenteReportesController {
     return this.service.actividadSemanal();
   }
 
-  @Get('export.csv')
-  async exportCsv(@Res() res: Response) {
-    const csv = await this.service.exportCsv();
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="prexi_pretest_postest.csv"');
-    res.send(csv);
-  }
+  // La ruta `export.csv` se eliminó: revelaba el grupo del estudio y duplicaba
+  // el dataset canónico del rol investigador. Ver la nota en el servicio.
 }

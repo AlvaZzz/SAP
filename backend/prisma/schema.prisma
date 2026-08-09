@@ -570,6 +570,13 @@ model Intento {
   @@index([usuarioId])
   @@index([ejercicioId])
   @@index([fecha])
+  // Índice COMPUESTO (usuario, fecha): es la forma real en que se consulta esta
+  // tabla —el historial de UN estudiante ordenado por fecha, y la actividad de
+  // los últimos N días—, y ninguno de los índices sueltos de arriba la resuelve
+  // bien: con `usuarioId` solo, Postgres tiene que ordenar por fecha después;
+  // con `fecha` solo, filtra por usuario a mano. `intentos` es la tabla que más
+  // crece del sistema, así que es donde antes se nota.
+  @@index([usuarioId, fecha])
   @@map("intentos")
 }
 

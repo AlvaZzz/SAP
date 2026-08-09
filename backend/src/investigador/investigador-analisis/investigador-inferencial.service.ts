@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FilaDataset, InvestigadorExportacionService } from '../investigador-exportacion/investigador-exportacion.service';
 import { ALFA, compararGrupos, compararPrePost, formatearP } from '../../common/estadistica/contraste';
 import { clasificarHake, hake, media, pearson, shapiroWilk, spearman } from '../../common/estadistica/inferencia';
+import { NOTA_TIEMPO_ESTIMADO } from '../../common/estadistica/uso';
 
 const GRUPOS = ['control', 'experimental'] as const;
 
@@ -232,7 +233,15 @@ export class InvestigadorInferencialService {
     const dataset = await this.exportacion.construirDataset();
     const conGanancia = dataset.filter((f) => f.ganancia !== null);
 
-    const variables: { campo: keyof FilaDataset; etiqueta: string }[] = [
+    // Las cuatro primeras son las medidas de DOSIS propiamente dichas (cuánto y
+    // con qué constancia se usó el sistema); las demás son variables de
+    // actividad. Se listan primero porque son las que sostienen el argumento
+    // dosis-respuesta ante el tribunal.
+    const variables: { campo: keyof FilaDataset; etiqueta: string; esDosis?: boolean }[] = [
+      { campo: 'dias_activos', etiqueta: 'Días activos', esDosis: true },
+      { campo: 'sesiones', etiqueta: 'Sesiones de trabajo', esDosis: true },
+      { campo: 'minutos_estimados', etiqueta: 'Minutos estimados en plataforma', esDosis: true },
+      { campo: 'regularidad', etiqueta: 'Regularidad (constancia de uso)', esDosis: true },
       { campo: 'ejercicios_resueltos', etiqueta: 'Ejercicios resueltos' },
       { campo: 'intentos_totales', etiqueta: 'Intentos totales' },
       { campo: 'xp_total', etiqueta: 'XP acumulado' },
@@ -244,11 +253,11 @@ export class InvestigadorInferencialService {
     const ganancias = conGanancia.map((f) => f.ganancia as number);
     const suficiente = conGanancia.length >= 10;
 
-    const correlaciones = variables.map(({ campo, etiqueta }) => {
+    const correlaciones = variables.map(({ campo, etiqueta, esDosis }) => {
       const xs = conGanancia.map((f) => Number(f[campo] ?? 0));
       if (conGanancia.length < 3) {
         return {
-          variable: etiqueta, metodo: null, r: null, p: null, n: conGanancia.length,
+          variable: etiqueta, es_dosis: !!esDosis, metodo: null, r: null, p: null, n: conGanancia.length,
           magnitud: null, significativa: null,
           interpretacion: 'No hay casos suficientes para estimar una correlación.',
         };
@@ -266,6 +275,7 @@ export class InvestigadorInferencialService {
 
       return {
         variable: etiqueta,
+        es_dosis: !!esDosis,
         metodo,
         r: Number.isFinite(c.r) ? c.r : null,
         p: Number.isFinite(c.p) ? c.p : null,
@@ -288,10 +298,17 @@ export class InvestigadorInferencialService {
         ? null
         : `Con ${conGanancia.length} casos completos ninguna correlación es interpretable. Se muestran como exploratorias.`,
       correlaciones,
+      nota_dosis:
+        'Las cuatro primeras variables son las medidas de DOSIS de la intervención: responden a "¿y si ' +
+        'el grupo experimental simplemente no usó el sistema?". Una correlación positiva y significativa ' +
+        'entre dosis y ganancia es la evidencia causal más fuerte disponible sin aleatorización estricta: ' +
+        'muestra que la mejora ESCALA con el uso, lo que es difícil de explicar por una causa ajena a la ' +
+        'intervención. ' + NOTA_TIEMPO_ESTIMADO,
       nota_metodologica:
         'La correlación reemplaza a la antigua comparación por terciles de uso: dividir la muestra en ' +
         'tercios descarta información y, con n pequeño, sugiere patrones que no resisten un contraste. ' +
-        'La correlación usa todos los casos y viene con su valor p.',
+        'La correlación usa todos los casos y viene con su valor p. Ojo: una correlación NO demuestra ' +
+        'causalidad por sí sola — quien más practica pudo estar más motivado de entrada.',
     };
   }
 }

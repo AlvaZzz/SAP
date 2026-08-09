@@ -1,0 +1,13 @@
+-- Índice COMPUESTO sobre (usuario_id, fecha) en `intentos`.
+--
+-- Es la forma real en que se consulta la tabla: el historial de UN estudiante
+-- ordenado por fecha (ficha del docente, evolución de θ, dataset del estudio) y
+-- la actividad de los últimos N días. Los índices sueltos que ya existían
+-- —usuario_id, ejercicio_id, fecha— no resuelven bien ese patrón: con
+-- `usuario_id` Postgres aún debe ordenar por fecha, y con `fecha` debe filtrar
+-- por usuario a mano.
+--
+-- `intentos` es la tabla que más crece del sistema (un registro por cada
+-- respuesta de cada estudiante durante todo el semestre), así que es donde la
+-- degradación aparece antes.
+CREATE INDEX "intentos_usuario_id_fecha_idx" ON "intentos"("usuario_id", "fecha");

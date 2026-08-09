@@ -17,7 +17,28 @@ export class InvestigadorExportacionController {
   /** Vista previa del dataset (JSON) para la pantalla de exportación. */
   @Get('dataset')
   async dataset() {
-    return { dataset: await this.service.construirDataset() };
+    return {
+      dataset: await this.service.construirDataset(),
+      calculado_en: this.service.calculadoEn,
+    };
+  }
+
+  /**
+   * Fuerza el recálculo del dataset (botón "Actualizar datos").
+   *
+   * Es un GET a propósito y no un POST: no modifica datos del estudio, solo
+   * descarta una caché en memoria del backend. El rol sigue siendo de solo
+   * lectura sobre la base.
+   */
+  @Get('actualizar')
+  async actualizar() {
+    this.service.invalidarCache();
+    const dataset = await this.service.construirDataset(true);
+    return {
+      ok: true,
+      n: dataset.length,
+      calculado_en: this.service.calculadoEn,
+    };
   }
 
   /** Descarga del CSV consolidado y anonimizado (insumo para la prueba t en Colab). */

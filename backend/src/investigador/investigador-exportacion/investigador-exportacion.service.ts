@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { gananciaTheta } from '../../mediciones/irt/irt';
 import { MIN_INTENTOS_TENDENCIA, deltaMitades, promedio, redondear } from '../../common/estadistica/tendencia';
+import { calcularUso } from '../../common/estadistica/uso';
 
 /** Puntajes por categoría temática (0-100) del pretest o postest. */
 export interface PorCategoria {
@@ -56,6 +57,20 @@ export interface FilaDataset {
   autonomia_delta: number | null;
   tasa_acierto_delta: number | null;
   tiempo_medio_delta: number | null;
+  // ── DOSIS DE LA INTERVENCIÓN (uso real de la plataforma) ──
+  //  Sin esto la hipótesis es indefendible ante "¿y si el grupo experimental
+  //  simplemente no usó el sistema?". Además habilita el análisis
+  //  dosis-respuesta, que es el argumento causal más fuerte disponible sin
+  //  aleatorización estricta. Ver common/estadistica/uso.ts.
+  dias_activos: number;
+  primer_dia: Date | null;
+  ultimo_dia: Date | null;
+  periodo_dias: number;
+  sesiones: number;
+  minutos_estimados: number;
+  minutos_por_sesion: number;
+  /** Días activos ÷ días del periodo: uso sostenido (→1) vs. atracón (→0). */
+  regularidad: number | null;
 }
 
 interface CatRaw { categoria: string; aciertos: number; total: number; porcentaje: number }
@@ -143,9 +158,48 @@ export interface MatrizRespuestas {
  * complementarios, fiabilidad e inferencial derivan todos de este servicio; no
  * existen consultas paralelas que puedan contradecirlo.
  */
+/**
+ * Vida de la caché del dataset. Cinco minutos es el equilibrio: lo bastante
+ * corto para que un dato nuevo aparezca solo en poco tiempo, y lo bastante
+ * largo para que recorrer las ocho pantallas del rol no reconstruya el dataset
+ * ocho veces seguidas.
+ */
+const CACHE_MS = 5 * 60_000;
+
 @Injectable()
 export class InvestigadorExportacionService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   *  CACHÉ DEL DATASET CANÓNICO
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   *  `construirDataset()` está bien escrita (consultas en bloque, sin N+1),
+   *  pero es cara: recorre usuarios, intentos, consultas, entregas, subidas y
+   *  código. El problema no era la consulta sino la REPETICIÓN — las ocho
+   *  pantallas del rol investigador la reconstruían entera cada una, y en la
+   *  capa gratuita de Neon eso se nota.
+   *
+   *  Se guarda en memoria del proceso con vida corta. Es memoria del backend,
+   *  no de la base: si el servicio se reinicia (cosa habitual en Render Free),
+   *  simplemente se recalcula.
+   *
+   *  El investigador puede forzar el recálculo desde la interfaz, y la pantalla
+   *  muestra la hora del último cálculo: es más honesto que un dato fresco
+   *  silencioso, porque deja claro sobre qué momento se está mirando.
+   */
+  private cache: { datos: FilaDataset[]; calculadoEn: Date } | null = null;
+
+  /** Momento del último cálculo, para mostrarlo junto a los datos. */
+  get calculadoEn(): Date | null {
+    return this.cache?.calculadoEn ?? null;
+  }
+
+  /** Descarta la caché: el próximo acceso reconstruye desde la base. */
+  invalidarCache(): void {
+    this.cache = null;
+  }
 
   /** Normaliza el nombre de categoría del banco a una de las 5 áreas del estudio. */
   private claveCategoria(nombre: string): keyof PorCategoria | null {
@@ -179,9 +233,24 @@ export class InvestigadorExportacionService {
     };
   }
 
-  /** Dataset completo, anonimizado, una fila por estudiante. */
-  async construirDataset(): Promise<FilaDataset[]> {
-    const [estudiantes, intentos, consultas, entregas, subidas] = await Promise.all([
+  /**
+   * Dataset completo, anonimizado, una fila por estudiante.
+   *
+   * Sirve la copia en caché mientras esté vigente. `forzar: true` la ignora y
+   * reconstruye desde la base (lo usa el botón "Actualizar datos").
+   */
+  async construirDataset(forzar = false): Promise<FilaDataset[]> {
+    if (!forzar && this.cache && Date.now() - this.cache.calculadoEn.getTime() < CACHE_MS) {
+      return this.cache.datos;
+    }
+    const datos = await this.reconstruirDataset();
+    this.cache = { datos, calculadoEn: new Date() };
+    return datos;
+  }
+
+  /** Construcción real, siempre contra la base. No usar directamente. */
+  private async reconstruirDataset(): Promise<FilaDataset[]> {
+    const [estudiantes, intentos, consultas, entregas, subidas, codigos, fechasIntentos] = await Promise.all([
       this.prisma.usuario.findMany({
         where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
@@ -193,10 +262,33 @@ export class InvestigadorExportacionService {
         orderBy: { fecha: 'asc' },
         select: { usuarioId: true, ejercicioId: true, correcto: true, tiempoSeg: true, pistasUsadas: true },
       }),
-      this.prisma.consultaIa.findMany({ select: { usuarioId: true, tipo: true } }),
-      this.prisma.retoUsuario.findMany({ where: { estado: { not: 'sin_entregar' } }, select: { usuarioId: true } }),
+      this.prisma.consultaIa.findMany({ select: { usuarioId: true, tipo: true, fecha: true } }),
+      this.prisma.retoUsuario.findMany({
+        where: { estado: { not: 'sin_entregar' } },
+        select: { usuarioId: true, entregadoEn: true },
+      }),
       this.prisma.intentoSubidaNivel.findMany({ select: { usuarioId: true, aprobado: true } }),
+      // Código guardado en el editor: es actividad real aunque no genere intento.
+      this.prisma.codigoPractica.findMany({ select: { usuarioId: true, actualizadoEn: true } }),
+      // Fechas de los intentos: base del cálculo de días activos y sesiones.
+      this.prisma.intento.findMany({ select: { usuarioId: true, fecha: true } }),
     ]);
+
+    // ── DOSIS: se juntan TODOS los eventos con marca temporal de cada usuario ──
+    // Cuatro fuentes distintas de actividad, porque un estudiante que solo
+    // consultó al tutor o guardó código estuvo usando el sistema igual que uno
+    // que respondió ejercicios.
+    const eventosPorUsuario = new Map<number, Date[]>();
+    const anotar = (usuarioId: number, fecha: Date | null | undefined) => {
+      if (!fecha) return;
+      const xs = eventosPorUsuario.get(usuarioId) ?? [];
+      xs.push(fecha);
+      eventosPorUsuario.set(usuarioId, xs);
+    };
+    for (const it of fechasIntentos) anotar(it.usuarioId, it.fecha);
+    for (const c of consultas) anotar(c.usuarioId, c.fecha);
+    for (const r of entregas) anotar(r.usuarioId, r.entregadoEn);
+    for (const c of codigos) anotar(c.usuarioId, c.actualizadoEn);
 
     // Agregados por usuario (una pasada; evita N+1).
     const porUsuario = new Map<number, { correctos: Set<number>; tiempoSum: number; tiempoN: number }>();
@@ -240,6 +332,8 @@ export class InvestigadorExportacionService {
       const h = historial.get(u.id) ?? [];
       const conTiempo = h.filter((x) => x.tiempoSeg > 0);
       const hayTendencia = h.length >= MIN_INTENTOS_TENDENCIA;
+      // Dosis: días activos, sesiones, regularidad… sobre TODOS sus eventos.
+      const uso = calcularUso(eventosPorUsuario.get(u.id) ?? []);
 
       return {
         id_anonimo: `E-${String(i + 1).padStart(3, '0')}`,
@@ -280,6 +374,15 @@ export class InvestigadorExportacionService {
         tiempo_medio_delta: hayTendencia && conTiempo.length >= MIN_INTENTOS_TENDENCIA
           ? Math.round(deltaMitades(conTiempo.map((x) => x.tiempoSeg)))
           : null,
+        // ── Dosis de la intervención ──
+        dias_activos: uso.dias_activos,
+        primer_dia: uso.primer_dia,
+        ultimo_dia: uso.ultimo_dia,
+        periodo_dias: uso.periodo_dias,
+        sesiones: uso.sesiones,
+        minutos_estimados: uso.minutos_estimados,
+        minutos_por_sesion: uso.minutos_por_sesion,
+        regularidad: uso.regularidad,
       };
     });
   }
@@ -303,6 +406,9 @@ export class InvestigadorExportacionService {
       // Hábitos (proceso) — para cruzarlos con la ganancia.
       'intentos_totales', 'tasa_acierto', 'pistas_por_ejercicio', 'sin_pistas_pct',
       'autonomia_delta', 'tasa_acierto_delta', 'tiempo_medio_delta',
+      // Dosis de la intervención (uso real de la plataforma).
+      'dias_activos', 'primer_dia', 'ultimo_dia', 'periodo_dias',
+      'sesiones', 'minutos_estimados', 'minutos_por_sesion', 'regularidad',
     ];
     const esc = (v: string | number | null): string => {
       if (v === null || v === undefined) return '';
@@ -324,6 +430,10 @@ export class InvestigadorExportacionService {
       f.xp_total, f.racha, f.consultas_ia, f.pistas_usadas, f.retos_entregados,
       f.intentos_totales, f.tasa_acierto, f.pistas_por_ejercicio, f.sin_pistas_pct,
       f.autonomia_delta, f.tasa_acierto_delta, f.tiempo_medio_delta,
+      f.dias_activos,
+      f.primer_dia ? f.primer_dia.toISOString().slice(0, 10) : null,
+      f.ultimo_dia ? f.ultimo_dia.toISOString().slice(0, 10) : null,
+      f.periodo_dias, f.sesiones, f.minutos_estimados, f.minutos_por_sesion, f.regularidad,
     ].map(esc).join(','));
     return [cols.join(','), ...lineas].join('\n');
   }

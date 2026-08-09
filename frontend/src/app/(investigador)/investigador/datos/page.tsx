@@ -16,7 +16,7 @@ import { AvisoMuestra, Explicacion, num, pTexto } from '@/components/investigado
 import { ScatterChart } from '@/components/icons';
 
 interface Correlacion {
-  variable: string; metodo: string | null;
+  variable: string; es_dosis: boolean; metodo: string | null;
   r: number | null; p: number | null; n: number;
   magnitud: string | null; significativa: boolean | null;
   interpretacion: string;
@@ -25,6 +25,7 @@ interface Datos {
   hay_datos: boolean; n: number; suficiente: boolean;
   advertencia: string | null;
   correlaciones: Correlacion[];
+  nota_dosis: string;
   nota_metodologica: string;
 }
 
@@ -58,15 +59,24 @@ export default function DatosPage() {
 
           <Card className="mb-5 mt-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <SectionTitle>Correlación entre uso y ganancia</SectionTitle>
+              <SectionTitle>Relación dosis-respuesta</SectionTitle>
               <Badge tone={d.suficiente ? 'green' : 'amber'}>{d.n} casos completos</Badge>
             </div>
+            <p className="mb-3 text-sm leading-relaxed text-muted">{d.nota_dosis}</p>
 
             <ResponsiveTable
               rows={d.correlaciones}
               rowKey={(c) => c.variable}
               cols={[
-                { header: 'Variable de uso', cell: (c) => <span className="font-medium text-fg">{c.variable}</span> },
+                {
+                  header: 'Variable de uso',
+                  cell: (c) => (
+                    <span className={c.es_dosis ? 'font-semibold text-fg' : 'text-fg'}>
+                      {c.variable}
+                      {c.es_dosis && <Badge tone="blue" className="ml-2">dosis</Badge>}
+                    </span>
+                  ),
+                },
                 { header: 'Método', cell: (c) => <span className="text-muted">{c.metodo ?? '—'}</span> },
                 { header: 'r', cell: (c) => <span className="font-semibold text-fg">{num(c.r, 3)}</span> },
                 { header: 'p', cell: (c) => <span className="text-fg">{pTexto(c.p)}</span> },

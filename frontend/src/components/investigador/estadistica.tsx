@@ -11,7 +11,8 @@
  * un número que invite a una conclusión prematura.
  */
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
+import { api } from '@/lib/api';
 import { Badge, Card, SectionTitle } from '@/components/ui';
 import { AlertCircle, AlertTriangle, CheckCircle, HelpCircle, X } from '@/components/icons';
 
@@ -216,6 +217,50 @@ export function Metrica({ etiqueta, valor, destacado = false }: { etiqueta: stri
     <div className={`rounded-xl border p-3 text-center ${destacado ? 'border-prexi-green/40 bg-prexi-green/10' : 'border-line'}`}>
       <p className="text-[10px] uppercase tracking-wide text-muted">{etiqueta}</p>
       <p className={`mt-0.5 font-display text-sm font-bold ${destacado ? 'text-prexi-green' : 'text-fg'}`}>{valor}</p>
+    </div>
+  );
+}
+
+/**
+ * BOTÓN "ACTUALIZAR DATOS" + hora del último cálculo.
+ *
+ * El dataset del estudio se cachea unos minutos para no reconstruirlo en cada
+ * pantalla (la capa gratuita de Neon lo agradece). Mostrar la hora del último
+ * cálculo es más honesto que refrescar en silencio: deja claro sobre qué
+ * momento se está mirando, y el botón devuelve el control al investigador.
+ */
+export function ActualizarDatos({ calculadoEn, onActualizado }: {
+  calculadoEn: string | null;
+  onActualizado: () => void;
+}) {
+  const [cargando, setCargando] = useState(false);
+
+  async function actualizar() {
+    setCargando(true);
+    try {
+      await api.get('/investigador/exportacion/actualizar');
+      onActualizado();
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {calculadoEn && (
+        <span className="text-xs text-muted">
+          Datos calculados a las{' '}
+          {new Date(calculadoEn).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      )}
+      <button
+        type="button"
+        onClick={() => void actualizar()}
+        disabled={cargando}
+        className="rounded-xl border border-line px-3 py-1.5 text-xs font-semibold text-fg transition hover:bg-subtle disabled:opacity-50"
+      >
+        {cargando ? 'Actualizando…' : 'Actualizar datos'}
+      </button>
     </div>
   );
 }

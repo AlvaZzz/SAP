@@ -16,6 +16,27 @@ const MS_DIA = 86_400_000;
 /**
  * Seguimiento de estudiantes (rol docente). Todos los datos provienen de la
  * actividad REAL del estudiante (intentos, XP, progreso, pretest/postest).
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  SEPARACIÓN OBLIGATORIA: EL DOCENTE NO VE EL GRUPO DEL ESTUDIO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ *  Ninguna respuesta de ningún endpoint del rol docente puede incluir —ni
+ *  permitir inferir— si un estudiante pertenece al grupo CONTROL o al
+ *  EXPERIMENTAL.
+ *
+ *  Motivo: si el docente lo supiera, podría tratar a los dos grupos de forma
+ *  distinta sin siquiera proponérselo (sesgo del experimentador), y la
+ *  diferencia final dejaría de ser atribuible a la intervención. Es una amenaza
+ *  a la validez interna que no se puede corregir después: o el docente está
+ *  ciego al grupo, o el estudio queda comprometido.
+ *
+ *  El campo `Usuario.grupo` existe y es correcto — pero pertenece al rol
+ *  INVESTIGADOR, que trabaja sobre datos anonimizados. Aquí no entra.
+ *
+ *  Hay una prueba que recorre TODO `backend/src/docente` y falla si `grupo`
+ *  reaparece en cualquier respuesta: `docente-sin-grupo.spec.ts`.
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 @Injectable()
 export class DocenteEstudiantesService {
@@ -207,7 +228,8 @@ export class DocenteEstudiantesService {
 
     return {
       estudiante: {
-        id: u.id, nombre: u.nombre, email: u.email, carrera: u.carrera, grupo: u.grupo,
+        // SIN `grupo`: ver la nota de separación al inicio del archivo.
+        id: u.id, nombre: u.nombre, email: u.email, carrera: u.carrera,
         estado, xp: u.ranking?.xpTotal ?? 0, racha_dias: u.ranking?.rachaDias ?? 0,
         ejercicios_completados: completados.size, total_intentos: total,
         tasa_acierto: total ? Math.round((correctos / total) * 100) : 0,
