@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { DocenteEstudiantesService } from './docente-estudiantes.service';
 import { DocenteRiesgoService } from './docente-riesgo.service';
 import { NotaDto } from './dto/nota.dto';
@@ -21,9 +21,19 @@ export class DocenteEstudiantesController {
     return this.riesgo.listar();
   }
 
+  /**
+   * Lista paginada. `pagina` arranca en 1; `porPagina` se acota a 200 para que
+   * nadie pueda pedir la tabla entera con `?porPagina=99999` y anular la
+   * paginación desde el cliente.
+   */
   @Get()
-  async listar() {
-    return { estudiantes: await this.service.listar() };
+  async listar(
+    @Query('pagina') pagina?: string,
+    @Query('porPagina') porPagina?: string,
+  ) {
+    const p = Math.max(1, Number(pagina) || 1);
+    const pp = Math.min(200, Math.max(1, Number(porPagina) || 50));
+    return this.service.listar(p, pp);
   }
 
   @Get(':id')

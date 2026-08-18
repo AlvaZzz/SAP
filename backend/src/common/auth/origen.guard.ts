@@ -32,6 +32,34 @@ export class OrigenGuard implements CanActivate {
       .filter(Boolean);
   }
 
+  /**
+   * ¿Es un origen de la RED LOCAL? Solo se consulta fuera de producción.
+   *
+   * Por qué existe: en desarrollo el sistema se prueba desde el celular y desde
+   * otras máquinas del aula, que entran por la IP de la LAN
+   * (http://192.168.x.x:3000). Como esa cadena no coincide con APP_URL
+   * (http://localhost:3000), el guard rechazaba TODAS las mutaciones con
+   * "Origen no permitido" y era imposible siquiera iniciar sesión desde el
+   * teléfono.
+   *
+   * Se aceptan únicamente direcciones de rango PRIVADO (RFC 1918) y el propio
+   * equipo. Un atacante en internet no puede tener un origen así, y en
+   * producción esta rama ni se evalúa: allí solo vale APP_URL.
+   */
+  private esRedLocal(origen: string): boolean {
+    if (this.config.get<string>('NODE_ENV') === 'production') return false;
+    try {
+      const host = new URL(origen).hostname;
+      if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+      // 10.0.0.0/8 · 172.16.0.0/12 · 192.168.0.0/16
+      return /^10\./.test(host)
+        || /^192\.168\./.test(host)
+        || /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+    } catch {
+      return false;
+    }
+  }
+
   canActivate(ctx: ExecutionContext): boolean {
     const req = ctx.switchToHttp().getRequest<Request>();
     if (!METODOS_MUTACION.has(req.method)) return true;
@@ -43,6 +71,9 @@ export class OrigenGuard implements CanActivate {
 
     const limpio = origen.replace(/\/+$/, '');
     if (this.permitidos().includes(limpio)) return true;
+    // Fuera de producción se admite además la red local (celular, otra máquina
+    // del aula). Ver `esRedLocal`.
+    if (this.esRedLocal(limpio)) return true;
 
     throw new ForbiddenException('Origen no permitido');
   }

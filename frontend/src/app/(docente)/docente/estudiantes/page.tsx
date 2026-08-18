@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { EstudianteFila, EstudianteDetalle, EstadoEstudiante } from '@/lib/types';
@@ -24,10 +24,26 @@ function EstudiantesContenido() {
   const [filtro, setFiltro] = useState<'' | EstadoEstudiante>('');
   const [selId, setSelId] = useState<number | null>(null);
 
-  useEffect(() => {
-    api.get<{ estudiantes: EstudianteFila[] }>('/docente/estudiantes')
-      .then((r) => setLista(r.estudiantes)).catch(() => undefined).finally(() => setCargando(false));
+  // La lista viene PAGINADA del backend (50 por página). Se acumulan las
+  // páginas en memoria para que el buscador siga funcionando sobre lo cargado.
+  const [paginacion, setPaginacion] = useState<{ pagina: number; total: number; paginas: number } | null>(null);
+  const [cargandoMas, setCargandoMas] = useState(false);
+
+  const cargarPagina = useCallback((pagina: number) => {
+    const primera = pagina === 1;
+    if (primera) setCargando(true); else setCargandoMas(true);
+    api.get<{ estudiantes: EstudianteFila[]; paginacion: { pagina: number; total: number; paginas: number } }>(
+      `/docente/estudiantes?pagina=${pagina}`,
+    )
+      .then((r) => {
+        setLista((prev) => (primera ? r.estudiantes : [...prev, ...r.estudiantes]));
+        setPaginacion(r.paginacion);
+      })
+      .catch(() => undefined)
+      .finally(() => { setCargando(false); setCargandoMas(false); });
   }, []);
+
+  useEffect(() => { cargarPagina(1); }, [cargarPagina]);
 
   // Auto-abre el detalle si viene ?id= desde el dashboard.
   useEffect(() => {
@@ -86,6 +102,24 @@ function EstudiantesContenido() {
               ]}
             />
           )}
+
+      {/* La lista viene paginada del backend: se cargan más páginas a demanda
+          en vez de traer el curso entero de una vez. */}
+      {paginacion && paginacion.pagina < paginacion.paginas && (
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <p className="text-xs text-muted">
+            Mostrando {lista.length} de {paginacion.total} estudiantes
+          </p>
+          <button
+            type="button"
+            onClick={() => cargarPagina(paginacion.pagina + 1)}
+            disabled={cargandoMas}
+            className="rounded-xl border border-line px-4 py-2 text-sm font-semibold text-fg transition hover:bg-subtle disabled:opacity-50"
+          >
+            {cargandoMas ? 'Cargando…' : 'Cargar más'}
+          </button>
+        </div>
+      )}
 
       {selId && <DetalleEstudiante id={selId} onClose={() => setSelId(null)} />}
     </div>

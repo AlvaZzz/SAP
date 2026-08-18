@@ -94,13 +94,30 @@ export class DocenteEstudiantesService {
     return 'en_progreso';
   }
 
-  async listar() {
-    const [umb, niveles, estudiantes] = await Promise.all([
+  /**
+   * Lista de estudiantes, PAGINADA en la base.
+   *
+   * Antes esta consulta traía a memoria TODOS los intentos de TODOS los
+   * estudiantes en cada carga de la pantalla, solo para contarlos. Con un
+   * semestre de datos eso son decenas de miles de filas por visita, y en la
+   * capa gratuita se nota de inmediato.
+   *
+   * Ahora se pagina la lista y los conteos se piden AGREGADOS a Postgres
+   * (`groupBy`), limitados además a los estudiantes de la página. Se apoya en
+   * el índice compuesto (usuario_id, fecha) de `intentos`.
+   */
+  async listar(pagina = 1, porPagina = 50) {
+    const saltar = Math.max(0, (Math.max(1, pagina) - 1) * porPagina);
+
+    const [umb, niveles, total, estudiantes] = await Promise.all([
       this.umbrales(),
       this.prisma.nivel.findMany({ orderBy: { numero: 'asc' } }),
+      this.prisma.usuario.count({ where: { rol: 'estudiante' } }),
       this.prisma.usuario.findMany({
         where: { rol: 'estudiante' },
         orderBy: { nombre: 'asc' },
+        skip: saltar,
+        take: porPagina,
         include: { ranking: true, progreso: true },
       }),
     ]);
@@ -108,20 +125,45 @@ export class DocenteEstudiantesService {
     const umbralPorNivel = new Map(niveles.map((n) => [n.id, n.umbral]));
     const numeroPorNivel = new Map(niveles.map((n) => [n.id, n.numero]));
 
-    // Intentos de todos los estudiantes de una sola vez (evita N+1).
-    const intentos = await this.prisma.intento.findMany({
-      select: { usuarioId: true, ejercicioId: true, correcto: true, fecha: true },
-    });
-    const porUsuario = new Map<number, { total: number; correctos: number; completados: Set<number>; ultima: Date | null }>();
-    for (const it of intentos) {
-      const e = porUsuario.get(it.usuarioId) ?? { total: 0, correctos: 0, completados: new Set<number>(), ultima: null };
-      e.total++;
-      if (it.correcto) { e.correctos++; e.completados.add(it.ejercicioId); }
-      if (!e.ultima || it.fecha > e.ultima) e.ultima = it.fecha;
-      porUsuario.set(it.usuarioId, e);
-    }
+    const ids = estudiantes.map((u) => u.id);
 
-    return estudiantes.map((u) => {
+    // Conteos AGREGADOS en la base, no en Node, y solo de esta página.
+    const [totales, correctos, distintos] = await Promise.all([
+      this.prisma.intento.groupBy({
+        by: ['usuarioId'],
+        where: { usuarioId: { in: ids } },
+        _count: { _all: true },
+        _max: { fecha: true },
+      }),
+      this.prisma.intento.groupBy({
+        by: ['usuarioId'],
+        where: { usuarioId: { in: ids }, correcto: true },
+        _count: { _all: true },
+      }),
+      // Ejercicios DISTINTOS resueltos: no se puede contar con groupBy simple,
+      // así que se piden solo los pares (usuario, ejercicio) únicos y correctos.
+      this.prisma.intento.findMany({
+        where: { usuarioId: { in: ids }, correcto: true },
+        distinct: ['usuarioId', 'ejercicioId'],
+        select: { usuarioId: true, ejercicioId: true },
+      }),
+    ]);
+
+    const porUsuario = new Map<number, { total: number; correctos: number; completados: Set<number>; ultima: Date | null }>();
+    const dame = (id: number) => {
+      const e = porUsuario.get(id) ?? { total: 0, correctos: 0, completados: new Set<number>(), ultima: null };
+      porUsuario.set(id, e);
+      return e;
+    };
+    for (const t of totales) {
+      const e = dame(t.usuarioId);
+      e.total = t._count._all;
+      e.ultima = t._max.fecha ?? null;
+    }
+    for (const c of correctos) dame(c.usuarioId).correctos = c._count._all;
+    for (const d of distintos) dame(d.usuarioId).completados.add(d.ejercicioId);
+
+    const filas = estudiantes.map((u) => {
       const agg = porUsuario.get(u.id) ?? { total: 0, correctos: 0, completados: new Set<number>(), ultima: null };
       const desbloqueados = u.progreso.filter((p) => p.desbloqueado);
       const nivelActual = desbloqueados.length
@@ -152,6 +194,16 @@ export class DocenteEstudiantesService {
       if (r.estado === 'en_riesgo') this.notificarRiesgoSiNuevo(r.id, r.nombre).catch(() => undefined);
       return r;
     });
+
+    return {
+      estudiantes: filas,
+      paginacion: {
+        pagina: Math.max(1, pagina),
+        por_pagina: porPagina,
+        total,
+        paginas: Math.max(1, Math.ceil(total / porPagina)),
+      },
+    };
   }
 
   async detalle(estudianteId: number, docenteId: number) {

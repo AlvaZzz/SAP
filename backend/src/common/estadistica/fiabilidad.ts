@@ -103,6 +103,77 @@ export function kr20(respuestas: boolean[][]): Fiabilidad {
   };
 }
 
+/**
+ * ALFA DE CRONBACH — fiabilidad de consistencia interna para ítems
+ * POLITÓMICOS (escalas tipo Likert, donde cada ítem puntúa 1–5).
+ *
+ *      α = k/(k−1) · (1 − Σσ²_i / σ²_total)
+ *
+ *  Es la generalización del KR-20: donde aquel usa p·q (válido solo para
+ *  acierto/error), este usa la varianza de cada ítem. Por eso el pretest se
+ *  reporta con KR-20 y una escala de motivación con alfa: no son alternativas
+ *  entre las que elegir, cada una corresponde a un tipo de ítem.
+ *
+ *  Se devuelve además `alfa_si_se_elimina` por ítem: si quitar un ítem SUBE el
+ *  alfa, ese ítem está restando consistencia y conviene revisarlo (suele pasar
+ *  con ítems inversos mal recodificados o mal redactados).
+ */
+export interface FiabilidadEscala extends Fiabilidad {
+  items: {
+    indice: number;
+    /** Correlación ítem-total corregida (el propio ítem sale del total). */
+    correlacion: number | null;
+    /** Alfa que tendría la escala SIN este ítem. */
+    alfa_si_se_elimina: number | null;
+  }[];
+}
+
+export function alfaCronbach(respuestas: number[][]): FiabilidadEscala {
+  const n = respuestas.length;
+  const k = n > 0 ? respuestas[0].length : 0;
+
+  const vacio: FiabilidadEscala = {
+    coeficiente: NaN, k, n, interpretacion: 'inaceptable', confiable: false, items: [],
+  };
+  if (n < 2 || k < 2) return vacio;
+
+  const alfaDe = (m: number[][]): number => {
+    const cols = m[0].length;
+    if (cols < 2) return NaN;
+    const totales = m.map((f) => f.reduce((a, b) => a + b, 0));
+    const varTotal = varianza(totales);
+    if (!varTotal) return NaN;
+    let sumaVarItems = 0;
+    for (let i = 0; i < cols; i++) sumaVarItems += varianza(m.map((f) => f[i]));
+    return (cols / (cols - 1)) * (1 - sumaVarItems / varTotal);
+  };
+
+  const coef = alfaDe(respuestas);
+  if (!Number.isFinite(coef)) return vacio;
+
+  const totales = respuestas.map((f) => f.reduce((a, b) => a + b, 0));
+  const items = Array.from({ length: k }, (_, i) => {
+    const columna = respuestas.map((f) => f[i]);
+    const resto = respuestas.map((f, j) => totales[j] - f[i]);
+    const r = pearson(columna, resto);
+    const sinItem = respuestas.map((f) => f.filter((_, j) => j !== i));
+    const a = k > 2 ? alfaDe(sinItem) : NaN;
+    return {
+      indice: i,
+      correlacion: Number.isNaN(r.r) ? null : r.r,
+      alfa_si_se_elimina: Number.isFinite(a) ? a : null,
+    };
+  });
+
+  return {
+    coeficiente: coef,
+    k, n,
+    interpretacion: interpretarCoef(coef),
+    confiable: n >= 10,
+    items,
+  };
+}
+
 /** Mínimo de personas para que la discriminación de un ítem sea interpretable. */
 export const MIN_PERSONAS_ITEM = 10;
 

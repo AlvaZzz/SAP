@@ -181,6 +181,8 @@ model Usuario {
   historialTheta      HistorialTheta[]
   diagnosticoTemas    DiagnosticoTema[]
   repasosUnidad       RepasoUnidad[]
+  respuestasEncuesta  RespuestaEncuesta[]
+  consultasRanking    ConsultaRanking[]
   examenesUnidad      ExamenUnidad[]
 
   @@map("usuarios")
@@ -609,6 +611,59 @@ model Evaluacion {
 
   @@unique([usuarioId, tipo])
   @@map("pretest_postest")
+}
+
+// ── Consulta del RANKING (indicador conductual) ─────────────
+//  La tesis operacionaliza "interacción en rankings → frecuencia de consulta
+//  del ranking → logs del sistema", pero hasta ahora no se registraba nada: no
+//  había forma de saber cuántas veces un estudiante miró su posición.
+//
+//  Es una tabla de bitácora deliberadamente mínima: quién y cuándo, más el
+//  ámbito consultado. No guarda resultados ni posiciones —eso ya se puede
+//  reconstruir— porque el indicador prometido es la FRECUENCIA, no el contenido.
+model ConsultaRanking {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int      @map("usuario_id")
+  ambito    String // global | paralelo | unidad…
+  periodo   String // historico | semanal…
+  fecha     DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, fecha])
+  @@map("consultas_ranking")
+}
+
+// ── Encuesta de MOTIVACIÓN ACADÉMICA (escala Likert) ────────
+//  Instrumento de la variable dependiente "motivación académica" de la tesis,
+//  aplicado ANTES y DESPUÉS de la intervención para poder contrastar el cambio.
+//
+//  Se guarda una fila por estudiante × ítem × momento, no un puntaje agregado:
+//  el análisis de fiabilidad (alfa de Cronbach) y el de ítems se calculan sobre
+//  las respuestas individuales, igual que en el pretest. Guardar solo el total
+//  impediría reportar la confiabilidad del instrumento.
+//
+//  `valor` es la puntuación Likert 1–5 TAL COMO LA MARCÓ el estudiante; la
+//  recodificación de los ítems inversos se hace al puntuar, no al guardar, para
+//  que el dato crudo quede siempre disponible y auditable.
+model RespuestaEncuesta {
+  usuarioId Int             @map("usuario_id")
+  itemId    String          @map("item_id") // clave del ítem en el instrumento
+  momento   MomentoEncuesta
+  valor     Int // 1-5 (Likert), sin recodificar
+  version   String // versión del instrumento, para no mezclar aplicaciones
+  fecha     DateTime        @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, itemId, momento])
+  @@index([usuarioId, momento])
+  @@map("respuestas_encuesta")
+}
+
+enum MomentoEncuesta {
+  pre
+  post
 }
 
 // ── Respuestas individuales de pretest/postest (autosave) ───

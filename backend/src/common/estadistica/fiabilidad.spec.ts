@@ -26,7 +26,7 @@
  *  fórmula publicada, no un paquete certificado).
  */
 
-import { ajusteRasch, analisisItems, kr20 } from './fiabilidad';
+import { ajusteRasch, alfaCronbach, analisisItems, kr20 } from './fiabilidad';
 
 const M: boolean[][] = [
   [1, 1, 1, 1, 0, 0],
@@ -64,6 +64,82 @@ describe('KR-20', () => {
   it('con menos de 2 ítems o 2 personas devuelve NaN', () => {
     expect(Number.isNaN(kr20([[true]]).coeficiente)).toBe(true);
     expect(Number.isNaN(kr20([]).coeficiente)).toBe(true);
+  });
+});
+
+describe('alfa de Cronbach (escalas Likert)', () => {
+  /**
+   * Escala de 8 personas × 5 ítems con puntuaciones 1–5. Referencia calculada
+   * con numpy:
+   *   var_items = M.var(axis=0, ddof=1).sum()  → 9.5
+   *   var_total = M.sum(axis=1).var(ddof=1)    → 41.92857142857143
+   *   alfa = (k/(k-1))*(1 - var_items/var_total) → 0.9667802385008518
+   */
+  const ESCALA = [
+    [5, 4, 5, 4, 5],
+    [3, 3, 4, 2, 3],
+    [4, 5, 4, 5, 4],
+    [2, 2, 1, 2, 2],
+    [5, 5, 5, 4, 5],
+    [3, 4, 3, 3, 4],
+    [1, 2, 2, 1, 1],
+    [4, 4, 5, 4, 4],
+  ];
+
+  it('coincide con el cálculo de referencia en numpy', () => {
+    const r = alfaCronbach(ESCALA);
+    expect(r.coeficiente).toBeCloseTo(0.9667802385008518, 12);
+    expect(r.k).toBe(5);
+    expect(r.n).toBe(8);
+    expect(r.interpretacion).toBe('excelente');
+  });
+
+  it('la correlación ítem-total corregida coincide con scipy', () => {
+    // scipy.stats.pearsonr(M[:,0], np.delete(M,0,axis=1).sum(axis=1))
+    //   → 0.9603450729319978
+    expect(alfaCronbach(ESCALA).items[0].correlacion!).toBeCloseTo(0.9603450729319978, 12);
+  });
+
+  it('calcula el alfa que quedaría al eliminar cada ítem', () => {
+    // numpy sobre M sin la columna 0 → 0.9496468443836863
+    expect(alfaCronbach(ESCALA).items[0].alfa_si_se_elimina!).toBeCloseTo(0.9496468443836863, 12);
+  });
+
+  /**
+   * OJO CON ESTA DIFERENCIA, que es fácil confundir con un error de cálculo.
+   *
+   * Sobre los MISMOS datos dicotómicos, KR-20 y alfa NO dan el mismo número:
+   *   KR-20 = 0.7867021276595745   (usa Σp·q, la varianza POBLACIONAL del ítem)
+   *   alfa  = 0.7276595744680852   (usa la varianza MUESTRAL, ddof=1)
+   *
+   * Ambas fórmulas son las estándar de su respectivo coeficiente; la diferencia
+   * es solo la convención de varianza del numerador (factor n/(n−1) = 8/7 aquí).
+   * Se fija por prueba para que nadie "corrija" uno de los dos creyendo que hay
+   * un fallo, y para que quede claro cuál se reporta en cada instrumento:
+   * KR-20 en el pretest/postest (ítems de acierto/error) y alfa en las escalas
+   * Likert (ítems 1–5).
+   */
+  it('KR-20 y alfa difieren por la convención de varianza, y ambos son correctos', () => {
+    const dicotomica = M.map((f) => f.map((v) => (v ? 1 : 0)));
+    expect(kr20(M).coeficiente).toBeCloseTo(0.7867021276595745, 12);
+    expect(alfaCronbach(dicotomica).coeficiente).toBeCloseTo(0.7276595744680852, 12);
+    // La diferencia es exactamente la esperada por el cambio de convención.
+    expect(kr20(M).coeficiente - alfaCronbach(dicotomica).coeficiente)
+      .toBeCloseTo(0.05904255319148932, 12);
+  });
+
+  it('marca como NO confiable un alfa calculado con menos de 10 personas', () => {
+    expect(alfaCronbach(ESCALA).confiable).toBe(false);
+  });
+
+  it('sin variabilidad en los totales no inventa un coeficiente', () => {
+    const planas = [[3, 3, 3], [3, 3, 3], [3, 3, 3]];
+    expect(Number.isNaN(alfaCronbach(planas).coeficiente)).toBe(true);
+  });
+
+  it('con menos de 2 ítems o 2 personas devuelve NaN', () => {
+    expect(Number.isNaN(alfaCronbach([[4]]).coeficiente)).toBe(true);
+    expect(Number.isNaN(alfaCronbach([]).coeficiente)).toBe(true);
   });
 });
 

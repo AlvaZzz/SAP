@@ -35,6 +35,7 @@ import { InvestigadorResultadosModule } from './investigador/investigador-result
 import { InvestigadorDatosModule } from './investigador/investigador-datos/investigador-datos.module';
 import { InvestigadorExportacionModule } from './investigador/investigador-exportacion/investigador-exportacion.module';
 import { InvestigadorAnalisisModule } from './investigador/investigador-analisis/investigador-analisis.module';
+import { EncuestaModule } from './mediciones/encuesta/encuesta.module';
 import { AdminAuditoriaModule } from './admin/admin-auditoria/admin-auditoria.module';
 import { AdminUsuariosModule } from './admin/admin-usuarios/admin-usuarios.module';
 import { AdminGruposModule } from './admin/admin-grupos/admin-grupos.module';
@@ -83,6 +84,7 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     InvestigadorDatosModule,
     InvestigadorExportacionModule,
     InvestigadorAnalisisModule,
+    EncuestaModule,
     AdminAuditoriaModule,
     AdminUsuariosModule,
     AdminGruposModule,

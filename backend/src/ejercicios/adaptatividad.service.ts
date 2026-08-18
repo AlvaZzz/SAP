@@ -111,6 +111,25 @@ export class AdaptatividadService {
    * tampoco existe, devuelve null (se conserva el orden por defecto).
    */
   async thetaActual(usuarioId: number): Promise<number | null> {
+    // ── POR QUÉ AQUÍ YA NO SE RECALCULA DESDE CERO ────────────────────────
+    // Antes esta función cargaba TODOS los intentos del usuario y volvía a
+    // estimar θ por máxima verosimilitud, en cada llamada. Se invoca desde la
+    // ruta adaptativa y desde el acceso a retos, así que con el historial
+    // creciendo durante el semestre se degradaba sola: un estudiante con 800
+    // intentos pagaba esa consulta cada vez que abría la lista de ejercicios.
+    //
+    // No hace falta: `ejercicios.service.responder()` ya re-estima θ con todas
+    // las respuestas y la PERSISTE en `Usuario.thetaActual` tras cada intento.
+    // El valor guardado es el mismo que se calcularía aquí, solo que ya hecho.
+    const u = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { thetaActual: true, thetaInicial: true },
+    });
+    if (u?.thetaActual != null) return u.thetaActual;
+
+    // Sin θ persistida todavía (nunca practicó, o son datos anteriores a que se
+    // guardara): se estima una vez desde los intentos que existan, y si tampoco
+    // hay, se cae a la θ del diagnóstico inicial.
     const filas = await this.prisma.intento.findMany({
       where: { usuarioId },
       select: { correcto: true, ejercicio: { select: { dificultadB: true } } },
@@ -118,10 +137,7 @@ export class AdaptatividadService {
     const respuestas: RespuestaIrt[] = (filas ?? [])
       .filter((f) => typeof f.ejercicio?.dificultadB === 'number')
       .map((f) => ({ b: f.ejercicio!.dificultadB, correcto: !!f.correcto }));
-    if (respuestas.length === 0) {
-      const u = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { thetaInicial: true } });
-      return u?.thetaInicial ?? null;
-    }
+    if (respuestas.length === 0) return u?.thetaInicial ?? null;
     return redondearTheta(estimarTheta(respuestas));
   }
 
