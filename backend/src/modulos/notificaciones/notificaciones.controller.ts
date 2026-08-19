@@ -13,6 +13,7 @@ export class NotificacionesController {
     return this.service.listar(usuarioId);
   }
 
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — la campana usa /notificaciones y cuenta en el cliente; este conteo no lo llama nadie.
   @Get('conteo')
   conteo(@CurrentUser('sub') usuarioId: number) {
     return this.service.conteoNoLeidas(usuarioId);

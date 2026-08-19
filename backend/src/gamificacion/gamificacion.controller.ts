@@ -19,6 +19,7 @@ export class GamificacionController {
     return this.gami.resumen(id);
   }
 
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — ningún cliente llama a /gamificacion/logros; el frontend usa emblemas y rangos. Confirmar que no lo consuma el tour o un informe antes de quitarlo.
   @Get('logros')
   async logros(@CurrentUser('sub') id: number) {
     return { logros: await this.gami.logros(id) };

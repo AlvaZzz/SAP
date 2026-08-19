@@ -210,6 +210,14 @@ export default function RetoEditorPage() {
         {avisoEntrega && <p className="mt-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-prexi-red">{avisoEntrega}</p>}
       </div>
 
+      {/* La traza se muestra antes del espacio de trabajo para que sea visible de inmediato. */}
+      {traza && (
+        <div className="mb-5">
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-fg"><Layers className="h-4 w-4 text-prexi-blue-deep" /> Traza paso a paso</h3>
+          <TraceViewer codigo={codigo} pasos={traza.pasos} error={traza.error} />
+        </div>
+      )}
+
       {/* Escritorio amplio (xl): editor ancho + panel de ALVARO cómodo. Por debajo
           de xl, el panel de ALVARO se apila DEBAJO del editor, a todo el ancho. */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
@@ -260,48 +268,40 @@ export default function RetoEditorPage() {
               {salida ? salida.texto : cargandoPython ? 'Preparando el entorno de Python… (solo la primera vez)' : 'Esperando ejecución…'}
             </pre>
           </div>
+          {verif && (
+            <div className={`border-t border-slate-700/80 p-4 ${verif.correcto ? 'bg-emerald-950/55' : 'bg-amber-950/45'}`}>
+              {verif.correcto ? (
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="mt-0.5 h-6 w-6 shrink-0 text-emerald-300" />
+                  <div>
+                    <p className="font-bold text-emerald-200">Corrección verificada {verif.xp > 0 ? `+${verif.xp} XP` : ''}</p>
+                    <p className="text-sm text-emerald-100/80">La salida coincide con la esperada. ¡Misión superada!</p>
+                    {verif.emblemas.map((e) => (
+                      <p key={e.clave} className="mt-1 text-sm font-semibold text-emerald-100">Emblema desbloqueado: {e.nombre}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-300" />
+                  <div className="min-w-0">
+                    <p className="font-bold text-amber-100">Todavía no. Revisa la lógica.</p>
+                    <p className="mt-0.5 text-sm text-amber-100/75">Compara ambas salidas y ajusta el código antes de volver a verificar.</p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-xl border border-rose-300/20 bg-rose-950/30 p-2.5"><p className="text-[11px] font-bold uppercase tracking-wide text-rose-200">Tu salida</p><pre className="mt-1 overflow-x-auto rounded-lg border border-rose-200/10 bg-[#120d16] px-3 py-2 font-mono text-base leading-6 text-rose-100">{verif.salida || '(vacía)'}</pre></div>
+                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/30 p-2.5"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-200">Salida esperada</p><pre className="mt-1 overflow-x-auto rounded-lg border border-emerald-200/10 bg-[#091710] px-3 py-2 font-mono text-base leading-6 text-emerald-100">{verif.esperado}</pre></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Tutor ALVARO completo (chat con streaming + pistas + chips), igual que en ejercicios */}
         <AlvaroRetoPanel retoId={retoId} contextoTema={reto.contextoTema} enunciado={reto.enunciado} codigo={codigo} esBugHunt={reto.esBugHunt} />
       </div>
 
-      {/* Resultado de la misión de depuración (bug‑hunt) */}
-      {verif && (
-        <div className={`mt-5 rounded-2xl p-4 ${verif.correcto ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}>
-          {verif.correcto ? (
-            <div className="flex items-start gap-3">
-              <CheckCircle className="mt-0.5 h-6 w-6 shrink-0 text-prexi-green" />
-              <div>
-                <p className="font-bold text-emerald-700 dark:text-emerald-300">Bug corregido {verif.xp > 0 ? `+${verif.xp} XP` : ''}</p>
-                <p className="text-sm text-muted">La salida coincide con la esperada. ¡Misión superada!</p>
-                {verif.emblemas.map((e) => (
-                  <p key={e.clave} className="mt-1 text-sm font-semibold text-fg">Emblema desbloqueado: {e.nombre}</p>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-600" />
-              <div className="min-w-0">
-                <p className="font-bold text-amber-700 dark:text-amber-300">Todavía no. Revisa la lógica.</p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  <div><p className="text-[11px] font-bold uppercase tracking-wide text-muted">Tu salida</p><pre className="overflow-x-auto rounded-lg bg-card p-2 font-mono text-xs text-fg">{verif.salida || '(vacía)'}</pre></div>
-                  <div><p className="text-[11px] font-bold uppercase tracking-wide text-muted">Esperada</p><pre className="overflow-x-auto rounded-lg bg-card p-2 font-mono text-xs text-fg">{verif.esperado}</pre></div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Visualizador de traza paso a paso */}
-      {traza && (
-        <div className="mt-5">
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-fg"><Layers className="h-4 w-4 text-prexi-blue-deep" /> Traza paso a paso</h3>
-          <TraceViewer codigo={codigo} pasos={traza.pasos} error={traza.error} />
-        </div>
-      )}
     </div>
   );
 }

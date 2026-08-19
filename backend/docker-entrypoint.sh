@@ -17,7 +17,7 @@ npx prisma migrate deploy
 
 # Siembra solo si la base está vacía (idempotente). Es una comodidad de
 # DESARROLLO: en producción la siembra se ejecuta UNA vez y a mano
-# (ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md), nunca atada al arranque.
+# (ver docs/DESPLIEGUE.md), nunca atada al arranque.
 COUNT=$(node -e "const{PrismaClient}=require('@prisma/client');const p=new PrismaClient();p.usuario.count().then(n=>{console.log(n);return p.\$disconnect()}).catch(()=>{console.log(0)})")
 if [ "$COUNT" = "0" ]; then
   echo "[api] Base vacía → ejecutando seed Python..."

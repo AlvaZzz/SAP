@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, ReactNode, ComponentType } from 'react';
+import { useEffect, useId, useMemo, useState, ReactNode, ComponentType } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
@@ -18,12 +18,18 @@ import {
 type Area = 'estudiante' | 'docente' | 'investigador' | 'admin';
 type Rol = 'estudiante' | 'docente' | 'admin' | 'investigador';
 interface NavItem { href: string; label: string; icon: ComponentType<{ className?: string }> }
+/**
+ * La navegación se agrupa por SECCIONES (como la documentación de Angular): un
+ * encabezado corto y sus ítems debajo. Los grupos NO se pliegan —cada rol tiene
+ * entre 8 y 14 ítems y caben enteros—, así que todo sigue a un clic.
+ */
+interface NavGrupo { titulo: string; items: NavItem[] }
 
 // Home por rol (adónde llega/redirige cada rol).
 const HOME_ROL: Record<Rol, string> = {
   estudiante: '/dashboard',
-  // Ambos roles entran por su ÍNDICE de módulos numerados: la primera pantalla
-  // debe mostrar el recorrido completo, no un fragmento de él.
+  // Ambos roles entran por su ÍNDICE de módulos: la primera pantalla debe
+  // mostrar el recorrido completo, no un fragmento de él.
   docente: '/docente/indice',
   admin: '/admin/dashboard',
   investigador: '/investigador/indice',
@@ -37,67 +43,131 @@ function areaPermite(area: Area, rol: Rol): boolean {
   return false; // área admin y rol no admin
 }
 
-const NAV_ESTUDIANTE: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/ejercicios', label: 'Ejercicios', icon: Code },
-  // El editor de código vive dentro de un reto (ya no hay "Práctica" suelta).
-  { href: '/retos', label: 'Retos', icon: Target },
-  // Repaso libre con flashcards (apoyo; no puntúa ni afecta al θ).
-  { href: '/flashcards', label: 'Repaso', icon: Sparkles },
-  { href: '/documentos', label: 'Documentos', icon: BookOpen },
-  { href: '/progreso', label: 'Progreso', icon: TrendingUp },
-  { href: '/ranking', label: 'Ranking', icon: Trophy },
-  { href: '/perfil', label: 'Perfil', icon: UserIcon },
-  // La evaluación final va SIEMPRE al final; se bloquea hasta que el docente la habilite.
-  { href: '/postest', label: 'Evaluación final', icon: GraduationCap },
+const NAV_ESTUDIANTE: NavGrupo[] = [
+  {
+    titulo: 'Aprendizaje',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/ejercicios', label: 'Ejercicios', icon: Code },
+      // El editor de código vive dentro de un reto (ya no hay "Práctica" suelta).
+      { href: '/retos', label: 'Retos', icon: Target },
+      // Repaso libre con flashcards (apoyo; no puntúa ni afecta al θ).
+      { href: '/flashcards', label: 'Repaso', icon: Sparkles },
+    ],
+  },
+  {
+    titulo: 'Recursos',
+    items: [
+      { href: '/documentos', label: 'Documentos', icon: BookOpen },
+    ],
+  },
+  {
+    titulo: 'Mi progreso',
+    items: [
+      { href: '/progreso', label: 'Progreso', icon: TrendingUp },
+      { href: '/ranking', label: 'Ranking', icon: Trophy },
+      { href: '/perfil', label: 'Perfil', icon: UserIcon },
+    ],
+  },
+  {
+    // La evaluación final va SIEMPRE al final; se bloquea hasta que el docente la habilite.
+    titulo: 'Evaluación',
+    items: [
+      { href: '/postest', label: 'Evaluación final', icon: GraduationCap },
+    ],
+  },
 ];
 
 /**
- * Navegación del rol DOCENTE. Los seis primeros son los módulos numerados del
- * índice —los que documentan la fidelidad de la intervención—; debajo quedan
- * las herramientas de autoría del curso, que se usan a diario pero no forman
- * parte de ese recorrido.
+ * Navegación del rol DOCENTE. Los grupos separan lo que documenta la fidelidad
+ * de la intervención (Seguimiento e Informes) de las herramientas de autoría
+ * que se usan a diario (Contenido), sin sacar nada del menú.
  */
-const NAV_DOCENTE: NavItem[] = [
-  { href: '/docente/indice', label: 'Índice', icon: LayoutDashboard },
-  { href: '/docente/unidades', label: '1 · Control del curso', icon: Layers },
-  { href: '/docente/estudiantes', label: '2 · Seguimiento', icon: Users },
-  { href: '/docente/riesgo', label: '3 · En riesgo', icon: AlertTriangle },
-  { href: '/docente/revisiones', label: '4 · Revisiones', icon: ClipboardList },
-  { href: '/docente/cobertura', label: '5 · Cobertura del banco', icon: Code },
-  { href: '/docente/reportes', label: '6 · Reportes', icon: BarChart3 },
-  // ── Herramientas de autoría ──
-  { href: '/docente/dashboard', label: 'Resumen del día', icon: Activity },
-  { href: '/docente/pendientes', label: 'Pendientes', icon: Inbox },
-  { href: '/docente/ejercicios', label: 'Ejercicios', icon: Code },
-  { href: '/docente/preguntas-ia', label: 'Preguntas IA', icon: Bot },
-  { href: '/docente/retos', label: 'Retos', icon: Target },
-  { href: '/docente/documentos', label: 'Documentos', icon: FileText },
-  { href: '/docente/postest', label: 'Evaluación final', icon: GraduationCap },
+const NAV_DOCENTE: NavGrupo[] = [
+  {
+    titulo: 'Seguimiento',
+    items: [
+      { href: '/docente/indice', label: 'Índice', icon: LayoutDashboard },
+      { href: '/docente/dashboard', label: 'Dashboard', icon: Activity },
+      { href: '/docente/pendientes', label: 'Pendientes', icon: Inbox },
+      { href: '/docente/estudiantes', label: 'Estudiantes', icon: Users },
+      { href: '/docente/riesgo', label: 'En riesgo', icon: AlertTriangle },
+      { href: '/docente/revisiones', label: 'Revisiones', icon: ClipboardList },
+    ],
+  },
+  {
+    titulo: 'Contenido',
+    items: [
+      { href: '/docente/unidades', label: 'Unidades y temas', icon: Layers },
+      { href: '/docente/ejercicios', label: 'Ejercicios', icon: Code },
+      { href: '/docente/preguntas-ia', label: 'Preguntas IA', icon: Bot },
+      { href: '/docente/retos', label: 'Retos', icon: Target },
+      { href: '/docente/documentos', label: 'Documentos', icon: FileText },
+      { href: '/docente/cobertura', label: 'Cobertura del banco', icon: ShieldCheck },
+    ],
+  },
+  {
+    titulo: 'Informes',
+    items: [
+      { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
+      { href: '/docente/postest', label: 'Evaluación final', icon: GraduationCap },
+    ],
+  },
 ];
 
 /**
- * Navegación del rol INVESTIGADOR, en el orden real de un capítulo de tesis:
- * recorrerla de arriba abajo es recorrer el capítulo de resultados.
+ * Navegación del rol INVESTIGADOR. El ORDEN sigue siendo el de un capítulo de
+ * resultados de tesis —recorrerla de arriba abajo es recorrer el capítulo—; lo
+ * que comunica esa secuencia ahora son los encabezados de sección, no un número.
  */
-const NAV_INVESTIGADOR: NavItem[] = [
-  { href: '/investigador/indice', label: 'Índice', icon: LayoutDashboard },
-  { href: '/investigador/panel', label: '1 · Diseño y muestra', icon: ClipboardList },
-  { href: '/investigador/validez', label: '2 · Flujo de participantes', icon: ShieldCheck },
-  { href: '/investigador/fiabilidad', label: '3 · Fiabilidad', icon: FlaskConical },
-  { href: '/investigador/equivalencia', label: '4 · Equivalencia inicial', icon: Users },
-  { href: '/investigador/resultados', label: '5 · Resultados', icon: BarChart3 },
-  { href: '/investigador/datos', label: '6 · Dosis-respuesta', icon: Activity },
-  { href: '/investigador/clasificacion', label: '7 · Mecanismo adaptativo', icon: Layers },
-  { href: '/investigador/exportacion', label: '8 · Exportación', icon: Download },
+const NAV_INVESTIGADOR: NavGrupo[] = [
+  {
+    titulo: 'El estudio',
+    items: [
+      { href: '/investigador/indice', label: 'Índice', icon: LayoutDashboard },
+      { href: '/investigador/panel', label: 'Diseño y muestra', icon: ClipboardList },
+      { href: '/investigador/validez', label: 'Flujo de participantes', icon: ShieldCheck },
+    ],
+  },
+  {
+    titulo: 'Validez',
+    items: [
+      { href: '/investigador/fiabilidad', label: 'Fiabilidad del instrumento', icon: FlaskConical },
+      { href: '/investigador/equivalencia', label: 'Equivalencia inicial', icon: Users },
+    ],
+  },
+  {
+    titulo: 'Resultados',
+    items: [
+      { href: '/investigador/resultados', label: 'Resultados principales', icon: BarChart3 },
+      { href: '/investigador/datos', label: 'Dosis-respuesta', icon: Activity },
+      { href: '/investigador/clasificacion', label: 'Mecanismo adaptativo', icon: Layers },
+    ],
+  },
+  {
+    titulo: 'Entrega',
+    items: [
+      { href: '/investigador/exportacion', label: 'Exportación y reproducibilidad', icon: Download },
+    ],
+  },
 ];
 
-const NAV_ADMIN: NavItem[] = [
-  { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
-  { href: '/admin/grupos', label: 'Grupos de investigación', icon: FlaskConical },
-  { href: '/admin/sistema', label: 'Sistema', icon: Settings },
-  { href: '/admin/auditoria', label: 'Auditoría', icon: ClipboardList },
+const NAV_ADMIN: NavGrupo[] = [
+  {
+    titulo: 'Gestión',
+    items: [
+      { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
+      { href: '/admin/grupos', label: 'Grupos de investigación', icon: FlaskConical },
+    ],
+  },
+  {
+    titulo: 'Sistema',
+    items: [
+      { href: '/admin/sistema', label: 'Configuración', icon: Settings },
+      { href: '/admin/auditoria', label: 'Auditoría', icon: ClipboardList },
+    ],
+  },
 ];
 
 // Gradiente del sidebar resuelto vía tokens del tema (claro → navy, oscuro → #0A121F).
@@ -109,14 +179,17 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   const pathname = usePathname();
   const [nivelActual, setNivelActual] = useState<number | null>(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const navId = useId();
 
-  const nav = area === 'docente'
+  const grupos = area === 'docente'
     ? NAV_DOCENTE
     : area === 'investigador'
       ? NAV_INVESTIGADOR
       : area === 'admin'
         ? NAV_ADMIN
         : NAV_ESTUDIANTE;
+  // El buscador trabaja sobre la lista plana de destinos del rol activo.
+  const nav = useMemo(() => grupos.flatMap((g) => g.items), [grupos]);
   const homeHref = HOME_ROL[(usuario?.rol as Rol) ?? 'estudiante'] ?? '/dashboard';
 
   // Control de acceso en la UI (el backend lo refuerza con guard de rol).
@@ -166,17 +239,34 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
       <div className="mb-3 px-1 lg:hidden">
         <BuscadorNav items={nav} onNavegar={() => setMenuAbierto(false)} />
       </div>
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
-        <p className="px-3.5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]/60">Menú</p>
-        {nav.map(({ href, label, icon: Icon }) => {
-          const activo = pathname === href || pathname.startsWith(href + '/');
+      <nav aria-label="Secciones" className="flex flex-1 flex-col gap-5 overflow-y-auto pb-2">
+        {grupos.map((grupo, i) => {
+          // El encabezado NO es un enlace: es una etiqueta. Va como <h2> (fuera
+          // del orden de tabulación) y la lista lo referencia para que el lector
+          // de pantalla anuncie el grupo al que pertenece cada ítem.
+          const tituloId = `${navId}-${i}`;
           return (
-            <Link key={href} href={href} aria-current={activo ? 'page' : undefined}
-              className={`group relative flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-medium transition ${activo
-                ? 'bg-[rgb(var(--sidebar-active))] text-[rgb(var(--sidebar-active-ink))] shadow-[0_0_22px_-6px_rgb(var(--sidebar-bar)/0.7)] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[rgb(var(--sidebar-bar))] before:content-[""]'
-                : 'text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.06] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
-              <Icon className={`h-[22px] w-[22px] transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} /> {label}
-            </Link>
+            <div key={grupo.titulo} className={i > 0 ? 'border-t border-[rgb(var(--sidebar-ink))]/15 pt-4' : ''}>
+              <h2 id={tituloId} className="px-3.5 pb-2 text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]">
+                {grupo.titulo}
+              </h2>
+              <ul aria-labelledby={tituloId} className="flex flex-col gap-1">
+                {grupo.items.map(({ href, label, icon: Icon }) => {
+                  const activo = pathname === href || pathname.startsWith(href + '/');
+                  return (
+                    <li key={href}>
+                      <Link href={href} aria-current={activo ? 'page' : undefined}
+                        className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[15px] font-medium transition ${activo
+                          ? 'bg-[rgb(var(--sidebar-active))] text-[rgb(var(--sidebar-active-ink))] shadow-[0_0_22px_-6px_rgb(var(--sidebar-bar)/0.7)]'
+                          : 'text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.06] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
+                        <Icon className={`h-[20px] w-[20px] shrink-0 transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} />
+                        <span className="truncate">{label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           );
         })}
       </nav>

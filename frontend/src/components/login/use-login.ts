@@ -25,7 +25,7 @@ const REDIRECT_AFTER_LOGIN = '/dashboard'; // destino por defecto (estudiante li
  * Debe coincidir con `HOME_ROL` de `components/shell.tsx`: son dos mapas
  * distintos (uno redirige tras el login, el otro tras un acceso no permitido) y
  * si divergen, el usuario aterriza en sitios distintos según por dónde entre.
- * Docente e investigador llegan a su ÍNDICE de módulos numerados, que muestra el
+ * Docente e investigador llegan a su ÍNDICE de módulos, que muestra el
  * recorrido completo en vez de un fragmento.
  */
 function destinoPorRol(u: Usuario): string {

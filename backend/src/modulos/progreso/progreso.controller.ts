@@ -37,6 +37,7 @@ export class ProgresoController {
   }
 
   // ── Export para la investigación (prueba t fuera del sistema) ──
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — el CSV que usa la tesis es el del investigador; este export del estudiante no se enlaza desde ninguna pantalla.
   @Get('export.csv')
   @UseGuards(RolesGuard)
   @Roles('docente', 'admin')

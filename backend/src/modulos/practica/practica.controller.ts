@@ -37,6 +37,7 @@ class VerificarRetoDto {
 export class PracticaController {
   constructor(private readonly practica: PracticaService) {}
 
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — el editor de retos guarda con POST /practica/ejecucion y no vuelve a cargar el borrador; GET/PUT de código quedaron sin consumidor.
   @Get('codigo')
   async cargar(
     @CurrentUser('sub') usuarioId: number,

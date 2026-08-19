@@ -5,7 +5,15 @@ import { ResponderEncuestaDto } from './dto/encuesta.dto';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 
-/** Encuesta de motivación académica (instrumento de la variable dependiente). */
+/**
+ * Encuesta de motivación académica (instrumento de la variable dependiente).
+ *
+ * TODO: REVISAR_ANTES_DE_ELIMINAR — el módulo completo está SIN PANTALLA en el
+ * frontend: ninguna ruta de `frontend/src` llama a `/encuesta/*`. No es código
+ * muerto sino una funcionalidad a medio terminar (el MSLQ es parte del diseño de
+ * la tesis). Decisión pendiente: construir la pantalla del estudiante o retirar
+ * el instrumento del documento. No borrar sin tomar esa decisión.
+ */
 @Controller('encuesta')
 @UseGuards(JwtAuthGuard)
 export class EncuestaController {

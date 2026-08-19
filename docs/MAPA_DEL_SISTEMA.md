@@ -52,7 +52,7 @@ Cada módulo NestJS agrupa su `*.controller.ts`, `*.service.ts`, `*.module.ts` y
 - **IA:** Google Gemini (`@google/generative-ai`).
 - **Ejecución de código:** Pyodide (CPython 3 en WebAssembly), en el navegador del estudiante.
 - **Infra (desarrollo):** Docker Compose (`db`, `api`, `web`). El `docker-entrypoint.sh` aplica las migraciones versionadas (`prisma migrate deploy`) y siembra la BD si está vacía.
-- **Infra (producción):** Render (backend) + Vercel (frontend) + Neon (PostgreSQL). Ver [DESPLIEGUE_RENDER_VERCEL_NEON.md](DESPLIEGUE_RENDER_VERCEL_NEON.md).
+- **Infra (producción):** Render (backend) + Vercel (frontend) + Neon (PostgreSQL). Ver [DESPLIEGUE.md](DESPLIEGUE.md).
 
 ### Convención de rutas del frontend
 Los grupos `(estudiante)`, `(docente)`, `(investigador)`, `(admin)` son **transparentes en la URL**:

@@ -44,7 +44,7 @@ export default function RiesgoPage() {
   return (
     <div className="animate-fade-up">
       <PageHeader
-        title="3 · Estudiantes en riesgo"
+        title="Estudiantes en riesgo"
         subtitle="Quién se está descolgando y por qué, para poder hacer algo antes de perderlo."
       />
 

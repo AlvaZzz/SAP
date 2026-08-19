@@ -162,11 +162,6 @@ export const MENSAJE_SIN_INSTRUMENTO =
   'Cárgalos en backend/src/mediciones/encuesta/items-mslq.ts con el texto oficial de la adaptación ' +
   'al español aprobada. El sistema se niega a aplicar un instrumento vacío a propósito.';
 
-/** Ítems de una subescala concreta. */
-export function itemsDe(subescala: Subescala): ItemMslq[] {
-  return ITEMS.filter((i) => i.subescala === subescala);
-}
-
 /** Ítem por su código (undefined si no pertenece a este instrumento). */
 export function itemPorCodigo(codigo: string): ItemMslq | undefined {
   return ITEMS.find((i) => i.codigo === codigo);

@@ -2,6 +2,7 @@
 
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 /**
  * Editor de código Python (CodeMirror 6) con resaltado y números de línea.
@@ -22,13 +23,18 @@ export function CodeEditor({
       <CodeMirror
         value={value}
         height={height}
-        theme="dark"
+        theme={oneDark}
         extensions={[python()]}
         editable={!readOnly}
         readOnly={readOnly}
         onChange={onChange}
         basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: !readOnly }}
-        style={{ fontSize: 14, height: '100%' }}
+        style={{
+          fontFamily: 'var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+          fontSize: 'clamp(15px, 4.2vw, 18px)',
+          lineHeight: 1.55,
+          height: '100%',
+        }}
       />
     </div>
   );

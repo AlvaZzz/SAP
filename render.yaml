@@ -8,7 +8,7 @@
 #    · ya no hay contenedor privilegiado que justifique Docker: el Python del
 #      estudiante corre en su navegador con Pyodide
 #
-#  El frontend NO está aquí: va a Vercel (ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md).
+#  El frontend NO está aquí: va a Vercel (ver docs/DESPLIEGUE.md).
 #  La base de datos tampoco: va a Neon.
 # ════════════════════════════════════════════════════════════
 services:
@@ -49,13 +49,21 @@ services:
       - key: JWT_EXPIRES_IN
         value: 15m
 
-      # Ambas deben ser la URL REAL del frontend en Vercel, sin barra final.
-      # CLIENT_ORIGIN gobierna el CORS; APP_URL gobierna el OrigenGuard (CSRF) y
-      # el enlace de recuperación de contraseña. Si APP_URL no coincide con el
-      # dominio de Vercel, TODAS las mutaciones responden 403.
+      # Ambas deben ser el DOMINIO PROPIO del frontend, sin barra final
+      # (https://midominio.com), NO la URL *.vercel.app.
+      # CLIENT_ORIGIN gobierna el CORS y admite varios orígenes separados por
+      # coma; APP_URL gobierna el OrigenGuard (CSRF) y el enlace de recuperación
+      # de contraseña, y es UN solo valor. Si APP_URL no coincide con el origen
+      # desde el que navega el usuario, TODAS las mutaciones responden 403.
       - key: CLIENT_ORIGIN
         sync: false
       - key: APP_URL
+        sync: false
+      # Orígenes ADICIONALES aceptados por el OrigenGuard, separados por coma.
+      # Aquí va el `www` si no se redirige al apex, y la URL *.vercel.app si se
+      # quiere seguir usando el despliegue de vista previa. Dejarlo vacío es lo
+      # más estricto y lo recomendable si `www` redirige al dominio raíz.
+      - key: ORIGENES_PERMITIDOS
         sync: false
 
       - key: GEMINI_API_KEY

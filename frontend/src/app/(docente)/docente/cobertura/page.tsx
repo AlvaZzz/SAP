@@ -48,7 +48,7 @@ export default function CoberturaPage() {
   return (
     <div className="animate-fade-up">
       <PageHeader
-        title="5 · Cobertura del banco"
+        title="Cobertura del banco"
         subtitle="Ejercicios por unidad, tema y nivel, con los huecos que impiden que la adaptatividad funcione."
       />
 

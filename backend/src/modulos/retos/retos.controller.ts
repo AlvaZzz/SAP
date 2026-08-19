@@ -52,6 +52,7 @@ export class RetosController {
   }
 
   /** Entregas del estudiante con su estado, XP y feedback (vista "Mis entregas"). */
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — sin llamadas desde el frontend: las entregas se ven dentro de cada reto.
   @Get('mis-entregas')
   @UseGuards(RetosAccessGuard)
   async misEntregas(@CurrentUser('sub') usuarioId: number) {

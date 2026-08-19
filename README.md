@@ -179,12 +179,12 @@ cd backend && npm ci && npm run build && npm run start:prod   # sirve en :4000
 cd frontend && npm ci && npm run build && npm start           # sirve en :3000
 ```
 
-Con Docker: `docker compose up -d --build` (ajustando en `docker-compose.yml` `NODE_ENV=production`, el `JWT_SECRET` y quitando los bind mounts de desarrollo).
+**Producción:** el despliegue real no usa Docker. Va a Vercel (frontend) + Render (backend) + Neon (PostgreSQL), bajo el dominio propio `prexi.lat`. El procedimiento completo, paso a paso, está en **[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md)**.
 
 ### 5. Lista de verificación de seguridad
 
 - ✅ Contraseñas con **bcrypt** (nunca en texto plano) y bloqueo tras 5 intentos fallidos.
-- ✅ JWT en **cookie httpOnly** (`secure` en producción, `SameSite=Lax`).
+- ✅ JWT en **cookie httpOnly** (`secure` en producción, `SameSite=Strict`), con refresh rotatorio y verificación de `Origin` en las mutaciones (`OrigenGuard`).
 - ✅ **Guards de rol** en todas las rutas; validación de DTOs global (`whitelist + forbidNonWhitelisted`).
 - ✅ Rate limit del tutor IA por usuario/hora (`AiRateLimitGuard`, configurable por el admin).
 - ✅ Errores no controlados: log interno completo, **sin stack traces al cliente**.

@@ -137,7 +137,7 @@ export class RetosService {
 }
 
 /** Etiqueta de la tarjeta según el estado de la entrega. */
-export function estadoTarjeta(estado: string | undefined): 'nuevo' | 'pendiente' | 'aprobado' | 'necesita_mejorar' {
+function estadoTarjeta(estado: string | undefined): 'nuevo' | 'pendiente' | 'aprobado' | 'necesita_mejorar' {
   switch (estado) {
     case 'pendiente_revision': return 'pendiente';
     case 'aprobado': return 'aprobado';

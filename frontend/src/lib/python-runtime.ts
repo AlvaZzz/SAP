@@ -89,7 +89,6 @@ export function precargarPython(): void {
 }
 
 /** ¿El runtime ya está descargado y listo en esta pestaña? */
-export function runtimeListo(): boolean { return listo; }
 
 /**
  * Ejecuta código Python y devuelve stdout/stderr. Nunca lanza por culpa del

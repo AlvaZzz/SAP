@@ -3,7 +3,7 @@
 #
 #  ⚠ Esta NO es la ruta de despliegue vigente. La producción de PREXI vive en
 #  Render (backend) + Vercel (frontend) + Neon (PostgreSQL), sin VPS y sin
-#  coste: ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md
+#  coste: ver docs/DESPLIEGUE.md
 #
 #  Este archivo se conserva por si algún día se quiere auto-hospedar todo en
 #  un servidor propio (control total de los datos, sin arranques en frío).

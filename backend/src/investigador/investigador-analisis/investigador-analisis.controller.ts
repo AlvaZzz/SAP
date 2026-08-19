@@ -26,6 +26,7 @@ export class InvestigadorAnalisisController {
   ) {}
 
   /** Motivación académica (MSLQ): fiabilidad de la escala y contrastes. */
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — depende de la encuesta MSLQ, que todavía no tiene pantalla en el frontend. Mantener hasta decidir si la encuesta se aplica.
   @Get('motivacion')
   getMotivacion() {
     return this.motivacion.resumen();

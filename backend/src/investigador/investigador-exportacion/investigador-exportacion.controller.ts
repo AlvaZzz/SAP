@@ -57,12 +57,14 @@ export class InvestigadorExportacionController {
   }
 
   /** Dificultad b (IRT/Rasch) de cada ítem del banco (JSON). */
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — export auxiliar sin pantalla que lo llame; útil si se anexa a la tesis, inútil si no.
   @Get('items-irt')
   async itemsIrt() {
     return { items: await this.service.itemsIrt() };
   }
 
   /** Evolución de θ (habilidad estimada) por estudiante, anonimizada (JSON). */
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — ídem: sin consumidor en el frontend.
   @Get('evolucion-theta')
   async evolucionTheta() {
     return { evolucion: await this.service.evolucionTheta() };

@@ -55,7 +55,7 @@ Además se eliminaron restos de demo para producción: credenciales precargadas 
 
 - **Tutor IA (ALVARO)**: no se probó end-to-end porque requiere `GEMINI_API_KEY` real (el rate-limit y el registro de consultas están cubiertos por diseño y guard existente).
 - **Subida real de PDF por multipart**: validación revisada en código (firma binaria + límite); falta un e2e con archivo real.
-- **Migraciones Prisma versionadas**: el flujo actual usa `db push`; para producción seria conviene generar la migración inicial (`prisma migrate dev`) y desplegar con `prisma migrate deploy`.
+- ~~**Migraciones Prisma versionadas**~~ **RESUELTO**: el esquema ya se versiona en [`backend/prisma/migrations/`](../backend/prisma/migrations) y producción despliega con `prisma migrate deploy` (nunca `db push`). `db push` queda solo para iterar en la BD local de desarrollo.
 - **Seed de producción**: decidir si se conservan las cuentas demo (documentado en README).
 - Pruebas de interfaz (visual/interacción) automatizadas: la verificación fue manual + compilación.
 

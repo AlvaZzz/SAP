@@ -15,7 +15,7 @@
 #  en plataformas gestionadas (Render/Vercel/Neon) sin necesitar un VPS ni
 #  contenedores privilegiados.
 #
-#  PRODUCCIÓN: no se usa este archivo. Ver docs/DESPLIEGUE_RENDER_VERCEL_NEON.md
+#  PRODUCCIÓN: no se usa este archivo. Ver docs/DESPLIEGUE.md
 # ════════════════════════════════════════════════════════════
 services:
   db:

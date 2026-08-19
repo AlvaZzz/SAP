@@ -19,8 +19,16 @@ async function bootstrap() {
   // Errores no controlados: log interno completo, respuesta genérica sin stack traces.
   app.useGlobalFilters(new GlobalExceptionFilter());
 
+  // CLIENT_ORIGIN admite VARIOS orígenes separados por coma. En producción el
+  // dominio propio se sirve como apex y como www (https://midominio.com,
+  // https://www.midominio.com) y ambos deben poder hablar con el API; con un
+  // único valor, el que sobrara recibía un CORS fallido difícil de diagnosticar.
+  const origenes = (process.env.CLIENT_ORIGIN ?? 'http://localhost:3000')
+    .split(',')
+    .map((o) => o.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
   app.enableCors({
-    origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:3000',
+    origin: origenes,
     credentials: true, // necesario para la cookie httpOnly del JWT
   });
 

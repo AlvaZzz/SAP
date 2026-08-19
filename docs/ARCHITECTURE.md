@@ -98,7 +98,7 @@ La `GEMINI_API_KEY` vive **solo** en el backend.
 ## 5. Seguridad
 
 - Contraseñas con **bcrypt**; bloqueo de cuenta tras 5 intentos fallidos.
-- **JWT en cookie httpOnly** (`secure` en producción, `SameSite=Lax`).
+- **JWT en cookie httpOnly** (`secure` en producción, `SameSite=Strict`), con refresh rotatorio y `OrigenGuard` verificando el `Origin` de toda mutación.
 - **Guards** de autenticación y de rol ([`common/auth/`](backend/src/common/auth))
   en todas las rutas protegidas; validación global de DTOs (`whitelist +
   forbidNonWhitelisted`).
@@ -132,3 +132,23 @@ prueba t de Student, que se realiza fuera del sistema.
 Prisma + PostgreSQL. El esquema, con sus modelos y relaciones documentados, está
 en [`backend/prisma/schema.prisma`](backend/prisma/schema.prisma). El acceso pasa
 siempre por `PrismaService` ([`common/prisma/`](backend/src/common/prisma)).
+
+## 9. Despliegue
+
+Dos aplicaciones independientes sobre plataformas gestionadas de capa gratuita,
+bajo el dominio propio `prexi.lat`:
+
+| Pieza | Plataforma | Dirección |
+|---|---|---|
+| `frontend/` (Next.js) | Vercel | `https://prexi.lat` |
+| `backend/` (NestJS) | Render · Web Service | `https://api.prexi.lat` |
+| PostgreSQL | Neon | — |
+
+Ambas puntas comparten dominio registrable a propósito: así las cookies de sesión
+son de **primera parte** y `sameSite: 'strict'` sigue defendiendo del CSRF sin
+relajarse. El esquema se aplica con **migraciones versionadas**
+(`prisma migrate deploy` en el arranque); `db push` no se usa nunca contra
+producción, y el seed se ejecuta a mano una sola vez.
+
+Docker Compose es **solo para desarrollo local**. El procedimiento completo de
+despliegue está en [DESPLIEGUE.md](DESPLIEGUE.md).

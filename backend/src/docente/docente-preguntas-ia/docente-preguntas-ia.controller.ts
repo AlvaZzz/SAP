@@ -24,6 +24,7 @@ export class DocentePreguntasIaController {
     return { preguntas: await this.service.listar(autorId, tema ? Number(tema) : undefined, estado) };
   }
 
+  // TODO: REVISAR_ANTES_DE_ELIMINAR — el panel de Pendientes calcula su propio conteo; esta ruta quedó sin consumidor.
   @Get('pendientes/conteo')
   async conteoPendientes(@CurrentUser('sub') autorId: number) {
     return { pendientes: await this.service.conteoPendientes(autorId) };

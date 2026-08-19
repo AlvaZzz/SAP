@@ -17,3 +17,8 @@ exports/
 backups/
 *.dump
 
+
+PREXI_Prompt_*.md
+PREXI_Manual_*.md
+PREXI_Auditoria_*.md
+.claude/settings.local.json
