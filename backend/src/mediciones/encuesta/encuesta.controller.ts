@@ -18,6 +18,12 @@ export class EncuestaController {
     return valor;
   }
 
+  /** Metadatos del instrumento (subescalas, escala, referencia). */
+  @Get('info')
+  info() {
+    return this.service.info();
+  }
+
   /** ¿Le toca responderla? Lo consulta el gate de la interfaz. */
   @Get('estado')
   estado(@CurrentUser('sub') usuarioId: number) {

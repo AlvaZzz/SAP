@@ -2,6 +2,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { RankingService, Ambito, Periodo } from './ranking.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 
 /**
  * RANKING del estudiante. Todo el cálculo (posiciones, XP del periodo, movimiento
@@ -14,7 +15,10 @@ import { RankingService, Ambito, Periodo } from './ranking.service';
 @Controller('ranking')
 @UseGuards(JwtAuthGuard)
 export class RankingController {
-  constructor(private readonly ranking: RankingService) {}
+  constructor(
+    private readonly ranking: RankingService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Get()
   async tabla(
@@ -23,6 +27,21 @@ export class RankingController {
     @Query('periodo') periodo?: string,
     @Query('limite') limite?: string,
   ) {
+    // ── Registro del indicador conductual ──────────────────────────────────
+    // La tesis operacionaliza "interacción en rankings → frecuencia de consulta
+    // → logs del sistema", y hasta ahora no se registraba nada.
+    //
+    // Se hace SIN esperar (`void`) y tragando el error a propósito: es un dato
+    // de investigación y no puede degradar ni romper la pantalla del
+    // estudiante. Si el registro falla, el ranking se muestra igual.
+    void this.prisma.consultaRanking.create({
+      data: {
+        usuarioId,
+        ambito: (ambito as string) ?? 'global',
+        periodo: (periodo as string) ?? 'historico',
+      },
+    }).catch(() => undefined);
+
     return this.ranking.tabla(usuarioId, {
       ambito: ambito as Ambito,
       periodo: periodo as Periodo,

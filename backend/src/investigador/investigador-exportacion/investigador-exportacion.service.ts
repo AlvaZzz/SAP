@@ -4,6 +4,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { gananciaTheta } from '../../mediciones/irt/irt';
 import { MIN_INTENTOS_TENDENCIA, deltaMitades, promedio, redondear } from '../../common/estadistica/tendencia';
 import { calcularUso } from '../../common/estadistica/uso';
+import {
+  ITEMS as ITEMS_ENCUESTA, instrumentoCargado, itemPorCodigo, puntuar as puntuarItem,
+} from '../../mediciones/encuesta/instrumento';
 
 /** Puntajes por categoría temática (0-100) del pretest o postest. */
 export interface PorCategoria {
@@ -71,9 +74,39 @@ export interface FilaDataset {
   minutos_por_sesion: number;
   /** Días activos ÷ días del periodo: uso sostenido (→1) vs. atracón (→0). */
   regularidad: number | null;
+  // ── MOTIVACIÓN ACADÉMICA (MSLQ, escala 1–7) ──
+  //  null = NO respondió la encuesta. Es un dato faltante, nunca un cero: un 0
+  //  significaría "motivación nula", que es una afirmación que nadie hizo.
+  motivacion_pre: number | null;
+  motivacion_post: number | null;
+  motivacion_delta: number | null;
+  /** Nº de veces que consultó el ranking (indicador conductual de competitividad). */
+  consultas_ranking: number;
 }
 
 interface CatRaw { categoria: string; aciertos: number; total: number; porcentaje: number }
+
+/**
+ * Puntaje de motivación (MSLQ) de un estudiante en un momento: media de sus
+ * ítems, con los inversos recodificados.
+ *
+ * Devuelve `null` —y no 0— cuando la encuesta está incompleta o no se respondió.
+ * La distinción no es cosmética: un 0 afirmaría "motivación nula", que es una
+ * afirmación que el estudiante nunca hizo, y contaminaría cualquier media de
+ * grupo. Un dato faltante debe viajar como faltante hasta el análisis.
+ */
+function puntajeMotivacion(respuestas: { itemId: string; valor: number }[]): number | null {
+  if (!instrumentoCargado() || respuestas.length < ITEMS_ENCUESTA.length) return null;
+  let suma = 0;
+  let n = 0;
+  for (const r of respuestas) {
+    const item = itemPorCodigo(r.itemId);
+    if (!item) continue; // ítem de otra versión del instrumento
+    suma += puntuarItem(item, r.valor);
+    n++;
+  }
+  return n ? Math.round((suma / n) * 100) / 100 : null;
+}
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -250,7 +283,7 @@ export class InvestigadorExportacionService {
 
   /** Construcción real, siempre contra la base. No usar directamente. */
   private async reconstruirDataset(): Promise<FilaDataset[]> {
-    const [estudiantes, intentos, consultas, entregas, subidas, codigos, fechasIntentos] = await Promise.all([
+    const [estudiantes, intentos, consultas, entregas, subidas, codigos, fechasIntentos, rankings, encuesta] = await Promise.all([
       this.prisma.usuario.findMany({
         where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
@@ -272,6 +305,12 @@ export class InvestigadorExportacionService {
       this.prisma.codigoPractica.findMany({ select: { usuarioId: true, actualizadoEn: true } }),
       // Fechas de los intentos: base del cálculo de días activos y sesiones.
       this.prisma.intento.findMany({ select: { usuarioId: true, fecha: true } }),
+      // Consulta del ranking: indicador conductual que la tesis promete medir.
+      this.prisma.consultaRanking.findMany({ select: { usuarioId: true, fecha: true } }),
+      // Motivación (MSLQ): puntaje total por estudiante en cada momento.
+      this.prisma.respuestaEncuesta.findMany({
+        select: { usuarioId: true, itemId: true, valor: true, momento: true },
+      }),
     ]);
 
     // ── DOSIS: se juntan TODOS los eventos con marca temporal de cada usuario ──
@@ -289,6 +328,7 @@ export class InvestigadorExportacionService {
     for (const c of consultas) anotar(c.usuarioId, c.fecha);
     for (const r of entregas) anotar(r.usuarioId, r.entregadoEn);
     for (const c of codigos) anotar(c.usuarioId, c.actualizadoEn);
+    for (const r of rankings) anotar(r.usuarioId, r.fecha);
 
     // Agregados por usuario (una pasada; evita N+1).
     const porUsuario = new Map<number, { correctos: Set<number>; tiempoSum: number; tiempoN: number }>();
@@ -314,6 +354,17 @@ export class InvestigadorExportacionService {
     }
     const entregasPorUsuario = new Map<number, number>();
     for (const r of entregas) entregasPorUsuario.set(r.usuarioId, (entregasPorUsuario.get(r.usuarioId) ?? 0) + 1);
+    const rankingPorUsuario = new Map<number, number>();
+    for (const r of rankings) rankingPorUsuario.set(r.usuarioId, (rankingPorUsuario.get(r.usuarioId) ?? 0) + 1);
+
+    // Motivación: se puntúa solo a quien respondió el instrumento COMPLETO.
+    const encuestaPorUsuario = new Map<number, { pre: { itemId: string; valor: number }[]; post: { itemId: string; valor: number }[] }>();
+    for (const r of encuesta) {
+      const e = encuestaPorUsuario.get(r.usuarioId) ?? { pre: [], post: [] };
+      e[r.momento].push({ itemId: r.itemId, valor: r.valor });
+      encuestaPorUsuario.set(r.usuarioId, e);
+    }
+
     const subidasPorUsuario = new Map<number, { intentos: number; aprobadas: number }>();
     for (const s of subidas) {
       const e = subidasPorUsuario.get(s.usuarioId) ?? { intentos: 0, aprobadas: 0 };
@@ -334,6 +385,10 @@ export class InvestigadorExportacionService {
       const hayTendencia = h.length >= MIN_INTENTOS_TENDENCIA;
       // Dosis: días activos, sesiones, regularidad… sobre TODOS sus eventos.
       const uso = calcularUso(eventosPorUsuario.get(u.id) ?? []);
+      // Motivación: null si no respondió (dato faltante, nunca un cero).
+      const enc = encuestaPorUsuario.get(u.id);
+      const motivacionPre = enc ? puntajeMotivacion(enc.pre) : null;
+      const motivacionPost = enc ? puntajeMotivacion(enc.post) : null;
 
       return {
         id_anonimo: `E-${String(i + 1).padStart(3, '0')}`,
@@ -383,6 +438,13 @@ export class InvestigadorExportacionService {
         minutos_estimados: uso.minutos_estimados,
         minutos_por_sesion: uso.minutos_por_sesion,
         regularidad: uso.regularidad,
+        // ── Motivación (MSLQ) y competitividad ──
+        motivacion_pre: motivacionPre,
+        motivacion_post: motivacionPost,
+        motivacion_delta: motivacionPre !== null && motivacionPost !== null
+          ? Math.round((motivacionPost - motivacionPre) * 100) / 100
+          : null,
+        consultas_ranking: rankingPorUsuario.get(u.id) ?? 0,
       };
     });
   }
@@ -409,6 +471,8 @@ export class InvestigadorExportacionService {
       // Dosis de la intervención (uso real de la plataforma).
       'dias_activos', 'primer_dia', 'ultimo_dia', 'periodo_dias',
       'sesiones', 'minutos_estimados', 'minutos_por_sesion', 'regularidad',
+      // Motivación (MSLQ) y competitividad.
+      'motivacion_pre', 'motivacion_post', 'motivacion_delta', 'consultas_ranking',
     ];
     const esc = (v: string | number | null): string => {
       if (v === null || v === undefined) return '';
@@ -434,6 +498,7 @@ export class InvestigadorExportacionService {
       f.primer_dia ? f.primer_dia.toISOString().slice(0, 10) : null,
       f.ultimo_dia ? f.ultimo_dia.toISOString().slice(0, 10) : null,
       f.periodo_dias, f.sesiones, f.minutos_estimados, f.minutos_por_sesion, f.regularidad,
+      f.motivacion_pre, f.motivacion_post, f.motivacion_delta, f.consultas_ranking,
     ].map(esc).join(','));
     return [cols.join(','), ...lineas].join('\n');
   }

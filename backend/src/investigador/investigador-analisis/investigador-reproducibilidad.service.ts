@@ -78,6 +78,11 @@ export class InvestigadorReproducibilidadService {
       { variable: 'minutos_estimados', descripcion: 'Tiempo estimado en plataforma. NO es una medición directa.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: `Suma de los huecos entre eventos consecutivos de una misma sesión, acotando cada hueco a ${TOPE_HUECO_MIN} min para que una pausa larga no infle el total. El sistema no puede saber si el navegador quedó abierto sin nadie delante.` },
       { variable: 'minutos_por_sesion', descripcion: 'Duración media estimada de una sesión.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: 'minutos_estimados ÷ sesiones.' },
       { variable: 'regularidad', descripcion: 'Constancia de uso: distingue el trabajo sostenido del atracón concentrado.', tipo: 'decimal', unidad: 'proporción', rango: '0 a 1', calculo: 'dias_activos ÷ periodo_dias. Cerca de 1 = usó el sistema casi todos los días de su periodo; cerca de 0 = concentró la actividad en pocos días. Null si no hay actividad.' },
+      // ── MOTIVACIÓN ACADÉMICA (MSLQ) y COMPETITIVIDAD ──
+      { variable: 'motivacion_pre', descripcion: 'Motivación académica ANTES de la intervención (MSLQ, sección de motivación).', tipo: 'decimal', unidad: 'puntos de la escala', rango: '1 a 7', calculo: 'Media de los ítems del MSLQ con los inversos recodificados (8 − valor). NULL si el estudiante no respondió la encuesta completa: es un dato faltante, nunca un cero.' },
+      { variable: 'motivacion_post', descripcion: 'Motivación académica DESPUÉS de la intervención.', tipo: 'decimal', unidad: 'puntos de la escala', rango: '1 a 7', calculo: 'Ídem, aplicado junto al postest.' },
+      { variable: 'motivacion_delta', descripcion: 'Cambio en la motivación académica.', tipo: 'decimal', unidad: 'puntos de la escala', rango: '−6 a 6', calculo: 'motivacion_post − motivacion_pre. Null si falta alguno de los dos momentos.' },
+      { variable: 'consultas_ranking', descripcion: 'Veces que el estudiante consultó el ranking. Indicador conductual de competitividad.', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Registros de ConsultaRanking del estudiante. Se registra cada apertura de la pantalla de ranking, de forma asíncrona para no afectar su experiencia.' },
     ];
   }
 

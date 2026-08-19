@@ -6,6 +6,7 @@ import { InvestigadorInferencialService } from './investigador-inferencial.servi
 import { InvestigadorValidezService } from './investigador-validez.service';
 import { InvestigadorReproducibilidadService } from './investigador-reproducibilidad.service';
 import { InvestigadorClasificacionService } from './investigador-clasificacion.service';
+import { InvestigadorMotivacionService } from './investigador-motivacion.service';
 
 /**
  * Análisis del estudio (rol investigador). TODO es de SOLO LECTURA: no existe
@@ -21,7 +22,14 @@ export class InvestigadorAnalisisController {
     private readonly validez: InvestigadorValidezService,
     private readonly reproducibilidad: InvestigadorReproducibilidadService,
     private readonly clasificacion: InvestigadorClasificacionService,
+    private readonly motivacion: InvestigadorMotivacionService,
   ) {}
+
+  /** Motivación académica (MSLQ): fiabilidad de la escala y contrastes. */
+  @Get('motivacion')
+  getMotivacion() {
+    return this.motivacion.resumen();
+  }
 
   /** Validación empírica de la clasificación por niveles (umbrales θ). */
   @Get('clasificacion')
