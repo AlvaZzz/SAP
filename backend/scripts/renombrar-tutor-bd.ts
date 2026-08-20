@@ -15,11 +15,16 @@
  *     REALES (el titular del proyecto se llama Alvaro Daniel Acarapi). Renombrar
  *     ahí corrompería datos del estudio. Esas columnas están excluidas por
  *     lista blanca: el script solo mira las columnas que enumera abajo.
- *   · Cualquier tabla no listada.
+ *   · Cualquier tabla o columna no listada.
  *
- * La sustitución es por PALABRA COMPLETA y solo de las formas en mayúsculas o
- * capitalizadas del NOMBRE del tutor (ALVARO / Alvaro / ALEX / Alex). No toca
- * "Álvaro" (con tilde), que en el sistema solo aparece como nombre de pila.
+ * La sustitución es por PALABRA COMPLETA (`\m…\M` en PostgreSQL) y solo de las
+ * formas del NOMBRE del tutor: ALVARO / Alvaro / ALEX / Alex. NO toca "Álvaro"
+ * (con tilde), que en el sistema solo aparece como nombre de pila de personas.
+ *
+ * El UPDATE va con `regexp_replace` sobre la columna entera y no fila a fila por
+ * su id: `notas_docente` no tiene columna `id` y `retos_usuario` usa clave
+ * compuesta, así que depender de una clave primaria única no funcionaría en la
+ * mitad de las tablas. Además así cada columna se actualiza de una sola vez.
  */
 import { PrismaClient } from '@prisma/client';
 
@@ -27,79 +32,82 @@ const prisma = new PrismaClient();
 const APLICAR = process.argv.includes('--aplicar');
 
 /** Tablas y columnas de TEXTO que pueden mencionar al tutor por su nombre. */
-const OBJETIVOS: { modelo: string; tabla: string; columnas: string[] }[] = [
-  { modelo: 'notificacion', tabla: 'notificaciones', columnas: ['titulo', 'mensaje'] },
-  { modelo: 'notaDocente', tabla: 'notas_docente', columnas: ['texto'] },
-  { modelo: 'retoUsuario', tabla: 'retos_usuario', columnas: ['feedback'] },
-  { modelo: 'logro', tabla: 'logros', columnas: ['nombre', 'descripcion'] },
-  { modelo: 'ejercicio', tabla: 'ejercicios', columnas: ['explicacionIa', 'explicacionBase'] },
-  { modelo: 'configuracionSistema', tabla: 'configuracion_sistema', columnas: ['nombreSistema'] },
+const OBJETIVOS: { tabla: string; columnas: string[] }[] = [
+  { tabla: 'notificaciones', columnas: ['titulo', 'mensaje'] },
+  { tabla: 'notas_docente', columnas: ['texto'] },
+  { tabla: 'retos_usuario', columnas: ['feedback_docente'] },
+  { tabla: 'logros', columnas: ['nombre', 'descripcion'] },
+  { tabla: 'ejercicios', columnas: ['explicacion_ia'] },
+  { tabla: 'configuracion_sistema', columnas: ['nombre_sistema'] },
 ];
 
 /** ALVARO/Alvaro/ALEX/Alex como palabra completa. `Álvaro` (con tilde) NO entra. */
-const PATRON = /\b(ALVARO|Alvaro|ALEX|Alex)\b/g;
-const renombrar = (t: string) => t.replace(PATRON, (m) => (m === m.toUpperCase() ? 'PREXI' : 'PREXI'));
+const PATRON_SQL = String.raw`\m(ALVARO|Alvaro|ALEX|Alex)\M`;
 
 async function main() {
-  console.log(`\n══ RENOMBRADO DEL TUTOR EN LA BASE (ALVARO/ALEX → PREXI) ══`);
+  console.log('\n══ RENOMBRADO DEL TUTOR EN LA BASE (ALVARO/ALEX → PREXI) ══');
   console.log(`   modo: ${APLICAR ? 'APLICAR (escribe)' : 'SIMULACIÓN (no escribe)'}\n`);
 
-  let totalFilas = 0;
-  const escrituras: { tabla: string; columna: string; id: unknown; antes: string; despues: string }[] = [];
+  interface Pendiente { tabla: string; columna: string; filas: number }
+  const pendientes: Pendiente[] = [];
 
   for (const obj of OBJETIVOS) {
     for (const col of obj.columnas) {
-      // Se consulta por SQL crudo para no depender de que cada modelo tenga `id`
-      // (ConfiguracionSistema tiene id fijo 1) ni de los nombres del cliente.
-      const columnaSql = col.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase());
-      let filas: { id: unknown; valor: string }[] = [];
+      let filas: { n: bigint }[];
       try {
-        filas = await prisma.$queryRawUnsafe<{ id: unknown; valor: string }[]>(
-          `SELECT id, "${columnaSql}" AS valor FROM "${obj.tabla}" WHERE "${columnaSql}" ~ '\\m(ALVARO|Alvaro|ALEX|Alex)\\M'`,
+        filas = await prisma.$queryRawUnsafe<{ n: bigint }[]>(
+          `SELECT count(*)::bigint AS n FROM "${obj.tabla}" WHERE "${col}" ~ $1`,
+          PATRON_SQL,
         );
       } catch (e) {
-        console.log(`  · ${obj.tabla}.${col}: no consultable (${(e as Error).message.split('\n')[0]})`);
+        console.log(`  ✖ ${obj.tabla}.${col}: NO CONSULTABLE — ${(e as Error).message.split('\n').slice(-2).join(' ').slice(0, 120)}`);
+        process.exitCode = 1;
         continue;
       }
-      for (const f of filas) {
-        const despues = renombrar(f.valor);
-        if (despues !== f.valor) escrituras.push({ tabla: obj.tabla, columna: columnaSql, id: f.id, antes: f.valor, despues });
-      }
-      if (filas.length) console.log(`  · ${obj.tabla}.${col}: ${filas.length} fila(s) con el nombre viejo`);
-      totalFilas += filas.length;
+      const n = Number(filas[0]?.n ?? 0);
+      console.log(`  · ${`${obj.tabla}.${col}`.padEnd(38)} ${n} fila(s) con el nombre viejo`);
+      if (n > 0) pendientes.push({ tabla: obj.tabla, columna: col, filas: n });
     }
   }
 
-  if (escrituras.length === 0) {
+  if (pendientes.length === 0) {
     console.log('\n  ✔ No hay texto con el nombre viejo en la base. Nada que migrar.\n');
     return;
   }
 
-  console.log(`\n── Cambios propuestos (${escrituras.length}) ──`);
-  for (const e of escrituras.slice(0, 30)) {
-    console.log(`  ${e.tabla}#${e.id} · ${e.columna}`);
-    console.log(`     antes  : ${e.antes.slice(0, 140)}`);
-    console.log(`     después: ${e.despues.slice(0, 140)}`);
+  // Muestra concreta de lo que cambiaría, para poder revisarlo antes de escribir.
+  console.log('\n── Muestra de los cambios ──');
+  for (const p of pendientes) {
+    const ejemplos = await prisma.$queryRawUnsafe<{ antes: string; despues: string }[]>(
+      `SELECT "${p.columna}" AS antes, regexp_replace("${p.columna}", $1, 'PREXI', 'g') AS despues
+       FROM "${p.tabla}" WHERE "${p.columna}" ~ $1 LIMIT 3`,
+      PATRON_SQL,
+    );
+    console.log(`\n  ${p.tabla}.${p.columna} (${p.filas} fila(s))`);
+    for (const e of ejemplos) {
+      console.log(`     antes  : ${e.antes.slice(0, 150)}`);
+      console.log(`     después: ${e.despues.slice(0, 150)}`);
+    }
   }
-  if (escrituras.length > 30) console.log(`  … y ${escrituras.length - 30} más`);
 
   if (!APLICAR) {
     console.log('\n  SIMULACIÓN: no se escribió nada. Ejecuta con --aplicar para confirmar.\n');
     return;
   }
 
-  // Transacción interactiva (callback) y no un array: el array de
-  // `$executeRawUnsafe` no admite `timeout`, y aquí conviene poder ampliarlo
-  // porque Neon con arranque en frío responde despacio la primera consulta.
+  let total = 0;
   await prisma.$transaction(
     async (tx) => {
-      for (const e of escrituras) {
-        await tx.$executeRawUnsafe(`UPDATE "${e.tabla}" SET "${e.columna}" = $1 WHERE id = $2`, e.despues, e.id);
+      for (const p of pendientes) {
+        total += await tx.$executeRawUnsafe(
+          `UPDATE "${p.tabla}" SET "${p.columna}" = regexp_replace("${p.columna}", $1, 'PREXI', 'g') WHERE "${p.columna}" ~ $1`,
+          PATRON_SQL,
+        );
       }
     },
     { timeout: 120_000 },
   );
-  console.log(`\n  ✔ ${escrituras.length} valores actualizados (${totalFilas} filas revisadas).\n`);
+  console.log(`\n  ✔ ${total} fila(s) actualizadas en ${pendientes.length} columna(s).\n`);
 }
 
 main()

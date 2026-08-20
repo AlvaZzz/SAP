@@ -261,6 +261,60 @@ async function regla10Gating() {
     usuarioId = reg.data.usuario?.id ?? reg.data.id ?? null;
     const token = await login(email);
 
+    // 1b) MONTAJE: desbloquea los niveles de gamificación (1-5) para este
+    // estudiante desechable. Esta regla mide el gating por NIVEL DE DIFICULTAD
+    // dentro de un tema, y para llegar ahí hay que poder responder ejercicios
+    // del tema 2.3 — que cuelgan de niveles de gamificación que un estudiante
+    // recién registrado todavía no tiene abiertos. Un estudiante real llega a
+    // 2.3 habiéndolos desbloqueado por el camino; la auditoría empieza ahí, así
+    // que reproduce esa precondición en vez de saltarse el gate real.
+    // Se abren TAMBIÉN los temas, por el mismo motivo: el avance secuencial
+    // (2.1 → 2.2 → 2.3) es otro gate distinto del que mide esta regla.
+    // `nivelActual` se deja en su valor por defecto (básico), que es justo lo
+    // que la comprobación del estado inicial espera encontrar.
+    if (usuarioId) {
+      const niveles = await prisma.nivel.findMany({ select: { id: true } });
+      for (const n of niveles) {
+        await prisma.progresoNivel.upsert({
+          where: { usuarioId_nivelId: { usuarioId, nivelId: n.id } },
+          create: { usuarioId, nivelId: n.id, desbloqueado: true },
+          update: { desbloqueado: true },
+        });
+      }
+      const temas = await prisma.tema.findMany({
+        where: { publicado: true },
+        select: { id: true, unidad: { select: { numero: true } } },
+      });
+      for (const t of temas) {
+        // Los temas de unidades ANTERIORES quedan en Intermedio: el candado de
+        // unidad se calcula en vivo desde el nivel por tema de la unidad previa,
+        // no desde el examen. Los de la unidad 2 se dejan en Básico, que es
+        // justo lo que la comprobación del estado inicial espera ver.
+        const previa = t.unidad.numero < unidad2.numero;
+        await prisma.progresoTema.upsert({
+          where: { usuarioId_temaId: { usuarioId, temaId: t.id } },
+          create: { usuarioId, temaId: t.id, desbloqueado: true, nivelActual: previa ? 'intermedio' : 'basico' },
+          update: { desbloqueado: true, ...(previa ? { nivelActual: 'intermedio' as const } : {}) },
+        });
+      }
+      // Y el tercer gate: la Unidad 2 exige el EXAMEN de la Unidad 1 aprobado.
+      // Se registra como aprobado para este estudiante desechable. Los tres
+      // gates (unidad → tema → nivel de gamificación) tienen sus propias
+      // pruebas; aquí solo se llega hasta donde empieza el que sí se mide.
+      const unidadesPrevias = await prisma.unidad.findMany({
+        where: { numero: { lt: unidad2.numero } },
+        select: { id: true },
+      });
+      for (const u of unidadesPrevias) {
+        const ya = await prisma.examenUnidad.findFirst({ where: { usuarioId, unidadId: u.id, aprobado: true } });
+        if (!ya) {
+          await prisma.examenUnidad.create({
+            data: { usuarioId, unidadId: u.id, aprobado: true, nivel: 'intermedio', puntaje: 100, aciertos: 8, total: 8 },
+          });
+        }
+      }
+    }
+
     // 2) Estado inicial: sin ProgresoTema, ambos temas deben partir en básico.
     const ruta23_inicial = await req('GET', `/ejercicios/ruta?tema=${tema23.id}`, { token });
     const ruta24_inicial = await req('GET', `/ejercicios/ruta?tema=${tema24.id}`, { token });
@@ -311,9 +365,48 @@ function verificarSoloNivelReto(retos: { nivel_dificultad?: string }[], nivelEsp
   }
 }
 
+/**
+ * Resuelve, por el flujo real, la PRÁCTICA MÍNIMA que el tema exige en el nivel
+ * vigente. Sin esto el mini-diagnóstico se rechaza con 400: subir de nivel sin
+ * haber practicado el nivel actual dejó de estar permitido (el estudiante podía
+ * pasar de Básico a Avanzado sin resolver un solo ejercicio del nivel que decía
+ * haber superado). La auditoría comprueba el gating por nivel, no el gate de
+ * práctica, así que aquí solo se cumple el requisito para poder llegar a él.
+ */
+async function practicarMinimo(token: string, temaId: number): Promise<string | null> {
+  for (let vuelta = 0; vuelta < 40; vuelta++) {
+    const ruta = await req('GET', `/ejercicios/ruta?tema=${temaId}`, { token });
+    if (ruta.status !== 200) return `GET ruta → ${ruta.status}: ${JSON.stringify(ruta.data)}`;
+
+    const prog = ruta.data.progreso_nivel;
+    if (!prog) return 'La ruta no devolvió progreso_nivel.';
+    if (prog.cumplido) return null;
+
+    const pendientes: number[] = ruta.data.pendientes_ids ?? [];
+    if (pendientes.length === 0) return `No quedan pendientes pero el mínimo no se cumple (${prog.resueltos}/${prog.minimo}).`;
+
+    const id = pendientes[0];
+    const real = await prisma.ejercicio.findUnique({ where: { id }, select: { respuestaCorrecta: true } });
+    if (!real) return `El ejercicio ${id} de la ruta no existe en la BD.`;
+
+    const intento = await req('POST', '/intentos', {
+      token,
+      body: { ejercicioId: id, respuestaDada: real.respuestaCorrecta.split('|')[0], tiempoSeg: 5 },
+    });
+    if (intento.status !== 201 && intento.status !== 200) {
+      return `POST intentos (ejercicio ${id}) → ${intento.status}: ${JSON.stringify(intento.data)}`;
+    }
+    if (!intento.data.correcto) return `El ejercicio ${id} se marcó incorrecto usando la clave de la BD.`;
+  }
+  return 'No se alcanzó la práctica mínima en 40 intentos.';
+}
+
 /** Sube de nivel usando el flujo real (mini-diagnóstico), leyendo la respuesta
  *  correcta directamente de la BD solo para poder aprobarlo legítimamente. */
 async function subirDeNivel(token: string, temaId: number): Promise<{ aprobado: boolean; motivo?: string }> {
+  const faltaPractica = await practicarMinimo(token, temaId);
+  if (faltaPractica) return { aprobado: false, motivo: `práctica mínima: ${faltaPractica}` };
+
   const inicio = await req('GET', `/ejercicios/subir-nivel?tema=${temaId}`, { token });
   if (inicio.status !== 200) return { aprobado: false, motivo: `GET subir-nivel → ${inicio.status}: ${JSON.stringify(inicio.data)}` };
   const preguntas: { id: number }[] = inicio.data.preguntas ?? [];

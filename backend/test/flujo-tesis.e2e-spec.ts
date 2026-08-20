@@ -346,8 +346,29 @@ describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
   });
 });
 
-describe('5b · Examen de fin de unidad: repaso, IRT y gate de avance', () => {
+describe('5b · Examen de fin de unidad: repaso y gate de avance', () => {
   let unidad1 = -1;
+
+  /*
+   * QUÉ PRUEBA ESTE BLOQUE Y QUÉ NO.
+   *
+   * El examen de unidad tiene TRES requisitos acumulativos: haber revisado el
+   * repaso, tener COMPLETOS todos los temas de la unidad y alcanzar dominio
+   * Intermedio. Los dos últimos se añadieron con el gate de avance y NO estaban
+   * cubiertos aquí: el bloque daba por hecho que `iniciar` devolvía 200 y fallaba
+   * con un 403 sin explicar por qué.
+   *
+   * Aquí se comprueba lo que SOLO el stack real puede demostrar: que la API
+   * aplica de verdad cada requisito, en orden, y que el motivo del rechazo llega
+   * al estudiante en un mensaje que le dice qué le falta.
+   *
+   * La APROBACIÓN del examen (corrección, θ por IRT, desbloqueo de la siguiente
+   * unidad, cooldown y no repetir un examen aprobado) NO se prueba desde aquí:
+   * exigiría completar los 8 temas de la unidad y subir de nivel en todos ellos,
+   * un montaje de más de cien peticiones cuyo resultado dependería además de qué
+   * nivel le asignara el diagnóstico. Está cubierta —con los tres requisitos
+   * satisfechos y sus ramas de fallo— en examen-unidad.service.spec.ts.
+   */
 
   it('la Unidad 1 tiene examen; el gate de avance parte cerrado', async () => {
     const r = await req('GET', '/unidades', { token: estudiante.token });
@@ -357,44 +378,56 @@ describe('5b · Examen de fin de unidad: repaso, IRT y gate de avance', () => {
     unidad1 = u1.id;
     expect(u1.examen_disponible).toBe(true);
     expect(u1.examen_aprobado).toBe(false);
+    expect(u1.habilita_siguiente).toBe(false);
   });
 
-  it('iniciar exige repaso; tras completarlo entrega preguntas SIN la respuesta correcta', async () => {
+  it('el repaso es el PRIMER requisito: sin él, iniciar rechaza con 400', async () => {
     const bloqueado = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
     expect(bloqueado.status).toBe(400);
+    expect(String(bloqueado.data.message)).toMatch(/repaso/i);
+  });
+
+  it('el repaso se entrega y se marca como revisado', async () => {
     const repaso = await req('GET', `/examen-unidad/${unidad1}/repaso`, { token: estudiante.token });
     expect(repaso.status).toBe(200);
     const ok = await req('POST', `/examen-unidad/${unidad1}/repaso/completar`, { token: estudiante.token, body: {} });
     expect(ok.status).toBe(201);
-    const ini = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
-    expect(ini.status).toBe(200);
-    expect(ini.data.preguntas.length).toBeGreaterThanOrEqual(3);
-    expect(JSON.stringify(ini.data)).not.toMatch(/respuestaCorrecta|respuesta_correcta/);
-  });
 
-  it('aprobar el examen (θ ≥ Intermedio) desbloquea la siguiente unidad', async () => {
-    const ini = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
-    const preguntas: { id: number }[] = ini.data.preguntas;
-    // El banco de examen sembrado tiene la opción correcta en 'A' → acertar todo.
-    const respuestas = preguntas.map((p) => ({ ejercicioId: p.id, respuesta: 'A' }));
-    const ev = await req('POST', `/examen-unidad/${unidad1}/evaluar`, { token: estudiante.token, body: { respuestas } });
-    expect(ev.status).toBe(201);
-    const res = ev.data.resultado;
-    expect(res.aprobado).toBe(true);
-    expect(['intermedio', 'avanzado']).toContain(res.nivel);
-    expect(typeof res.theta === 'number' || res.theta === null).toBe(true);
-
-    // El gate de avance ahora refleja el examen aprobado.
     const r = await req('GET', '/unidades', { token: estudiante.token });
     const u1 = r.data.unidades.find((u: { numero: number }) => u.numero === 1);
-    expect(u1.examen_aprobado).toBe(true);
-    const u2 = r.data.unidades.find((u: { numero: number }) => u.numero === 2);
-    if (u2) expect(u2.desbloqueada).toBe(true);
+    expect(u1.repaso_revisado).toBe(true);
   });
 
-  it('no permite repetir el examen ya aprobado', async () => {
+  it('con el repaso hecho pero los temas sin completar, iniciar rechaza con 403 y dice cuáles faltan', async () => {
     const ini = await req('GET', `/examen-unidad/${unidad1}/iniciar`, { token: estudiante.token });
-    expect(ini.status).toBe(400);
+    expect(ini.status).toBe(403);
+    // El mensaje tiene que ser accionable: cuántos temas faltan y sus nombres.
+    expect(String(ini.data.message)).toMatch(/falta completar \d+ tema/i);
+  });
+
+  it('estado() expone el avance hacia el examen sin tener que intentarlo', async () => {
+    const st = await req('GET', `/examen-unidad/${unidad1}/estado`, { token: estudiante.token });
+    expect(st.status).toBe(200);
+    expect(st.data.repaso_revisado).toBe(true);
+    expect(st.data.aprobado).toBe(false);
+    expect(st.data.hay_banco).toBe(true);
+
+    const q = st.data.requisitos;
+    expect(q.temas_total).toBeGreaterThan(0);
+    expect(q.temas_ok).toBe(false);
+    expect(q.temas_pendientes.length).toBe(q.temas_total - q.temas_completos);
+    // Un tema que nunca se tocó cuenta como Básico, así que el dominio no llega.
+    expect(q.nivel_ok).toBe(false);
+    expect(q.nivel_requerido).toBe('intermedio');
+  });
+
+  it('el examen NO se puede evaluar saltándose el gate de iniciar', async () => {
+    const ev = await req('POST', `/examen-unidad/${unidad1}/evaluar`, {
+      token: estudiante.token,
+      body: { respuestas: [{ ejercicioId: 1, respuesta: 'A' }] },
+    });
+    // Da igual el motivo exacto: lo que no puede pasar es que lo acepte.
+    expect(ev.status).toBeGreaterThanOrEqual(400);
   });
 });
 

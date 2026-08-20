@@ -33,10 +33,15 @@ const arg = (n: string, def: string) => {
 };
 
 const BASE = arg('url', 'https://prexi.lat').replace(/\/$/, '');
-// El backend NO cuelga de `prexi.lat/api`: vive en su propio subdominio
-// (`api.prexi.lat`), que es lo que mantiene las cookies de sesión como de
-// primera parte con sameSite: 'strict'. Ver docs/DESPLIEGUE.md.
-const API = arg('api', BASE.replace(/^(https?:\/\/)(?:www\.)?/, '$1api.')).replace(/\/$/, '');
+// La API se ataca A TRAVÉS del frontend (`prexi.lat/api/…`), no directamente
+// contra `api.prexi.lat`. No es un atajo: es EXACTAMENTE el camino del
+// navegador. Next reescribe `/api/:path*` hacia `${API_URL}/api/:path*`
+// (frontend/next.config.js), y es esa reescritura la que mantiene las cookies
+// de sesión como de primera parte con sameSite: 'strict'. Atacando el
+// subdominio directamente se saltaría el rewrite —justo la pieza que más se
+// rompe al desplegar— y las cookies vendrían de otro origen.
+// Con `--api` se puede apuntar al backend directo si se quiere aislarlo.
+const API = arg('api', `${BASE}/api`).replace(/\/$/, '');
 const ESPERA_FRIO_MS = 120_000; // Render puede tardar ~60s en despertar
 
 const marca = Date.now().toString(36);
