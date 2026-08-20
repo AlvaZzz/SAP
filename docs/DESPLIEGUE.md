@@ -352,3 +352,87 @@ Verificados en agosto de 2026. Conviene reconfirmarlos: estas condiciones cambia
   `migrate deploy` del arranque la aplicará. **Nunca `db push` contra Neon.**
 - **Variables de entorno**: cambiarlas en Render fuerza un redespliegue; en Vercel
   hay que redesplegar a mano (Deployments → ⋯ → Redeploy).
+
+---
+
+## 9. El proceso de despliegue (obligatorio)
+
+Este es el procedimiento. No es una recomendación: existe porque ya ocurrió lo
+contrario —cuarenta archivos sin commitear mientras `main` llevaba días
+congelada— y en producción se seguía viendo el sistema de la semana anterior.
+
+### Los dos comandos
+
+| Comando | Cuándo | Qué comprueba |
+|---|---|---|
+| `npm run validar` | **Antes** de fusionar | El CÓDIGO: tipos, lint, pruebas, e2e, auditoría, recursos, texto y entorno |
+| `npm run smoke` | **Después** de desplegar | Lo DESPLEGADO: que responde de verdad, recorriendo el camino de un estudiante |
+
+Son cosas distintas y hacen falta las dos. Un despliegue puede estar en verde en
+validación y aun así servir errores 500 porque faltó una variable de entorno en
+Render: eso solo lo ve el humo.
+
+### La secuencia
+
+```bash
+git checkout -b feature/lo-que-sea    # 1. nunca se trabaja sobre main
+npm run validar                       # 2. TIENE que salir en verde
+git checkout main && git merge feature/lo-que-sea
+git push                              # 3. Vercel y Render redespliegan solos
+# 4. esperar a que ambos terminen (Vercel ~2 min · Render ~5 min en frío)
+npm run smoke                         # 5. contra prexi.lat
+```
+
+`npm run validar` sale con código distinto de cero si algo falla **y también si
+algún paso quedó sin ejecutar** (por ejemplo, sin base de datos local). Una
+validación incompleta no es una validación: levanta el stack
+(`docker compose up -d`) y repítela.
+
+### Si el humo falla
+
+No se arregla en caliente. Primero se vuelve a un estado bueno conocido:
+
+- **Vercel** → Deployments → el despliegue anterior → **Instant Rollback**.
+- **Render** → Events → el despliegue anterior → **Redeploy**.
+- **Base de datos**: una migración ya aplicada **no** se revierte sola. Si el
+  despliegue incluía una migración, revisa antes si el código anterior sigue
+  funcionando contra el esquema nuevo.
+
+Con producción ya estabilizada, se reproduce el fallo en local, se corrige en una
+rama y se vuelve a empezar por el paso 1.
+
+### Cuándo NO se despliega
+
+- **Con estudiantes dentro.** Render tarda en reiniciar y Vercel cambia la versión
+  servida a mitad de sesión: quien esté resolviendo un ejercicio pierde el intento.
+  Se despliega fuera del horario de clase, y tras un despliegue se comprueba el
+  humo antes de avisar a nadie.
+- **El día de la defensa.** Ni ese día ni el anterior. El sistema que se defiende
+  es el que lleva días funcionando, no el que se acaba de tocar. Si aparece un
+  fallo grave la víspera, se decide entre convivir con él o revertir al último
+  despliegue estable — nunca desplegar una corrección sin probar.
+- **Sin respaldo reciente**, si el despliegue toca el esquema de la base. Ver
+  [BASE_DE_DATOS.md](BASE_DE_DATOS.md).
+
+### Qué comprueba `npm run validar`
+
+| Paso | Por qué está |
+|---|---|
+| Integridad del texto (U+FFFD) | La pantalla de registro llegó a producción con 73 caracteres de reemplazo. Era UTF-8 válido y compilaba sin una queja |
+| Recursos estáticos | `/python-logo.svg` daba 404 en cada visita al login: el archivo nunca existió y nada lo detectaba |
+| Variables de entorno | Una variable ausente o con el valor de ejemplo no rompe la compilación, rompe el arranque |
+| Tipos y lint (backend y frontend) | Lo de siempre |
+| Pruebas unitarias | 500 pruebas |
+| Pruebas end-to-end | Contra el stack local |
+| Auditoría del contenido | Distribución del banco, gating por nivel, clave de respuestas repartida |
+
+### Qué comprueba `npm run smoke`
+
+Frontend y `/health` responden (con espera para el arranque en frío de Render),
+registro, login con cookies, renovación de sesión, cargar y responder un
+ejercicio, el tutor PREXI y cero 404 en los recursos estáticos.
+
+Usa una cuenta desechable `smoke+<marca>@prexi.test` y la borra al terminar con
+`backend/scripts/limpiar-smoke.ts` (hace falta `DATABASE_URL`; el sistema no
+expone borrado duro de usuarios a propósito). Si no puede borrarla, lo dice con
+el correo exacto en vez de dejar basura en silencio.

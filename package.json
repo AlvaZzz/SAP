@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "docker compose up --build",
     "down": "docker compose down",
-    "verificar:texto": "tsx scripts/verificar-texto.ts"
+    "verificar:texto": "tsx scripts/verificar-texto.ts",
+    "verificar:recursos": "tsx scripts/verificar-recursos.ts",
+    "verificar:entorno": "tsx scripts/verificar-entorno.ts",
+    "validar": "tsx scripts/validar.ts",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

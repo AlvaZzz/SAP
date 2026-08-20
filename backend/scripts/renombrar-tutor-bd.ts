@@ -88,10 +88,15 @@ async function main() {
     return;
   }
 
+  // Transacción interactiva (callback) y no un array: el array de
+  // `$executeRawUnsafe` no admite `timeout`, y aquí conviene poder ampliarlo
+  // porque Neon con arranque en frío responde despacio la primera consulta.
   await prisma.$transaction(
-    escrituras.map((e) =>
-      prisma.$executeRawUnsafe(`UPDATE "${e.tabla}" SET "${e.columna}" = $1 WHERE id = $2`, e.despues, e.id),
-    ),
+    async (tx) => {
+      for (const e of escrituras) {
+        await tx.$executeRawUnsafe(`UPDATE "${e.tabla}" SET "${e.columna}" = $1 WHERE id = $2`, e.despues, e.id);
+      }
+    },
     { timeout: 120_000 },
   );
   console.log(`\n  ✔ ${escrituras.length} valores actualizados (${totalFilas} filas revisadas).\n`);
