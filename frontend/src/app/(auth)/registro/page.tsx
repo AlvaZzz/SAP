@@ -108,12 +108,13 @@ export default function RegistroPage() {
 
       <div className="relative z-10 flex w-full flex-1 flex-col px-4 sm:px-6 lg:flex-row lg:px-0">
         {/* Panel visual izquierdo — MISMA ESTRUCTURA QUE EL LOGIN a propósito.
-            `LoginHero` coloca la mascota y la lista de beneficios con posiciones
-            absolutas en PORCENTAJE, afinadas para el panel del login. Antes este
-            contenedor usaba `h-screen` + `sticky` + `self-start`: con un alto fijo
-            de 100vh (y sin estirarse con la fila) esos porcentajes caían en otro
-            sitio y el título, la mascota y los beneficios se superponían.
-            Al reproducir el contenedor del login, vuelven a caer donde deben. */}
+            `LoginHero` reparte su contenido en una rejilla (texto | mascota), así
+            que se adapta al alto que le dé este contenedor en vez de depender de
+            porcentajes afinados a mano: ya no hace falta replicar exactamente el
+            panel del login para que nada se superponga.
+            `sticky` + `h-[100svh]`: el formulario de registro es MÁS ALTO que la
+            pantalla; sin esto el hero se estiraría con la columna del formulario
+            y la mascota quedaría fuera de la vista al desplazarse. */}
         <div className="relative z-20 hidden lg:sticky lg:top-0 lg:block lg:h-[100svh] lg:w-[57%] lg:self-start lg:z-auto lg:pl-10 xl:pl-14 2xl:pl-16">
           <LoginHero showDescription />
         </div>
