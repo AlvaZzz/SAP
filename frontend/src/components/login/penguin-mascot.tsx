@@ -2,8 +2,6 @@
 
 import Image from 'next/image';
 import { motion, useReducedMotion, useTransform, type MotionValue } from 'framer-motion';
-import { Code2 } from '@/components/icons';
-import { useImgOk } from './use-img-ok';
 
 /**
  * Mascota (pingüino) del hero del login. LLENA a su contenedor (`h-full w-full`)
@@ -21,7 +19,6 @@ const PENGUIN = '/pinguino.png';
 
 export function PenguinMascot({ mx, my }: { mx: MotionValue<number>; my: MotionValue<number> }) {
   const reduce = useReducedMotion();
-  const ok = useImgOk(PENGUIN);
 
   // Parallax: la mascota se mueve MUY poco (±10px), en contra del cursor.
   const px = useTransform(mx, (v) => (reduce ? 0 : -v * 10));
@@ -47,22 +44,17 @@ export function PenguinMascot({ mx, my }: { mx: MotionValue<number>; my: MotionV
         animate={reduce ? undefined : { y: [0, -7, 0] }}
         transition={reduce ? undefined : { duration: 5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
       >
-        {ok ? (
-          // eslint-disable-next-line jsx-a11y/alt-text
-          <Image
-            src={PENGUIN} alt="Mascota de PREXI programando en Python"
-            width={1536} height={1024} priority
-            sizes="(max-width: 1024px) 340px, 55vw"
-            className="h-full w-full select-none object-cover object-bottom"
-            style={{ pointerEvents: 'none' }}
-          />
-        ) : (
-          <div className="grid h-full w-full place-items-end justify-center pb-[16%]">
-            <div className="grid h-28 w-28 place-items-center rounded-3xl border border-line bg-card/70 backdrop-blur-md shadow-glow">
-              <Code2 className="h-14 w-14 text-prexi-blue-deep" />
-            </div>
-          </div>
-        )}
+        {/* Sin probe de carga: `pinguino.png` existe y `npm run validar` lo
+            comprueba. El probe anterior anulaba `priority` —la imagen no se
+            montaba hasta después de hidratar— y provocaba un salto visible del
+            ícono de reserva a la mascota en cada visita al login. */}
+        <Image
+          src={PENGUIN} alt="Mascota de PREXI programando en Python"
+          width={1536} height={1024} priority
+          sizes="(max-width: 1024px) 340px, 55vw"
+          className="h-full w-full select-none object-cover object-bottom"
+          style={{ pointerEvents: 'none' }}
+        />
       </motion.div>
     </motion.div>
   );

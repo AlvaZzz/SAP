@@ -7,6 +7,7 @@ import { EXAMEN_UNIDAD, REPASO_UNIDADES, REPASO_TEMAS } from './repaso';
 import { DASH_OBJETIVOS, DASH_ANALOGIAS, DASH_EJEMPLOS, DASH_MINUTOS } from './dashboard';
 import { EMBLEMAS, RANGOS } from '../src/gamificacion/catalogo';
 import { dificultadDesdeEstrellas, estimarTheta, nivelDesdeTheta, redondearTheta, RespuestaIrt } from '../src/mediciones/irt/irt';
+import { claveEstable, equilibrarClavesLetras, ItemLetra, LETRAS as LETRAS_OPCION, OpcionLetra, SEMILLA_BANCO } from '../src/common/banco/clave-equilibrada';
 
 /**
  * Seed Prisma — contenido 100% Python. Ejecutar: npm run seed
@@ -64,8 +65,9 @@ async function main() {
     prisma.configuracionSistema.deleteMany(),
   ]);
 
-  // modeloIa: se fija a un modelo con cuota vigente (gemini-2.0-flash quedó sin
-  // cuota en free tier → 429). Alineado con GEMINI_MODEL del entorno.
+  // modeloIa: valor INICIAL, no autoritativo. En tiempo de ejecución manda
+  // GEMINI_MODEL del entorno (ver TutorIaService.resolverModelo): así, si Google
+  // retira el modelo sembrado, se corrige en Render sin tocar la base.
   await prisma.configuracionSistema.create({
     data: {
       id: 1,
@@ -113,6 +115,39 @@ async function main() {
     nid[numero] = n.id;
   }
 
+  // ── EQUILIBRADO DE LA CLAVE DE RESPUESTAS ────────────────────────────────
+  //  La posición de la opción correcta se reparte de forma uniforme y
+  //  determinista en CADA banco antes de sembrarlo. Sin esto, un estudiante que
+  //  marque siempre la misma letra puntúa alto sin dominar el contenido, y esa
+  //  puntuación contamina θ (IRT), el nivel adaptativo asignado y la comparación
+  //  pre/post. El reordenamiento mueve el TEXTO correcto y su clave a la vez
+  //  (src/common/banco/clave-equilibrada) y es reproducible con SEMILLA_BANCO.
+  //  Solo aplica a los tipos cuya clave es una letra de opción: `ordenar_lineas`
+  //  (clave "B,A,D,C") y `completar_codigo` (texto libre) quedan intactos.
+  type Equilibrado = { opciones: OpcionLetra[]; respuestaCorrecta: string };
+  const TIPOS_CON_LETRA = new Set(['opcion_multiple', 'predecir_salida']);
+
+  /** Equilibra un banco y devuelve un buscador por identidad del ítem. */
+  function equilibrador(items: ItemLetra[]): (enunciado: string, textos: string[]) => Equilibrado | null {
+    const resultados = equilibrarClavesLetras(items, SEMILLA_BANCO);
+    const mapa = new Map<string, Equilibrado>();
+    items.forEach((it, i) => {
+      if (!resultados[i].aplicado) return;
+      mapa.set(claveEstable(it.enunciado, it.opciones.map((o) => o.texto)), {
+        opciones: resultados[i].opciones,
+        respuestaCorrecta: resultados[i].respuestaCorrecta,
+      });
+    });
+    return (enunciado, textos) => mapa.get(claveEstable(enunciado, textos)) ?? null;
+  }
+
+  /** Ítem con opciones como texto plano + índice de la correcta → formato con letras. */
+  const comoItemLetra = (enunciado: string, textos: string[], correcta: number): ItemLetra => ({
+    enunciado,
+    opciones: textos.map((texto, i) => ({ id: LETRAS_OPCION[i], texto })),
+    respuestaCorrecta: LETRAS_OPCION[correcta],
+  });
+
   // ── Ejercicios de PRÁCTICA: estructura académica UPEA (Unidad → Tema → Subtema) ──
   const idsPorNivel: Record<number, number[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
   const MIN_TEMA = 10; // mínimo de ejercicios activos para publicar un tema
@@ -122,7 +157,23 @@ async function main() {
   // Deriva el nivel adaptativo (discreto) desde la dificultad 1-5.
   const nivelDe = (d: number): 'basico' | 'intermedio' | 'avanzado' => (d <= 2 ? 'basico' : d === 3 ? 'intermedio' : 'avanzado');
 
+  // Banco de práctica completo (plan UPEA, incluidos los extras avanzados).
+  const ejerciciosPlan: EjPlan[] = [];
+  {
+    const recorrer = (t: TemaPlan) => {
+      ejerciciosPlan.push(...t.ejercicios, ...(EXTRA_AVANZADO[t.numero] ?? []));
+      (t.subtemas ?? []).forEach(recorrer);
+    };
+    PLAN_UPEA.forEach((u) => u.temas.forEach(recorrer));
+  }
+  const equilPractica = equilibrador(
+    ejerciciosPlan
+      .filter((e) => TIPOS_CON_LETRA.has(e.tipo) && e.opciones.length >= 2)
+      .map((e) => ({ enunciado: e.enunciado, opciones: e.opciones, respuestaCorrecta: e.respuestaCorrecta })),
+  );
+
   async function insertarPlan(ej: EjPlan, nivelId: number, temaId: number): Promise<number> {
+    const eq = TIPOS_CON_LETRA.has(ej.tipo) ? equilPractica(ej.enunciado, ej.opciones.map((o) => o.texto)) : null;
     const creado = await prisma.ejercicio.create({
       data: {
         titulo: tituloDe(ej.codigo ?? '', ej.enunciado),
@@ -136,8 +187,8 @@ async function main() {
         tipo: ej.tipo,
         enunciado: ej.enunciado,
         codigoPython: ej.codigo,
-        opciones: ej.opciones, // ya en formato { id, texto }
-        respuestaCorrecta: ej.respuestaCorrecta,
+        opciones: eq?.opciones ?? ej.opciones, // ya en formato { id, texto }
+        respuestaCorrecta: eq?.respuestaCorrecta ?? ej.respuestaCorrecta,
         xp: ej.xp,
         explicacionIa: ej.expl,
         banco: 'practica',
@@ -190,8 +241,15 @@ async function main() {
   }
 
   // ── Banco de POSTEST (evaluación final, igual para todos; 5 categorías) ──
+  const equilPostest = equilibrador(
+    POSTEST.filter((d) => TIPOS_CON_LETRA.has(d.tipo) && d.opciones.length >= 2).map((d) =>
+      comoItemLetra(d.enunciado, d.opciones, d.respuesta_correcta),
+    ),
+  );
+
   async function insertar(d: Def, banco: Banco): Promise<number> {
     const numeroNivel = d.nivel ?? CAT_A_NIVEL[d.categoria] ?? 1;
+    const eq = TIPOS_CON_LETRA.has(d.tipo) ? equilPostest(d.enunciado, d.opciones) : null;
     const ej = await prisma.ejercicio.create({
       data: {
         titulo: tituloDe(d.codigo_python, d.enunciado),
@@ -204,8 +262,8 @@ async function main() {
         tipo: d.tipo,
         enunciado: d.enunciado,
         codigoPython: d.codigo_python,
-        opciones: d.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
-        respuestaCorrecta: LETRAS[d.respuesta_correcta],
+        opciones: eq?.opciones ?? d.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
+        respuestaCorrecta: eq?.respuestaCorrecta ?? LETRAS[d.respuesta_correcta],
         xp: d.xp ?? d.dificultad * 5,
         explicacionIa: d.expl ?? 'Analiza paso a paso la ejecución del código.',
         banco,
@@ -220,6 +278,9 @@ async function main() {
   //  θ por tema (IRT). Marca cada tema curado como enDiagnostico=true.
   let totalDiag = 0;
   const temasDiagnostico: number[] = [];
+  const equilDiag = equilibrador(
+    DIAGNOSTICO.flatMap((dt) => dt.items.map((it) => comoItemLetra(it.enunciado, it.opciones, it.correcta))),
+  );
   for (const dt of DIAGNOSTICO) {
     const temaId = temaIdPorNumero[dt.tema];
     if (!temaId) {
@@ -240,8 +301,8 @@ async function main() {
           tipo: 'opcion_multiple',
           enunciado: it.enunciado,
           codigoPython: it.codigo ?? null,
-          opciones: it.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
-          respuestaCorrecta: LETRAS[it.correcta],
+          opciones: equilDiag(it.enunciado, it.opciones)?.opciones ?? it.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
+          respuestaCorrecta: equilDiag(it.enunciado, it.opciones)?.respuestaCorrecta ?? LETRAS[it.correcta],
           xp: it.estrellas * 5,
           explicacionIa: it.expl,
           banco: 'pretest',
@@ -257,6 +318,9 @@ async function main() {
   //  Preguntas propias distintas del diagnóstico/práctica; alimentan el examen que
   //  valida el avance a la siguiente unidad. El docente puede gestionarlas luego.
   let totalExamen = 0;
+  const equilExamen = equilibrador(
+    EXAMEN_UNIDAD.flatMap((et) => et.items.map((it) => comoItemLetra(it.enunciado, it.opciones, it.correcta))),
+  );
   for (const et of EXAMEN_UNIDAD) {
     const temaId = temaIdPorNumero[et.tema];
     if (!temaId) {
@@ -277,8 +341,8 @@ async function main() {
           tipo: 'opcion_multiple',
           enunciado: it.enunciado,
           codigoPython: it.codigo ?? null,
-          opciones: it.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
-          respuestaCorrecta: LETRAS[it.correcta],
+          opciones: equilExamen(it.enunciado, it.opciones)?.opciones ?? it.opciones.map((t, i) => ({ id: LETRAS[i], texto: t })),
+          respuestaCorrecta: equilExamen(it.enunciado, it.opciones)?.respuestaCorrecta ?? LETRAS[it.correcta],
           xp: it.estrellas * 5,
           explicacionIa: it.expl,
           banco: 'examen',

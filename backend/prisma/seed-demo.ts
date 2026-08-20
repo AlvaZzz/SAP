@@ -749,7 +749,7 @@ async function main() {
         if (retosActivos.length === 0) break;
         const reto = elegir(retosActivos);
         try {
-          await retosCtrl.entregar(usuario.id, reto.id, { codigo: '# entrega demo\nprint("ok")\n' } as never);
+          await retosCtrl.entregar(usuario.id, 'estudiante', reto.id, { codigo: '# entrega demo\nprint("ok")\n' } as never);
           await prisma.$executeRawUnsafe(
             `UPDATE retos_usuario SET entregado_en = $1 WHERE usuario_id = $2 AND reto_id = $3`,
             fecha, usuario.id, reto.id,

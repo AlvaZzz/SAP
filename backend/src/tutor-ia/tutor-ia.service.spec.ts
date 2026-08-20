@@ -27,7 +27,7 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
   beforeEach(() => {
     prisma = crearPrismaMock();
     // Config central: IA activa. getModel hace .catch() → debe resolver.
-    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.0-flash', maxPistasIa: 3 });
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.5-flash-lite', maxPistasIa: 3 });
     // Perfil del estudiante. El nivel sale de la clasificación YA PERSISTIDA
     // (derivada de θ), NO del % del pretest: ALVARO no clasifica por su cuenta.
     // Ver docs/CLASIFICACION_NIVELES.md.
@@ -123,7 +123,7 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
 
   it('pista: rechaza un nivel por encima del máximo permitido', async () => {
     inyectarGeminiFake(service);
-    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.0-flash', maxPistasIa: 2 });
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.5-flash-lite', maxPistasIa: 2 });
     prisma.ejercicio.findUnique.mockResolvedValue({ enunciado: 'x', codigoPython: null, categoria: 'Bucles', maxPistas: 3, temaId: null });
     await expect(service.pista(7, 3, 3)).rejects.toBeInstanceOf(HttpException);
   });
@@ -169,5 +169,90 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
     (service as unknown as { client: unknown }).client = { getGenerativeModel: () => model };
     await expect(service.asistente(7, 'hola')).rejects.toBeInstanceOf(HttpException);
     expect(model.generateContent).toHaveBeenCalledTimes(1); // sin reintento
+  });
+});
+
+/**
+ * PRECEDENCIA DEL MODELO Y DIAGNÓSTICO DE FALLOS.
+ *
+ * Estos casos fijan la corrección de la caída en producción: la BD mandaba sobre
+ * el entorno, así que un modelo retirado guardado por el seed dejaba a ALVARO
+ * caído aunque GEMINI_MODEL estuviera bien puesta en Render. Y todos los fallos
+ * no-429 se registraban con el mismo texto, así que no había forma de saber la
+ * causa sin reproducirla a mano.
+ */
+describe('TutorIaService · modelo efectivo y clasificación de errores', () => {
+  let prisma: PrismaMock;
+
+  beforeEach(() => {
+    prisma = crearPrismaMock();
+    prisma.usuario.findUnique.mockResolvedValue({ nombre: 'Ana', nivelInicialAdaptativo: 'basico', thetaActual: -1 });
+    prisma.evaluacion.findUnique.mockResolvedValue(null);
+    prisma.tema.findUnique.mockResolvedValue(null);
+    prisma.documento.findFirst.mockResolvedValue(null);
+    prisma.consultaIa.create.mockResolvedValue({});
+  });
+
+  /** Devuelve el nombre de modelo con el que se pidió el cliente de Gemini. */
+  async function modeloUsado(envModelo: string | undefined, modeloBd: string | null) {
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: modeloBd, maxPistasIa: 3 });
+    const service = new TutorIaService(crearConfig({ GEMINI_MODEL: envModelo }), prisma as never);
+    const getGenerativeModel = jest.fn().mockReturnValue({
+      generateContent: jest.fn().mockResolvedValue({ response: { text: () => 'ok' } }),
+    });
+    (service as unknown as { client: unknown }).client = { getGenerativeModel };
+    await service.asistente(1, '¿qué es una variable?');
+    return getGenerativeModel.mock.calls[0][0].model as string;
+  }
+
+  it('el ENTORNO manda sobre el valor guardado en la base', async () => {
+    expect(await modeloUsado('gemini-2.5-flash-lite', 'gemini-2.0-flash')).toBe('gemini-2.5-flash-lite');
+  });
+
+  it('usa el valor de la base cuando no hay variable de entorno', async () => {
+    expect(await modeloUsado(undefined, 'gemini-2.5-flash')).toBe('gemini-2.5-flash');
+  });
+
+  it('cae al defecto del código cuando no hay ni entorno ni base', async () => {
+    expect(await modeloUsado(undefined, null)).toBe(TutorIaService.MODELO_DEFECTO);
+  });
+
+  it('un modelo retirado NO se confunde con una caída genérica', async () => {
+    prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.0-flash', maxPistasIa: 3 });
+    const service = new TutorIaService(crearConfig(), prisma as never);
+    (service as unknown as { client: unknown }).client = {
+      getGenerativeModel: () => ({
+        generateContent: jest.fn().mockRejectedValue(
+          new Error('[GoogleGenerativeAI Error]: [404 Not Found] This model models/gemini-2.0-flash is no longer available.'),
+        ),
+      }),
+    };
+    const error = jest.spyOn((service as unknown as { logger: { error: (m: string) => void } }).logger, 'error').mockImplementation(() => undefined);
+
+    await expect(service.asistente(1, '¿qué es un bucle?')).rejects.toThrow(HttpException);
+    const registrado = error.mock.calls[0][0] as string;
+    expect(registrado).toContain('MODELO INEXISTENTE O RETIRADO');
+    // El log nombra el modelo y de dónde salió: es el dato que faltaba para diagnosticar.
+    expect(registrado).toContain('gemini-2.0-flash');
+    expect(registrado).toContain('Cómo se arregla');
+  });
+
+  it('distingue clave inválida, cuota y restricción regional', async () => {
+    const casos: Array<[string, string]> = [
+      ['API key not valid. Please pass a valid API key.', 'CLAVE DE API INVÁLIDA'],
+      ['[429 Too Many Requests] You exceeded your current quota', 'CUOTA AGOTADA'],
+      ['[400] User location is not supported for the API use.', 'RESTRICCIÓN REGIONAL'],
+      ['fetch failed', 'FALLO DE RED HACIA GOOGLE'],
+    ];
+    for (const [mensaje, esperado] of casos) {
+      prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.5-flash-lite', maxPistasIa: 3 });
+      const service = new TutorIaService(crearConfig(), prisma as never);
+      (service as unknown as { client: unknown }).client = {
+        getGenerativeModel: () => ({ generateContent: jest.fn().mockRejectedValue(new Error(mensaje)) }),
+      };
+      const error = jest.spyOn((service as unknown as { logger: { error: (m: string) => void } }).logger, 'error').mockImplementation(() => undefined);
+      await expect(service.asistente(1, 'hola profe')).rejects.toThrow(HttpException);
+      expect(error.mock.calls.map((c) => String(c[0])).join('\n')).toContain(esperado);
+    }
   });
 });

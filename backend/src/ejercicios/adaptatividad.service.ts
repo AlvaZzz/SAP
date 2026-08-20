@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { NivelDificultad, Prisma } from '@prisma/client';
+import { Banco, NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { corregir } from './correccion';
 import {
@@ -34,6 +34,92 @@ const SELECT_PUBLICO = {
 @Injectable()
 export class AdaptatividadService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /* ══════════════════════════════════════════════════════════════════════
+     GATING ESTRICTO POR NIVEL — PUNTO ÚNICO DE VERDAD
+
+     La regla del sistema es: un estudiante con nivel N en un tema practica SOLO
+     los ítems de nivel N de ESE tema. Hasta ahora la regla vivía únicamente en
+     los listados (`ruta()` y `RetosService.disponibles()`), no en el acceso
+     directo ni en el envío: con un id antiguo, o desde las DevTools, se podía
+     abrir, responder y GANAR XP por un ejercicio de otro nivel. Eso contamina
+     XP, ranking, rangos y θ — es decir, los datos del estudio.
+
+     Toda la comparación y el mensaje de rechazo viven aquí. Las cuatro rutas
+     protegidas (`GET /ejercicios/:id`, `POST /intentos`, `GET /retos/:id`,
+     `POST /retos/:id/entregar`) llaman a estos métodos y no repiten la lógica.
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Bancos EXENTOS del gating, por diseño y no por descuido:
+   *  · `examen`  — el examen de fin de unidad mezcla intermedio y avanzado a
+   *                propósito; filtrarlo por nivel lo dejaría incompleto.
+   *  · `pretest` — instrumento de medición: idéntico para todos los estudiantes.
+   *  · `postest` — ídem, y su comparabilidad con el pretest es la hipótesis.
+   */
+  private static readonly BANCOS_EXENTOS: Banco[] = ['examen', 'pretest', 'postest'];
+
+  /** Roles que gestionan contenido y deben poder ver cualquier ítem. */
+  private static readonly ROLES_SIN_GATING = new Set(['docente', 'admin', 'investigador']);
+
+  /**
+   * Nivel que la RUTA sirve hoy en este tema. No es siempre el nivel del
+   * estudiante: si su nivel no tiene ejercicios en el tema, `ruta()` cae al
+   * inmediato inferior para no dejarlo sin práctica. El gate debe resolver el
+   * nivel EXACTAMENTE igual que el listado, o rechazaría ejercicios que la propia
+   * ruta acaba de ofrecer.
+   */
+  async nivelServidoEnTema(usuarioId: number, temaId: number): Promise<NivelDificultad> {
+    return this.nivelConEjercicios(temaId, await this.nivelDeTema(usuarioId, temaId));
+  }
+
+  /**
+   * Comparación y rechazo. El mensaje es para el estudiante: dice qué pasa y no
+   * revela nada del ítem (ni su nivel, ni su contenido).
+   */
+  private rechazarSiNoCoincide(nivelItem: NivelDificultad, nivelEstudiante: NivelDificultad, que: 'ejercicio' | 'reto') {
+    if (nivelItem === nivelEstudiante) return;
+    throw new ForbiddenException(
+      `Este ${que} no corresponde a tu nivel actual en este tema. ` +
+        `Estás practicando en nivel ${ETIQUETA_NIVEL[nivelEstudiante]}.`,
+    );
+  }
+
+  /**
+   * Verifica el acceso a un EJERCICIO. Lanza 403 si no corresponde al nivel.
+   *
+   * Ítems sin tema (`temaId = null`): se permiten. No cuelgan de ningún
+   * `ProgresoTema`, así que no hay nivel contra el que comparar; son los bancos
+   * de medición y el contenido antiguo previo a la jerarquía académica. La
+   * alternativa —bloquearlos— dejaría inaccesible contenido legítimo.
+   */
+  async verificarAccesoEjercicio(
+    usuarioId: number,
+    ej: { temaId: number | null; nivelDificultad: NivelDificultad; banco: Banco },
+    rol?: string,
+  ): Promise<void> {
+    if (rol && AdaptatividadService.ROLES_SIN_GATING.has(rol)) return;
+    if (AdaptatividadService.BANCOS_EXENTOS.includes(ej.banco)) return;
+    if (ej.temaId == null) return;
+    this.rechazarSiNoCoincide(ej.nivelDificultad, await this.nivelServidoEnTema(usuarioId, ej.temaId), 'ejercicio');
+  }
+
+  /**
+   * Verifica el acceso a un RETO. Igual que los ejercicios, salvo en cómo se
+   * resuelve el nivel esperado: `RetosService.disponibles()` compara contra
+   * `ProgresoTema.nivelActual` SIN caída a un nivel inferior, así que el gate
+   * hace lo mismo. Mezclar las dos resoluciones abriría una grieta justo entre
+   * lo que el listado muestra y lo que el acceso directo acepta.
+   */
+  async verificarAccesoReto(
+    usuarioId: number,
+    reto: { temaId: number | null; nivelDificultad: NivelDificultad },
+    rol?: string,
+  ): Promise<void> {
+    if (rol && AdaptatividadService.ROLES_SIN_GATING.has(rol)) return;
+    if (reto.temaId == null) return;
+    this.rechazarSiNoCoincide(reto.nivelDificultad, await this.nivelDeTema(usuarioId, reto.temaId), 'reto');
+  }
 
   /** Nivel ACTUAL del estudiante en un tema: su ProgresoTema o, si aún no existe, su nivel inicial del pretest. */
   async nivelDeTema(usuarioId: number, temaId: number): Promise<NivelDificultad> {

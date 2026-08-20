@@ -27,6 +27,7 @@
 import { PrismaClient, Prisma, NivelDificultad, TipoEjercicio, Banco } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import { equilibrarClavesLetras, ItemLetra, SEMILLA_BANCO } from '../src/common/banco/clave-equilibrada';
 
 const prisma = new PrismaClient();
 
@@ -113,6 +114,46 @@ function validarItem(donde: string, it: ItemEjercicio): string[] {
   return e.map((x) => `${donde}: ${x}`);
 }
 
+/** Tipos cuya `respuestaCorrecta` es la LETRA de una opcion (los unicos equilibrables). */
+const TIPOS_CON_LETRA: TipoEjercicio[] = ['opcion_multiple', 'predecir_salida'];
+
+/**
+ * Reparte la posicion de la respuesta correcta de todo el archivo de contenido
+ * (ejercicios de temas/subtemas + items de examen), MUTANDO los items en memoria
+ * antes de sembrarlos. Trabaja sobre el conjunto completo para que el reparto sea
+ * uniforme a nivel de banco, no tema a tema. Devuelve cuantos items se reubicaron.
+ */
+function equilibrarClave(contenido: Contenido): number {
+  const items: ItemEjercicio[] = [];
+  const recoger = (ts: TemaJson[]) => {
+    for (const t of ts) {
+      items.push(...(t.ejercicios ?? []));
+      recoger(t.subtemas ?? []);
+    }
+  };
+  recoger(contenido.temas);
+  items.push(...(contenido.examen ?? []));
+
+  const equilibrables = items.filter((it) => TIPOS_CON_LETRA.includes(it.tipo) && (it.opciones?.length ?? 0) >= 2);
+  const entrada: ItemLetra[] = equilibrables.map((it) => ({
+    enunciado: it.enunciado,
+    opciones: it.opciones!,
+    respuestaCorrecta: it.respuestaCorrecta,
+  }));
+
+  let n = 0;
+  equilibrarClavesLetras(entrada, SEMILLA_BANCO).forEach((r, i) => {
+    if (!r.aplicado) {
+      console.warn(`  (!) "${equilibrables[i].enunciado.slice(0, 60)}": respuestaCorrecta "${equilibrables[i].respuestaCorrecta}" no apunta a ninguna opcion; se deja como esta.`);
+      return;
+    }
+    equilibrables[i].opciones = r.opciones;
+    equilibrables[i].respuestaCorrecta = r.respuestaCorrecta;
+    n += 1;
+  });
+  return n;
+}
+
 async function main() {
   /* ── PASO 1: cargar el archivo de contenido autorizado ── */
   if (!fs.existsSync(DATA_PATH)) {
@@ -151,6 +192,18 @@ async function main() {
     if (it.fuenteDoc?.tema && !numerosTemario.has(it.fuenteDoc.tema)) errores.push(`Examen ítem#${i + 1}: fuenteDoc.tema "${it.fuenteDoc.tema}" no existe en el temario`);
   });
   if (errores.length) fallo(`El archivo de contenido tiene ${errores.length} problema(s):\n  - ${errores.slice(0, 30).join('\n  - ')}`);
+
+  /* -- EQUILIBRADO DE LA CLAVE (antes de tocar la base) --
+     El material entregado concentra la respuesta correcta en una posicion (en
+     unidad1.json, un 73 % en "B"). Asi el banco deja de medir conocimiento: quien
+     marque siempre la misma letra puntua alto sin dominarlo, y esa puntuacion
+     contamina la theta (IRT), el nivel adaptativo y la comparacion pre/post. Se
+     reparte de forma uniforme y DETERMINISTA (misma semilla => misma disposicion,
+     ver src/common/banco/clave-equilibrada), moviendo texto y clave a la vez.
+     Solo afecta a los tipos con clave por letra; ordenar_lineas (clave "B,A,D,C")
+     y completar_codigo (texto libre) quedan intactos. */
+  const nEquilibrados = equilibrarClave(contenido);
+  console.log(`(*) Clave de respuestas equilibrada en ${nEquilibrados} item(s) de opcion (semilla "${SEMILLA_BANCO}").`);
 
   /* ── Resolver la unidad y su contexto ── */
   const unidad = await prisma.unidad.findFirst({ where: { numero: NUM_UNIDAD }, orderBy: { id: 'asc' } });

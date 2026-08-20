@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    Favicon de PREXI. Reproduce la marca del componente PrexiLogo: cuadrado
+    redondeado en el azul de acento (#4A90E2) con el birrete, y el punto naranja
+    (#F97316) de la "XI" del wordmark. Convención del App Router de Next: al
+    llamarse `icon.svg` dentro de `app/`, Next inyecta el <link rel="icon"> solo.
+    Formato SVG en vez de .ico: nítido en cualquier densidad y versionable como texto.
+  -->
+  <rect width="32" height="32" rx="8" fill="#4A90E2"/>
+  <!-- Birrete: tablero en rombo + cuerpo, en blanco sobre el azul -->
+  <path d="M16 8 L27 13 L16 18 L5 13 Z" fill="#FFFFFF"/>
+  <path d="M10 15.4 v4.4 c0 1.9 2.7 3.2 6 3.2 s6 -1.3 6 -3.2 v-4.4 l-6 2.7 z" fill="#FFFFFF" fill-opacity="0.82"/>
+  <!-- Borla: el acento naranja de la marca -->
+  <path d="M26 13.3 v5" stroke="#F97316" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <circle cx="26" cy="19.6" r="1.9" fill="#F97316"/>
+</svg>

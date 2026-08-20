@@ -21,6 +21,7 @@
  * código 1 si alguna regla falla.
  */
 import { PrismaClient, Banco, NivelDificultad, TipoEjercicio } from '@prisma/client';
+import { distribucionClave } from '../src/common/banco/clave-equilibrada';
 
 const prisma = new PrismaClient();
 const API = process.env.E2E_API_URL ?? 'http://localhost:4000/api';
@@ -329,6 +330,71 @@ async function subirDeNivel(token: string, temaId: number): Promise<{ aprobado: 
   return { aprobado: !!evaluar.data.aprobado, motivo: evaluar.data.aprobado ? undefined : `puntaje ${evaluar.data.puntaje}/${evaluar.data.umbral ?? '?'}` };
 }
 
+/* ───────────── Regla 11: la clave de respuestas no puede concentrarse en una posición ───────────── */
+
+/**
+ * Umbral de concentración de la clave. Si más del 35 % de las respuestas
+ * correctas de un banco cae en la misma posición, el banco deja de medir
+ * conocimiento: un estudiante que marque siempre esa letra obtiene una
+ * puntuación alta sin dominar el contenido, y esa puntuación contamina θ (IRT),
+ * el nivel adaptativo asignado y la comparación pre/post. Es un defecto de
+ * INSTRUMENTO y por eso la auditoría falla, no advierte.
+ * El reparto lo produce src/common/banco/clave-equilibrada (≈25 % por posición);
+ * este 35 % deja margen a bancos pequeños sin tolerar un sesgo real.
+ */
+const MAX_CONCENTRACION_CLAVE = 0.35;
+/** Bancos con menos ítems que esto no son evaluables estadísticamente. */
+const MIN_ITEMS_CLAVE = 12;
+
+async function regla11Clave() {
+  const fallos: string[] = [];
+  const ejercicios = await prisma.ejercicio.findMany({
+    where: { tipo: { in: TIPOS_CON_OPCIONES } },
+    select: { id: true, banco: true, temaId: true, respuestaCorrecta: true, opciones: true },
+  });
+  // Solo items de 4 opciones: el numero de opciones lo gobierna la Regla 4, y
+  // mezclar items de 2 y de 4 haria imposible fijar un umbral con sentido.
+  const deCuatro = ejercicios.filter((e) => Array.isArray(e.opciones) && (e.opciones as unknown[]).length === 4);
+  const temas = await prisma.tema.findMany({ select: { id: true, unidadId: true } });
+  const unidades = await prisma.unidad.findMany({ select: { id: true, numero: true } });
+  const numeroUnidad = new Map(unidades.map((u) => [u.id, u.numero]));
+  const unidadDeTema = new Map(temas.map((t) => [t.id, t.unidadId]));
+
+  // Se audita por banco y, dentro del banco, por unidad: un sesgo concentrado en
+  // una sola unidad quedaría diluido si solo se mirara el total del sistema.
+  const grupos = new Map<string, string[]>();
+  const agregar = (clave: string, letra: string) => {
+    const g = grupos.get(clave);
+    if (g) g.push(letra);
+    else grupos.set(clave, [letra]);
+  };
+  for (const e of deCuatro) {
+    const u = e.temaId != null ? numeroUnidad.get(unidadDeTema.get(e.temaId) ?? -1) : undefined;
+    agregar(`banco ${e.banco}`, e.respuestaCorrecta);
+    if (u != null) agregar(`banco ${e.banco} · Unidad ${u}`, e.respuestaCorrecta);
+  }
+
+  for (const [nombre, letras] of [...grupos.entries()].sort()) {
+    if (letras.length < MIN_ITEMS_CLAVE) continue;
+    const conteo = distribucionClave(letras);
+    for (const [letra, n] of Object.entries(conteo).sort()) {
+      const pct = n / letras.length;
+      if (pct > MAX_CONCENTRACION_CLAVE) {
+        const detalle = Object.entries(conteo)
+          .sort()
+          .map(([l, c]) => `${l}:${Math.round((c / letras.length) * 100)}%`)
+          .join(' ');
+        fallos.push(
+          `${nombre} (n=${letras.length}): la clave "${letra}" concentra el ${Math.round(pct * 100)}% ` +
+            `(máximo permitido ${Math.round(MAX_CONCENTRACION_CLAVE * 100)}%). Distribución: ${detalle}. ` +
+            `Corrige con: npx tsx scripts/equilibrar-clave-bd.ts --aplicar`,
+        );
+      }
+    }
+  }
+  reportar(`11. Clave de respuestas repartida (ninguna posición > ${Math.round(MAX_CONCENTRACION_CLAVE * 100)}% por banco)`, fallos);
+}
+
 /* ─────────────────────── Main ─────────────────────── */
 
 async function main() {
@@ -345,6 +411,7 @@ async function main() {
   await regla8NivelCoincide();
   await regla9CodigoRetoDuplicado();
   await regla10Gating();
+  await regla11Clave();
 
   console.log('Regla                                                                              Resultado');
   console.log('─'.repeat(100));
@@ -357,7 +424,7 @@ async function main() {
     }
   }
   console.log('─'.repeat(100));
-  console.log(algunaFallo ? `\n✖ Auditoría con fallos (${resultados.filter((r) => !r.ok).length}/${resultados.length} reglas en FAIL).\n` : '\n✔ Auditoría completa: 10/10 reglas en PASS.\n');
+  console.log(algunaFallo ? `\n✖ Auditoría con fallos (${resultados.filter((r) => !r.ok).length}/${resultados.length} reglas en FAIL).\n` : `\n✔ Auditoría completa: ${resultados.length}/${resultados.length} reglas en PASS.\n`);
 
   await prisma.$disconnect();
   process.exit(algunaFallo ? 1 : 0);

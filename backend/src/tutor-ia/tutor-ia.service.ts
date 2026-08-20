@@ -34,6 +34,8 @@ export class TutorIaService {
   private readonly logger = new Logger(TutorIaService.name);
   private client: GoogleGenerativeAI | null = null;
   static readonly MAX_INPUT = MAX_INPUT;
+  /** Modelo resuelto en la última llamada + su procedencia. Solo para los logs de error. */
+  private modeloEnUso = '(sin resolver)';
 
   constructor(
     private readonly config: ConfigService,
@@ -56,16 +58,55 @@ export class TutorIaService {
     preguntas: 2048,
   };
 
+  /**
+   * PRECEDENCIA DEL MODELO — decidida a raíz de una caída en producción.
+   *
+   *   GEMINI_MODEL (entorno)  >  ConfiguracionSistema.modeloIa (BD)  >  defecto
+   *
+   * Antes mandaba la BD, y eso provocó el fallo: el seed graba `modeloIa` con el
+   * valor que tenía `GEMINI_MODEL` EN EL MOMENTO DE SEMBRAR. Si más tarde Google
+   * retira ese modelo (`gemini-2.0-flash` devuelve hoy 404 "no longer available"),
+   * la variable corregida en Render se ignoraba y ALVARO quedaba caído sin que
+   * nadie pudiera arreglarlo sin acceso a SQL.
+   *
+   * El entorno manda porque es la palanca que un administrador SÍ puede tocar en
+   * el panel de Render, y porque es lo que se despliega y se revisa junto al
+   * código. Contrapartida honesta: el selector de modelo del panel de admin queda
+   * anulado mientras `GEMINI_MODEL` esté definida — por eso se registra un aviso
+   * explícito cuando el valor del entorno pisa a uno distinto guardado en la BD.
+   */
+  static readonly MODELO_DEFECTO = 'gemini-2.5-flash-lite';
+  private modeloAvisado = '';
+
+  /** Resuelve el modelo efectivo y de dónde sale (para poder diagnosticarlo en los logs). */
+  private resolverModelo(modeloBd: string | null | undefined): { modelo: string; origen: string } {
+    const env = this.config.get<string>('GEMINI_MODEL')?.trim();
+    if (env) {
+      if (modeloBd && modeloBd !== env && this.modeloAvisado !== env) {
+        this.logger.warn(
+          `GEMINI_MODEL="${env}" (entorno) tiene prioridad sobre ConfiguracionSistema.modeloIa="${modeloBd}" (BD). ` +
+            'Si querías usar el de la BD, borra GEMINI_MODEL del entorno.',
+        );
+        this.modeloAvisado = env;
+      }
+      return { modelo: env, origen: 'entorno GEMINI_MODEL' };
+    }
+    if (modeloBd?.trim()) return { modelo: modeloBd.trim(), origen: 'ConfiguracionSistema.modeloIa (BD)' };
+    return { modelo: TutorIaService.MODELO_DEFECTO, origen: 'valor por defecto del código' };
+  }
+
   private async getModel(maxOutputTokens?: number) {
     const key = this.config.get<string>('GEMINI_API_KEY');
     if (!key) throw new HttpException('La IA no está configurada en el servidor', HttpStatus.SERVICE_UNAVAILABLE);
-    // El modelo y el interruptor global se centralizan en ConfiguracionSistema.
+    // El interruptor global de ALVARO se centraliza en ConfiguracionSistema.
     const cfg = await this.prisma.configuracionSistema.findUnique({ where: { id: 1 } }).catch(() => null);
     if (cfg && cfg.iaActiva === false)
       throw new HttpException('ALVARO está desactivado por el administrador.', HttpStatus.SERVICE_UNAVAILABLE);
     if (!this.client) this.client = new GoogleGenerativeAI(key);
-    // Variante FLASH (rápida y económica) por defecto; el admin puede cambiarla.
-    const modelo = cfg?.modeloIa ?? this.config.get<string>('GEMINI_MODEL') ?? 'gemini-2.5-flash-lite';
+    const { modelo, origen } = this.resolverModelo(cfg?.modeloIa);
+    // Se guarda para poder nombrarlo en el log de error: sin esto, un 404 de
+    // modelo retirado es indistinguible de cualquier otra caída.
+    this.modeloEnUso = `${modelo} (${origen})`;
     return this.client.getGenerativeModel({
       model: modelo,
       // Limitar la longitud de salida reduce tokens facturados y acelera la respuesta.
@@ -134,14 +175,103 @@ export class TutorIaService {
     return m ? Math.ceil(parseFloat(m[1]) * 1000) : 0;
   }
 
+  /**
+   * CLASIFICACIÓN DE FALLOS DE GEMINI.
+   *
+   * Antes todo lo que no fuese un 429 se registraba como "Gemini: <mensaje>" y se
+   * le mostraba al estudiante "ALVARO no está disponible ahora". Con eso, un
+   * modelo retirado, una clave revocada y un corte de red producían exactamente
+   * la misma traza: imposible diagnosticar sin reproducirlo a mano. Aquí cada
+   * causa se nombra, se explica CÓMO SE ARREGLA y se registra con el modelo y su
+   * procedencia, que es justo el dato que faltaba.
+   */
+  private clasificarError(msg: string): { causa: string; comoArreglar: string; publico: string; status: HttpStatus } {
+    const m = msg.toLowerCase();
+    const es = (re: RegExp) => re.test(msg);
+
+    if (es(/no longer available|is not found for api version|404|NOT_FOUND/i) && /model/i.test(msg)) {
+      return {
+        causa: 'MODELO INEXISTENTE O RETIRADO',
+        comoArreglar:
+          `El modelo "${this.modeloEnUso}" no existe o Google lo retiró. Corrige GEMINI_MODEL en el entorno ` +
+          `(ese valor manda sobre la BD). Lista de modelos vigentes: npx tsx scripts/diagnostico-ia.ts`,
+        publico: 'ALVARO está mal configurado en el servidor. Avisa a tu docente.',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+      };
+    }
+    if (es(/API_KEY_INVALID|api key not valid|api key expired|invalid api key/i)) {
+      return {
+        causa: 'CLAVE DE API INVÁLIDA',
+        comoArreglar: 'GEMINI_API_KEY no es válida o fue revocada. Genera una nueva en Google AI Studio y actualízala en el entorno.',
+        publico: 'ALVARO está mal configurado en el servidor. Avisa a tu docente.',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+      };
+    }
+    if (es(/user location is not supported|location is not supported|FAILED_PRECONDITION/i)) {
+      return {
+        causa: 'RESTRICCIÓN REGIONAL',
+        comoArreglar: 'La API de Gemini no atiende peticiones desde la región donde corre el servidor. Cambia la región del despliegue o usa una cuenta con facturación habilitada.',
+        publico: 'ALVARO no está disponible desde este servidor. Avisa a tu docente.',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+      };
+    }
+    if (es(/429/) || /quota|resource_exhausted/.test(m)) {
+      return {
+        causa: 'CUOTA AGOTADA O LÍMITE POR MINUTO',
+        comoArreglar: 'Se agotó la cuota del plan de Gemini. Espera a que se reponga, sube el plan, o baja AI_RATE_LIMIT_PER_HOUR / rateLimitIaHora para repartirla mejor.',
+        publico: 'Se alcanzó el límite de uso de ALVARO. Intenta en unos minutos.',
+        status: HttpStatus.TOO_MANY_REQUESTS,
+      };
+    }
+    if (es(/PERMISSION_DENIED|403/)) {
+      return {
+        causa: 'PERMISO DENEGADO',
+        comoArreglar: 'La clave existe pero no tiene habilitada la Generative Language API, o está restringida por IP/referente. Revisa la clave en Google AI Studio / Cloud Console.',
+        publico: 'ALVARO está mal configurado en el servidor. Avisa a tu docente.',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+      };
+    }
+    if (es(/fetch failed|ENOTFOUND|ETIMEDOUT|ECONNRESET|ECONNREFUSED|network|socket hang up/i)) {
+      return {
+        causa: 'FALLO DE RED HACIA GOOGLE',
+        comoArreglar: 'El servidor no pudo alcanzar generativelanguage.googleapis.com. Revisa la salida a internet del despliegue.',
+        publico: 'ALVARO no está disponible ahora, intenta de nuevo.',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+      };
+    }
+    if (es(/400|INVALID_ARGUMENT/)) {
+      return {
+        causa: 'PETICIÓN INVÁLIDA',
+        comoArreglar: 'Gemini rechazó la petición (prompt demasiado largo o parámetros no soportados por este modelo).',
+        publico: 'ALVARO no pudo procesar esta consulta. Reformúlala más corta.',
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+      };
+    }
+    return {
+      causa: 'CAUSA DESCONOCIDA',
+      comoArreglar: 'Sin patrón reconocido. Revisa el mensaje original completo que acompaña a esta línea.',
+      publico: 'ALVARO no está disponible ahora, intenta de nuevo.',
+      status: HttpStatus.SERVICE_UNAVAILABLE,
+    };
+  }
+
+  /** Registra el fallo con causa y remedio, y devuelve el mensaje para el estudiante. */
+  private registrarFallo(contexto: string, msg: string): { publico: string; status: HttpStatus } {
+    const { causa, comoArreglar, publico, status } = this.clasificarError(msg);
+    this.logger.error(
+      `Gemini [${contexto}] — ${causa} · modelo=${this.modeloEnUso}\n` +
+        `  Cómo se arregla: ${comoArreglar}\n` +
+        `  Mensaje original: ${msg}`,
+    );
+    return { publico, status };
+  }
+
   /** Traduce un error de Gemini a una HttpException amable (nunca rompe la vista). */
   private traducirError(err: unknown): HttpException {
     if (err instanceof HttpException) return err;
     const msg = err instanceof Error ? err.message : String(err);
-    this.logger.error(`Gemini: ${msg}`);
-    if (msg.includes('429') || msg.toLowerCase().includes('quota'))
-      return new HttpException('Se alcanzó el límite de uso de ALVARO. Intenta en unos minutos.', HttpStatus.TOO_MANY_REQUESTS);
-    return new HttpException('ALVARO no está disponible ahora, intenta de nuevo.', HttpStatus.SERVICE_UNAVAILABLE);
+    const { publico, status } = this.registrarFallo('generateContent', msg);
+    return new HttpException(publico, status);
   }
 
   /**
@@ -243,17 +373,16 @@ Responde su duda respetando el estilo (3-4 frases), aprovechando su perfil para 
         if (t) { completo += t; yield t; }
       }
     } catch (err) {
-      // Log del error EXACTO de Gemini (status + mensaje) para depurar.
+      // El fallo se clasifica y se registra con causa + remedio (ver clasificarError):
+      // un modelo retirado y un corte de red ya no producen la misma traza.
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Gemini stream: ${msg}`);
       if (!completo) {
-        // Mensaje amable y específico: HttpException (ya traducida) trae su mensaje;
-        // si es un 429 crudo (fallo a mitad del stream), avisamos del límite.
-        completo = err instanceof HttpException ? err.message
-          : (msg.includes('429') || /quota/i.test(msg))
-            ? 'Se alcanzó el límite de uso de ALVARO. Intenta en unos minutos.'
-            : 'ALVARO no está disponible ahora, intenta de nuevo.';
+        completo = err instanceof HttpException
+          ? err.message
+          : this.registrarFallo('asistente/stream', msg).publico;
         yield completo;
+      } else if (!(err instanceof HttpException)) {
+        this.registrarFallo('asistente/stream (a mitad)', msg);
       }
     }
     await this.registrar({ usuarioId, tipo: 'asistente', pregunta, respuesta: completo.trim(), ejercicioId });
@@ -376,13 +505,13 @@ final corregido: explica el qué y el porqué para que él lo escriba.${bloquePe
       }
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Gemini stream (practica): ${errMsg}`);
       if (!completo) {
-        completo = err instanceof HttpException ? err.message
-          : (errMsg.includes('429') || /quota/i.test(errMsg))
-            ? 'Se alcanzó el límite de uso de ALVARO. Intenta en unos minutos.'
-            : 'ALVARO no está disponible ahora, intenta de nuevo.';
+        completo = err instanceof HttpException
+          ? err.message
+          : this.registrarFallo('practica/stream', errMsg).publico;
         yield completo;
+      } else if (!(err instanceof HttpException)) {
+        this.registrarFallo('practica/stream (a mitad)', errMsg);
       }
     }
     await this.registrar({ usuarioId, tipo: 'practica', pregunta: pregunta || '(orientación)', respuesta: completo.trim() });

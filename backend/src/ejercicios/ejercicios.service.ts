@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { AdaptatividadService } from './adaptatividad.service';
 import { ResponderDto } from './dto/responder.dto';
 import { corregir } from './correccion';
 import { EmblemasService } from '../gamificacion/emblemas.service';
@@ -29,6 +30,8 @@ export class EjerciciosService {
     private readonly prisma: PrismaService,
     private readonly emblemas: EmblemasService,
     private readonly rangos: RangosService,
+    // Punto único del gating por nivel (ver AdaptatividadService).
+    private readonly adaptatividad: AdaptatividadService,
   ) {}
 
   // ── Niveles con el progreso del usuario ──
@@ -291,6 +294,11 @@ export class EjerciciosService {
           throw new ForbiddenException('Esta unidad aún está bloqueada. Alcanza nivel Intermedio en la unidad anterior.');
         }
       }
+
+      // GATING POR NIVEL. Va aquí, ANTES de corregir, de otorgar XP y de registrar
+      // el intento: si el ejercicio no es del nivel del estudiante en este tema, no
+      // debe dejar ningún rastro en los datos del estudio.
+      await this.adaptatividad.verificarAccesoEjercicio(usuarioId, ej);
 
       const correcto = corregir(ej.tipo, dto.respuestaDada, ej.respuestaCorrecta);
 

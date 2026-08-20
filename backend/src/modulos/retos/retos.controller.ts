@@ -7,6 +7,7 @@ import { NotificacionesService } from '../notificaciones/notificaciones.service'
 import { RetosAccessService } from './retos-access.service';
 import { RetosAccessGuard } from './retos-access.guard';
 import { RetosService } from './retos.service';
+import { AdaptatividadService } from '../../ejercicios/adaptatividad.service';
 
 class EntregarRetoDto {
   @IsString() @MinLength(1) codigo!: string;
@@ -26,6 +27,8 @@ export class RetosController {
     private readonly notificaciones: NotificacionesService,
     private readonly retosAccess: RetosAccessService,
     private readonly retos: RetosService,
+    // Punto único del gating por nivel (ver AdaptatividadService).
+    private readonly adaptatividad: AdaptatividadService,
   ) {}
 
   /** Estado de acceso del estudiante a los retos (nivel + habilitación docente). */
@@ -72,7 +75,11 @@ export class RetosController {
 
   @Get(':id')
   @UseGuards(RetosAccessGuard)
-  async detalle(@CurrentUser('sub') usuarioId: number, @Param('id', ParseIntPipe) id: number) {
+  async detalle(
+    @CurrentUser('sub') usuarioId: number,
+    @CurrentUser('rol') rol: string,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     const r = await this.prisma.reto.findFirst({
       where: { id, activo: true },
       include: {
@@ -93,6 +100,9 @@ export class RetosController {
       },
     });
     if (!r) return { reto: null, entrega: null };
+    // GATING POR NIVEL: el listado ya filtra, pero el acceso directo por id no lo
+    // hacía. Se comprueba después de resolver el reto y antes de devolver nada suyo.
+    await this.adaptatividad.verificarAccesoReto(usuarioId, r, rol);
     const e = await this.prisma.retoUsuario.findUnique({ where: { usuarioId_retoId: { usuarioId, retoId: id } } });
     // Contexto académico legible para el tutor ALVARO (ej. "U2 · 2.4 Bucles").
     const contextoTema = r.tema
@@ -135,9 +145,20 @@ export class RetosController {
   /** Entrega el reto para revisión del docente. No otorga XP todavía. */
   @Post(':id/entregar')
   @UseGuards(RetosAccessGuard)
-  async entregar(@CurrentUser('sub') usuarioId: number, @Param('id', ParseIntPipe) retoId: number, @Body() dto: EntregarRetoDto) {
-    const reto = await this.prisma.reto.findFirst({ where: { id: retoId, activo: true }, select: { id: true, titulo: true, autorId: true } });
+  async entregar(
+    @CurrentUser('sub') usuarioId: number,
+    @CurrentUser('rol') rol: string,
+    @Param('id', ParseIntPipe) retoId: number,
+    @Body() dto: EntregarRetoDto,
+  ) {
+    const reto = await this.prisma.reto.findFirst({
+      where: { id: retoId, activo: true },
+      select: { id: true, titulo: true, autorId: true, temaId: true, nivelDificultad: true },
+    });
     if (!reto) throw new BadRequestException('El reto no existe o no está disponible');
+    // GATING POR NIVEL, antes de registrar la entrega: una entrega de otro nivel
+    // llegaría al docente y podría acabar otorgando XP fuera de la ruta adaptativa.
+    await this.adaptatividad.verificarAccesoReto(usuarioId, reto, rol);
 
     const actual = await this.prisma.retoUsuario.findUnique({ where: { usuarioId_retoId: { usuarioId, retoId } } });
     if (actual?.estado === 'pendiente_revision') throw new BadRequestException('Ya entregaste este reto; espera la revisión del docente.');

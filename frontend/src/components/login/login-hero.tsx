@@ -24,7 +24,7 @@ const FEATURES = [
   { icon: Code2, title: 'Aprende Python', desc: 'Desde lo básico hasta lo avanzado.', glow: '#22C55E' },
 ];
 
-export function LoginHero() {
+export function LoginHero({ showDescription = false }: { showDescription?: boolean }) {
   // Parallax: posición del cursor normalizada (-0.5..0.5), suavizada con spring.
   const ref = useRef<HTMLDivElement>(null);
   const rawX = useMotionValue(0);
@@ -68,18 +68,22 @@ export function LoginHero() {
         {/* Título (3 líneas) — solo desktop */}
         <motion.h1
           initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-          className="hidden max-w-xl font-display text-4xl font-extrabold leading-[1.03] tracking-tight text-fg lg:block lg:max-w-full lg:text-5xl xl:max-w-[70%] xl:text-6xl">
+          className="hidden max-w-xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-fg lg:block lg:max-w-[40%] lg:text-5xl xl:max-w-[40%] xl:text-[clamp(3rem,2.5vw,4rem)]">
           Aprende <Grad from="#4A90E2" to="#8FBEF0">Python</Grad><br />
           de forma inteligente,<br />
           <Grad from="#F97316" to="#FB923C">divertida</Grad> y a tu ritmo.
         </motion.h1>
 
-        {/* Descripción — solo desktop */}
-        <motion.p
-          initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
-          className="hidden text-[15px] leading-relaxed text-muted lg:block lg:max-w-[88%] lg:text-[17px] xl:max-w-[36%] xl:text-lg">
-          Ejercicios adaptativos, retroalimentación inteligente y gamificación para llevar tus habilidades al siguiente nivel.
-        </motion.p>
+        {showDescription && (
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="hidden max-w-[30%] text-[15px] leading-relaxed text-muted lg:block lg:text-[17px] xl:text-lg"
+          >
+            Ejercicios adaptativos, retroalimentación inteligente y gamificación para llevar tus habilidades al siguiente nivel.
+          </motion.p>
+        )}
 
         {/* Mascota MÓVIL: en flujo, tamaño cómodo (no llena el alto). Solo móvil.
             `-mb-16` + `z-20` la hacen "sentarse" sobre el borde superior de la card
@@ -94,7 +98,7 @@ export function LoginHero() {
       {/* ── Bloque inferior: beneficios en LISTA VERTICAL angosta — solo desktop ──
           Vertical (no 2×2) a propósito: la rejilla de 2 columnas se extendía por
           debajo de la mascota y el texto se cruzaba con ella. */}
-      <div className="relative z-10 hidden flex-col gap-3 xl:absolute xl:bottom-[18%] xl:left-0 xl:flex xl:max-w-[36%] xl:gap-[18px]">
+      <div className="relative z-10 hidden flex-col gap-3 min-[2200px]:absolute min-[2200px]:bottom-[4%] min-[2200px]:left-0 min-[2200px]:flex min-[2200px]:max-w-[30%] min-[2200px]:gap-4">
         {FEATURES.map((f) => <FeatureItem key={f.title} {...f} />)}
       </div>
     </div>

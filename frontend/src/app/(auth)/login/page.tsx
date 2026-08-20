@@ -2,7 +2,6 @@
 
 import { LoginHero } from '@/components/login/login-hero';
 import { LoginForm } from '@/components/login/login-form';
-import { useImgOk } from '@/components/login/use-img-ok';
 
 /**
  * PÁGINA DE LOGIN (módulo auth) — 2 columnas a pantalla completa, SIN aire muerto.
@@ -11,12 +10,15 @@ import { useImgOk } from '@/components/login/use-img-ok';
  * columna en flujo normal (logo + mascota + form) con scroll. Auth REAL de PREXI.
  */
 
-/** Fondo de circuitos muy sutil (marca). Si /prexi-circuits.png no está, se omite. */
+/**
+ * Fondo de circuitos muy sutil (marca). El recurso vive en
+ * `public/prexi-circuits.svg` y su existencia la verifica `npm run validar`
+ * (comprobación de recursos estáticos), así que ya NO se envuelve en un probe
+ * de carga: hacerlo solo retrasaba el fondo hasta después de la hidratación.
+ */
 function Circuits() {
-  const ok = useImgOk('/prexi-circuits.png');
-  if (!ok) return null;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/prexi-circuits.png" alt="" aria-hidden
+  return <img src="/prexi-circuits.svg" alt="" aria-hidden
     className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.06] dark:opacity-[0.12]" />;
 }
 
@@ -32,13 +34,13 @@ export default function LoginPage() {
       <div aria-hidden className="pointer-events-none absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.16),transparent_70%)] blur-3xl" />
 
       {/* Zona principal (crece para llenar el alto) */}
-      <div className="relative z-10 flex w-full flex-1 flex-col px-6 sm:px-8 lg:flex-row lg:px-0">
+      <div className="relative z-10 flex w-full flex-1 flex-col px-4 sm:px-6 lg:flex-row lg:px-0">
         {/* En móvil el hero va por ENCIMA (z-20) para que el pingüino "se siente"
             sobre la card; en desktop vuelve al flujo normal (lg:z-auto). */}
         <div className="relative z-20 lg:z-auto lg:w-[57%] lg:pl-10 xl:pl-14 2xl:pl-16">
           <LoginHero />
         </div>
-        <div className="relative z-10 flex items-center justify-center pb-10 pt-2 lg:w-[43%] lg:justify-end lg:border-l lg:border-line/60 lg:py-0 lg:pl-8 lg:pr-12 xl:pr-16 2xl:pr-20">
+        <div className="relative z-10 flex items-center justify-center pb-8 pt-2 sm:pb-10 lg:w-[43%] lg:justify-center lg:border-l lg:border-line/60 lg:px-8 lg:py-8 xl:px-12 2xl:px-16">
           <LoginForm />
         </div>
       </div>
