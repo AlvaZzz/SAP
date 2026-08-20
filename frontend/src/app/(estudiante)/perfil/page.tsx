@@ -122,7 +122,7 @@ export default function PerfilPage() {
           {/* Audio y voz */}
           <Card hover>
             <p className="mb-1 text-sm font-semibold text-fg">Audio y voz</p>
-            <p className="mb-3 text-xs leading-relaxed text-muted">Controla los sonidos de logros y si ALVARO te lee sus respuestas en voz alta.</p>
+            <p className="mb-3 text-xs leading-relaxed text-muted">Controla los sonidos de logros y si tu tutor PREXI te lee sus respuestas en voz alta.</p>
             <div className="space-y-2.5">
               <Interruptor
                 titulo="Sonidos activados"
@@ -133,7 +133,7 @@ export default function PerfilPage() {
               {vozSoportada() && (
                 <Interruptor
                   titulo="Leer respuestas en voz alta"
-                  detalle="ALVARO lee automáticamente cada respuesta. También puedes usar el botón de audio en cada una."
+                  detalle="Tu tutor PREXI lee automáticamente cada respuesta. También puedes usar el botón de audio en cada una."
                   activo={usuario?.vozAutomatica ?? false}
                   onChange={(v) => void guardarAudio({ vozAutomatica: v })}
                 />

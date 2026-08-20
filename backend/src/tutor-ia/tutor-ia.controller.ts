@@ -9,7 +9,7 @@ import { CurrentUser } from '../common/auth/current-user.decorator';
 class AsistenteDto {
   @IsString() @MinLength(2) @MaxLength(500) pregunta!: string;
   @IsOptional() @IsString() @MaxLength(120) contextoTema?: string;
-  // Si el estudiante pregunta desde un ejercicio, ALVARO usa el material del
+  // Si el estudiante pregunta desde un ejercicio, PREXI usa el material del
   // docente para ese tema (mismo estilo/sintaxis enseñado en clase).
   @IsOptional() @IsInt() @Min(1) ejercicio_id?: number;
 }
@@ -33,7 +33,7 @@ class PistaRetoDto {
 }
 
 /**
- * ALVARO — Tutor IA. Todos los endpoints requieren sesión y cuentan para el
+ * PREXI — Tutor IA. Todos los endpoints requieren sesión y cuentan para el
  * límite de consultas por hora (AiRateLimitGuard). La clave Gemini vive solo
  * en el backend.
  */
@@ -49,7 +49,7 @@ export class TutorIaController {
 
   /**
    * Igual que /asistente pero en STREAMING (text/plain por chunks): el frontend
-   * ve a ALVARO "escribiendo". Si la IA está apagada/no configurada, la excepción
+   * ve a PREXI "escribiendo". Si la IA está apagada/no configurada, la excepción
    * se lanza ANTES del primer chunk (cabeceras no enviadas) → el filtro global la
    * formatea como JSON y el cliente cae al endpoint normal.
    */

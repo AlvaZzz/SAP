@@ -304,7 +304,7 @@ export class EjerciciosService {
 
       const cfg = await tx.configuracionSistema.findUnique({ where: { id: 1 } });
 
-      // Pistas usadas: se cuentan desde consultas_ia (ALVARO) para este ejercicio
+      // Pistas usadas: se cuentan desde consultas_ia (PREXI) para este ejercicio
       // posteriores al último intento. Fuente de verdad en el backend, no el cliente.
       const ultimoIntento = await tx.intento.findFirst({
         where: { usuarioId, ejercicioId: ej.id },

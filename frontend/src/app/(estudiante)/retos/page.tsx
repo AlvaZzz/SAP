@@ -119,7 +119,7 @@ export default function RetosPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Retos" subtitle="Desafíos de código organizados por unidad y tema. Elige uno y resuélvelo en el editor con ALVARO." />
+      <PageHeader title="Retos" subtitle="Desafíos de código organizados por unidad y tema. Elige uno y resuélvelo en el editor con PREXI." />
 
       {/* Buscador */}
       <div className="mb-4 max-w-xl">
@@ -178,7 +178,7 @@ export default function RetosPage() {
           </h2>
           <p className="mt-1 max-w-sm text-sm text-muted">
             {retos.length === 0
-              ? 'Cuando un docente publique un reto, aparecerá aquí para que lo resuelvas en el editor con ALVARO.'
+              ? 'Cuando un docente publique un reto, aparecerá aquí para que lo resuelvas en el editor con PREXI.'
               : 'Prueba con otro término, nivel o unidad.'}
           </p>
           {hayFiltro && retos.length > 0 && <button onClick={limpiar} className="btn-ghost mt-4">Quitar filtros</button>}

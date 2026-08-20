@@ -12,7 +12,7 @@
 ## 1. Qué se clasifica y con qué regla
 
 PREXI asigna a cada estudiante un **nivel adaptativo** que determina qué ejercicios ve,
-qué dificultad tienen y cómo le habla el tutor ALVARO. Es el mecanismo central de la
+qué dificultad tienen y cómo le habla el tutor PREXI. Es el mecanismo central de la
 adaptatividad y, por tanto, lo que sostiene la hipótesis de la tesis.
 
 La regla es **una sola**, implementada en `nivelDesdeTheta` ([irt.ts](../backend/src/mediciones/irt/irt.ts)):
@@ -312,6 +312,6 @@ el otro certifica un requisito de avance. Ver sección 6.
 
 **¿Hay una sola regla de clasificación en el sistema?**
 Sí, desde el 7 de agosto de 2026. Antes coexistían cuatro: una función muerta con cortes
-40/70, una regla propia dentro del tutor ALVARO con cortes 50/75, la clasificación por θ y
+40/70, una regla propia dentro del tutor PREXI con cortes 50/75, la clasificación por θ y
 la clasificación de dominio agregado. Las dos primeras se eliminaron y unificaron; hay
 pruebas unitarias que impiden que reaparezcan.

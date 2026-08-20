@@ -6,9 +6,9 @@ import { api, ApiError } from '@/lib/api';
 import { CodeEditor } from '@/components/code-editor';
 import { TraceViewer, PasoTraza } from '@/components/trace-viewer';
 import { ejecutarPython, trazarPython, precargarPython, onCargaRuntime } from '@/lib/python-runtime';
-import { AlvaroRetoPanel } from '@/components/alvaro-reto-panel';
+import { TutorRetoPanel } from '@/components/tutor-reto-panel';
 import { OrigenEjercicio, type OrigenReto } from '@/components/origen-ejercicio';
-import { useAnimo } from '@/components/animo-alvaro';
+import { useAnimo } from '@/components/animo-tutor';
 import { Play, RotateCcw, Upload, CheckCircle, Clock, AlertTriangle, ChevronLeft, Layers } from '@/components/icons';
 
 type EstadoEntrega = 'sin_entregar' | 'pendiente_revision' | 'aprobado' | 'necesita_mejorar';
@@ -24,7 +24,7 @@ interface Reto {
 interface Emblema { clave: string; nombre: string; descripcion: string; icono: string }
 
 /**
- * Editor del reto. El entorno de código (editor + consola + ALVARO) SOLO aparece
+ * Editor del reto. El entorno de código (editor + consola + PREXI) SOLO aparece
  * al entrar a un reto concreto; ya no existe una "Práctica" libre suelta. El
  * acceso lo controla el backend (nivel Intermedio/Avanzado habilitado por el docente).
  */
@@ -218,8 +218,8 @@ export default function RetoEditorPage() {
         </div>
       )}
 
-      {/* Escritorio amplio (xl): editor ancho + panel de ALVARO cómodo. Por debajo
-          de xl, el panel de ALVARO se apila DEBAJO del editor, a todo el ancho. */}
+      {/* Escritorio amplio (xl): editor ancho + panel de PREXI cómodo. Por debajo
+          de xl, el panel de PREXI se apila DEBAJO del editor, a todo el ancho. */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
         {/* Editor + consola */}
         <div className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#04162E] shadow-soft xl:min-h-[72vh]">
@@ -298,8 +298,8 @@ export default function RetoEditorPage() {
           )}
         </div>
 
-        {/* Tutor ALVARO completo (chat con streaming + pistas + chips), igual que en ejercicios */}
-        <AlvaroRetoPanel retoId={retoId} contextoTema={reto.contextoTema} enunciado={reto.enunciado} codigo={codigo} esBugHunt={reto.esBugHunt} />
+        {/* Tutor PREXI completo (chat con streaming + pistas + chips), igual que en ejercicios */}
+        <TutorRetoPanel retoId={retoId} contextoTema={reto.contextoTema} enunciado={reto.enunciado} codigo={codigo} esBugHunt={reto.esBugHunt} />
       </div>
 
     </div>

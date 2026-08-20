@@ -212,7 +212,7 @@ export default function PretestPage() {
           <div className="card flex items-start gap-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-subtle text-muted"><Bot className="h-5 w-5" /></div>
             <div>
-              <p className="text-sm text-muted"><b className="text-fg">Examen sin ayuda de IA</b>: ALVARO está deshabilitado para medir tu nivel real.</p>
+              <p className="text-sm text-muted"><b className="text-fg">Examen sin ayuda de IA</b>: PREXI está deshabilitado para medir tu nivel real.</p>
               <p className="mt-1 text-xs text-muted">Puedes volver a cualquier pregunta y cambiar tu respuesta antes de finalizar.</p>
             </div>
           </div>

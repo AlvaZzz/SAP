@@ -97,7 +97,7 @@ const MELODIAS: Record<Sonido, { freq: number; t: number; d: number }[]> = {
     { freq: 392.0, t: 0, d: 0.1 },      // Sol4
     { freq: 311.13, t: 0.1, d: 0.16 },  // Mi♭4 (baja amable, no de "error")
   ],
-  // Notificación de ALVARO: chime breve ascendente (dos notas, tipo campanita).
+  // Notificación de PREXI: chime breve ascendente (dos notas, tipo campanita).
   notificacion: [
     { freq: 659.25, t: 0, d: 0.09 },    // Mi5
     { freq: 987.77, t: 0.09, d: 0.2 },  // Si5

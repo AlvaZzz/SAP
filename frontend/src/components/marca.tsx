@@ -14,7 +14,7 @@ export function Marca() {
       <div>
         <h2 className="mb-3 text-3xl font-bold leading-snug">Aprende Python con un tutor de IA y gamificación.</h2>
         <p className="text-blue-100">
-          Sistema adaptativo que mide tu nivel, ajusta los retos y te guía con ALVARO mientras
+          Sistema adaptativo que mide tu nivel, ajusta los retos y te guía con PREXI mientras
           acumulas XP, rachas e insignias.
         </p>
       </div>

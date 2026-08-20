@@ -21,7 +21,7 @@ Fecha: 2026-07-03 · Stack: NestJS + Prisma/PostgreSQL (backend) · Next.js 14 (
 
 - **PretestService**: puntaje real = aciertos/total×100; clasificación Bajo/Medio/Alto (40/70); nivel inicial 2 si es Alto (desbloquea niveles 1 y 2, no el 3); el estado de un pretest completado se lee de la `Evaluacion` persistida (regresión del bug 0/100); corrección evaluada en backend (case-insensitive); preguntas ajenas rechazadas; respuestas en blanco cuentan como incorrectas sin romper el cálculo.
 - **PostestService**: disponibilidad según `postestDesdeNivel` y `umbralPorcentaje` de la config; **ganancia = postest − pretest** exacta; ganancia `null` sin pretest; finalizar sin preguntas cargadas rechazado (no persiste un 0); no se puede repetir; estado desde la `Evaluacion` persistida.
-- **EjerciciosService**: XP base; penalización por pistas de ALVARO (contadas en backend) con piso de 5 XP; multiplicadores de racha (1.2/1.5/2.0) y corte de racha; desbloqueo del siguiente nivel al alcanzar el umbral (y no antes); nivel bloqueado → 403; recálculo de posiciones del ranking por XP.
+- **EjerciciosService**: XP base; penalización por pistas de PREXI (contadas en backend) con piso de 5 XP; multiplicadores de racha (1.2/1.5/2.0) y corte de racha; desbloqueo del siguiente nivel al alcanzar el umbral (y no antes); nivel bloqueado → 403; recálculo de posiciones del ranking por XP.
 - **Guards**: `JwtAuthGuard` (sin token, token inválido, token expirado, cookie y Bearer) y `RolesGuard` (estudiante ✗ docente/admin/investigador, docente ✗ admin, investigador ✗ docente/admin, cada rol ✓ sus rutas).
 - **AuthService**: bcrypt (nunca texto plano), mensaje idéntico para correo inexistente y contraseña errada, bloqueo 15 min al 5.º fallo (HTTP 423), cuenta desactivada no entra, email/cédula duplicados con mensaje claro.
 - **AdminGruposService**: asigna solo a estudiantes reales, respeta el bloqueo de grupos (con opción de forzar) y registra auditoría.
@@ -53,7 +53,7 @@ Además se eliminaron restos de demo para producción: credenciales precargadas 
 
 ## 3 · Qué queda pendiente
 
-- **Tutor IA (ALVARO)**: no se probó end-to-end porque requiere `GEMINI_API_KEY` real (el rate-limit y el registro de consultas están cubiertos por diseño y guard existente).
+- **Tutor IA (PREXI)**: no se probó end-to-end porque requiere `GEMINI_API_KEY` real (el rate-limit y el registro de consultas están cubiertos por diseño y guard existente).
 - **Subida real de PDF por multipart**: validación revisada en código (firma binaria + límite); falta un e2e con archivo real.
 - ~~**Migraciones Prisma versionadas**~~ **RESUELTO**: el esquema ya se versiona en [`backend/prisma/migrations/`](../backend/prisma/migrations) y producción despliega con `prisma migrate deploy` (nunca `db push`). `db push` queda solo para iterar en la BD local de desarrollo.
 - **Seed de producción**: decidir si se conservan las cuentas demo (documentado en README).

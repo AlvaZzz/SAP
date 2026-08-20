@@ -15,7 +15,7 @@ export class CrearDocumentoDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(5)
   nivel?: number; // número de nivel asociado (opcional)
 
-  // Tema (jerarquía académica) asociado: fuente de contexto para ALVARO y para
+  // Tema (jerarquía académica) asociado: fuente de contexto para PREXI y para
   // "Generar preguntas desde este PDF".
   @IsOptional() @Type(() => Number) @IsInt() @Min(1)
   temaId?: number;

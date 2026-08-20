@@ -1,5 +1,5 @@
 /**
- * DIAGNÓSTICO DE ALVARO (Gemini) — responde en un solo paso por qué la IA no
+ * DIAGNÓSTICO DE PREXI (Gemini) — responde en un solo paso por qué la IA no
  * funciona, sin tener que reproducir el fallo a mano ni leer logs a ciegas.
  *
  *   npx tsx scripts/diagnostico-ia.ts
@@ -31,14 +31,14 @@ const mal = (m: string) => console.log(`  ✖ ${m}`);
 const info = (m: string) => console.log(`    ${m}`);
 
 async function main() {
-  console.log(`\n══ DIAGNÓSTICO DE ALVARO (Gemini) · ${new Date().toISOString()} ══\n`);
+  console.log(`\n══ DIAGNÓSTICO DE PREXI (Gemini) · ${new Date().toISOString()} ══\n`);
   let problemas = 0;
 
   /* ── 1) Clave ── */
   console.log('1) Clave de API');
   const key = process.env.GEMINI_API_KEY?.trim();
   if (!key) {
-    mal('GEMINI_API_KEY no está definida. ALVARO responde 503 "La IA no está configurada en el servidor".');
+    mal('GEMINI_API_KEY no está definida. PREXI responde 503 "La IA no está configurada en el servidor".');
     info('Defínela en el entorno del backend (en Render: Environment → Add Environment Variable).');
     await prisma.$disconnect();
     process.exit(1);
@@ -52,7 +52,7 @@ async function main() {
     info('No hay fila de configuración (id=1). Se usarán los valores por defecto del código.');
   } else {
     if (cfg.iaActiva === false) {
-      mal('iaActiva = false → ALVARO está APAGADO por el administrador. Ese es todo el problema.');
+      mal('iaActiva = false → PREXI está APAGADO por el administrador. Ese es todo el problema.');
       info('Actívalo desde el panel de administración o con: UPDATE configuracion_sistema SET ia_activa = true WHERE id = 1;');
       problemas++;
     } else {
@@ -140,7 +140,7 @@ async function main() {
 
   console.log(
     problemas === 0
-      ? '\n✔ ALVARO está operativo con esta configuración.\n'
+      ? '\n✔ PREXI está operativo con esta configuración.\n'
       : `\n✖ ${problemas} problema(s) detectado(s). Ver el detalle arriba.\n`,
   );
   await prisma.$disconnect();

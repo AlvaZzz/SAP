@@ -94,7 +94,7 @@ export default function AdminSistemaPage() {
         )}
         {tab === 'ia' && (
           <div className="grid gap-5 sm:grid-cols-2">
-            <div className="sm:col-span-2"><Toggle label="Tutor ALVARO activo" hint="Si se desactiva, ningún rol puede usar la IA." value={cfg.iaActiva} onChange={(v) => set('iaActiva', v)} /></div>
+            <div className="sm:col-span-2"><Toggle label="Tutor PREXI activo" hint="Si se desactiva, ningún rol puede usar la IA." value={cfg.iaActiva} onChange={(v) => set('iaActiva', v)} /></div>
             <Field label="Máx. pistas por ejercicio"><Input type="number" value={cfg.maxPistasIa} onChange={(e) => set('maxPistasIa', +e.target.value)} /></Field>
             <Field label="Rate limit (consultas/hora por estudiante)"><Input type="number" value={cfg.rateLimitIaHora} onChange={(e) => set('rateLimitIaHora', +e.target.value)} /></Field>
             <Field label="Modo de retroalimentación"><Select value={cfg.modoRetroalimentacion} onChange={(e) => set('modoRetroalimentacion', e.target.value)}><option value="inmediata">Inmediata</option><option value="al_finalizar">Al finalizar</option></Select></Field>

@@ -61,7 +61,7 @@ describe('RetosController.detalle · trazabilidad sin filtrar soluciones', () =>
     const payload = JSON.stringify(r);
     expect(payload).not.toMatch(/respuestaCorrecta/);
     expect(payload).not.toMatch(/explicacionIa/);
-    // Tampoco las pistas en crudo: se sirven de a una desde ALVARO.
+    // Tampoco las pistas en crudo: se sirven de a una desde PREXI.
     expect(payload).not.toMatch(/"pistas"/);
     expect(r.reto!.total_pistas).toBe(3);
   });

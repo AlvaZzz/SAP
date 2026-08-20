@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { EntregaReto } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, EmptyState } from '@/components/ui';
@@ -21,14 +21,14 @@ export default function DocenteRevisionesPage() {
   const [error, setError] = useState('');
   const [sugiriendo, setSugiriendo] = useState(false);
 
-  async function cargar(todas = verTodas) {
+  const cargar = useCallback(async (todas = verTodas) => {
     setCargando(true);
     try {
       const r = await api.get<{ entregas: EntregaReto[] }>(`/docente/revisiones${todas ? '?todas=1' : ''}`);
       setEntregas(r.entregas);
     } catch { /* noop */ } finally { setCargando(false); }
-  }
-  useEffect(() => { cargar(verTodas); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [verTodas]);
+  }, [verTodas]);
+  useEffect(() => { cargar(verTodas); }, [cargar, verTodas]);
 
   function abrir(e: EntregaReto) {
     setRevisar(e); setAprobado(true); setXp(e.xpSugerido); setFeedback(e.feedback ?? ''); setError('');
@@ -40,7 +40,7 @@ export default function DocenteRevisionesPage() {
     try {
       const r = await api.post<{ sugerencia: string }>(`/docente/revisiones/${revisar.retoId}/${revisar.estudianteId}/sugerir`, { aprobado });
       setFeedback(r.sugerencia);
-    } catch (err) { setError(err instanceof ApiError ? err.message : 'ALVARO no pudo sugerir feedback ahora.'); }
+    } catch (err) { setError(err instanceof ApiError ? err.message : 'El tutor PREXI no pudo sugerir feedback ahora.'); }
     finally { setSugiriendo(false); }
   }
 
@@ -164,12 +164,12 @@ export default function DocenteRevisionesPage() {
                     <span className="text-sm font-medium text-fg">Feedback para el estudiante</span>
                     <button type="button" onClick={sugerir} disabled={sugiriendo}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-prexi-blue/10 px-2.5 py-1 text-xs font-semibold text-prexi-blue-deep transition hover:bg-prexi-blue/20 disabled:opacity-50">
-                      <Bot className="h-3.5 w-3.5" /> {sugiriendo ? 'Pensando…' : 'Sugerir con ALVARO'}
+                      <Bot className="h-3.5 w-3.5" /> {sugiriendo ? 'Pensando…' : 'Sugerir con el tutor PREXI'}
                     </button>
                   </div>
                   <Textarea value={feedback} onChange={(ev) => setFeedback(ev.target.value)} className="min-h-[120px]"
                     placeholder={aprobado ? '¡Buen trabajo! Tu solución es correcta porque…' : 'Revisa el manejo de… e inténtalo de nuevo.'} />
-                  <p className="mt-1 text-xs text-muted">ALVARO solo sugiere un borrador; tú decides el texto final. Se envía como notificación.</p>
+                  <p className="mt-1 text-xs text-muted">El tutor PREXI solo sugiere un borrador; tú decides el texto final. Se envía como notificación.</p>
                 </div>
               </>
             )}

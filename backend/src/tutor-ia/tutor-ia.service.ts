@@ -9,7 +9,7 @@ import {
 import { construirPerfil, recuperarMemoria } from './perfil-estudiante';
 import { recuperarFragmentos } from './rag';
 
-/** Una pregunta PROPUESTA por ALVARO desde un PDF (siempre borrador, nunca se publica sola). */
+/** Una pregunta PROPUESTA por PREXI desde un PDF (siempre borrador, nunca se publica sola). */
 export interface PreguntaPropuesta {
   categoria: string;
   enunciado: string;
@@ -20,8 +20,8 @@ export interface PreguntaPropuesta {
 }
 
 /**
- * ALVARO — Tutor IA (Gemini). La GEMINI_API_KEY se lee SOLO aquí (backend),
- * nunca se expone al cliente. ALVARO GUÍA, no resuelve: no entrega el código
+ * PREXI — Tutor IA (Gemini). La GEMINI_API_KEY se lee SOLO aquí (backend),
+ * nunca se expone al cliente. PREXI GUÍA, no resuelve: no entrega el código
  * completo de la tarea ni la respuesta literal. Todos los ejemplos en Python.
  *
  * Cada consulta se enriquece con el PERFIL REAL del estudiante (nivel del
@@ -66,7 +66,7 @@ export class TutorIaService {
    * Antes mandaba la BD, y eso provocó el fallo: el seed graba `modeloIa` con el
    * valor que tenía `GEMINI_MODEL` EN EL MOMENTO DE SEMBRAR. Si más tarde Google
    * retira ese modelo (`gemini-2.0-flash` devuelve hoy 404 "no longer available"),
-   * la variable corregida en Render se ignoraba y ALVARO quedaba caído sin que
+   * la variable corregida en Render se ignoraba y PREXI quedaba caído sin que
    * nadie pudiera arreglarlo sin acceso a SQL.
    *
    * El entorno manda porque es la palanca que un administrador SÍ puede tocar en
@@ -98,10 +98,10 @@ export class TutorIaService {
   private async getModel(maxOutputTokens?: number) {
     const key = this.config.get<string>('GEMINI_API_KEY');
     if (!key) throw new HttpException('La IA no está configurada en el servidor', HttpStatus.SERVICE_UNAVAILABLE);
-    // El interruptor global de ALVARO se centraliza en ConfiguracionSistema.
+    // El interruptor global de PREXI se centraliza en ConfiguracionSistema.
     const cfg = await this.prisma.configuracionSistema.findUnique({ where: { id: 1 } }).catch(() => null);
     if (cfg && cfg.iaActiva === false)
-      throw new HttpException('ALVARO está desactivado por el administrador.', HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException('PREXI está desactivado por el administrador.', HttpStatus.SERVICE_UNAVAILABLE);
     if (!this.client) this.client = new GoogleGenerativeAI(key);
     const { modelo, origen } = this.resolverModelo(cfg?.modeloIa);
     // Se guarda para poder nombrarlo en el log de error: sin esto, un 404 de
@@ -124,7 +124,7 @@ export class TutorIaService {
 
   /**
    * Caché ligera de preguntas frecuentes del asistente: si ESTE estudiante ya
-   * hizo una consulta idéntica en las últimas 24 h y ALVARO la respondió,
+   * hizo una consulta idéntica en las últimas 24 h y PREXI la respondió,
    * reutilizamos esa respuesta en vez de volver a llamar a Gemini. La respuesta
    * es personalizada por perfil, por eso la caché es por-usuario (no global).
    */
@@ -179,7 +179,7 @@ export class TutorIaService {
    * CLASIFICACIÓN DE FALLOS DE GEMINI.
    *
    * Antes todo lo que no fuese un 429 se registraba como "Gemini: <mensaje>" y se
-   * le mostraba al estudiante "ALVARO no está disponible ahora". Con eso, un
+   * le mostraba al estudiante "PREXI no está disponible ahora". Con eso, un
    * modelo retirado, una clave revocada y un corte de red producían exactamente
    * la misma traza: imposible diagnosticar sin reproducirlo a mano. Aquí cada
    * causa se nombra, se explica CÓMO SE ARREGLA y se registra con el modelo y su
@@ -195,7 +195,7 @@ export class TutorIaService {
         comoArreglar:
           `El modelo "${this.modeloEnUso}" no existe o Google lo retiró. Corrige GEMINI_MODEL en el entorno ` +
           `(ese valor manda sobre la BD). Lista de modelos vigentes: npx tsx scripts/diagnostico-ia.ts`,
-        publico: 'ALVARO está mal configurado en el servidor. Avisa a tu docente.',
+        publico: 'PREXI está mal configurado en el servidor. Avisa a tu docente.',
         status: HttpStatus.SERVICE_UNAVAILABLE,
       };
     }
@@ -203,7 +203,7 @@ export class TutorIaService {
       return {
         causa: 'CLAVE DE API INVÁLIDA',
         comoArreglar: 'GEMINI_API_KEY no es válida o fue revocada. Genera una nueva en Google AI Studio y actualízala en el entorno.',
-        publico: 'ALVARO está mal configurado en el servidor. Avisa a tu docente.',
+        publico: 'PREXI está mal configurado en el servidor. Avisa a tu docente.',
         status: HttpStatus.SERVICE_UNAVAILABLE,
       };
     }
@@ -211,7 +211,7 @@ export class TutorIaService {
       return {
         causa: 'RESTRICCIÓN REGIONAL',
         comoArreglar: 'La API de Gemini no atiende peticiones desde la región donde corre el servidor. Cambia la región del despliegue o usa una cuenta con facturación habilitada.',
-        publico: 'ALVARO no está disponible desde este servidor. Avisa a tu docente.',
+        publico: 'PREXI no está disponible desde este servidor. Avisa a tu docente.',
         status: HttpStatus.SERVICE_UNAVAILABLE,
       };
     }
@@ -219,7 +219,7 @@ export class TutorIaService {
       return {
         causa: 'CUOTA AGOTADA O LÍMITE POR MINUTO',
         comoArreglar: 'Se agotó la cuota del plan de Gemini. Espera a que se reponga, sube el plan, o baja AI_RATE_LIMIT_PER_HOUR / rateLimitIaHora para repartirla mejor.',
-        publico: 'Se alcanzó el límite de uso de ALVARO. Intenta en unos minutos.',
+        publico: 'Se alcanzó el límite de uso de PREXI. Intenta en unos minutos.',
         status: HttpStatus.TOO_MANY_REQUESTS,
       };
     }
@@ -227,7 +227,7 @@ export class TutorIaService {
       return {
         causa: 'PERMISO DENEGADO',
         comoArreglar: 'La clave existe pero no tiene habilitada la Generative Language API, o está restringida por IP/referente. Revisa la clave en Google AI Studio / Cloud Console.',
-        publico: 'ALVARO está mal configurado en el servidor. Avisa a tu docente.',
+        publico: 'PREXI está mal configurado en el servidor. Avisa a tu docente.',
         status: HttpStatus.SERVICE_UNAVAILABLE,
       };
     }
@@ -235,7 +235,7 @@ export class TutorIaService {
       return {
         causa: 'FALLO DE RED HACIA GOOGLE',
         comoArreglar: 'El servidor no pudo alcanzar generativelanguage.googleapis.com. Revisa la salida a internet del despliegue.',
-        publico: 'ALVARO no está disponible ahora, intenta de nuevo.',
+        publico: 'PREXI no está disponible ahora, intenta de nuevo.',
         status: HttpStatus.SERVICE_UNAVAILABLE,
       };
     }
@@ -243,14 +243,14 @@ export class TutorIaService {
       return {
         causa: 'PETICIÓN INVÁLIDA',
         comoArreglar: 'Gemini rechazó la petición (prompt demasiado largo o parámetros no soportados por este modelo).',
-        publico: 'ALVARO no pudo procesar esta consulta. Reformúlala más corta.',
+        publico: 'PREXI no pudo procesar esta consulta. Reformúlala más corta.',
         status: HttpStatus.SERVICE_UNAVAILABLE,
       };
     }
     return {
       causa: 'CAUSA DESCONOCIDA',
       comoArreglar: 'Sin patrón reconocido. Revisa el mensaje original completo que acompaña a esta línea.',
-      publico: 'ALVARO no está disponible ahora, intenta de nuevo.',
+      publico: 'PREXI no está disponible ahora, intenta de nuevo.',
       status: HttpStatus.SERVICE_UNAVAILABLE,
     };
   }
@@ -276,7 +276,7 @@ export class TutorIaService {
 
   /**
    * Material del docente para el tema (RAG): recupera los fragmentos más
-   * relevantes para `consulta` del PDF asociado, ya extraído a texto. ALVARO
+   * relevantes para `consulta` del PDF asociado, ya extraído a texto. PREXI
    * responde con el MISMO estilo y sintaxis que enseñó el docente.
    */
   private async materialDocente(temaId: number | null | undefined, consulta: string): Promise<string> {
@@ -347,7 +347,7 @@ Responde su duda respetando el estilo (3-4 frases), aprovechando su perfil para 
 
   /**
    * Variante en STREAMING del asistente: va emitiendo el texto conforme Gemini
-   * lo genera (mejor experiencia: el estudiante ve a ALVARO "escribiendo").
+   * lo genera (mejor experiencia: el estudiante ve a PREXI "escribiendo").
    * getModel se llama fuera del try → si la IA está apagada/no configurada, la
    * HttpException se propaga ANTES de emitir nada (el cliente cae al no-stream).
    * Los fallos de red durante el stream emiten un mensaje amable y no rompen.
@@ -488,7 +488,7 @@ final corregido: explica el qué y el porqué para que él lo escriba.${bloquePe
     return { respuesta };
   }
 
-  /** Igual que practica pero en STREAMING (ALVARO "escribiendo" en el editor de retos). */
+  /** Igual que practica pero en STREAMING (PREXI "escribiendo" en el editor de retos). */
   async *practicaStream(usuarioId: number, codigoRaw: string, enunciadoReto?: string, preguntaRaw?: string): AsyncGenerator<string> {
     const { system, msg, pregunta } = await this.prepararPractica(usuarioId, codigoRaw, enunciadoReto, preguntaRaw);
     const model = await this.getModel(TutorIaService.MAX_OUTPUT.practica);
@@ -520,7 +520,7 @@ final corregido: explica el qué y el porqué para que él lo escriba.${bloquePe
   /**
    * Pistas escalonadas para un RETO (misión/editor). A diferencia de las pistas
    * de ejercicio (que penalizan el XP del ejercicio), las de reto se REGISTRAN
-   * como consulta a ALVARO —cuentan para el indicador de Autonomía— pero el XP
+   * como consulta a PREXI —cuentan para el indicador de Autonomía— pero el XP
    * del reto lo decide el docente (o la auto‑validación del bug‑hunt). Son
    * CONTEXTUALES al código que el estudiante lleva escrito.
    */
@@ -531,7 +531,7 @@ final corregido: explica el qué y el porqué para que él lo escriba.${bloquePe
         enunciado: true, categoria: true, ejemploSalida: true, esBugHunt: true,
         pistas: true, tipoBug: true,
         // ANCLAJE AL MATERIAL: el reto derivado nace de un ejercicio del banco.
-        // ALVARO se apoya en ESA explicación y en el repaso del tema, en vez de
+        // PREXI se apoya en ESA explicación y en el repaso del tema, en vez de
         // razonar desde su conocimiento general de Python.
         origenEjercicio: { select: { enunciado: true, explicacionIa: true } },
         tema: { select: { numero: true, titulo: true, repaso: true, unidad: { select: { numero: true, titulo: true } } } },
@@ -542,7 +542,7 @@ final corregido: explica el qué y el porqué para que él lo escriba.${bloquePe
     const perfil = await construirPerfil(this.prisma, usuarioId, { categoria: reto.categoria });
 
     // Las pistas redactadas del reto son el PLAN DE ESCALAMIENTO: la de este nivel
-    // es la que ALVARO debe transmitir (reformulada), sin adelantar las siguientes.
+    // es la que PREXI debe transmitir (reformulada), sin adelantar las siguientes.
     const pistasReto = Array.isArray(reto.pistas) ? (reto.pistas as unknown[]).map(String) : [];
     const pistaGuion = pistasReto[nivelPista - 1];
 
@@ -586,7 +586,7 @@ CÍÑETE AL MATERIAL DEL MÓDULO que se te entrega abajo: no introduzcas funcion
 
   /**
    * Patrones de error recurrentes de un estudiante (para el seguimiento del
-   * docente). Reusa el mismo detector que alimenta a ALVARO.
+   * docente). Reusa el mismo detector que alimenta a PREXI.
    */
   async patronesDeError(usuarioId: number, temaId?: number) {
     const perfil = await construirPerfil(this.prisma, usuarioId, temaId ? { temaId } : {});
@@ -595,7 +595,7 @@ CÍÑETE AL MATERIAL DEL MÓDULO que se te entrega abajo: no introduzcas funcion
 
   // ── 6) Generación asistida de preguntas desde un PDF (SIEMPRE borrador) ──
   //  El docente pide N preguntas de un tipo a partir del texto extraído del
-  //  PDF. ALVARO propone; NUNCA se publican solas (ver DocentePreguntasIaService).
+  //  PDF. PREXI propone; NUNCA se publican solas (ver DocentePreguntasIaService).
   async generarPreguntas(texto: string, cantidad: number, tipo: TipoEjercicio): Promise<PreguntaPropuesta[]> {
     const material = texto.slice(0, 12_000);
     const formato = {
@@ -605,7 +605,7 @@ CÍÑETE AL MATERIAL DEL MÓDULO que se te entrega abajo: no introduzcas funcion
       ordenar_lineas: `"opciones": [{"id":"A","texto":"línea de código 1"}, {"id":"B","texto":"línea de código 2"}, ...] EN ORDEN ALEATORIO, "respuestaCorrecta": "<ids en el orden CORRECTO separados por coma, ej. C,A,D,B>"`,
     }[tipo];
 
-    const system = `Eres ALVARO, asistente del DOCENTE. A partir del material de clase (Python,
+    const system = `Eres PREXI, asistente del DOCENTE. A partir del material de clase (Python,
 primer semestre, UPEA) que se te entrega, propone ${cantidad} preguntas de tipo
 "${tipo}" en español, fieles al contenido y a la sintaxis del material (no
 inventes temas que no aparezcan). Nivel principiante.
@@ -624,9 +624,9 @@ Responde SOLO un JSON array (sin markdown, sin texto extra) con esta forma exact
     try {
       data = JSON.parse(limpio);
     } catch {
-      throw new HttpException('ALVARO no pudo generar preguntas válidas desde este material. Intenta de nuevo.', HttpStatus.UNPROCESSABLE_ENTITY);
+      throw new HttpException('PREXI no pudo generar preguntas válidas desde este material. Intenta de nuevo.', HttpStatus.UNPROCESSABLE_ENTITY);
     }
-    if (!Array.isArray(data)) throw new HttpException('Respuesta de ALVARO con formato inesperado.', HttpStatus.UNPROCESSABLE_ENTITY);
+    if (!Array.isArray(data)) throw new HttpException('Respuesta de PREXI con formato inesperado.', HttpStatus.UNPROCESSABLE_ENTITY);
 
     const validas: PreguntaPropuesta[] = [];
     for (const item of data) {
@@ -652,13 +652,13 @@ Responde SOLO un JSON array (sin markdown, sin texto extra) con esta forma exact
       });
     }
     if (validas.length === 0) {
-      throw new HttpException('ALVARO no generó preguntas utilizables desde este material. Intenta con otro PDF o menos preguntas.', HttpStatus.UNPROCESSABLE_ENTITY);
+      throw new HttpException('PREXI no generó preguntas utilizables desde este material. Intenta con otro PDF o menos preguntas.', HttpStatus.UNPROCESSABLE_ENTITY);
     }
     return validas;
   }
 
   // ── 5) Borrador de retroalimentación para el DOCENTE (revisión de un reto) ──
-  //  ALVARO solo ASISTE: propone un borrador que el docente edita antes de enviar.
+  //  PREXI solo ASISTE: propone un borrador que el docente edita antes de enviar.
   //  No se registra en consultas_ia (es actividad del docente, no del estudiante).
   async sugerirFeedbackDocente(input: { enunciado: string; codigo: string; aprobado?: boolean }) {
     const enunciado = sanitizar(input.enunciado, 600);
@@ -668,7 +668,7 @@ Responde SOLO un JSON array (sin markdown, sin texto extra) con esta forma exact
       : input.aprobado === true
         ? 'El docente se inclina por "Aprobado": refuerza lo que hizo bien y sugiere una mejora opcional.'
         : 'Evalúa objetivamente si resuelve el problema y qué puede mejorar.';
-    const system = `Eres ALVARO, asistente del DOCENTE para redactar retroalimentación a un
+    const system = `Eres PREXI, asistente del DOCENTE para redactar retroalimentación a un
 estudiante de Python (primer semestre, UPEA). Escribe en español un BORRADOR de
 feedback de 3-5 frases, en segunda persona (dirigido al estudiante), concreto y
 respetuoso. ${orientacion} Comenta la corrección, legibilidad y buenas prácticas.

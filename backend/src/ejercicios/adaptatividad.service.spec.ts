@@ -110,13 +110,19 @@ describe('AdaptatividadService (niveles Básico/Intermedio/Avanzado por tema)', 
       prisma.tema.findUnique.mockResolvedValue({ id: 3, titulo: 'T', numero: '1.1' });
       prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'basico' });
       prisma.configuracionSistema.findUnique.mockResolvedValue({ subirNivelPreguntas: 5, subirNivelUmbral: 80, subirNivelEsperaHoras: 0 });
+      // Práctica mínima del nivel vigente ya cumplida (su gate tiene spec propio).
+      prisma.ejercicio.count.mockResolvedValue(2);
+      prisma.ejercicio.findMany.mockResolvedValueOnce([{ id: 91 }, { id: 92 }]);
+      prisma.intento.findMany.mockResolvedValue([{ ejercicioId: 91 }, { ejercicioId: 92 }]);
       prisma.ejercicio.findMany.mockResolvedValue([
         { id: 1, nivelDificultad: 'intermedio' }, { id: 2, nivelDificultad: 'intermedio' },
       ]);
 
       const r = await service.iniciarSubida(7, 3);
       expect(r.nivel_objetivo).toBe('intermedio');
-      expect(prisma.ejercicio.findMany.mock.calls[0][0].where.nivelDificultad).toBe('intermedio');
+      // calls[0] es la consulta de `progresoNivel` (nivel VIGENTE); la del nivel
+      // objetivo es la siguiente.
+      expect(prisma.ejercicio.findMany.mock.calls[1][0].where.nivelDificultad).toBe('intermedio');
       expect(r.total).toBe(2);
     });
 
@@ -124,8 +130,13 @@ describe('AdaptatividadService (niveles Básico/Intermedio/Avanzado por tema)', 
       prisma.tema.findUnique.mockResolvedValue({ id: 3, titulo: 'T', numero: '1.1' });
       prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'basico' });
       prisma.configuracionSistema.findUnique.mockResolvedValue({ subirNivelPreguntas: 5, subirNivelUmbral: 80, subirNivelEsperaHoras: 0 });
+      // Con la práctica mínima CUMPLIDA, para que el rechazo sea por falta de
+      // ejercicios del nivel objetivo y no por el gate de práctica.
+      prisma.ejercicio.count.mockResolvedValue(2);
+      prisma.ejercicio.findMany.mockResolvedValueOnce([{ id: 91 }, { id: 92 }]);
+      prisma.intento.findMany.mockResolvedValue([{ ejercicioId: 91 }, { ejercicioId: 92 }]);
       prisma.ejercicio.findMany.mockResolvedValue([]);
-      await expect(service.iniciarSubida(7, 3)).rejects.toThrow(BadRequestException);
+      await expect(service.iniciarSubida(7, 3)).rejects.toThrow(/nivel objetivo/);
     });
   });
 
@@ -134,6 +145,13 @@ describe('AdaptatividadService (niveles Básico/Intermedio/Avanzado por tema)', 
       prisma.tema.findUnique.mockResolvedValue({ id: 3 });
       prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'basico' });
       prisma.configuracionSistema.findUnique.mockResolvedValue({ subirNivelPreguntas: 5, subirNivelUmbral: umbral, subirNivelEsperaHoras: 0 });
+      // Práctica mínima del nivel vigente ya cumplida: estas pruebas ejercitan la
+      // CORRECCIÓN del mini-diagnóstico, no el gate (que tiene su propio spec).
+      // El `Once` cubre la consulta de `progresoNivel`; la siguiente llamada a
+      // `ejercicio.findMany` sigue siendo la que monta cada caso de prueba.
+      prisma.ejercicio.count.mockResolvedValue(2);
+      prisma.ejercicio.findMany.mockResolvedValueOnce([{ id: 91 }, { id: 92 }]);
+      prisma.intento.findMany.mockResolvedValue([{ ejercicioId: 91 }, { ejercicioId: 92 }]);
     };
 
     it('aprueba (≥80%) → sube el nivel del tema y registra el intento', async () => {

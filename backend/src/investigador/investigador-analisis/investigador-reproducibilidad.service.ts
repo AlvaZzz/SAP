@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 import { InvestigadorExportacionService } from '../investigador-exportacion/investigador-exportacion.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ALFA, MIN_INTERPRETABLE } from '../../common/estadistica/contraste';
-import { UMBRAL_SESION_MIN, TOPE_HUECO_MIN, NOTA_TIEMPO_ESTIMADO } from '../../common/estadistica/uso';
+import { UMBRAL_SESION_MIN, NOTA_TIEMPO_ESTIMADO } from '../../common/estadistica/uso';
 
 /** Una entrada del diccionario de variables (codebook). */
 export interface VariableCodebook {
@@ -57,7 +57,7 @@ export class InvestigadorReproducibilidadService {
       { variable: 'tiempo_promedio_ejercicio', descripcion: 'Tiempo medio por ejercicio resuelto.', tipo: 'entero', unidad: 'segundos', rango: '≥ 0', calculo: 'Media del tiempo de los intentos CORRECTOS con tiempo > 0.' },
       { variable: 'xp_total', descripcion: 'Experiencia acumulada (gamificación).', tipo: 'entero', unidad: 'XP', rango: '≥ 0', calculo: 'Suma de XP otorgado por el motor de reglas del backend.' },
       { variable: 'racha', descripcion: 'Racha de días consecutivos de actividad.', tipo: 'entero', unidad: 'días', rango: '≥ 0', calculo: 'Registrada por el módulo de ranking.' },
-      { variable: 'consultas_ia', descripcion: 'Consultas al tutor ALVARO.', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Total de registros de ConsultaIa del estudiante.' },
+      { variable: 'consultas_ia', descripcion: 'Consultas al tutor PREXI.', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Total de registros de ConsultaIa del estudiante.' },
       { variable: 'pistas_usadas', descripcion: 'Consultas del tipo "pista".', tipo: 'entero', unidad: 'pistas', rango: '≥ 0', calculo: 'Subconjunto de consultas_ia con tipo = pista.' },
       { variable: 'retos_entregados', descripcion: 'Retos del docente entregados.', tipo: 'entero', unidad: 'retos', rango: '≥ 0', calculo: 'RetoUsuario con estado distinto de sin_entregar.' },
       { variable: 'intentos_totales', descripcion: 'Intentos de ejercicio registrados.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Todos los intentos, correctos e incorrectos. Es la medida de DOSIS de intervención.' },
@@ -75,7 +75,7 @@ export class InvestigadorReproducibilidadService {
       { variable: 'ultimo_dia', descripcion: 'Fecha del último evento registrado.', tipo: 'fecha', unidad: 'AAAA-MM-DD', rango: '—', calculo: 'Máximo de las fechas de sus eventos.' },
       { variable: 'periodo_dias', descripcion: 'Duración de la participación.', tipo: 'entero', unidad: 'días', rango: '≥ 1', calculo: 'Días calendario entre el primer y el último evento, INCLUSIVE (quien entró un solo día tiene 1, no 0).' },
       { variable: 'sesiones', descripcion: 'Bloques de trabajo estimados.', tipo: 'entero', unidad: 'sesiones', rango: '≥ 0', calculo: `Eventos consecutivos separados por MÁS de ${UMBRAL_SESION_MIN} minutos abren una sesión nueva. El umbral de ${UMBRAL_SESION_MIN} min es la convención habitual en analítica de aprendizaje; en el borde exacto se considera la MISMA sesión.` },
-      { variable: 'minutos_estimados', descripcion: 'Tiempo estimado en plataforma. NO es una medición directa.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: `Suma de los huecos entre eventos consecutivos de una misma sesión, acotando cada hueco a ${TOPE_HUECO_MIN} min para que una pausa larga no infle el total. El sistema no puede saber si el navegador quedó abierto sin nadie delante.` },
+      { variable: 'minutos_estimados', descripcion: 'Tiempo estimado en plataforma. NO es una medición directa.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: NOTA_TIEMPO_ESTIMADO },
       { variable: 'minutos_por_sesion', descripcion: 'Duración media estimada de una sesión.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: 'minutos_estimados ÷ sesiones.' },
       { variable: 'regularidad', descripcion: 'Constancia de uso: distingue el trabajo sostenido del atracón concentrado.', tipo: 'decimal', unidad: 'proporción', rango: '0 a 1', calculo: 'dias_activos ÷ periodo_dias. Cerca de 1 = usó el sistema casi todos los días de su periodo; cerca de 0 = concentró la actividad en pocos días. Null si no hay actividad.' },
       // ── MOTIVACIÓN ACADÉMICA (MSLQ) y COMPETITIVIDAD ──

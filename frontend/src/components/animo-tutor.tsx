@@ -1,13 +1,13 @@
 'use client';
 
 /**
- * Mensajes de ÁNIMO de ALVARO como TARJETA DE TUTOR (no como burbuja de chat).
+ * Mensajes de ÁNIMO de PREXI como TARJETA DE TUTOR (no como burbuja de chat).
  *
  * El refuerzo positivo ("¡Sigue así!", "equivocarse es parte de aprender") solía
  * inyectarse en la conversación del panel del tutor, que así se llenaba de ruido
  * y enterraba las dudas reales del estudiante. Ahora sale ARRIBA, con el mismo
  * lenguaje visual que los logros/emblemas (tarjeta destacada, entrada animada,
- * auto-cierre) pero con la identidad de ALVARO: su avatar y su acento azul.
+ * auto-cierre) pero con la identidad de PREXI: su avatar y su acento azul.
  *
  * Cualquier vista lo dispara con `useAnimo().alentar('…')`. El CHAT queda solo
  * para la conversación real.
@@ -15,7 +15,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { X } from 'lucide-react';
-import { AlvaroAvatar } from './alvaro-avatar';
+import { TutorAvatar } from './tutor-avatar';
 import { Markdown } from './markdown';
 import { useLogros } from './logro-toast';
 import { useSound } from './use-sound';
@@ -48,7 +48,7 @@ export function AnimoProvider({ children }: { children: ReactNode }) {
 
   const cerrar = useCallback(() => setSaliendo(true), []);
 
-  // Auto-cierre + chime suave de notificación al aparecer un mensaje de ALVARO
+  // Auto-cierre + chime suave de notificación al aparecer un mensaje de PREXI
   // (siempre es consecuencia de una interacción del estudiante, así que respeta
   // la política de autoplay; si silenció los sonidos, no suena nada).
   useEffect(() => {
@@ -82,17 +82,17 @@ export function AnimoProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={cerrar}
-              aria-label="Cerrar mensaje de ALVARO"
+              aria-label="Cerrar mensaje de PREXI"
               className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full text-muted transition hover:bg-subtle hover:text-fg"
             >
               <X className="h-4 w-4" />
             </button>
             <div className="relative shrink-0">
               <span className="animo-halo absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle, rgba(84,131,179,0.4), transparent 70%)' }} />
-              <AlvaroAvatar estado="alentando" size={44} className="animo-bounce relative" />
+              <TutorAvatar estado="alentando" size={44} className="animo-bounce relative" />
             </div>
             <div className="relative min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-prexi-blue-deep">ALVARO dice:</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-prexi-blue-deep">PREXI dice:</p>
               <div className="mt-0.5 text-sm leading-relaxed text-fg [&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
                 <Markdown content={actual.texto} />
               </div>

@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { TipoEjercicio } from '@prisma/client';
 import { OpcionDto } from '../../docente-ejercicios/dto/ejercicio.dto';
 
-/** Pide a ALVARO proponer preguntas BORRADOR a partir de un PDF ya subido. */
+/** Pide a PREXI proponer preguntas BORRADOR a partir de un PDF ya subido. */
 export class GenerarPreguntasDto {
   @IsInt() @Min(1)
   documentoId!: number;

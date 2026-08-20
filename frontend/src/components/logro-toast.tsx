@@ -26,7 +26,7 @@ export interface LogroCelebracion {
 interface Ctx {
   celebrar: (items: LogroCelebracion[]) => void;
   /** Hay un logro ocupando el slot superior ahora mismo. Lo usa la tarjeta de
-   *  ánimo de ALVARO para colocarse DEBAJO en vez de encima (al acertar suelen
+   *  ánimo de PREXI para colocarse DEBAJO en vez de encima (al acertar suelen
    *  dispararse los dos a la vez: emblema + felicitación del tutor). */
   visible: boolean;
 }

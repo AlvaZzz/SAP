@@ -66,7 +66,7 @@ describe('EjerciciosService (XP, racha, desbloqueo de nivel y ranking)', () => {
     );
   });
 
-  it('penaliza XP por pistas de ALVARO usadas (contadas en el backend)', async () => {
+  it('penaliza XP por pistas de PREXI usadas (contadas en el backend)', async () => {
     prisma.consultaIa.count.mockResolvedValue(3); // 3 pistas × 5 = −15
     const r = await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' });
     expect(r.xp.xpOtorgado).toBe(35); // 50 − 15

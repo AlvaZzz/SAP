@@ -234,10 +234,10 @@ function DetalleEstudiante({ id, onClose }: { id: number; onClose: () => void })
             )}
           </div>
 
-          {/* Patrones de error detectados por ALVARO */}
+          {/* Patrones de error detectados por PREXI */}
           {d.patrones_error?.length > 0 && (
             <div>
-              <h3 className="mb-3 font-display font-bold text-fg">Errores recurrentes (detectados por ALVARO)</h3>
+              <h3 className="mb-3 font-display font-bold text-fg">Errores recurrentes (detectados por el tutor PREXI)</h3>
               <div className="space-y-2">
                 {d.patrones_error.map((p) => (
                   <div key={p.clave} className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm">

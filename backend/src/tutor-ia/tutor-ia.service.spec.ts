@@ -20,7 +20,7 @@ function inyectarGeminiFake(service: TutorIaService, texto = 'Guía simulada. AR
   return model;
 }
 
-describe('TutorIaService (ALVARO enriquecido)', () => {
+describe('TutorIaService (PREXI enriquecido)', () => {
   let prisma: PrismaMock;
   let service: TutorIaService;
 
@@ -29,7 +29,7 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
     // Config central: IA activa. getModel hace .catch() → debe resolver.
     prisma.configuracionSistema.findUnique.mockResolvedValue({ iaActiva: true, modeloIa: 'gemini-2.5-flash-lite', maxPistasIa: 3 });
     // Perfil del estudiante. El nivel sale de la clasificación YA PERSISTIDA
-    // (derivada de θ), NO del % del pretest: ALVARO no clasifica por su cuenta.
+    // (derivada de θ), NO del % del pretest: PREXI no clasifica por su cuenta.
     // Ver docs/CLASIFICACION_NIVELES.md.
     prisma.usuario.findUnique.mockResolvedValue({
       nombre: 'Juan Pérez', nivelInicialAdaptativo: 'basico', thetaActual: -1.2,
@@ -55,7 +55,7 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
   });
 
   /**
-   * REGLA ÚNICA DE CLASIFICACIÓN. ALVARO clasificaba antes por su cuenta con
+   * REGLA ÚNICA DE CLASIFICACIÓN. PREXI clasificaba antes por su cuenta con
    * cortes propios sobre el % del pretest (<50 / ≤75 / >75), lo que podía
    * contradecir al resto del sistema. Ahora lee la clasificación persistida.
    */
@@ -176,7 +176,7 @@ describe('TutorIaService (ALVARO enriquecido)', () => {
  * PRECEDENCIA DEL MODELO Y DIAGNÓSTICO DE FALLOS.
  *
  * Estos casos fijan la corrección de la caída en producción: la BD mandaba sobre
- * el entorno, así que un modelo retirado guardado por el seed dejaba a ALVARO
+ * el entorno, así que un modelo retirado guardado por el seed dejaba a PREXI
  * caído aunque GEMINI_MODEL estuviera bien puesta en Render. Y todos los fallos
  * no-429 se registraban con el mismo texto, así que no había forma de saber la
  * causa sin reproducirla a mano.

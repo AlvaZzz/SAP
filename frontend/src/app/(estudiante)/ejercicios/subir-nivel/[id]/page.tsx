@@ -28,7 +28,7 @@ function barajar<T>(arr: T[]): T[] {
 }
 
 /**
- * MINI-DIAGNÓSTICO para SUBIR DE NIVEL en un tema (sin ayuda de ALVARO). Presenta
+ * MINI-DIAGNÓSTICO para SUBIR DE NIVEL en un tema (sin ayuda de PREXI). Presenta
  * preguntas del NIVEL OBJETIVO; con ≥ umbral (por defecto 80%) el estudiante sube
  * de nivel en ese tema. El resultado se calcula y persiste en el backend.
  */

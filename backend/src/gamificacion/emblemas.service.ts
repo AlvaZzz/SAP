@@ -120,7 +120,7 @@ export class EmblemasService {
     const fallidos = await tx.intento.count({ where: { usuarioId, correcto: false, ejercicioId: { in: ejercicioIds } } });
     if (fallidos === 0) claves.push('sin_errores');
 
-    // "Mente brillante": ninguna pista de ALVARO en los ejercicios del tema.
+    // "Mente brillante": ninguna pista de PREXI en los ejercicios del tema.
     const pistas = await tx.consultaIa.count({ where: { usuarioId, tipo: 'pista', ejercicioId: { in: ejercicioIds } } });
     if (pistas === 0) claves.push('mente_brillante');
 

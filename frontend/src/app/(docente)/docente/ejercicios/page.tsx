@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { DocenteEjercicio, TipoEjercicio, UnidadDocente, NivelDificultad, NIVEL_LABEL } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, Select, EmptyState } from '@/components/ui';
@@ -60,16 +60,16 @@ export default function DocenteEjerciciosPage() {
   const [guardando, setGuardando] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  async function cargar() {
+  const cargar = useCallback(async () => {
     setCargando(true);
     try {
       // Trae el banco seleccionado (práctica o examen) y agrupa/filtra en el cliente.
       const r = await api.get<{ ejercicios: DocenteEjercicio[] }>(`/docente/ejercicios?banco=${banco}`);
       setItems(r.ejercicios ?? []);
     } catch { /* noop */ } finally { setCargando(false); }
-  }
+  }, [banco]);
 
-  useEffect(() => { cargar(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [banco]);
+  useEffect(() => { cargar(); }, [cargar]);
   useEffect(() => { api.get<{ categorias: string[] }>(`/docente/ejercicios/categorias?banco=${banco}`).then((r) => setCategorias(r.categorias)).catch(() => undefined); }, [items.length, banco]);
   useEffect(() => { api.get<{ unidades: UnidadDocente[] }>('/docente/unidades').then((r) => setUnidades(r.unidades ?? [])).catch(() => undefined); }, []);
 
@@ -423,7 +423,7 @@ export default function DocenteEjerciciosPage() {
             <input type="checkbox" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} className="h-4 w-4 accent-prexi-blue" />
             <span className="text-sm font-medium text-fg">Activo (visible para estudiantes)</span>
           </label>
-          <div className="sm:col-span-2"><Field label="Explicación para ALVARO (opcional)" hint="Respaldo cuando el tutor ALVARO da retroalimentación."><Textarea value={form.explicacionIa} onChange={(e) => setForm({ ...form, explicacionIa: e.target.value })} /></Field></div>
+          <div className="sm:col-span-2"><Field label="Explicación para PREXI (opcional)" hint="Respaldo cuando el tutor PREXI da retroalimentación."><Textarea value={form.explicacionIa} onChange={(e) => setForm({ ...form, explicacionIa: e.target.value })} /></Field></div>
         </div>
       </Modal>
     </div>

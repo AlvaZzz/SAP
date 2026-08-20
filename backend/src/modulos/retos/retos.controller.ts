@@ -104,13 +104,13 @@ export class RetosController {
     // hacía. Se comprueba después de resolver el reto y antes de devolver nada suyo.
     await this.adaptatividad.verificarAccesoReto(usuarioId, r, rol);
     const e = await this.prisma.retoUsuario.findUnique({ where: { usuarioId_retoId: { usuarioId, retoId: id } } });
-    // Contexto académico legible para el tutor ALVARO (ej. "U2 · 2.4 Bucles").
+    // Contexto académico legible para el tutor PREXI (ej. "U2 · 2.4 Bucles").
     const contextoTema = r.tema
       ? `U${r.tema.unidad.numero} · ${r.tema.numero} ${r.tema.titulo}`
       : r.categoria;
 
     // NUNCA se expone la solución de referencia al cliente: `respuestaCorrecta`
-    // guarda el código correcto y `pistas` se sirven de a una desde ALVARO.
+    // guarda el código correcto y `pistas` se sirven de a una desde PREXI.
     const { respuestaCorrecta: _solucion, pistas: _pistas, origenEjercicio, ...publico } = r;
     const fd = (origenEjercicio?.fuenteDoc ?? {}) as { codigo?: string };
 

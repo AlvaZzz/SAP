@@ -63,7 +63,7 @@ export class PracticaController {
     return this.practica.guardarEjecucion(usuarioId, dto.codigo, dto.salida ?? '', dto.contexto, dto.refId);
   }
 
-  // ALVARO contextual sobre el código: cuenta para el límite de IA.
+  // PREXI contextual sobre el código: cuenta para el límite de IA.
   @Post('asistir')
   @UseGuards(AiRateLimitGuard)
   asistir(@Body() dto: AsistirDto) {

@@ -59,6 +59,14 @@ export interface TemaEstudiante {
   nivel_actual: NivelDificultad; nivel_actual_label: string;
   nivel_objetivo: NivelDificultad | null; nivel_objetivo_label: string | null;
   puede_subir: boolean;
+  // Progreso DENTRO del nivel vigente: cuántos ejercicios de ese nivel resolvió
+  // y cuántos exige la configuración para habilitar el mini-diagnóstico. Es un
+  // dato distinto de `ejercicios_completados`, que cuenta el tema entero sin
+  // mirar el nivel.
+  resueltos_nivel: number;
+  minimo_nivel: number;
+  faltan_nivel: number;
+  cumple_minimo_nivel: boolean;
   // El estudiante ya está en el nivel máximo (Avanzado) en este tema.
   nivel_maximo: boolean;
   // Solo presente en temas de primer nivel; los subtemas no traen subtemas propios.
@@ -256,7 +264,7 @@ export interface DocenteEjercicio {
   creadoEn: string;
 }
 
-/* ── Preguntas generadas por ALVARO desde un PDF (borrador) ── */
+/* ── Preguntas generadas por PREXI desde un PDF (borrador) ── */
 export interface PreguntaIa {
   id: number; temaId: number; tema: string; documento: string | null;
   tipo: TipoEjercicio; categoria: string; enunciado: string; codigoPython: string | null;
@@ -340,10 +348,31 @@ export interface EstudianteDetalle {
   progreso_niveles: { numero: number; titulo: string; umbral: number; ejercicios_completados: number; desbloqueado: boolean; estado: string }[];
   actividad: { dia: string; intentos: number; aciertos: number }[];
   historial: { titulo: string; categoria: string; correcto: boolean; xp: number; tiempo_seg: number; fecha: string }[];
-  // Errores recurrentes detectados por ALVARO (mismo detector que usa el tutor).
+  // Errores recurrentes detectados por PREXI (mismo detector que usa el tutor).
   patrones_error: { clave: string; descripcion: string; frecuencia: number }[];
   pretest: { puntaje: number; tiempo_seg: number; por_categoria: unknown; fecha: string } | null;
   postest: { puntaje: number; tiempo_seg: number; por_categoria: unknown; fecha: string } | null;
   ganancia: number | null;
   nota: string;
+}
+
+/** Progreso del estudiante DENTRO de su nivel actual en un tema. */
+export interface ProgresoNivel {
+  nivel: NivelDificultad; nivel_label: string;
+  resueltos: number; total: number;
+  minimo: number; minimo_config: number; faltan: number; cumplido: boolean;
+}
+
+/**
+ * Respuesta de `GET /ejercicios/ruta`. `pendientes_ids` va SEPARADO de
+ * `ejercicios` a propósito: esa lista trae los resueltos al final (para repaso),
+ * y navegar con `ejercicios[idx + 1]` hacía que "Siguiente" sirviera ejercicios
+ * ya hechos en cuanto el índice entraba en esa cola.
+ */
+export interface RutaTema {
+  nivel_actual: NivelDificultad | null; nivel_actual_label: string | null;
+  nivel_usado: NivelDificultad | null; theta: number | null;
+  ejercicios: Ejercicio[]; pendientes: number;
+  pendientes_ids: number[]; resueltos_ids: number[];
+  progreso_nivel: ProgresoNivel | null;
 }

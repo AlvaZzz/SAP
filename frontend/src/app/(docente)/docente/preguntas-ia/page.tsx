@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { PreguntaIa, OpcionTema, TipoEjercicio, DocenteDocumento, NivelDificultad, NIVEL_LABEL } from '@/lib/types';
@@ -73,14 +73,14 @@ export default function DocentePreguntasIaPage() {
   const [formAprobar, setFormAprobar] = useState({ nivel: 1, estrellas: 3, xp: 50 });
   const [guardando, setGuardando] = useState(false);
 
-  async function cargarPreguntas() {
+  const cargarPreguntas = useCallback(async () => {
     setCargando(true);
     try {
       const r = await api.get<{ preguntas: PreguntaIa[] }>(`/docente/preguntas-ia?estado=${filtroEstado}`);
       setPreguntas(r.preguntas);
     } catch { /* noop */ } finally { setCargando(false); }
-  }
-  useEffect(() => { cargarPreguntas(); /* eslint-disable-next-line */ }, [filtroEstado]);
+  }, [filtroEstado]);
+  useEffect(() => { cargarPreguntas(); }, [cargarPreguntas]);
   useEffect(() => {
     api.get<{ documentos: DocenteDocumento[] }>('/docente/documentos').then((r) => setDocumentos(r.documentos.filter((d) => d.tiene_texto))).catch(() => undefined);
     api.get<{ temas: OpcionTema[] }>('/docente/unidades/temas/opciones').then((r) => setTemas(r.temas)).catch(() => undefined);
@@ -97,7 +97,7 @@ export default function DocentePreguntasIaPage() {
       });
       setFiltroEstado('borrador');
       await cargarPreguntas();
-      if (r.generadas === 0) setError('ALVARO no generó preguntas nuevas. Intenta con otro material.');
+      if (r.generadas === 0) setError('El tutor PREXI no generó preguntas nuevas. Intenta con otro material.');
     } catch (err) { setError(err instanceof ApiError ? err.message : 'No se pudieron generar las preguntas'); }
     finally { setGenerando(false); }
   }
@@ -130,14 +130,14 @@ export default function DocentePreguntasIaPage() {
     finally { setGuardando(false); }
   }
   async function rechazar(p: PreguntaIa) {
-    if (!confirm('¿Rechazar esta pregunta propuesta por ALVARO? No podrás recuperarla.')) return;
+    if (!confirm('¿Rechazar esta pregunta propuesta por el tutor PREXI? No podrás recuperarla.')) return;
     await api.post(`/docente/preguntas-ia/${p.id}/rechazar`).catch(() => undefined);
     await cargarPreguntas();
   }
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Preguntas generadas por ALVARO" subtitle="ALVARO propone preguntas desde tus PDFs; tú las revisas, corriges y apruebas antes de publicarlas." />
+      <PageHeader title="Preguntas generadas por el tutor PREXI" subtitle="El tutor PREXI propone preguntas desde tus PDFs; tú las revisas, corriges y apruebas antes de publicarlas." />
 
       <Card className="mb-6">
         <div className="mb-3 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-amber" /><h2 className="font-display text-lg font-bold text-fg">Generar nuevas preguntas</h2></div>
@@ -179,7 +179,7 @@ export default function DocentePreguntasIaPage() {
         </div>
 
         <button onClick={generar} disabled={generando || subiendo} className="btn-primary mt-4">
-          {generando ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> ALVARO está generando…</> : <><Bot className="h-4 w-4" /> Generar preguntas</>}
+          {generando ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> PREXI está generando…</> : <><Bot className="h-4 w-4" /> Generar preguntas</>}
         </button>
       </Card>
 

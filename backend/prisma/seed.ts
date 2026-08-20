@@ -412,7 +412,7 @@ async function main() {
         },
       });
 
-      // Consultas a ALVARO coherentes con las pistas pedidas.
+      // Consultas a PREXI coherentes con las pistas pedidas.
       for (let p = 1; p <= pistas; p++) {
         await prisma.consultaIa.create({
           data: { usuarioId: juan, tipo: 'pista', endpoint: '/tutor-ia/pista', ejercicioId: id, nivelPista: p, fecha },

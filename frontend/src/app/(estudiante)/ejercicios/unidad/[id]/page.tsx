@@ -214,6 +214,16 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
           <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((tema.ejercicios_completados / tema.umbral) * 100))}%`, backgroundColor: nivelColor }} /></div>
           {!completo && restantes > 0 && <p className="mt-1.5 text-xs text-muted">Te faltan {restantes} ejercicios para completar el tema.</p>}
           {/* Nivel de dificultad del tema: subir al siguiente, o aviso de nivel máximo */}
+          {/* Progreso DENTRO del nivel: es el requisito real del mini-diagnóstico.
+              Antes el botón "¿Intentar subir?" salía desde el primer momento;
+              ahora, mientras no se cumpla el mínimo, se dice qué falta en vez de
+              esconder la opción sin explicación. */}
+          {!tema.nivel_maximo && !tema.cumple_minimo_nivel && tema.total_ejercicios_nivel > 0 && (
+            <p className="mt-2 text-xs text-muted">
+              Nivel {tema.nivel_actual_label}: {tema.resueltos_nivel} de {tema.minimo_nivel} resueltos ·
+              te faltan <b className="text-fg">{tema.faltan_nivel}</b> para intentar subir de nivel.
+            </p>
+          )}
           {tema.puede_subir && tema.nivel_objetivo_label ? (
             <button onClick={() => onSubir(tema.id)}
               className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-prexi-blue-deep/40 bg-prexi-blue/10 px-3 py-1.5 text-xs font-semibold text-prexi-blue-deep transition hover:bg-prexi-blue/20">
@@ -245,7 +255,10 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
                       <p className="text-sm font-semibold text-fg">{s.numero} {s.titulo}</p>
                       {s.desbloqueado && <NivelChip label={s.nivel_actual_label} nivel={s.nivel_actual} />}
                     </div>
-                    <p className="text-[11px] text-muted">{s.ejercicios_completados}/{s.umbral} · {s.total_ejercicios_nivel} en tu nivel</p>
+                    <p className="text-[11px] text-muted">
+                      {s.ejercicios_completados}/{s.umbral} · {s.total_ejercicios_nivel} en tu nivel
+                      {!s.nivel_maximo && !s.cumple_minimo_nivel && s.total_ejercicios_nivel > 0 && <> · faltan {s.faltan_nivel} para subir</>}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

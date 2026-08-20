@@ -25,7 +25,9 @@
     "seed:demo": "ts-node prisma/seed-demo.ts",
     "clave:informe": "ts-node scripts/clave-distribucion.ts",
     "clave:migrar": "ts-node scripts/equilibrar-clave-bd.ts",
-    "clave:migrar:aplicar": "ts-node scripts/equilibrar-clave-bd.ts --aplicar"
+    "clave:migrar:aplicar": "ts-node scripts/equilibrar-clave-bd.ts --aplicar",
+    "tutor:renombrar": "ts-node scripts/renombrar-tutor-bd.ts",
+    "tutor:renombrar:aplicar": "ts-node scripts/renombrar-tutor-bd.ts --aplicar"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

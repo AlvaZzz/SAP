@@ -5,9 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { api, ApiError } from '@/lib/api';
-import { Ejercicio, ResultadoIntento } from '@/lib/types';
+import { Ejercicio, ResultadoIntento, RutaTema } from '@/lib/types';
 import { VistaEjercicio } from '@/components/ejercicios';
-import { AlexPanel } from '@/components/alex-panel';
+import { useRachaSesion } from '@/components/ejercicios/racha-sesion';
+import { CierreTema, AvisoRacha } from '@/components/ejercicios/cierre-tema';
+import { TutorPanel } from '@/components/tutor-panel';
 import { RangoIcon } from '@/components/rango-icon';
 import { useLogros } from '@/components/logro-toast';
 import { useSound } from '@/components/use-sound';
@@ -25,7 +27,14 @@ export default function DetallePage() {
 
   const [ej, setEj] = useState<Ejercicio | null>(null);
   const [rango, setRango] = useState<RangoInfo | null>(null);
-  const [orden, setOrden] = useState<{ idx: number; total: number; ids: number[] }>({ idx: 0, total: 1, ids: [] });
+  // Ruta del tema. Se guarda ENTERA (no solo los ids) porque `pendientes_ids` es
+  // lo que decide el "Siguiente": la lista `ejercicios` trae los resueltos al
+  // final y navegar por ella hacía reaparecer ejercicios ya hechos.
+  const [ruta, setRuta] = useState<RutaTema | null>(null);
+  const [orden, setOrden] = useState<{ idx: number; total: number }>({ idx: 0, total: 1 });
+  // La racha vive por TEMA y sobrevive al cambio de página (sessionStorage).
+  const { racha, registrar, reiniciar, enRacha, atascado } = useRachaSesion(ej?.temaId ?? null);
+  const [avisoOculto, setAvisoOculto] = useState(false);
   // Respuesta actual reportada por el componente de tipo (null = aún sin responder).
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ResultadoIntento | null>(null);
@@ -45,10 +54,14 @@ export default function DetallePage() {
       // Progreso y ORDEN ADAPTATIVO: la ruta del backend decide la secuencia
       // según el nivel del estudiante (tema si lo tiene; si no, nivel).
       const q = r.ejercicio.temaId ? `tema=${r.ejercicio.temaId}` : `nivel=${r.ejercicio.nivel?.numero ?? ''}`;
-      api.get<{ ejercicios: Ejercicio[] }>(`/ejercicios/ruta?${q}`).then((lr) => {
+      api.get<RutaTema>(`/ejercicios/ruta?${q}`).then((lr) => {
+        setRuta(lr);
+        // El contador se lee de la RUTA COMPLETA (posición real dentro del nivel),
+        // pero la navegación usa `pendientes_ids`: son dos cosas distintas y
+        // mezclarlas era el origen de los ejercicios repetidos.
         const ids = lr.ejercicios.map((e) => e.id);
         const i = ids.indexOf(r.ejercicio.id);
-        setOrden({ idx: i < 0 ? 0 : i, total: ids.length || 1, ids });
+        setOrden({ idx: i < 0 ? 0 : i, total: ids.length || 1 });
       }).catch(() => undefined);
     }).catch(() => undefined);
   }, [id]);
@@ -67,6 +80,8 @@ export default function DetallePage() {
         ejercicioId: ej.id, respuestaDada: respuesta, tiempoSeg: Math.round((Date.now() - inicio) / 1000),
       });
       setResultado(r);
+      registrar(r.correcto);   // racha de sesión: aciertos seguidos vs fallos seguidos
+      setAvisoOculto(false);
       if (r.correcto) {
         setXpVuela(r.xp.xpOtorgado);
         // Sonido MUY sutil de acierto (si el usuario tiene los sonidos activados).
@@ -83,11 +98,11 @@ export default function DetallePage() {
         if (celebs.length) setTimeout(() => celebrar(celebs), 600);
       } else {
         // Tono neutro y AMABLE al fallar (nunca estridente): acompaña el mensaje
-        // de ALVARO de que equivocarse es parte de aprender.
+        // de PREXI de que equivocarse es parte de aprender.
         playWrong();
         // Retroalimentación DETERMINÍSTICA primero: mostramos la explicación
         // estática del docente (explicacion_base) sin gastar tokens de Gemini.
-        // ALVARO (IA) solo se llama bajo demanda si el estudiante lo pide.
+        // PREXI (IA) solo se llama bajo demanda si el estudiante lo pide.
         setRetro(r.explicacion_base ?? null);
         setUltimaRespuesta((respuesta ?? '').slice(0, 120));
       }
@@ -96,7 +111,7 @@ export default function DetallePage() {
     } finally { setEnviando(false); }
   }
 
-  /** Explicación personalizada de ALVARO (IA) — solo a petición del estudiante. */
+  /** Explicación personalizada de PREXI (IA) — solo a petición del estudiante. */
   async function pedirRetroIa() {
     if (!ej || pidiendoIa) return;
     setPidiendoIa(true); setIaPedida(true);
@@ -106,8 +121,8 @@ export default function DetallePage() {
       });
       setRetro(fb.explicacion);
     } catch (err) {
-      // Si ALVARO no está disponible, conservamos la explicación estática ya mostrada.
-      alert(err instanceof ApiError ? err.message : 'ALVARO no está disponible ahora.');
+      // Si PREXI no está disponible, conservamos la explicación estática ya mostrada.
+      alert(err instanceof ApiError ? err.message : 'Tu tutor PREXI no está disponible ahora.');
     } finally { setPidiendoIa(false); }
   }
 
@@ -119,7 +134,15 @@ export default function DetallePage() {
   );
 
   const progreso = Math.round(((orden.idx + 1) / orden.total) * 100);
-  const sig = orden.ids[orden.idx + 1];
+  // SIGUIENTE = el próximo PENDIENTE, excluyendo el actual (que acaba de
+  // resolverse y todavía figura como pendiente en la ruta cargada al entrar).
+  // Antes era `ids[idx + 1]` sobre la lista `[...pendientes, ...resueltos]`: en
+  // cuanto el índice entraba en la cola de resueltos, "Siguiente" empezaba a
+  // servir ejercicios ya hechos aunque quedaran pendientes.
+  const sig = (ruta?.pendientes_ids ?? []).find((x) => x !== ej.id);
+  const progNivel = ruta?.progreso_nivel ?? null;
+  // Cierre de tema: resolvió el último pendiente de su nivel en este tema.
+  const temaCerrado = !!resultado?.correcto && !sig && !!ej.temaId && !!progNivel;
   const unidadTema = ej.tema ? `U${ej.tema.unidad.numero} · ${ej.tema.numero} ${ej.tema.titulo}` : ej.nivel ? `Nivel ${ej.nivel.numero}` : null;
 
   return (
@@ -128,7 +151,17 @@ export default function DetallePage() {
       <div className="mb-5 flex items-center gap-4 rounded-2xl border border-line bg-card px-5 py-4 shadow-soft">
         <button onClick={() => router.push('/ejercicios')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-muted transition hover:bg-subtle hover:text-fg" title="Salir"><X className="h-4 w-4" /></button>
         <div className="min-w-0 flex-1">
-          <p className="mb-2 text-sm font-semibold text-fg">Ejercicio {orden.idx + 1} de {orden.total}</p>
+          <p className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-fg">
+            <span>Ejercicio {orden.idx + 1} de {orden.total}</span>
+            {/* Progreso DENTRO del nivel: es el que habilita el mini-diagnóstico,
+                así que el estudiante tiene que poder verlo mientras practica. */}
+            {progNivel && (
+              <span className="text-xs font-medium text-muted">
+                · nivel {progNivel.nivel_label}: {progNivel.resueltos}/{progNivel.minimo} resueltos
+                {progNivel.cumplido ? ' · ya puedes subir de nivel' : ` · faltan ${progNivel.faltan}`}
+              </span>
+            )}
+          </p>
           {/* Progreso VIVO por segmentos (uno por ejercicio de la ruta) que se llenan
               con animación; si la ruta es muy larga, cae a una barra continua. */}
           {orden.total <= 30 ? (
@@ -153,12 +186,12 @@ export default function DetallePage() {
       </div>
 
       {/* Escritorio amplio (xl+): 2 columnas PROPORCIONADAS (~57% ejercicio /
-          ~43% ALVARO). El ancho fijo de 340px se quedaba corto al crecer la
-          pantalla (ALVARO caía a ~28% y el chat quedaba estrecho); 1.35fr/1fr
+          ~43% PREXI). El ancho fijo de 340px se quedaba corto al crecer la
+          pantalla (PREXI caía a ~28% y el chat quedaba estrecho); 1.35fr/1fr
           mantiene la proporción a cualquier ancho.
           El corte va en xl y no en lg a propósito: en lg el sidebar (w-64) deja
           ~575px útiles, y partirlos en dos dejaba el ejercicio en ~210px. Por
-          debajo de xl, ALVARO se apila DEBAJO a todo el ancho. */}
+          debajo de xl, PREXI se apila DEBAJO a todo el ancho. */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <div className="min-w-0">
           <div className={`card ${resultado && !resultado.correcto ? 'animate-shake' : ''}`}>
@@ -194,10 +227,10 @@ export default function DetallePage() {
                     <p className="font-bold text-red-500">No es correcta esta vez.</p>
                     {retro && (
                       <p className="mt-1 text-sm text-muted">
-                        <span className="font-semibold text-fg">{iaPedida ? 'ALVARO:' : 'Explicación:'}</span> {retro}
+                        <span className="font-semibold text-fg">{iaPedida ? 'PREXI:' : 'Explicación:'}</span> {retro}
                       </p>
                     )}
-                    {/* La IA (ALVARO) solo se invoca si el estudiante quiere una
+                    {/* La IA (PREXI) solo se invoca si el estudiante quiere una
                         explicación personalizada: ahorra tokens en cada fallo. */}
                     {!iaPedida && (
                       <button
@@ -206,12 +239,24 @@ export default function DetallePage() {
                         className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-prexi-blue px-3 py-1.5 text-xs font-semibold text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-50"
                       >
                         <Bot className="h-3.5 w-3.5" />
-                        {pidiendoIa ? 'ALVARO está pensando…' : 'Explícame más con ALVARO'}
+                        {pidiendoIa ? 'PREXI está pensando…' : 'Explícame más con tu tutor PREXI'}
                       </button>
                     )}
                   </div>
                 )}
               </div>
+            )}
+
+            {/* RACHA (arreglo de la lógica invertida): con aciertos seguidos se
+                anima a CONTINUAR; solo con fallos seguidos se ofrece pausa o
+                repaso. Antes era al revés: proponía terminar tras 3 aciertos. */}
+            {resultado && !avisoOculto && !temaCerrado && enRacha && (
+              <AvisoRacha tipo="racha" aciertos={racha.aciertos} temaId={ej.temaId ?? null}
+                onSeguir={() => { setAvisoOculto(true); if (sig) router.push(`/ejercicios/${sig}`); }} />
+            )}
+            {resultado && !avisoOculto && !temaCerrado && atascado && (
+              <AvisoRacha tipo="atasco" aciertos={racha.aciertos} temaId={ej.temaId ?? null}
+                onSeguir={() => { setAvisoOculto(true); reiniciar(); }} />
             )}
 
             <div className="mt-7 flex items-center justify-between border-t border-line pt-5">
@@ -220,15 +265,28 @@ export default function DetallePage() {
                 <button onClick={enviar} disabled={!respuestaLista || enviando} className="btn-primary disabled:opacity-50">{enviando ? 'Comprobando…' : 'Comprobar'}</button>
               ) : sig ? (
                 <button onClick={() => router.push(`/ejercicios/${sig}`)} className="btn-primary">Siguiente <ArrowRight className="h-4 w-4" /></button>
+              ) : temaCerrado ? (
+                // El cierre del tema se resuelve en la tarjeta de abajo, que ya
+                // ofrece subir de nivel o pasar al siguiente tema.
+                <span className="text-sm font-semibold text-prexi-green">Tema completado en tu nivel</span>
               ) : (
                 <button onClick={() => router.push('/ejercicios')} className="btn-primary">Finalizar <CheckCircle className="h-4 w-4" /></button>
               )}
             </div>
           </div>
+
+          {/* CIERRE DE TEMA: felicita indicando el nivel alcanzado y ofrece de
+              forma activa el paso siguiente (repetir en nivel superior, o el
+              siguiente tema si ya está en Avanzado). */}
+          {temaCerrado && ej.temaId != null && (
+            <div className="mt-6">
+              <CierreTema temaId={ej.temaId} tituloTema={ej.tema?.titulo ?? 'este tema'} progreso={progNivel} />
+            </div>
+          )}
         </div>
 
         <div className="min-w-0">
-          <AlexPanel ejercicioId={ej.id} contextoTema={ej.categoria} maxPistas={ej.maxPistas} tipo={ej.tipo} resultado={resultado} />
+          <TutorPanel ejercicioId={ej.id} contextoTema={ej.categoria} maxPistas={ej.maxPistas} tipo={ej.tipo} resultado={resultado} />
         </div>
       </div>
 

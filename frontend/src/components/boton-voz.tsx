@@ -9,7 +9,7 @@ import { Volume2, Pause, Play, Square } from '@/components/icons';
  * Si el navegador NO soporta síntesis de voz, no renderiza nada (sin romper).
  *
  * `variante`:
- *  · "icono"  → un solo botón compacto (junto a cada respuesta de ALVARO).
+ *  · "icono"  → un solo botón compacto (junto a cada respuesta de PREXI).
  *  · "boton"  → botón con etiqueta "Escuchar" (introducciones/repasos).
  */
 export function BotonVoz({ texto, variante = 'icono', className = '' }: {

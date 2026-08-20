@@ -6,7 +6,7 @@ import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 
 /**
- * Rutas /docente/preguntas-ia — bandeja de preguntas propuestas por ALVARO
+ * Rutas /docente/preguntas-ia — bandeja de preguntas propuestas por PREXI
  * desde un PDF. SOLO docente/admin. Nada se publica sin @Post(':id/aprobar').
  */
 @Controller('docente/preguntas-ia')

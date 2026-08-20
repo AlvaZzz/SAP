@@ -148,7 +148,7 @@ export default function PostestPage() {
               ))}
             </div>
           </div>
-          <div className="card flex items-start gap-3 bg-subtle"><Bot className="mt-0.5 h-5 w-5 shrink-0 text-muted" /><p className="text-sm text-muted"><b className="text-fg">Examen sin ayuda de IA</b>: ALVARO está deshabilitado para medir tu avance real.</p></div>
+          <div className="card flex items-start gap-3 bg-subtle"><Bot className="mt-0.5 h-5 w-5 shrink-0 text-muted" /><p className="text-sm text-muted"><b className="text-fg">Examen sin ayuda de IA</b>: PREXI está deshabilitado para medir tu avance real.</p></div>
         </aside>
       </div>
     </div>

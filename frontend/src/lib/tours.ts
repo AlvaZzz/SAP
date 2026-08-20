@@ -23,9 +23,9 @@ export const TOURS: Tour[] = [
     clave: 'bienvenida',
     ruta: en('/pretest'),
     pasos: [
-      { titulo: 'Bienvenido a PREXI', texto: 'PREXI es tu plataforma para aprender programación en Python con ayuda de ALVARO, un tutor con inteligencia artificial. Este breve recorrido te explica cómo funciona todo.' },
+      { titulo: 'Bienvenido a PREXI', texto: 'PREXI es tu plataforma para aprender programación en Python con ayuda de tu tutor PREXI, que funciona con inteligencia artificial. Este breve recorrido te explica cómo funciona todo.' },
       { titulo: '1º · Evaluación diagnóstica', texto: 'Empezarás con un PRETEST de 20 preguntas. No es una nota: sirve para conocer tu punto de partida y ubicarte en el nivel adecuado. Responde con calma; tus respuestas se guardan automáticamente.' },
-      { titulo: '2º · Aprende resolviendo', texto: 'Después practicarás con ejercicios organizados en 5 niveles. Cada acierto te da XP, y al completar un nivel se desbloquea el siguiente. Si te atascas, ALVARO te dará pistas.' },
+      { titulo: '2º · Aprende resolviendo', texto: 'Después practicarás con ejercicios organizados en 5 niveles. Cada acierto te da XP, y al completar un nivel se desbloquea el siguiente. Si te atascas, tu tutor PREXI te dará pistas.' },
       { titulo: '3º · Demuestra tu avance', texto: 'Cuando completes suficientes niveles se habilitará el POSTEST (evaluación final). Comparando ambos resultados verás cuánto mejoraste en la sección "Progreso".' },
       { titulo: '¡Listo para empezar!', texto: 'Ahora rinde tu pretest. Lee cada pregunta, elige una opción y usa los botones para avanzar. Al terminar pulsa "Finalizar" para ver tu resultado. ¡Éxitos!' },
     ],
@@ -47,7 +47,7 @@ export const TOURS: Tour[] = [
     pasos: [
       { titulo: 'Ejercicios por nivel', texto: 'Aquí están los 5 niveles del curso. Cada uno agrupa ejercicios de un tema (variables, condicionales, bucles, funciones, listas).' },
       { titulo: 'Desbloqueo progresivo', texto: 'Los niveles se desbloquean en orden: al completar el porcentaje requerido de un nivel, se abre el siguiente. Los candados indican niveles aún bloqueados.' },
-      { titulo: 'XP y pistas', texto: 'Cada ejercicio correcto suma XP (más si mantienes racha diaria). Puedes pedir pistas a ALVARO, pero usarlas descuenta un poco de XP: intenta primero por tu cuenta.' },
+      { titulo: 'XP y pistas', texto: 'Cada ejercicio correcto suma XP (más si mantienes racha diaria). Puedes pedir pistas a PREXI, pero usarlas descuenta un poco de XP: intenta primero por tu cuenta.' },
     ],
   },
   {
@@ -55,7 +55,7 @@ export const TOURS: Tour[] = [
     ruta: en('/practica'),
     pasos: [
       { titulo: 'Zona de práctica libre', texto: 'Un editor de Python real donde puedes escribir y EJECUTAR código libremente, sin calificaciones. Ideal para experimentar lo aprendido.' },
-      { titulo: 'ALVARO a tu lado', texto: 'El asistente ALVARO puede explicarte errores, sugerir mejoras o responder dudas sobre tu código. Pregúntale en lenguaje natural.' },
+      { titulo: 'PREXI a tu lado', texto: 'El asistente PREXI puede explicarte errores, sugerir mejoras o responder dudas sobre tu código. Pregúntale en lenguaje natural.' },
       { titulo: 'Tu código se guarda', texto: 'Lo que escribas queda guardado en tu cuenta: puedes cerrar sesión y retomarlo después.' },
     ],
   },
@@ -164,7 +164,7 @@ export const TOURS: Tour[] = [
     clave: 'docente-reportes',
     ruta: en('/docente/reportes'),
     pasos: [
-      { titulo: 'Reportes del curso', texto: 'Métricas agregadas: avance por nivel, temas con más errores, uso del tutor ALVARO y comparativa pretest/postest del curso.' },
+      { titulo: 'Reportes del curso', texto: 'Métricas agregadas: avance por nivel, temas con más errores, uso del tutor PREXI y comparativa pretest/postest del curso.' },
       { titulo: 'Exportación CSV', texto: 'Puedes descargar los datos (incluido el pretest/postest) en CSV para tu análisis externo o para la tesis.' },
     ],
   },
@@ -230,7 +230,7 @@ export const TOURS: Tour[] = [
     clave: 'admin-sistema',
     ruta: en('/admin/sistema'),
     pasos: [
-      { titulo: 'Configuración central', texto: 'Única fuente de parámetros del sistema: XP por ejercicio, umbral de desbloqueo, pistas y límites de ALVARO, nivel desde el que se habilita el postest…' },
+      { titulo: 'Configuración central', texto: 'Única fuente de parámetros del sistema: XP por ejercicio, umbral de desbloqueo, pistas y límites de PREXI, nivel desde el que se habilita el postest…' },
       { titulo: 'Efecto inmediato', texto: 'Los cambios aplican al instante para todos los usuarios: la IA y el módulo del estudiante leen esta configuración en cada operación.' },
     ],
   },
