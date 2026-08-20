@@ -1068,6 +1068,15 @@ model ConfiguracionSistema {
   subirNivelPreguntas   Int @default(5) @map("subir_nivel_preguntas") // nº de ítems del mini-diagnóstico
   subirNivelUmbral      Int @default(80) @map("subir_nivel_umbral") // % para aprobar y subir de nivel
   subirNivelEsperaHoras Int @default(0) @map("subir_nivel_espera_horas") // cooldown entre intentos (0 = sin espera)
+  // PRÁCTICA MÍNIMA por nivel antes de habilitar el mini-diagnóstico de subida
+  // (y, con él, el avance al siguiente tema). Se cuentan ejercicios RESUELTOS
+  // del nivel vigente en ESE tema, no intentos. Los valores por defecto van
+  // contra la composición del banco (15/10/5 por tema, regla 1 de la auditoría):
+  // 10 de 15 en Básico, 7 de 10 en Intermedio y los 5 de 5 en Avanzado.
+  // Son configurables a propósito: el docente ajusta la exigencia sin tocar código.
+  minPracticaBasico     Int @default(10) @map("min_practica_basico")
+  minPracticaIntermedio Int @default(7) @map("min_practica_intermedio")
+  minPracticaAvanzado   Int @default(5) @map("min_practica_avanzado")
   // Examen de FIN DE UNIDAD (gate de avance a la siguiente unidad).
   examenUnidadPreguntas   Int @default(8) @map("examen_unidad_preguntas") // nº de ítems del examen
   examenUnidadEsperaHoras Int @default(0) @map("examen_unidad_espera_horas") // cooldown entre reintentos

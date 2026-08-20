@@ -13,7 +13,7 @@ interface EjemploDash { titulo: string; codigo: string; diagrama: string; salida
 // Nivel mínimo de dominio que exige el EXAMEN de fin de unidad para avanzar.
 const NIVEL_MIN_AVANZAR: NivelDificultad = 'intermedio';
 
-interface EjLite { nivelDificultad: NivelDificultad }
+interface EjLite { id: number; nivelDificultad: NivelDificultad }
 
 /**
  * Vista del estudiante sobre la jerarquía académica real (Unidad → Tema →
@@ -28,7 +28,7 @@ export class UnidadesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async listar(usuarioId: number) {
-    const [usuario, unidades, aprobados, repasos, examenItems] = await Promise.all([
+    const [usuario, unidades, aprobados, repasos, examenItems, resueltos, cfg] = await Promise.all([
       this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { nivelInicialAdaptativo: true } }),
       this.prisma.unidad.findMany({
         orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
@@ -37,13 +37,13 @@ export class UnidadesService {
             where: { padreId: null, publicado: true },
             orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
             include: {
-              ejercicios: { where: { activo: true }, select: { nivelDificultad: true } },
+              ejercicios: { where: { activo: true }, select: { id: true, nivelDificultad: true } },
               progreso: { where: { usuarioId } },
               subtemas: {
                 where: { publicado: true },
                 orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
                 include: {
-                  ejercicios: { where: { activo: true }, select: { nivelDificultad: true } },
+                  ejercicios: { where: { activo: true }, select: { id: true, nivelDificultad: true } },
                   progreso: { where: { usuarioId } },
                 },
               },
@@ -57,7 +57,18 @@ export class UnidadesService {
       this.prisma.repasoUnidad.findMany({ where: { usuarioId }, select: { unidadId: true } }),
       // Ítems del banco de examen (para saber qué unidades tienen examen disponible).
       this.prisma.ejercicio.findMany({ where: { banco: 'examen', activo: true }, select: { tema: { select: { unidadId: true } } } }),
+      // Ejercicios RESUELTOS por el estudiante: se cargan una sola vez para todas
+      // las unidades (no por tema) y sirven para saber si cumple la práctica
+      // mínima de su nivel en cada tema.
+      this.prisma.intento.findMany({ where: { usuarioId, correcto: true }, distinct: ['ejercicioId'], select: { ejercicioId: true } }),
+      this.prisma.configuracionSistema.findUnique({ where: { id: 1 } }),
     ]);
+    const resueltosIds = new Set(resueltos.map((r) => r.ejercicioId));
+    const minimos: Record<NivelDificultad, number> = {
+      basico: cfg?.minPracticaBasico ?? 10,
+      intermedio: cfg?.minPracticaIntermedio ?? 7,
+      avanzado: cfg?.minPracticaAvanzado ?? 5,
+    };
 
     const nivelInicial: NivelDificultad = usuario?.nivelInicialAdaptativo ?? 'basico';
     const conTemas = unidades.filter((u) => u.temas.length > 0); // oculta unidades sin temas publicados
@@ -79,12 +90,12 @@ export class UnidadesService {
         const desbloqueado = desbloqueada && (pr?.desbloqueado ?? (iu === 0 && it === 0));
         const nivelActual: NivelDificultad = pr?.nivelActual ?? nivelInicial;
         return {
-          ...this.mapTema(t, nivelActual, desbloqueado),
+          ...this.mapTema(t, nivelActual, desbloqueado, resueltosIds, minimos),
           subtemas: t.subtemas.map((s, is) => {
             const prs = s.progreso[0];
             const desbSub = desbloqueado && (prs?.desbloqueado ?? (is === 0));
             const nivelSub: NivelDificultad = prs?.nivelActual ?? nivelInicial;
-            return this.mapTema(s, nivelSub, desbSub);
+            return this.mapTema(s, nivelSub, desbSub, resueltosIds, minimos);
           }),
         };
       });
@@ -128,15 +139,29 @@ export class UnidadesService {
     t: { id: number; numero: string; titulo: string; descripcion: string | null; umbral: number; ejercicios: EjLite[]; progreso: { ejerciciosCompletados: number }[] },
     nivelActual: NivelDificultad,
     desbloqueado: boolean,
+    resueltosIds: Set<number>,
+    minimos: Record<NivelDificultad, number>,
   ) {
     const completados = t.progreso[0]?.ejerciciosCompletados ?? 0;
     const completo = completados >= t.umbral;
-    const totalNivel = t.ejercicios.filter((e) => e.nivelDificultad === nivelActual).length;
+    const delNivel = t.ejercicios.filter((e) => e.nivelDificultad === nivelActual);
+    const totalNivel = delNivel.length;
     const objetivo = siguienteNivel(nivelActual);
     // Avanzado es el nivel máximo: no hay "siguiente nivel" al que subir.
     const nivelMaximo = objetivo === null;
-    // Puede subir si no está en Avanzado y existen ejercicios del nivel objetivo.
-    const puedeSubir = !!objetivo && t.ejercicios.some((e) => e.nivelDificultad === objetivo);
+
+    // PRÁCTICA MÍNIMA DEL NIVEL VIGENTE. Antes `puedeSubir` solo miraba que
+    // existieran ejercicios del nivel objetivo, así que el botón "¿Intentar
+    // subir?" salía desde el primer momento y se podía saltar el nivel entero
+    // sin resolver un solo ejercicio. El mínimo se topa al total disponible:
+    // un tema con menos ejercicios que el mínimo no debe dejar atrapado a nadie.
+    const resueltosNivel = delNivel.filter((e) => resueltosIds.has(e.id)).length;
+    const minimoNivel = Math.min(minimos[nivelActual] ?? 0, totalNivel);
+    const cumpleMinimo = totalNivel > 0 && resueltosNivel >= minimoNivel;
+    // Puede subir si no está en Avanzado, hay ejercicios del nivel objetivo Y ya
+    // practicó lo suficiente en el nivel actual (el backend lo exige igual en
+    // AdaptatividadService.exigirPracticaMinima: esto es solo la interfaz).
+    const puedeSubir = !!objetivo && t.ejercicios.some((e) => e.nivelDificultad === objetivo) && cumpleMinimo;
 
     return {
       id: t.id, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion,
@@ -146,6 +171,12 @@ export class UnidadesService {
       nivel_actual: nivelActual, nivel_actual_label: ETIQUETA_NIVEL[nivelActual],
       nivel_objetivo: objetivo, nivel_objetivo_label: objetivo ? ETIQUETA_NIVEL[objetivo] : null,
       puede_subir: puedeSubir,
+      // Progreso DENTRO del nivel vigente (distinto de `ejercicios_completados`,
+      // que cuenta el tema entero sin mirar el nivel).
+      resueltos_nivel: resueltosNivel,
+      minimo_nivel: minimoNivel,
+      faltan_nivel: Math.max(0, minimoNivel - resueltosNivel),
+      cumple_minimo_nivel: cumpleMinimo,
       // El estudiante ya está en el nivel máximo (Avanzado) en este tema.
       nivel_maximo: nivelMaximo,
       estado: completo ? 'completado' : desbloqueado ? 'en_progreso' : 'bloqueado',

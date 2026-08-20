@@ -180,6 +180,9 @@ export class AdaptatividadService {
         ? pendientes
         : [...pendientes].sort((a, b) => informacionItem(theta, b.dificultadB) - informacionItem(theta, a.dificultadB));
 
+    // Progreso dentro del nivel (gate del mini-diagnóstico y del cierre de tema).
+    const progreso = opts.temaId ? await this.progresoNivel(usuarioId, opts.temaId) : null;
+
     return {
       nivel_actual: nivelActual,
       nivel_actual_label: nivelActual ? ETIQUETA_NIVEL[nivelActual] : null,
@@ -187,6 +190,14 @@ export class AdaptatividadService {
       theta,
       ejercicios: [...pendientesOrdenados, ...hechos],
       pendientes: pendientesOrdenados.length,
+      // IDs PENDIENTES en orden, como lista propia. El detalle de ejercicio
+      // navegaba con `ejercicios[idx + 1]`, y como los resueltos van al final de
+      // esa misma lista, en cuanto el índice entraba en la cola de resueltos
+      // "Siguiente" empezaba a servir ejercicios YA HECHOS teniendo pendientes.
+      // Con la lista separada, el front siempre puede pedir el próximo pendiente.
+      pendientes_ids: pendientesOrdenados.map((e) => e.id),
+      resueltos_ids: hechos.map((e) => e.id),
+      progreso_nivel: progreso,
     };
   }
 
@@ -278,6 +289,67 @@ export class AdaptatividadService {
       preguntas: cfg?.subirNivelPreguntas ?? 5,
       umbral: cfg?.subirNivelUmbral ?? 80,
       esperaHoras: cfg?.subirNivelEsperaHoras ?? 0,
+      minimos: {
+        basico: cfg?.minPracticaBasico ?? 10,
+        intermedio: cfg?.minPracticaIntermedio ?? 7,
+        avanzado: cfg?.minPracticaAvanzado ?? 5,
+      } as Record<NivelDificultad, number>,
+    };
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     PRÁCTICA MÍNIMA POR NIVEL — PUNTO ÚNICO DE VERDAD
+
+     Antes no había ningún mínimo: `puedeSubir` (en UnidadesService) solo miraba
+     que el tema tuviera ejercicios del nivel objetivo, así que el botón
+     "¿Intentar subir a nivel X?" aparecía desde el primer momento y el
+     mini-diagnóstico lo aceptaba. Un estudiante podía pasar de Básico a
+     Avanzado sin resolver un solo ejercicio del nivel que decía haber superado,
+     lo que rompe el supuesto de la adaptatividad (y contamina θ y el dominio).
+
+     Ahora hay que RESOLVER un mínimo de ejercicios DEL NIVEL VIGENTE en ESE
+     tema antes de poder intentar la subida. Los mínimos son configurables
+     (ConfiguracionSistema.minPractica*), no constantes incrustadas.
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Progreso del estudiante DENTRO de su nivel actual en un tema: cuántos
+   * ejercicios de ese nivel ha resuelto, cuántos exige la configuración y
+   * cuántos existen. `cumplido` es el gate del mini-diagnóstico.
+   *
+   * Se cuentan ejercicios DISTINTOS resueltos correctamente (no intentos): dos
+   * aciertos sobre el mismo ítem no valen por dos. Si el tema tiene MENOS
+   * ejercicios del nivel que el mínimo configurado, el mínimo efectivo es el
+   * total disponible — de lo contrario el estudiante quedaría atrapado en un
+   * tema al que le falta contenido.
+   */
+  async progresoNivel(usuarioId: number, temaId: number) {
+    const nivel = await this.nivelServidoEnTema(usuarioId, temaId);
+    const cfg = await this.config();
+
+    const ejercicios = await this.prisma.ejercicio.findMany({
+      where: { temaId, banco: 'practica', activo: true, nivelDificultad: nivel },
+      select: { id: true },
+    });
+    const total = ejercicios.length;
+    const resueltos = await this.prisma.intento.findMany({
+      where: { usuarioId, correcto: true, ejercicioId: { in: ejercicios.map((e) => e.id) } },
+      distinct: ['ejercicioId'],
+      select: { ejercicioId: true },
+    });
+
+    const minimoConfig = cfg.minimos[nivel] ?? 0;
+    const minimo = Math.min(minimoConfig, total);
+    const hechos = resueltos.length;
+    return {
+      nivel,
+      nivel_label: ETIQUETA_NIVEL[nivel],
+      resueltos: hechos,
+      total,
+      minimo,
+      minimo_config: minimoConfig,
+      faltan: Math.max(0, minimo - hechos),
+      cumplido: total > 0 && hechos >= minimo,
     };
   }
 
@@ -295,6 +367,7 @@ export class AdaptatividadService {
     if (!objetivo) throw new BadRequestException('Ya estás en el nivel máximo (Avanzado) de este tema.');
 
     const cfg = await this.config();
+    await this.exigirPracticaMinima(usuarioId, temaId);
     await this.verificarCooldown(usuarioId, temaId, cfg.esperaHoras);
 
     const disponibles = await this.prisma.ejercicio.findMany({
@@ -314,6 +387,25 @@ export class AdaptatividadService {
       umbral: cfg.umbral, total: barajado.length,
       preguntas: barajado,
     };
+  }
+
+  /**
+   * Exige la práctica mínima del nivel vigente antes de dejar subir. Se llama
+   * DESDE LAS DOS PUERTAS (`iniciarSubida` y `evaluarSubida`): comprobarlo solo
+   * al iniciar dejaría pasar un POST directo a la evaluación con preguntas
+   * obtenidas antes, que es justo el hueco que el gating por nivel cierra en el
+   * resto del módulo.
+   *
+   * Va ANTES del cooldown a propósito: no haber practicado no es un reintento
+   * fallido, y el mensaje debe decir qué falta en vez de "espera".
+   */
+  private async exigirPracticaMinima(usuarioId: number, temaId: number) {
+    const prog = await this.progresoNivel(usuarioId, temaId);
+    if (prog.cumplido) return;
+    throw new BadRequestException(
+      `Antes de subir de nivel practica un poco más: llevas ${prog.resueltos} de ${prog.minimo} ` +
+        `ejercicios de nivel ${prog.nivel_label} resueltos en este tema.`,
+    );
   }
 
   /** Cooldown: rechaza si el último intento NO aprobado es demasiado reciente. */
@@ -345,6 +437,7 @@ export class AdaptatividadService {
     if (!objetivo) throw new BadRequestException('Ya estás en el nivel máximo (Avanzado) de este tema.');
 
     const cfg = await this.config();
+    await this.exigirPracticaMinima(usuarioId, temaId);
     await this.verificarCooldown(usuarioId, temaId, cfg.esperaHoras);
 
     // Solo se aceptan ejercicios que REALMENTE pertenecen a este tema y nivel objetivo.
