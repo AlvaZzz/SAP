@@ -251,13 +251,23 @@ async function main() {
       if (!process.env.DATABASE_URL) {
         throw new Error(`sin DATABASE_URL — BÓRRALA A MANO: ${CUENTA.email}`);
       }
+      const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+      // El correo lo genera este mismo script (`smoke+<marca>@prexi.test`, solo
+      // letras y dígitos), así que la cadena no lleva nada que escapar; aun así
+      // va entrecomillada. `limpiar-smoke.ts` vuelve a validarlo contra su patrón
+      // antes de borrar nada.
       const r = spawnSync(
-        process.platform === 'win32' ? 'npx.cmd' : 'npx',
-        ['--no-install', 'tsx', 'scripts/limpiar-smoke.ts', '--aplicar', '--email', CUENTA.email],
-        { cwd: path.join(__dirname, '..', 'backend'), encoding: 'utf8' },
+        `${npx} --no-install tsx scripts/limpiar-smoke.ts --aplicar --email "${CUENTA.email}"`,
+        {
+          cwd: path.join(__dirname, '..', 'backend'),
+          encoding: 'utf8',
+          shell: true,
+        },
       );
       const salida = `${r.stdout ?? ''}${r.stderr ?? ''}`;
-      if (r.status !== 0) throw new Error(`la limpieza falló — BÓRRALA A MANO: ${CUENTA.email}`);
+      if (r.status !== 0) {
+        throw new Error(`la limpieza falló (${r.error?.message ?? `código ${r.status}`}) — BÓRRALA A MANO: ${CUENTA.email}`);
+      }
       if (!/eliminada/.test(salida)) throw new Error(`no se confirmó el borrado — REVISA: ${CUENTA.email}`);
       return `${CUENTA.email} eliminada`;
     }, true);

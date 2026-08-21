@@ -90,13 +90,17 @@ interface Resultado { nombre: string; estado: Estado; ms: number; detalle?: stri
 function ejecutar(p: Paso): Resultado {
   const t0 = Date.now();
   process.stdout.write(`\n──────────────────────────────────────────────────────────────\n▶ ${p.nombre}\n`);
-  const r = spawnSync(p.cmd, p.args, {
+  // `shell: true` es obligatorio en Windows: desde la corrección de
+  // CVE-2024-27980, Node se niega a lanzar archivos .cmd (npm.cmd, npx.cmd) sin
+  // shell y devuelve EINVAL. El comando se pasa como UNA cadena y no como
+  // (cmd, args[]): con `shell: true` esa segunda forma emite un aviso de
+  // obsolescencia en cada paso, porque Node se limita a concatenar los
+  // argumentos sin escaparlos. Aquí todos son literales de PASOS —ninguno viene
+  // del exterior— y ninguno lleva espacios; el `cwd` sí puede llevarlos, pero va
+  // aparte y no pasa por el shell.
+  const r = spawnSync([p.cmd, ...p.args].join(' '), {
     cwd: p.cwd,
     stdio: 'inherit',
-    // `shell: true` es obligatorio en Windows: desde la corrección de
-    // CVE-2024-27980, Node se niega a lanzar archivos .cmd (npm.cmd, npx.cmd)
-    // sin shell y devuelve EINVAL. Ningún argumento viene del exterior —son
-    // literales de PASOS—, así que no hay superficie de inyección.
     shell: true,
     env: {
       ...process.env,
