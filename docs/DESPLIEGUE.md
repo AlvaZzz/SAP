@@ -497,6 +497,31 @@ cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/auditoria-co
 Las 12 reglas contra el contenido real. Compara con lo que sale en local: lo que
 falle **solo** en producción es contenido real y hay que mirarlo caso por caso.
 
+> **La regla 10 necesita ADEMÁS `E2E_API_URL`.** No se conforma con leer la base:
+> registra un estudiante y ejercita el gating por HTTP, y por defecto apunta a
+> `http://localhost:4000/api`. Si la base es Neon y la API es la local, el
+> estudiante se crea en un sitio y se busca en el otro: la regla revienta con una
+> violación de clave foránea que no tiene nada que ver con el contenido.
+> Las dos puntas tienen que mirar al mismo entorno:
+>
+> ```bash
+> cd backend && set -a && . ../.env.neon && set +a && E2E_API_URL=https://prexi.lat/api npx tsx scripts/auditoria-completa.ts
+> ```
+
+### Sembrar los bancos oficiales
+
+`prisma/seed-unidad.ts --unidad N` carga el banco de `prisma/data/unidadN.json`
+(15/10/5 por tema + 10 ítems de examen). Respalda antes, va en una transacción y
+**nunca toca los bancos `pretest` y `postest`** — son los instrumentos del estudio.
+
+Aborta si encuentra datos de estudiantes ligados a esa unidad; `--force` los
+cascadea. Antes de forzar, mira QUÉ son con `scripts/quien-respondio.ts`.
+
+Efecto secundario a tener presente: los temas que **no** aparecen en el JSON se
+DESPUBLICAN. Al sembrar la Unidad 1 se despublicaron 1.5.1, 1.5.2, 1.7.1, 1.7.2,
+1.9, 1.10 y 1.11 por no estar en el material oficial. No se borran: dejan de
+verse.
+
 ### Paso 2 — Equilibrar la clave de respuestas
 
 ```bash
