@@ -42,8 +42,19 @@ async function crearEjercicioRelleno(token: string, temaId: number, i: number) {
     },
   });
   expect(r.status).toBe(201);
-  return r.data.ejercicio.id as number;
+  const id = r.data.ejercicio.id as number;
+  ejerciciosCreados.push(id);
+  return id;
 }
+
+/**
+ * Ejercicios creados por esta suite. Hay que borrarlos EXPLICITAMENTE: al
+ * eliminar su tema, el ejercicio no se borra en cascada sino que se queda con
+ * `temaId = null`. Cada ejecucion dejaba asi una tanda de huerfanos "Ejercicio
+ * de relleno N" que la auditoria denunciaba despues como items de opcion con 2
+ * opciones — es decir, la propia suite ensuciaba la validacion siguiente.
+ */
+const ejerciciosCreados: number[] = [];
 
 const stamp = Date.now();
 let docenteTk: string;
@@ -66,6 +77,11 @@ beforeAll(async () => {
 // Limpia lo creado: evita que unidades de ejecuciones previas alteren cuál es
 // "la primera unidad" (regla de desbloqueo por defecto) en la siguiente corrida.
 afterAll(async () => {
+  // Primero los ejercicios: despues de borrar el tema quedarian sin tema y ya no
+  // habria forma de distinguirlos del contenido real.
+  for (const id of ejerciciosCreados) {
+    await req('DELETE', `/docente/ejercicios/${id}`, { token: docenteTk });
+  }
   if (tema2Id > 0) await req('DELETE', `/docente/unidades/temas/${tema2Id}`, { token: docenteTk });
   if (temaId > 0) await req('DELETE', `/docente/unidades/temas/${temaId}`, { token: docenteTk });
   if (unidadId > 0) await req('DELETE', `/docente/unidades/${unidadId}`, { token: docenteTk });
@@ -111,6 +127,7 @@ describe('2 · Nuevos tipos de pregunta: se crean sin publicar el tema todavía'
     });
     expect(r.status).toBe(201);
     ejercicioComplId = r.data.ejercicio.id;
+    ejerciciosCreados.push(ejercicioComplId);
   });
 
   it('crea un ejercicio "ordenar_lineas" (Parsons) con las líneas en orden correcto', async () => {
@@ -128,6 +145,7 @@ describe('2 · Nuevos tipos de pregunta: se crean sin publicar el tema todavía'
     });
     expect(r.status).toBe(201);
     ejercicioOrdenId = r.data.ejercicio.id;
+    ejerciciosCreados.push(ejercicioOrdenId);
   });
 
   it('con solo 2 ejercicios el tema NO puede publicarse (mínimo 10)', async () => {

@@ -92,26 +92,44 @@ async function reglaDistribucion(numeroUnidad: number, nombreRegla: string) {
 
 /* ─────────────────────── Regla 3: sin código de ejercicio duplicado (todas las unidades) ─────────────────────── */
 
+/**
+ * El código es único DENTRO DE SU UNIDAD, no en todo el sistema. `seed-unidad.ts`
+ * numera los ítems por unidad, así que "EF.01" es el primer ítem del examen de
+ * CADA unidad y existe legítimamente una vez por unidad (1.1, 2.1, 3.1…).
+ *
+ * La versión anterior comparaba los códigos globalmente y reportaba 20 falsos
+ * duplicados: contenido correcto marcado como defecto. Una regla que denuncia lo
+ * que está bien es peor que no tenerla, porque enseña a ignorar la auditoría.
+ */
 async function regla3CodigosDuplicados() {
   const fallos: string[] = [];
-  const ejercicios = await prisma.ejercicio.findMany({ select: { id: true, fuenteDoc: true } });
+  const ejercicios = await prisma.ejercicio.findMany({
+    select: { id: true, fuenteDoc: true, tema: { select: { unidad: { select: { numero: true } } } } },
+  });
   const vistos = new Map<string, number>();
   for (const e of ejercicios) {
     const codigo = ((e.fuenteDoc ?? {}) as { codigo?: string }).codigo;
     if (!codigo) continue;
-    const previo = vistos.get(codigo);
-    if (previo != null) fallos.push(`Código "${codigo}" duplicado (ejercicios id ${previo} y ${e.id}).`);
-    else vistos.set(codigo, e.id);
+    const unidad = e.tema?.unidad?.numero ?? 'sin-unidad';
+    const clave = `u${unidad}/${codigo}`;
+    const previo = vistos.get(clave);
+    if (previo != null) fallos.push(`Código "${codigo}" duplicado dentro de la unidad ${unidad} (ejercicios id ${previo} y ${e.id}).`);
+    else vistos.set(clave, e.id);
   }
-  reportar('3. Sin códigos de ejercicio duplicados', fallos);
+  reportar('3. Sin códigos de ejercicio duplicados (dentro de cada unidad)', fallos);
 }
 
 /* ─────────────────────── Regla 4: opcion_multiple/predecir_salida con exactamente 4 opciones ─────────────────────── */
 
 async function regla4Opciones() {
   const fallos: string[] = [];
+  // `activo: true`, igual que la regla 6 con los retos. Un ejercicio DESACTIVADO
+  // no se le sirve a ningún estudiante: no puede contaminar ni θ ni la medición,
+  // así que su forma no es un defecto del contenido vigente. Sin este filtro la
+  // auditoría seguía denunciando ítems que ya se habían retirado de circulación,
+  // y una regla que no se puede dejar en verde acaba ignorándose.
   const ejercicios = await prisma.ejercicio.findMany({
-    where: { tipo: { in: TIPOS_CON_OPCIONES } },
+    where: { tipo: { in: TIPOS_CON_OPCIONES }, activo: true },
     select: { id: true, tipo: true, opciones: true, fuenteDoc: true },
   });
   for (const e of ejercicios) {
@@ -119,7 +137,7 @@ async function regla4Opciones() {
     const opciones = Array.isArray(e.opciones) ? (e.opciones as unknown[]) : [];
     if (opciones.length !== 4) fallos.push(`Ejercicio ${codigo} (${e.tipo}): ${opciones.length} opciones (esperado 4).`);
   }
-  reportar('4. opcion_multiple/predecir_salida con 4 opciones', fallos);
+  reportar('4. opcion_multiple/predecir_salida activos con 4 opciones', fallos);
 }
 
 /* ─────────────────────── Regla 5: examen final = 10 (5 intermedio + 5 avanzado), sin solapar con la práctica ─────────────────────── */
