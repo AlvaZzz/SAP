@@ -452,6 +452,27 @@ despliegues vuelven a ser los de la sección 9.
 > respuestas ya registradas las invalidaría (se guardan como letra, y esa letra
 > pasaría a significar otra cosa).
 
+### Nota sobre la shell
+
+Los comandos de abajo van en **Bash** (Git Bash). Si usas **PowerShell**, dos
+cosas de Bash NO existen ahí: el operador `&&` y el prefijo `VAR=valor comando`.
+Para eso está `scripts/cargar-env.ps1`, que carga un `.env` en la sesión actual:
+
+```powershell
+. .\scripts\cargar-env.ps1 .env.neon
+```
+
+El **punto y el espacio del principio son obligatorios** (*dot-sourcing*): sin
+ellos el script corre en una sesión hija y las variables se pierden. Al terminar
+imprime a qué host apunta `DATABASE_URL` — la última oportunidad de darte cuenta
+antes de escribir en producción.
+
+Con las variables ya cargadas, cada comando queda en dos líneas:
+
+```powershell
+Push-Location backend; npx tsx scripts/auditoria-completa.ts; Pop-Location
+```
+
 ### Preparación
 
 Crea `.env.neon` en la raíz (lo ignora `.gitignore`, no puede subirse):
