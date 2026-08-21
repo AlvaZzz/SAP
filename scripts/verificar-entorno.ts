@@ -40,7 +40,24 @@ const EJEMPLOS = [
   'tuprexi.duckdns.org',
 ];
 
-const esEjemplo = (v: string) => (EJEMPLOS.includes(v.trim()) ? 'conserva el valor de EJEMPLO del .env.example' : null);
+/**
+ * Un MARCADOR de plantilla: TODO_EN_MAYUSCULAS_CON_GUIONES_BAJOS, sin minúsculas
+ * ni caracteres que aparezcan en un valor real (`:`, `/`, `@`, `.`).
+ *
+ * Existe porque la lista enumerada de arriba no basta: al preparar este
+ * despliegue se generó una plantilla con `GEMINI_API_KEY=TU_CLAVE_NUEVA_DE_GEMINI`
+ * y la comprobación la dio por BUENA — tenía 24 caracteres, que superaba el
+ * mínimo de largo. Un marcador que pasa la validación es peor que no validar,
+ * porque da una falsa confirmación de que el entorno está configurado.
+ */
+const esMarcador = (v: string) => /^[A-Z][A-Z0-9_]{5,}$/.test(v.trim());
+
+const esEjemplo = (v: string) => {
+  const t = v.trim();
+  if (EJEMPLOS.includes(t)) return 'conserva el valor de EJEMPLO del .env.example';
+  if (esMarcador(t)) return `sigue siendo un marcador de plantilla ("${t}"), no un valor real`;
+  return null;
+};
 
 const url = (v: string) => {
   const e = esEjemplo(v);
