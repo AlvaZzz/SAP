@@ -436,3 +436,102 @@ Usa una cuenta desechable `smoke+<marca>@prexi.test` y la borra al terminar con
 `backend/scripts/limpiar-smoke.ts` (hace falta `DATABASE_URL`; el sistema no
 expone borrado duro de usuarios a propósito). Si no puede borrarla, lo dice con
 el correo exacto en vez de dejar basura en silencio.
+
+---
+
+## 10. Despliegue de esta versión: los pasos de DATOS
+
+Esta versión es distinta de un despliegue normal. Además del código trae tres
+cambios que viven en la **base de datos** y que `git push` **no** aplica:
+equilibrar la clave de respuestas, renombrar al tutor en el texto ya escrito y
+retirar el residuo de demostración. Son de una sola vez: una vez hechos, los
+despliegues vuelven a ser los de la sección 9.
+
+> El orden importa. La clave de respuestas va **antes** de que entren
+> estudiantes, porque reordena las opciones de 474 ejercicios: hacerlo con
+> respuestas ya registradas las invalidaría (se guardan como letra, y esa letra
+> pasaría a significar otra cosa).
+
+### Preparación
+
+Crea `.env.neon` en la raíz (lo ignora `.gitignore`, no puede subirse):
+
+```bash
+DATABASE_URL=postgresql://USUARIO:CLAVE@ep-XXXX-pooler.REGION.aws.neon.tech/DB?sslmode=require
+DIRECT_URL=postgresql://USUARIO:CLAVE@ep-XXXX.REGION.aws.neon.tech/DB?sslmode=require
+```
+
+`DATABASE_URL` es la cadena **pooled** (el host lleva `-pooler`); `DIRECT_URL`
+es la **directa**, y es la que usan las migraciones. Las dos con `sslmode=require`.
+
+### Paso 1 — Mirar antes de tocar
+
+Todos los scripts de datos son **simulación por defecto**: sin `--aplicar` no
+escriben nada. Ejecútalos y lee la salida antes de seguir.
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/auditoria-completa.ts
+```
+
+Las 12 reglas contra el contenido real. Compara con lo que sale en local: lo que
+falle **solo** en producción es contenido real y hay que mirarlo caso por caso.
+
+### Paso 2 — Equilibrar la clave de respuestas
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npm run clave:informe
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/equilibrar-clave-bd.ts
+```
+
+La simulación dice cuántos ejercicios cambiarían y, sobre todo, **si hay
+respuestas ya registradas** de cuentas que no son de demostración. Si las hay, el
+script **aborta a propósito**: esa decisión es del investigador, no del script.
+Solo cuando la simulación salga limpia:
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/equilibrar-clave-bd.ts --aplicar
+```
+
+Es idempotente: volver a ejecutarlo no cambia nada. Verifica después que ninguna
+posición supere el 30 % y que la regla 11 de la auditoría pase.
+
+### Paso 3 — Renombrar al tutor en el texto guardado
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npm run tutor:renombrar
+```
+
+Muestra el antes y el después de cada fila. Si es lo esperado:
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npm run tutor:renombrar:aplicar
+```
+
+Nunca toca `usuarios.nombre` ni `usuarios.email`: ahí viven nombres de personas
+reales y el titular del proyecto se llama Alvaro. La lista de columnas es blanca,
+no negra.
+
+### Paso 4 — Retirar el residuo de demostración
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/limpiar-demo.ts
+```
+
+Si la salida cuadra, `--aplicar`. **Desactiva, no borra**: algunos de esos retos
+tienen entregas de estudiantes.
+
+### Paso 5 — Desplegar el código
+
+Ya en la secuencia normal de la sección 9. La migración
+`20260820120000_minimos_practica_por_nivel` la aplica sola el Start Command de
+Render (`npx prisma migrate deploy`), no hay que hacer nada.
+
+### Paso 6 — Comprobaciones de producción que no son de código
+
+- **`JWT_SECRET` en Render**: si mide menos de 32 caracteres, cámbialo
+  (`openssl rand -base64 48`). Cambiarlo cierra todas las sesiones abiertas, así
+  que hazlo sin estudiantes dentro.
+- **Rotar la clave de Gemini** si estuvo expuesta. La cuota por minuto es el
+  recurso escaso del sistema.
+- `npm run verificar:entorno -- --produccion` con `.env.neon` cargado comprueba
+  formato y que no sobreviva ningún valor de ejemplo.
