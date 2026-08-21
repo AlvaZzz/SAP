@@ -21,6 +21,7 @@
  * código 1 si alguna regla falla.
  */
 import { PrismaClient, Banco, NivelDificultad, TipoEjercicio } from '@prisma/client';
+import { distribucionClave } from '../src/common/banco/clave-equilibrada';
 
 const prisma = new PrismaClient();
 const API = process.env.E2E_API_URL ?? 'http://localhost:4000/api';
@@ -91,26 +92,44 @@ async function reglaDistribucion(numeroUnidad: number, nombreRegla: string) {
 
 /* ─────────────────────── Regla 3: sin código de ejercicio duplicado (todas las unidades) ─────────────────────── */
 
+/**
+ * El código es único DENTRO DE SU UNIDAD, no en todo el sistema. `seed-unidad.ts`
+ * numera los ítems por unidad, así que "EF.01" es el primer ítem del examen de
+ * CADA unidad y existe legítimamente una vez por unidad (1.1, 2.1, 3.1…).
+ *
+ * La versión anterior comparaba los códigos globalmente y reportaba 20 falsos
+ * duplicados: contenido correcto marcado como defecto. Una regla que denuncia lo
+ * que está bien es peor que no tenerla, porque enseña a ignorar la auditoría.
+ */
 async function regla3CodigosDuplicados() {
   const fallos: string[] = [];
-  const ejercicios = await prisma.ejercicio.findMany({ select: { id: true, fuenteDoc: true } });
+  const ejercicios = await prisma.ejercicio.findMany({
+    select: { id: true, fuenteDoc: true, tema: { select: { unidad: { select: { numero: true } } } } },
+  });
   const vistos = new Map<string, number>();
   for (const e of ejercicios) {
     const codigo = ((e.fuenteDoc ?? {}) as { codigo?: string }).codigo;
     if (!codigo) continue;
-    const previo = vistos.get(codigo);
-    if (previo != null) fallos.push(`Código "${codigo}" duplicado (ejercicios id ${previo} y ${e.id}).`);
-    else vistos.set(codigo, e.id);
+    const unidad = e.tema?.unidad?.numero ?? 'sin-unidad';
+    const clave = `u${unidad}/${codigo}`;
+    const previo = vistos.get(clave);
+    if (previo != null) fallos.push(`Código "${codigo}" duplicado dentro de la unidad ${unidad} (ejercicios id ${previo} y ${e.id}).`);
+    else vistos.set(clave, e.id);
   }
-  reportar('3. Sin códigos de ejercicio duplicados', fallos);
+  reportar('3. Sin códigos de ejercicio duplicados (dentro de cada unidad)', fallos);
 }
 
 /* ─────────────────────── Regla 4: opcion_multiple/predecir_salida con exactamente 4 opciones ─────────────────────── */
 
 async function regla4Opciones() {
   const fallos: string[] = [];
+  // `activo: true`, igual que la regla 6 con los retos. Un ejercicio DESACTIVADO
+  // no se le sirve a ningún estudiante: no puede contaminar ni θ ni la medición,
+  // así que su forma no es un defecto del contenido vigente. Sin este filtro la
+  // auditoría seguía denunciando ítems que ya se habían retirado de circulación,
+  // y una regla que no se puede dejar en verde acaba ignorándose.
   const ejercicios = await prisma.ejercicio.findMany({
-    where: { tipo: { in: TIPOS_CON_OPCIONES } },
+    where: { tipo: { in: TIPOS_CON_OPCIONES }, activo: true },
     select: { id: true, tipo: true, opciones: true, fuenteDoc: true },
   });
   for (const e of ejercicios) {
@@ -118,7 +137,7 @@ async function regla4Opciones() {
     const opciones = Array.isArray(e.opciones) ? (e.opciones as unknown[]) : [];
     if (opciones.length !== 4) fallos.push(`Ejercicio ${codigo} (${e.tipo}): ${opciones.length} opciones (esperado 4).`);
   }
-  reportar('4. opcion_multiple/predecir_salida con 4 opciones', fallos);
+  reportar('4. opcion_multiple/predecir_salida activos con 4 opciones', fallos);
 }
 
 /* ─────────────────────── Regla 5: examen final = 10 (5 intermedio + 5 avanzado), sin solapar con la práctica ─────────────────────── */
@@ -260,6 +279,60 @@ async function regla10Gating() {
     usuarioId = reg.data.usuario?.id ?? reg.data.id ?? null;
     const token = await login(email);
 
+    // 1b) MONTAJE: desbloquea los niveles de gamificación (1-5) para este
+    // estudiante desechable. Esta regla mide el gating por NIVEL DE DIFICULTAD
+    // dentro de un tema, y para llegar ahí hay que poder responder ejercicios
+    // del tema 2.3 — que cuelgan de niveles de gamificación que un estudiante
+    // recién registrado todavía no tiene abiertos. Un estudiante real llega a
+    // 2.3 habiéndolos desbloqueado por el camino; la auditoría empieza ahí, así
+    // que reproduce esa precondición en vez de saltarse el gate real.
+    // Se abren TAMBIÉN los temas, por el mismo motivo: el avance secuencial
+    // (2.1 → 2.2 → 2.3) es otro gate distinto del que mide esta regla.
+    // `nivelActual` se deja en su valor por defecto (básico), que es justo lo
+    // que la comprobación del estado inicial espera encontrar.
+    if (usuarioId) {
+      const niveles = await prisma.nivel.findMany({ select: { id: true } });
+      for (const n of niveles) {
+        await prisma.progresoNivel.upsert({
+          where: { usuarioId_nivelId: { usuarioId, nivelId: n.id } },
+          create: { usuarioId, nivelId: n.id, desbloqueado: true },
+          update: { desbloqueado: true },
+        });
+      }
+      const temas = await prisma.tema.findMany({
+        where: { publicado: true },
+        select: { id: true, unidad: { select: { numero: true } } },
+      });
+      for (const t of temas) {
+        // Los temas de unidades ANTERIORES quedan en Intermedio: el candado de
+        // unidad se calcula en vivo desde el nivel por tema de la unidad previa,
+        // no desde el examen. Los de la unidad 2 se dejan en Básico, que es
+        // justo lo que la comprobación del estado inicial espera ver.
+        const previa = t.unidad.numero < unidad2.numero;
+        await prisma.progresoTema.upsert({
+          where: { usuarioId_temaId: { usuarioId, temaId: t.id } },
+          create: { usuarioId, temaId: t.id, desbloqueado: true, nivelActual: previa ? 'intermedio' : 'basico' },
+          update: { desbloqueado: true, ...(previa ? { nivelActual: 'intermedio' as const } : {}) },
+        });
+      }
+      // Y el tercer gate: la Unidad 2 exige el EXAMEN de la Unidad 1 aprobado.
+      // Se registra como aprobado para este estudiante desechable. Los tres
+      // gates (unidad → tema → nivel de gamificación) tienen sus propias
+      // pruebas; aquí solo se llega hasta donde empieza el que sí se mide.
+      const unidadesPrevias = await prisma.unidad.findMany({
+        where: { numero: { lt: unidad2.numero } },
+        select: { id: true },
+      });
+      for (const u of unidadesPrevias) {
+        const ya = await prisma.examenUnidad.findFirst({ where: { usuarioId, unidadId: u.id, aprobado: true } });
+        if (!ya) {
+          await prisma.examenUnidad.create({
+            data: { usuarioId, unidadId: u.id, aprobado: true, nivel: 'intermedio', puntaje: 100, aciertos: 8, total: 8 },
+          });
+        }
+      }
+    }
+
     // 2) Estado inicial: sin ProgresoTema, ambos temas deben partir en básico.
     const ruta23_inicial = await req('GET', `/ejercicios/ruta?tema=${tema23.id}`, { token });
     const ruta24_inicial = await req('GET', `/ejercicios/ruta?tema=${tema24.id}`, { token });
@@ -310,9 +383,48 @@ function verificarSoloNivelReto(retos: { nivel_dificultad?: string }[], nivelEsp
   }
 }
 
+/**
+ * Resuelve, por el flujo real, la PRÁCTICA MÍNIMA que el tema exige en el nivel
+ * vigente. Sin esto el mini-diagnóstico se rechaza con 400: subir de nivel sin
+ * haber practicado el nivel actual dejó de estar permitido (el estudiante podía
+ * pasar de Básico a Avanzado sin resolver un solo ejercicio del nivel que decía
+ * haber superado). La auditoría comprueba el gating por nivel, no el gate de
+ * práctica, así que aquí solo se cumple el requisito para poder llegar a él.
+ */
+async function practicarMinimo(token: string, temaId: number): Promise<string | null> {
+  for (let vuelta = 0; vuelta < 40; vuelta++) {
+    const ruta = await req('GET', `/ejercicios/ruta?tema=${temaId}`, { token });
+    if (ruta.status !== 200) return `GET ruta → ${ruta.status}: ${JSON.stringify(ruta.data)}`;
+
+    const prog = ruta.data.progreso_nivel;
+    if (!prog) return 'La ruta no devolvió progreso_nivel.';
+    if (prog.cumplido) return null;
+
+    const pendientes: number[] = ruta.data.pendientes_ids ?? [];
+    if (pendientes.length === 0) return `No quedan pendientes pero el mínimo no se cumple (${prog.resueltos}/${prog.minimo}).`;
+
+    const id = pendientes[0];
+    const real = await prisma.ejercicio.findUnique({ where: { id }, select: { respuestaCorrecta: true } });
+    if (!real) return `El ejercicio ${id} de la ruta no existe en la BD.`;
+
+    const intento = await req('POST', '/intentos', {
+      token,
+      body: { ejercicioId: id, respuestaDada: real.respuestaCorrecta.split('|')[0], tiempoSeg: 5 },
+    });
+    if (intento.status !== 201 && intento.status !== 200) {
+      return `POST intentos (ejercicio ${id}) → ${intento.status}: ${JSON.stringify(intento.data)}`;
+    }
+    if (!intento.data.correcto) return `El ejercicio ${id} se marcó incorrecto usando la clave de la BD.`;
+  }
+  return 'No se alcanzó la práctica mínima en 40 intentos.';
+}
+
 /** Sube de nivel usando el flujo real (mini-diagnóstico), leyendo la respuesta
  *  correcta directamente de la BD solo para poder aprobarlo legítimamente. */
 async function subirDeNivel(token: string, temaId: number): Promise<{ aprobado: boolean; motivo?: string }> {
+  const faltaPractica = await practicarMinimo(token, temaId);
+  if (faltaPractica) return { aprobado: false, motivo: `práctica mínima: ${faltaPractica}` };
+
   const inicio = await req('GET', `/ejercicios/subir-nivel?tema=${temaId}`, { token });
   if (inicio.status !== 200) return { aprobado: false, motivo: `GET subir-nivel → ${inicio.status}: ${JSON.stringify(inicio.data)}` };
   const preguntas: { id: number }[] = inicio.data.preguntas ?? [];
@@ -327,6 +439,71 @@ async function subirDeNivel(token: string, temaId: number): Promise<{ aprobado: 
   const evaluar = await req('POST', '/ejercicios/subir-nivel', { token, body: { temaId, respuestas } });
   if (evaluar.status !== 200 && evaluar.status !== 201) return { aprobado: false, motivo: `POST subir-nivel → ${evaluar.status}: ${JSON.stringify(evaluar.data)}` };
   return { aprobado: !!evaluar.data.aprobado, motivo: evaluar.data.aprobado ? undefined : `puntaje ${evaluar.data.puntaje}/${evaluar.data.umbral ?? '?'}` };
+}
+
+/* ───────────── Regla 11: la clave de respuestas no puede concentrarse en una posición ───────────── */
+
+/**
+ * Umbral de concentración de la clave. Si más del 35 % de las respuestas
+ * correctas de un banco cae en la misma posición, el banco deja de medir
+ * conocimiento: un estudiante que marque siempre esa letra obtiene una
+ * puntuación alta sin dominar el contenido, y esa puntuación contamina θ (IRT),
+ * el nivel adaptativo asignado y la comparación pre/post. Es un defecto de
+ * INSTRUMENTO y por eso la auditoría falla, no advierte.
+ * El reparto lo produce src/common/banco/clave-equilibrada (≈25 % por posición);
+ * este 35 % deja margen a bancos pequeños sin tolerar un sesgo real.
+ */
+const MAX_CONCENTRACION_CLAVE = 0.35;
+/** Bancos con menos ítems que esto no son evaluables estadísticamente. */
+const MIN_ITEMS_CLAVE = 12;
+
+async function regla11Clave() {
+  const fallos: string[] = [];
+  const ejercicios = await prisma.ejercicio.findMany({
+    where: { tipo: { in: TIPOS_CON_OPCIONES } },
+    select: { id: true, banco: true, temaId: true, respuestaCorrecta: true, opciones: true },
+  });
+  // Solo items de 4 opciones: el numero de opciones lo gobierna la Regla 4, y
+  // mezclar items de 2 y de 4 haria imposible fijar un umbral con sentido.
+  const deCuatro = ejercicios.filter((e) => Array.isArray(e.opciones) && (e.opciones as unknown[]).length === 4);
+  const temas = await prisma.tema.findMany({ select: { id: true, unidadId: true } });
+  const unidades = await prisma.unidad.findMany({ select: { id: true, numero: true } });
+  const numeroUnidad = new Map(unidades.map((u) => [u.id, u.numero]));
+  const unidadDeTema = new Map(temas.map((t) => [t.id, t.unidadId]));
+
+  // Se audita por banco y, dentro del banco, por unidad: un sesgo concentrado en
+  // una sola unidad quedaría diluido si solo se mirara el total del sistema.
+  const grupos = new Map<string, string[]>();
+  const agregar = (clave: string, letra: string) => {
+    const g = grupos.get(clave);
+    if (g) g.push(letra);
+    else grupos.set(clave, [letra]);
+  };
+  for (const e of deCuatro) {
+    const u = e.temaId != null ? numeroUnidad.get(unidadDeTema.get(e.temaId) ?? -1) : undefined;
+    agregar(`banco ${e.banco}`, e.respuestaCorrecta);
+    if (u != null) agregar(`banco ${e.banco} · Unidad ${u}`, e.respuestaCorrecta);
+  }
+
+  for (const [nombre, letras] of [...grupos.entries()].sort()) {
+    if (letras.length < MIN_ITEMS_CLAVE) continue;
+    const conteo = distribucionClave(letras);
+    for (const [letra, n] of Object.entries(conteo).sort()) {
+      const pct = n / letras.length;
+      if (pct > MAX_CONCENTRACION_CLAVE) {
+        const detalle = Object.entries(conteo)
+          .sort()
+          .map(([l, c]) => `${l}:${Math.round((c / letras.length) * 100)}%`)
+          .join(' ');
+        fallos.push(
+          `${nombre} (n=${letras.length}): la clave "${letra}" concentra el ${Math.round(pct * 100)}% ` +
+            `(máximo permitido ${Math.round(MAX_CONCENTRACION_CLAVE * 100)}%). Distribución: ${detalle}. ` +
+            `Corrige con: npx tsx scripts/equilibrar-clave-bd.ts --aplicar`,
+        );
+      }
+    }
+  }
+  reportar(`11. Clave de respuestas repartida (ninguna posición > ${Math.round(MAX_CONCENTRACION_CLAVE * 100)}% por banco)`, fallos);
 }
 
 /* ─────────────────────── Main ─────────────────────── */
@@ -345,6 +522,7 @@ async function main() {
   await regla8NivelCoincide();
   await regla9CodigoRetoDuplicado();
   await regla10Gating();
+  await regla11Clave();
 
   console.log('Regla                                                                              Resultado');
   console.log('─'.repeat(100));
@@ -357,7 +535,7 @@ async function main() {
     }
   }
   console.log('─'.repeat(100));
-  console.log(algunaFallo ? `\n✖ Auditoría con fallos (${resultados.filter((r) => !r.ok).length}/${resultados.length} reglas en FAIL).\n` : '\n✔ Auditoría completa: 10/10 reglas en PASS.\n');
+  console.log(algunaFallo ? `\n✖ Auditoría con fallos (${resultados.filter((r) => !r.ok).length}/${resultados.length} reglas en FAIL).\n` : `\n✔ Auditoría completa: ${resultados.length}/${resultados.length} reglas en PASS.\n`);
 
   await prisma.$disconnect();
   process.exit(algunaFallo ? 1 : 0);

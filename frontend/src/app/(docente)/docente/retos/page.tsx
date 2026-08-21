@@ -130,10 +130,10 @@ export default function DocenteRetosPage() {
         </div>
       </Card>
 
-      {cargando ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
+      {cargando ? <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
         : items.length === 0 ? <EmptyState icon={<Target className="h-7 w-7" />} title="Aún no hay retos" hint="Crea un reto para que aparezca en la Zona de Práctica del estudiante." />
           : (
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
               {items.map((r) => (
                 <Card key={r.id} className="flex flex-col">
                   <div className="mb-3 flex items-start justify-between gap-2">
@@ -171,7 +171,7 @@ export default function DocenteRetosPage() {
           <button onClick={guardar} disabled={guardando} className="btn-primary">{guardando ? 'Guardando…' : 'Guardar'}</button>
         </>}>
         {apiError && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2"><Field label="Título" error={errores.titulo}><Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ej: FizzBuzz" /></Field></div>
           <Field label="Categoría" error={errores.categoria}><Input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="Bucles, Cadenas…" /></Field>
           <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(form.estrellas)} onChange={(e) => setForm({ ...form, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>

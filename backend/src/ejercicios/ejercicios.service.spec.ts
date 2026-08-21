@@ -14,12 +14,15 @@ describe('EjerciciosService (XP, racha, desbloqueo de nivel y ranking)', () => {
   // Stubs de gamificación: no otorgan nada, para aislar la lógica de XP/nivel.
   const emblemas = { evaluarIntento: jest.fn().mockResolvedValue([]) };
   const rangos = { recalcular: jest.fn().mockResolvedValue([]) };
+  // Gating por nivel: en estas pruebas el ejercicio SIEMPRE corresponde al nivel
+  // del estudiante; el rechazo tiene su propia batería en adaptatividad.service.spec.
+  const adaptatividad = { verificarAccesoEjercicio: jest.fn().mockResolvedValue(undefined) };
 
   beforeEach(() => {
     prisma = crearPrismaMock();
     emblemas.evaluarIntento.mockClear();
     rangos.recalcular.mockClear();
-    service = new EjerciciosService(prisma as never, emblemas as never, rangos as never);
+    service = new EjerciciosService(prisma as never, emblemas as never, rangos as never, adaptatividad as never);
     prisma.ejercicio.findUnique.mockResolvedValue(EJERCICIO);
     prisma.configuracionSistema.findUnique.mockResolvedValue({ penalizacionPista: 5, umbralPorcentaje: 80 });
     prisma.intento.findFirst.mockResolvedValue(null);
@@ -63,7 +66,7 @@ describe('EjerciciosService (XP, racha, desbloqueo de nivel y ranking)', () => {
     );
   });
 
-  it('penaliza XP por pistas de ALVARO usadas (contadas en el backend)', async () => {
+  it('penaliza XP por pistas de PREXI usadas (contadas en el backend)', async () => {
     prisma.consultaIa.count.mockResolvedValue(3); // 3 pistas × 5 = −15
     const r = await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' });
     expect(r.xp.xpOtorgado).toBe(35); // 50 − 15

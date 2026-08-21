@@ -13,7 +13,7 @@ export class RevisarEntregaDto {
   feedback?: string;
 }
 
-/** Petición de borrador de feedback a ALVARO (opcional, orienta el tono). */
+/** Petición de borrador de feedback a PREXI (opcional, orienta el tono). */
 export class SugerirFeedbackDto {
   @IsOptional() @IsBoolean()
   aprobado?: boolean;

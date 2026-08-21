@@ -71,7 +71,7 @@ export default function AdminSistemaPage() {
 
       <Card>
         {tab === 'general' && (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Nombre del sistema"><Input value={cfg.nombreSistema} onChange={(e) => set('nombreSistema', e.target.value)} /></Field>
             <Field label="Institución"><Input value={cfg.institucion} onChange={(e) => set('institucion', e.target.value)} /></Field>
             <Field label="Periodo / semestre activo"><Input value={cfg.periodo} onChange={(e) => set('periodo', e.target.value)} placeholder="2026-I" /></Field>
@@ -79,7 +79,7 @@ export default function AdminSistemaPage() {
           </div>
         )}
         {tab === 'gamificacion' && (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="XP por ejercicio correcto"><Input type="number" value={cfg.xpPorEjercicio} onChange={(e) => set('xpPorEjercicio', +e.target.value)} /></Field>
             <Field label="XP bonus por racha"><Input type="number" value={cfg.xpBonusRacha} onChange={(e) => set('xpBonusRacha', +e.target.value)} /></Field>
             <Field label="XP por logro"><Input type="number" value={cfg.xpPorLogro} onChange={(e) => set('xpPorLogro', +e.target.value)} /></Field>
@@ -93,8 +93,8 @@ export default function AdminSistemaPage() {
           </div>
         )}
         {tab === 'ia' && (
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="sm:col-span-2"><Toggle label="Tutor ALVARO activo" hint="Si se desactiva, ningún rol puede usar la IA." value={cfg.iaActiva} onChange={(v) => set('iaActiva', v)} /></div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="sm:col-span-2"><Toggle label="Tutor PREXI activo" hint="Si se desactiva, ningún rol puede usar la IA." value={cfg.iaActiva} onChange={(v) => set('iaActiva', v)} /></div>
             <Field label="Máx. pistas por ejercicio"><Input type="number" value={cfg.maxPistasIa} onChange={(e) => set('maxPistasIa', +e.target.value)} /></Field>
             <Field label="Rate limit (consultas/hora por estudiante)"><Input type="number" value={cfg.rateLimitIaHora} onChange={(e) => set('rateLimitIaHora', +e.target.value)} /></Field>
             <Field label="Modo de retroalimentación"><Select value={cfg.modoRetroalimentacion} onChange={(e) => set('modoRetroalimentacion', e.target.value)}><option value="inmediata">Inmediata</option><option value="al_finalizar">Al finalizar</option></Select></Field>
@@ -102,7 +102,7 @@ export default function AdminSistemaPage() {
           </div>
         )}
         {tab === 'investigacion' && (
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Postest se desbloquea desde el nivel" hint="Nivel que debe completarse para habilitar el postest."><Input type="number" value={cfg.postestDesdeNivel} onChange={(e) => set('postestDesdeNivel', +e.target.value)} /></Field>
             <div className="sm:col-span-2"><Toggle label="Bloquear cambios de grupo" hint="Congela control/experimental una vez iniciada la recolección." value={cfg.gruposBloqueados} onChange={(v) => set('gruposBloqueados', v)} /></div>
             <Field label="En riesgo: días sin actividad"><Input type="number" value={cfg.riesgoDiasInactivo} onChange={(e) => set('riesgoDiasInactivo', +e.target.value)} /></Field>

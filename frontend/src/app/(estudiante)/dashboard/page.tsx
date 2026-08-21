@@ -76,7 +76,7 @@ export default function DashboardPage() {
           <div className="flex-1">
             <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide"><Award className="h-3.5 w-3.5" /> Nuevo · desbloqueado</div>
             <h2 className="font-display text-xl font-extrabold">¡Ya puedes rendir la evaluación final!</h2>
-            <p className="text-sm text-white/85">Completaste el avance requerido. Mide cuánto aprendiste (postest) — sin ayuda de ALVARO.</p>
+            <p className="text-sm text-white/85">Completaste el avance requerido. Mide cuánto aprendiste (postest) — sin ayuda de tu tutor PREXI.</p>
           </div>
           <button onClick={() => router.push('/postest')} className="shrink-0 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-prexi-green transition hover:bg-white/90 active:scale-[0.98]">Rendir evaluación <ArrowRight className="ml-1 inline h-4 w-4" /></button>
         </div>
@@ -113,9 +113,9 @@ export default function DashboardPage() {
       {/* Sin `items-start`: con él cada columna tomaba solo el alto de su propio
           contenido y la fila quedaba despareja. El valor por defecto de la
           rejilla (stretch) iguala las tres tarjetas, también en `lg` (2 col). */}
-      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
         <Card className="flex h-full min-w-0 flex-col border-l-4 border-l-prexi-blue">
-          <div className="mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-blue-deep" /><h2 className="font-display text-xl font-bold text-prexi-blue-deep">Recomendado por ALVARO</h2></div>
+          <div className="mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-blue-deep" /><h2 className="font-display text-xl font-bold text-prexi-blue-deep">Recomendado por tu tutor PREXI</h2></div>
           <p className="mb-4 text-sm text-muted">Elegidos según tu desempeño real: refuerzan tus puntos débiles y te acercan al siguiente nivel.</p>
           <div className="space-y-2.5">
             {rec.slice(0, 2).map((e) => {

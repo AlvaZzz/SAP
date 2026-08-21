@@ -12,7 +12,31 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
     prisma.unidad.findUnique.mockResolvedValue({ id: 1, numero: 1, titulo: 'U1' });
     prisma.configuracionSistema.findUnique.mockResolvedValue({ examenUnidadPreguntas: 8, examenUnidadEsperaHoras: 0 });
     prisma.tema.findMany.mockResolvedValue([{ id: 10 }, { id: 11 }]);
+    // Por defecto, un estudiante que YA cumple los requisitos de cierre de unidad
+    // (todos los temas completos y dominio Intermedio). Las pruebas del gate lo
+    // sobreescriben con `temasConProgreso`.
+    temasConProgreso([
+      { completados: 10, umbral: 10, nivel: 'intermedio' },
+      { completados: 10, umbral: 10, nivel: 'intermedio' },
+    ]);
   });
+
+  /**
+   * Configura los temas de la unidad y el progreso del estudiante en cada uno.
+   * `tema.findMany` se usa en dos sitios (los ids para el banco y los requisitos),
+   * así que el mock devuelve filas que sirven a ambos.
+   */
+  function temasConProgreso(defs: Array<{ completados: number; umbral: number; nivel: string }>) {
+    prisma.tema.findMany.mockResolvedValue(
+      defs.map((d, i) => ({
+        id: 10 + i,
+        numero: `1.${i + 1}`,
+        titulo: `Tema ${i + 1}`,
+        umbral: d.umbral,
+        progreso: [{ ejerciciosCompletados: d.completados, nivelActual: d.nivel }],
+      })) as never,
+    );
+  }
 
   it('completarRepaso registra el repaso de la unidad', async () => {
     prisma.repasoUnidad.upsert.mockResolvedValue({});
@@ -103,5 +127,85 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
     prisma.repasoUnidad.findUnique.mockResolvedValue({ usuarioId: 7, unidadId: 1 });
     prisma.examenUnidad.findFirst.mockResolvedValue({ id: 1 }); // aprobado
     await expect(service.iniciar(7, 1)).rejects.toThrow(BadRequestException);
+  });
+
+  /**
+   * GATE DE CIERRE DE UNIDAD — pruebas de regresión.
+   *
+   * Antes bastaba con haber marcado el repaso como visto: con uno o tres temas
+   * hechos ya se habilitaba el examen que desbloquea la unidad siguiente. La
+   * regla correcta exige LAS DOS condiciones — todos los temas completos y
+   * dominio al menos Intermedio.
+   */
+  describe('gate: temas completos + dominio Intermedio', () => {
+    beforeEach(() => {
+      prisma.repasoUnidad.findUnique.mockResolvedValue({ usuarioId: 7, unidadId: 1 });
+      prisma.examenUnidad.findFirst.mockResolvedValue(null);
+      prisma.ejercicio.findMany.mockResolvedValue([
+        { id: 100, titulo: 'P1', tipo: 'opcion_multiple', enunciado: 'e', opciones: [] },
+      ]);
+      prisma.ejercicio.count.mockResolvedValue(1);
+    });
+
+    it('sin temas completos → rechazado, y dice cuántos y cuáles faltan', async () => {
+      temasConProgreso([
+        { completados: 10, umbral: 10, nivel: 'avanzado' },
+        { completados: 3, umbral: 10, nivel: 'avanzado' },
+      ]);
+      const error = await service.iniciar(7, 1).catch((e) => e);
+      expect(error).toBeInstanceOf(ForbiddenException);
+      expect(error.message).toContain('Te falta completar 1 tema(s)');
+      expect(error.message).toContain('1.2 Tema 2');
+    });
+
+    it('con temas completos pero en Básico → rechazado, y dice qué nivel le falta', async () => {
+      temasConProgreso([
+        { completados: 10, umbral: 10, nivel: 'basico' },
+        { completados: 10, umbral: 10, nivel: 'basico' },
+      ]);
+      const error = await service.iniciar(7, 1).catch((e) => e);
+      expect(error).toBeInstanceOf(ForbiddenException);
+      expect(error.message).toContain('al menos nivel Intermedio');
+      expect(error.message).toContain('Básico (0%)');
+    });
+
+    it('con ambas condiciones → permitido', async () => {
+      temasConProgreso([
+        { completados: 10, umbral: 10, nivel: 'intermedio' },
+        { completados: 12, umbral: 10, nivel: 'avanzado' },
+      ]);
+      await expect(service.iniciar(7, 1)).resolves.toMatchObject({ total: 1 });
+    });
+
+    it('un tema nunca tocado cuenta como Básico, no como ausente', async () => {
+      prisma.tema.findMany.mockResolvedValue([
+        { id: 10, numero: '1.1', titulo: 'Tema 1', umbral: 10, progreso: [{ ejerciciosCompletados: 10, nivelActual: 'avanzado' }] },
+        { id: 11, numero: '1.2', titulo: 'Tema 2', umbral: 0, progreso: [] },
+      ] as never);
+      // Tema 2 tiene umbral 0 (se considera completo) pero sin progreso → Básico.
+      // Promedio: (1 + 0) / 2 = 50% → Intermedio, justo en el límite: pasa.
+      await expect(service.iniciar(7, 1)).resolves.toMatchObject({ total: 1 });
+    });
+
+    it('el repaso sigue siendo requisito, y se comprueba antes que el resto', async () => {
+      prisma.repasoUnidad.findUnique.mockResolvedValue(null);
+      temasConProgreso([{ completados: 0, umbral: 10, nivel: 'basico' }]);
+      await expect(service.iniciar(7, 1)).rejects.toThrow('Revisa el repaso');
+    });
+
+    it('estado() expone el avance hacia el examen antes de intentarlo', async () => {
+      temasConProgreso([
+        { completados: 10, umbral: 10, nivel: 'intermedio' },
+        { completados: 4, umbral: 10, nivel: 'basico' },
+      ]);
+      const e = await service.estado(7, 1);
+      expect(e.puede_intentar).toBe(false);
+      expect(e.requisitos).toMatchObject({
+        temas_total: 2, temas_completos: 1, temas_ok: false,
+        nivel_requerido: 'intermedio', nivel_ok: false,
+      });
+      expect(e.requisitos.temas_pendientes).toEqual(['1.2 Tema 2']);
+      expect(e.motivo_bloqueo).toContain('Te falta completar');
+    });
   });
 });

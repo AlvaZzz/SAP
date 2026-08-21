@@ -3,6 +3,12 @@ dist/
 build/
 .env
 .env.local
+# CUALQUIER variante de .env: contienen credenciales reales (Neon, Gemini, JWT).
+# El patron explicito de arriba solo cubria dos nombres, y basta con crear
+# `.env.neon` o `.env.produccion` para que la cadena de conexion de produccion
+# acabe en un commit.
+.env.*
+!.env.*.example
 *.log
 npm-debug.log*
 coverage/

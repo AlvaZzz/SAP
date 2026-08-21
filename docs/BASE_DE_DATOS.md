@@ -157,7 +157,7 @@ El motivo es el hosting: **Render Free no permite discos persistentes**, su
 filesystem es efímero y se borra en cada reinicio, redeploy o despertar tras la
 suspensión por inactividad — que ocurre cada 15 minutos sin tráfico. Guardarlos en
 disco significaba perderlos constantemente, y con ellos el contexto documental que
-usa ALVARO. Como efecto secundario útil, ahora los archivos entran en el `pg_dump`
+usa PREXI. Como efecto secundario útil, ahora los archivos entran en el `pg_dump`
 y se respaldan junto con todo lo demás.
 
 El coste es que consumen del medio giga de Neon: unos 15 MB por PDF. Vigílalo con:

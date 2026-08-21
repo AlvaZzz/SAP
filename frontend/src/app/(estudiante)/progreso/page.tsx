@@ -111,13 +111,13 @@ export default function ProgresoPage() {
         </div>
 
         {habitos ? (
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <Constancia h={habitos} />
             <Autonomia h={habitos} />
             <Eficiencia h={habitos} />
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}</div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}</div>
         )}
       </div>
 
@@ -408,7 +408,7 @@ function Autonomia({ h }: { h: Habitos }) {
   const mensaje = tendencia === 'baja'
     ? 'Cada vez resuelves más por tu cuenta: necesitas menos pistas que al empezar.'
     : tendencia === 'estable'
-      ? 'Mantienes un apoyo estable en ALVARO. Pedir ayuda cuando la necesitas es parte de aprender.'
+      ? 'Mantienes un apoyo estable en PREXI. Pedir ayuda cuando la necesitas es parte de aprender.'
       : tendencia === 'sube'
         ? 'Últimamente te apoyas más en las pistas — normal si los temas se pusieron más difíciles. Úsalas para entender, no para avanzar.'
         : 'Cuando resuelvas más ejercicios verás aquí si ganas independencia.';
@@ -431,7 +431,7 @@ function Autonomia({ h }: { h: Habitos }) {
       )}
       <p className="mt-3 text-xs leading-relaxed text-muted">{mensaje}</p>
       <p className="mt-2 text-[11px] text-muted">
-        {total_pistas} {total_pistas === 1 ? 'pista' : 'pistas'} · {total_consultas} {total_consultas === 1 ? 'consulta' : 'consultas'} a ALVARO
+        {total_pistas} {total_pistas === 1 ? 'pista' : 'pistas'} · {total_consultas} {total_consultas === 1 ? 'consulta' : 'consultas'} a PREXI
       </p>
     </IndicadorCard>
   );

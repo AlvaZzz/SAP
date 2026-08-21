@@ -2,7 +2,7 @@
 //  Deteccion de patrones de error recurrentes
 //  Analiza los intentos FALLIDOS del estudiante y detecta errores tipicos de
 //  principiantes en Python (confundir = con ==, for con while, olvidar los dos
-//  puntos, etc.). ALVARO usa estos patrones para abordar la debilidad concreta;
+//  puntos, etc.). PREXI usa estos patrones para abordar la debilidad concreta;
 //  tambien nutren el seguimiento del docente.
 //  PURO y determinista -> testeable y auditable para la tesis.
 // ============================================================

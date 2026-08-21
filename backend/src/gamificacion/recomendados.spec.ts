@@ -2,7 +2,7 @@ import { GamificacionService } from './gamificacion.service';
 import { crearPrismaMock, PrismaMock } from '../test-utils/prisma.mock';
 
 /**
- * Motor de recomendación "Recomendado por ALVARO" (reglas sobre datos reales):
+ * Motor de recomendación "Recomendado por PREXI" (reglas sobre datos reales):
  * prioriza temas con fallos / θ bajo / cercanía al umbral, solo de unidades y
  * temas DESBLOQUEADOS, con ejercicios del nivel actual aún no resueltos.
  */

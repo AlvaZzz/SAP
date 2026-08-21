@@ -21,6 +21,12 @@ interface Estado {
   unidad: { id: number; numero: number; titulo: string };
   repaso_revisado: boolean; aprobado: boolean; hay_banco: boolean;
   total_preguntas: number; puede_intentar: boolean; en_cooldown: boolean; cooldown_hasta: string | null;
+  /** Cierre de unidad: temas completos + dominio >= Intermedio. Null si ya cumple. */
+  motivo_bloqueo: string | null;
+  requisitos: {
+    temas_total: number; temas_completos: number; temas_pendientes: string[]; temas_ok: boolean;
+    dominio_pct: number; nivel_dominio_label: string; nivel_ok: boolean; nivel_requerido_label: string;
+  };
   ultimo_intento: { theta: number | null; nivel: Nivel; nivel_label: string; puntaje: number; aprobado: boolean; fecha: string } | null;
 }
 interface RepasoTema { id: number; numero: string; titulo: string; repaso: string | null; descripcion: string | null }
@@ -67,6 +73,10 @@ export default function ExamenUnidadPage() {
         setFase('repaso');
         return;
       }
+      // Cierre de unidad: el estudiante ve QUÉ le falta aquí, no al pulsar
+      // "Iniciar". El backend rechaza igual (ver ExamenUnidadService.iniciar);
+      // esto solo evita que el bloqueo se descubra a golpe de botón.
+      if (e.motivo_bloqueo) { setFase('bloqueado'); setMensaje(e.motivo_bloqueo); return; }
       setFase('listo');
     } catch {
       setFase('bloqueado'); setMensaje('No se pudo cargar el examen de la unidad.');
@@ -303,7 +313,7 @@ export default function ExamenUnidadPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-prexi-blue-deep">{p.categoria} · Pregunta {idx + 1} de {total}</span>
             <h1 className="mb-4 mt-1 text-lg font-bold text-fg">{p.enunciado}</h1>
             {p.codigoPython && <div className="mb-5"><CodeBlock code={p.codigoPython} /></div>}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {p.opciones.map((o) => {
                 const sel = resp[p.id] === o.id;
                 return (

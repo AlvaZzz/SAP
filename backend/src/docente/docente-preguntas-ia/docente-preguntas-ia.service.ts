@@ -7,7 +7,7 @@ import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
 import { dificultadDesdeEstrellas } from '../../mediciones/irt/irt';
 
 /**
- * Generación asistida de preguntas desde un PDF (ALVARO/Gemini) + bandeja de
+ * Generación asistida de preguntas desde un PDF (PREXI/Gemini) + bandeja de
  * revisión del docente. CRÍTICO: nada de lo que genera la IA se publica solo;
  * siempre queda como PreguntaGenerada(estado=borrador) hasta que el docente la
  * edita/corrige y la aprueba explícitamente (entonces se crea el Ejercicio real).
@@ -32,7 +32,7 @@ export class DocentePreguntasIaService {
     return p;
   }
 
-  /** Pide a ALVARO proponer N preguntas BORRADOR desde el texto ya extraído del PDF. */
+  /** Pide a PREXI proponer N preguntas BORRADOR desde el texto ya extraído del PDF. */
   async generar(autorId: number, dto: GenerarPreguntasDto) {
     const doc = await this.prisma.documento.findUnique({ where: { id: dto.documentoId } });
     if (!doc) throw new NotFoundException('Documento no encontrado');

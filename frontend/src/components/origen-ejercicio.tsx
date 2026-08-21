@@ -36,7 +36,7 @@ const NIVEL_LABEL: Record<OrigenReto['nivel'], string> = {
  * repasar. Por eso se muestra el ejercicio de verdad (enunciado completo, su
  * snippet y sus opciones) y no una referencia suelta.
  *
- * Va PLEGADO por defecto: la pantalla del reto ya carga editor, consola y ALVARO.
+ * Va PLEGADO por defecto: la pantalla del reto ya carga editor, consola y PREXI.
  *
  * Nunca llega aquí la respuesta correcta del ejercicio origen — el backend no la
  * envía a propósito (ver RetosController.detalle).

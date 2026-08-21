@@ -1,2 +1,13 @@
-# Auto detect text files and perform LF normalization
+# Normalización de fin de línea.
+# Por defecto Git detecta el tipo de archivo y normaliza a LF en el índice.
 * text=auto
+
+# Los scripts de shell DEBEN quedarse en LF también en el árbol de trabajo.
+# En Windows, `text=auto` los saca con CRLF al hacer checkout; el bind mount de
+# Docker sirve ese árbol tal cual, y dentro del contenedor Linux `set -e\r`
+# revienta con "illegal option". Eso dejó al contenedor `api` en bucle de
+# reinicio sin que ninguna prueba lo notara. `eol=lf` lo impide de raíz.
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.Dockerfile    text eol=lf
+docker-entrypoint.sh text eol=lf

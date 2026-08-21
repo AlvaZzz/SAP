@@ -1,6 +1,6 @@
 // ════════════════════════════════════════════════════════════
 //  PREXI UPEA — Esquema Prisma (PostgreSQL)
-//  Rol estudiante: Python + IA (ALVARO/Gemini) + gamificación.
+//  Rol estudiante: Python + IA (PREXI/Gemini) + gamificación.
 // ════════════════════════════════════════════════════════════
 
 generator client {
@@ -42,7 +42,7 @@ enum NivelDificultad {
   avanzado
 }
 
-// Estado de una pregunta propuesta por ALVARO desde un PDF: nunca se publica
+// Estado de una pregunta propuesta por PREXI desde un PDF: nunca se publica
 // sola, siempre pasa por revisión humana del docente.
 enum EstadoPreguntaIa {
   borrador
@@ -147,7 +147,7 @@ model Usuario {
 
   // Preferencias de AUDIO (persistidas por usuario, respetan el contexto de aula):
   //  · sonidos de gamificación (logros/rango/nivel) — ACTIVADOS por defecto.
-  //  · lectura en voz alta automática de ALVARO (Web Speech API) — DESACTIVADA
+  //  · lectura en voz alta automática de PREXI (Web Speech API) — DESACTIVADA
   //    por defecto; el estudiante la activa si quiere.
   sonidosActivados Boolean @default(true) @map("sonidos_activados")
   vozAutomatica    Boolean @default(false) @map("voz_automatica")
@@ -459,7 +459,7 @@ model UnidadCompletada {
   @@map("unidades_completadas")
 }
 
-// ── Preguntas propuestas por ALVARO desde un PDF (borrador) ─
+// ── Preguntas propuestas por PREXI desde un PDF (borrador) ─
 //  NUNCA se publican solas: el docente las revisa, edita y aprueba. Solo al
 //  aprobarlas se copian a `Ejercicio` (banco=practica, temaId=este tema).
 model PreguntaGenerada {
@@ -839,7 +839,7 @@ model LogroUsuario {
 }
 
 // ── Consultas a la IA (rate limit + auditoría + dato para la tesis) ──
-//  Registra cada consulta a ALVARO para: (1) limitar uso por hora,
+//  Registra cada consulta a PREXI para: (1) limitar uso por hora,
 //  (2) analizar qué temas generan más dudas, (3) penalizar XP por pistas.
 model ConsultaIa {
   id          Int      @id @default(autoincrement())
@@ -873,11 +873,11 @@ model Documento {
   contenido     Bytes?
   tamanoBytes   Int      @map("tamano_bytes")
   nivelId       Int?     @map("nivel_id")
-  // Tema asociado: ALVARO lo usa como CONTEXTO (estilo/sintaxis del docente) y
+  // Tema asociado: PREXI lo usa como CONTEXTO (estilo/sintaxis del docente) y
   // es la fuente para "Generar preguntas desde este PDF".
   temaId        Int?     @map("tema_id")
   // Texto extraído del PDF (best-effort, cacheado para no re-parsear en cada
-  // consulta de ALVARO ni en cada generación de preguntas).
+  // consulta de PREXI ni en cada generación de preguntas).
   textoExtraido String?  @map("texto_extraido") @db.Text
   subidoPorId   Int      @map("subido_por_id")
   creadoEn      DateTime @default(now()) @map("creado_en")
@@ -893,7 +893,7 @@ model Documento {
 
 // ── Retos del docente (ejercicios extra) ────────────────────
 // Catálogo de bugs que el generador puede introducir en un reto de depuración.
-// Se guarda cuál se aplicó para que el docente (y ALVARO) sepan qué se busca.
+// Se guarda cuál se aplicó para que el docente (y PREXI) sepan qué se busca.
 enum TipoBug {
   operador_aritmetico_invertido
   operador_relacional_invertido
@@ -939,7 +939,7 @@ model Reto {
   // ── RETOS DERIVADOS DEL BANCO (generados por prisma/generar-retos.ts) ──
   //  Un reto derivado NUNCA inventa contenido: nace de un Ejercicio ya validado
   //  del banco oficial y reutiliza sus valores y su salida esperada. El enlace al
-  //  origen es lo que permite (1) citar la teoría correcta desde ALVARO y (2)
+  //  origen es lo que permite (1) citar la teoría correcta desde PREXI y (2)
   //  ofrecer al estudiante "repasa el ejercicio del que salió este reto".
   origenEjercicioId Int?          @map("origen_ejercicio_id")
   // Nivel adaptativo del reto: SIEMPRE el del ejercicio origen. Gobierna a quién
@@ -948,7 +948,7 @@ model Reto {
   // Qué transformación se aplicó al código original (solo en depuración).
   tipoBug           TipoBug?      @map("tipo_bug")
   // Pistas progresivas 1→3 redactadas desde el material del ejercicio origen.
-  // ALVARO las usa como plan de escalamiento (nunca salta a la 3 de entrada).
+  // PREXI las usa como plan de escalamiento (nunca salta a la 3 de entrada).
   pistas            Json          @default("[]")
   // Se corrige SOLO comparando la salida (sin revisión docente). Los retos
   // derivados nacen así; los del docente siguen yendo a revisión manual.
@@ -1068,6 +1068,15 @@ model ConfiguracionSistema {
   subirNivelPreguntas   Int @default(5) @map("subir_nivel_preguntas") // nº de ítems del mini-diagnóstico
   subirNivelUmbral      Int @default(80) @map("subir_nivel_umbral") // % para aprobar y subir de nivel
   subirNivelEsperaHoras Int @default(0) @map("subir_nivel_espera_horas") // cooldown entre intentos (0 = sin espera)
+  // PRÁCTICA MÍNIMA por nivel antes de habilitar el mini-diagnóstico de subida
+  // (y, con él, el avance al siguiente tema). Se cuentan ejercicios RESUELTOS
+  // del nivel vigente en ESE tema, no intentos. Los valores por defecto van
+  // contra la composición del banco (15/10/5 por tema, regla 1 de la auditoría):
+  // 10 de 15 en Básico, 7 de 10 en Intermedio y los 5 de 5 en Avanzado.
+  // Son configurables a propósito: el docente ajusta la exigencia sin tocar código.
+  minPracticaBasico     Int @default(10) @map("min_practica_basico")
+  minPracticaIntermedio Int @default(7) @map("min_practica_intermedio")
+  minPracticaAvanzado   Int @default(5) @map("min_practica_avanzado")
   // Examen de FIN DE UNIDAD (gate de avance a la siguiente unidad).
   examenUnidadPreguntas   Int @default(8) @map("examen_unidad_preguntas") // nº de ítems del examen
   examenUnidadEsperaHoras Int @default(0) @map("examen_unidad_espera_horas") // cooldown entre reintentos
@@ -1087,7 +1096,7 @@ model ConfiguracionSistema {
   retosIntermedioHabilitado Boolean @default(false) @map("retos_intermedio_habilitado")
   retosAvanzadoHabilitado   Boolean @default(false) @map("retos_avanzado_habilitado")
 
-  // Inteligencia Artificial (ALVARO).
+  // Inteligencia Artificial (PREXI).
   iaActiva              Boolean @default(true) @map("ia_activa")
   maxPistasIa           Int     @default(3) @map("max_pistas_ia")
   rateLimitIaHora       Int     @default(20) @map("rate_limit_ia_hora") // consultas/hora por estudiante

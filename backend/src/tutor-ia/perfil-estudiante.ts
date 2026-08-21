@@ -1,8 +1,8 @@
 // ============================================================
-//  Perfil rico del estudiante para ALVARO
+//  Perfil rico del estudiante para PREXI
 //  Reune desde la BD (nunca del frontend) el contexto real del estudiante:
 //  nivel del pretest, desempeno reciente en el tema, patrones de error,
-//  pistas ya usadas y su ubicacion (unidad/tema/subtema). Con esto ALVARO
+//  pistas ya usadas y su ubicacion (unidad/tema/subtema). Con esto PREXI
 //  personaliza la explicacion. Es robusto: ante cualquier fallo devuelve un
 //  perfil minimo y NUNCA rompe la respuesta al estudiante.
 // ============================================================
@@ -10,7 +10,7 @@
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NivelAlumno, TurnoMemoria } from './prompts';
 import { detectarPatrones, PatronError } from './patrones-error';
-// Regla ÚNICA de clasificación del estudiante. ALVARO no clasifica por su
+// Regla ÚNICA de clasificación del estudiante. PREXI no clasifica por su
 // cuenta: lee la misma clasificación que el resto del sistema.
 import { nivelDesdeTheta } from '../mediciones/irt/irt';
 
@@ -47,7 +47,7 @@ const PERFIL_MINIMO: PerfilEstudiante = {
   resumen: '',
 };
 
-/** Etiqueta legible del nivel, para el prompt de ALVARO. */
+/** Etiqueta legible del nivel, para el prompt de PREXI. */
 const ETIQUETA_POR_NIVEL: Record<NivelAlumno, string> = {
   basico: 'Bajo',
   intermedio: 'Medio',
@@ -55,11 +55,11 @@ const ETIQUETA_POR_NIVEL: Record<NivelAlumno, string> = {
 };
 
 /**
- * Nivel pedagógico del estudiante para adaptar el tono de ALVARO.
+ * Nivel pedagógico del estudiante para adaptar el tono de PREXI.
  *
  * IMPORTANTE — UNIFICADO EL 2026-08-07. Antes esta función clasificaba por su
  * cuenta con cortes propios sobre el % del pretest (<50 / ≤75 / >75), lo que
- * convertía a ALVARO en una CUARTA regla de clasificación que podía contradecir
+ * convertía a PREXI en una CUARTA regla de clasificación que podía contradecir
  * al resto del sistema: un estudiante clasificado Intermedio por θ podía ser
  * tratado como Básico por el tutor. Ahora se lee la clasificación YA PERSISTIDA,
  * que proviene siempre de `nivelDesdeTheta` (ver docs/CLASIFICACION_NIVELES.md).
@@ -121,7 +121,7 @@ function componerResumen(p: Omit<PerfilEstudiante, 'resumen'>): string {
 
 /**
  * Construye el perfil del estudiante. Best-effort: cualquier error de BD se
- * traga y se devuelve el perfil minimo (ALVARO sigue respondiendo).
+ * traga y se devuelve el perfil minimo (PREXI sigue respondiendo).
  */
 export async function construirPerfil(
   prisma: PrismaService,
@@ -231,7 +231,7 @@ export async function construirPerfil(
 
 /**
  * Memoria conversacional: ultimos turnos (pregunta/respuesta) del estudiante con
- * ALVARO, para que construya sobre lo anterior. Ventana pequena (costo + foco).
+ * PREXI, para que construya sobre lo anterior. Ventana pequena (costo + foco).
  * Se recuperan en orden cronologico ascendente. Best-effort.
  */
 export async function recuperarMemoria(
@@ -251,7 +251,7 @@ export async function recuperarMemoria(
     const turnos: TurnoMemoria[] = [];
     for (const f of filas.reverse()) {
       if (f.pregunta) turnos.push({ rol: 'estudiante', texto: f.pregunta.slice(0, 300) });
-      if (f.respuesta) turnos.push({ rol: 'alvaro', texto: f.respuesta.slice(0, 300) });
+      if (f.respuesta) turnos.push({ rol: 'tutor', texto: f.respuesta.slice(0, 300) });
     }
     return turnos;
   } catch {

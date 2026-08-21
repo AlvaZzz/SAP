@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { ETIQUETA_NIVEL, nivelAlMenos } from '../../common/niveles/nivel-dificultad';
+import { ETIQUETA_NIVEL, nivelAlMenos, nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
 import { corregir } from '../../ejercicios/correccion';
 import { estimarTheta, nivelDesdeTheta, redondearTheta, RespuestaIrt } from '../../mediciones/irt/irt';
 
@@ -40,6 +40,69 @@ export class ExamenUnidadService {
     return u;
   }
 
+  /**
+   * REQUISITOS PARA RENDIR EL EXAMEN DE FIN DE UNIDAD.
+   *
+   * Antes la única condición era haber marcado el repaso como visto, así que con
+   * uno o tres temas hechos ya se habilitaba el examen que desbloquea la unidad
+   * siguiente. El motivo pedagógico de endurecerlo: pasar a la Unidad 2 con
+   * dominio solo Básico de la Unidad 1 arrastra vacíos que hacen fracasar al
+   * estudiante más adelante, y el examen deja de medir el cierre de la unidad
+   * para medir suerte sobre el poco material que llegó a tocar.
+   *
+   * Se exigen las DOS condiciones:
+   *   1. Todos los temas y subtemas publicados de la unidad, completos. "Completo"
+   *      es la misma definición que ya usa la vista del estudiante:
+   *      `ProgresoTema.ejerciciosCompletados >= Tema.umbral` (ver UnidadesService).
+   *   2. Dominio agregado de la unidad al menos Intermedio, calculado con
+   *      `nivelDominioAgregado()` sobre el nivel del estudiante en cada tema. No se
+   *      inventa aquí ningún cálculo nuevo: es la misma función que gobierna el
+   *      desbloqueo de unidades.
+   */
+  private async requisitos(usuarioId: number, unidadId: number) {
+    const temas = await this.prisma.tema.findMany({
+      where: { unidadId, publicado: true },
+      select: {
+        id: true, numero: true, titulo: true, umbral: true,
+        progreso: { where: { usuarioId }, select: { ejerciciosCompletados: true, nivelActual: true } },
+      },
+      orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+    });
+
+    const pendientes = temas.filter((t) => (t.progreso[0]?.ejerciciosCompletados ?? 0) < t.umbral);
+    // Un tema que el estudiante nunca tocó cuenta como Básico: no tener progreso no
+    // puede valer lo mismo que haberlo trabajado hasta Intermedio.
+    const niveles = temas.map((t) => t.progreso[0]?.nivelActual ?? 'basico');
+    const { dominioPct, nivelDominio } = nivelDominioAgregado(niveles);
+
+    return {
+      temas_total: temas.length,
+      temas_completos: temas.length - pendientes.length,
+      temas_pendientes: pendientes.map((t) => `${t.numero} ${t.titulo}`),
+      dominio_pct: dominioPct,
+      nivel_dominio: nivelDominio,
+      nivel_dominio_label: ETIQUETA_NIVEL[nivelDominio],
+      // Una unidad sin temas publicados no puede exigir temas completos: en ese
+      // caso el requisito de cobertura se considera cumplido y manda el dominio.
+      temas_ok: pendientes.length === 0,
+      nivel_ok: nivelAlMenos(nivelDominio, NIVEL_MIN_APROBAR),
+    };
+  }
+
+  /** Mensaje que dice al estudiante QUÉ le falta, no un rechazo genérico. */
+  private motivoBloqueo(r: Awaited<ReturnType<ExamenUnidadService['requisitos']>>): string | null {
+    if (!r.temas_ok) {
+      const faltan = r.temas_total - r.temas_completos;
+      return `Te falta completar ${faltan} tema(s) de esta unidad antes del examen: ${r.temas_pendientes.slice(0, 3).join(', ')}` +
+        `${r.temas_pendientes.length > 3 ? `, y ${r.temas_pendientes.length - 3} más` : ''}.`;
+    }
+    if (!r.nivel_ok) {
+      return `Necesitas al menos nivel ${ETIQUETA_NIVEL[NIVEL_MIN_APROBAR]} en la unidad para rendir el examen. ` +
+        `Ahora tu dominio es ${r.nivel_dominio_label} (${r.dominio_pct}%). Sube de nivel en los temas donde sigas en Básico.`;
+    }
+    return null;
+  }
+
   /** IDs de los temas (y subtemas) de la unidad. */
   private async temasDeUnidad(unidadId: number): Promise<number[]> {
     const temas = await this.prisma.tema.findMany({ where: { unidadId }, select: { id: true } });
@@ -52,12 +115,16 @@ export class ExamenUnidadService {
     const cfg = await this.config();
     const temaIds = await this.temasDeUnidad(unidadId);
 
-    const [repaso, aprobadoRow, ultimo, itemsDisponibles] = await Promise.all([
+    const [repaso, aprobadoRow, ultimo, itemsDisponibles, req] = await Promise.all([
       this.prisma.repasoUnidad.findUnique({ where: { usuarioId_unidadId: { usuarioId, unidadId } } }),
       this.prisma.examenUnidad.findFirst({ where: { usuarioId, unidadId, aprobado: true }, select: { id: true } }),
       this.prisma.examenUnidad.findFirst({ where: { usuarioId, unidadId }, orderBy: { fecha: 'desc' } }),
       this.prisma.ejercicio.count({ where: { banco: 'examen', activo: true, temaId: { in: temaIds } } }),
+      this.requisitos(usuarioId, unidadId),
     ]);
+    // El estudiante ve su avance hacia el examen ANTES de pulsar el botón; el
+    // bloqueo no debe descubrirse al intentarlo.
+    const bloqueo = this.motivoBloqueo(req);
 
     const repasoRevisado = !!repaso;
     const aprobado = !!aprobadoRow;
@@ -72,7 +139,20 @@ export class ExamenUnidadService {
       hay_banco: hayBanco,
       items_disponibles: itemsDisponibles,
       total_preguntas: Math.min(cfg.preguntas, itemsDisponibles),
-      puede_intentar: repasoRevisado && !aprobado && hayBanco && !enCooldown,
+      requisitos: {
+        temas_total: req.temas_total,
+        temas_completos: req.temas_completos,
+        temas_pendientes: req.temas_pendientes,
+        temas_ok: req.temas_ok,
+        dominio_pct: req.dominio_pct,
+        nivel_dominio: req.nivel_dominio,
+        nivel_dominio_label: req.nivel_dominio_label,
+        nivel_ok: req.nivel_ok,
+        nivel_requerido: NIVEL_MIN_APROBAR,
+        nivel_requerido_label: ETIQUETA_NIVEL[NIVEL_MIN_APROBAR],
+      },
+      motivo_bloqueo: bloqueo,
+      puede_intentar: repasoRevisado && !aprobado && hayBanco && !enCooldown && !bloqueo,
       en_cooldown: enCooldown,
       cooldown_hasta: enCooldown ? cooldownHasta : null,
       ultimo_intento: ultimo
@@ -115,6 +195,10 @@ export class ExamenUnidadService {
 
     const repaso = await this.prisma.repasoUnidad.findUnique({ where: { usuarioId_unidadId: { usuarioId, unidadId } } });
     if (!repaso) throw new BadRequestException('Revisa el repaso de la unidad antes de rendir el examen.');
+
+    // Cobertura y dominio: las dos condiciones reales de cierre de unidad.
+    const bloqueo = this.motivoBloqueo(await this.requisitos(usuarioId, unidadId));
+    if (bloqueo) throw new ForbiddenException(bloqueo);
 
     const aprobado = await this.prisma.examenUnidad.findFirst({ where: { usuarioId, unidadId, aprobado: true }, select: { id: true } });
     if (aprobado) throw new BadRequestException('Ya aprobaste el examen de esta unidad.');

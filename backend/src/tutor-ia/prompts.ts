@@ -1,14 +1,14 @@
 // ════════════════════════════════════════════════════════════
-//  Prompts de ALVARO (Tutor IA)
+//  Prompts de PREXI (Tutor IA)
 //  Persona base + tono por nivel del estudiante + bloques de contexto.
 //  Todo aquí es PURO (sin BD ni red): fácil de testear y de auditar para la
-//  tesis. La regla de oro: ALVARO GUÍA, nunca resuelve ni da la respuesta.
+//  tesis. La regla de oro: PREXI GUÍA, nunca resuelve ni da la respuesta.
 // ════════════════════════════════════════════════════════════
 
 /** Máximo de caracteres que se aceptan del estudiante (anti-inyección + costo). */
 export const MAX_INPUT = 500;
 
-/** Nivel pedagógico con el que ALVARO adapta tono y profundidad. */
+/** Nivel pedagógico con el que PREXI adapta tono y profundidad. */
 export type NivelAlumno = 'basico' | 'intermedio' | 'avanzado';
 
 /**
@@ -32,10 +32,10 @@ una lista. Fíjate en tu código: ¿qué valor tiene \`i\` en la primera vuelta?
 Piénsalo y me dices."`;
 
 /**
- * Persona de ALVARO. El texto del estudiante SIEMPRE es DATO a analizar, nunca
+ * Persona de PREXI. El texto del estudiante SIEMPRE es DATO a analizar, nunca
  * instrucciones que cambien el rol (defensa básica contra inyección de prompts).
  */
-export const PERSONA = `Eres ALVARO, tutor de programación en Python para estudiantes de primer
+export const PERSONA = `Eres PREXI, tutor de programación en Python para estudiantes de primer
 semestre de Ingeniería de Sistemas de la UPEA (Bolivia). Responde SIEMPRE en
 español, claro y didáctico. NUNCA entregues el código completo de la tarea ni la
 respuesta literal: GUÍA con preguntas, conceptos y pistas. Todos los ejemplos de
@@ -86,18 +86,18 @@ export function bloquePerfil(resumen: string): string {
 
 /** Un turno del historial de la conversación (memoria por sesión). */
 export interface TurnoMemoria {
-  rol: 'estudiante' | 'alvaro';
+  rol: 'estudiante' | 'tutor';
   texto: string;
 }
 
 /**
- * Bloque con el hilo reciente de la conversación, para que ALVARO construya
+ * Bloque con el hilo reciente de la conversación, para que PREXI construya
  * sobre lo ya dicho y no repita. Se limita a los últimos turnos.
  */
 export function bloqueMemoria(historial: TurnoMemoria[]): string {
   if (!historial.length) return '';
   const lineas = historial
-    .map((t) => `${t.rol === 'estudiante' ? 'Estudiante' : 'ALVARO'}: ${t.texto}`)
+    .map((t) => `${t.rol === 'estudiante' ? 'Estudiante' : 'PREXI'}: ${t.texto}`)
     .join('\n');
   return `\n\nHILO RECIENTE DE ESTA SESIÓN (continúa sobre esto, no repitas lo ya
 explicado):\n${lineas}`;

@@ -28,7 +28,7 @@ function barajar<T>(arr: T[]): T[] {
 }
 
 /**
- * MINI-DIAGNÓSTICO para SUBIR DE NIVEL en un tema (sin ayuda de ALVARO). Presenta
+ * MINI-DIAGNÓSTICO para SUBIR DE NIVEL en un tema (sin ayuda de PREXI). Presenta
  * preguntas del NIVEL OBJETIVO; con ≥ umbral (por defecto 80%) el estudiante sube
  * de nivel en ese tema. El resultado se calcula y persiste en el backend.
  */
@@ -181,7 +181,7 @@ export default function SubirNivelPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {p.opciones.map((o) => {
                   const elegido = respuestas[p.id] === o.id;
                   return (

@@ -157,30 +157,30 @@ body {
   100% { transform: translateX(100%); }
 }
 
-/* ── Avatar de ALVARO: micro-animaciones sutiles ── */
-.alvaro-avatar { animation: alvaro-saludo 0.6s ease-out both; }
-.alvaro-ojos { animation: alvaro-parpadeo 4.2s infinite; transform-origin: center; transform-box: fill-box; }
-.alvaro-antena { animation: alvaro-antena 2.4s ease-in-out infinite; }
-.alvaro-think { animation: alvaro-think 1s ease-in-out infinite; }
-@keyframes alvaro-saludo {
+/* ── Avatar de PREXI: micro-animaciones sutiles ── */
+.tutor-avatar { animation: tutor-saludo 0.6s ease-out both; }
+.tutor-ojos { animation: tutor-parpadeo 4.2s infinite; transform-origin: center; transform-box: fill-box; }
+.tutor-antena { animation: tutor-antena 2.4s ease-in-out infinite; }
+.tutor-think { animation: tutor-think 1s ease-in-out infinite; }
+@keyframes tutor-saludo {
   0% { opacity: 0; transform: scale(0.6) rotate(-12deg); }
   60% { transform: scale(1.08) rotate(6deg); }
   100% { opacity: 1; transform: scale(1) rotate(0); }
 }
-@keyframes alvaro-parpadeo {
+@keyframes tutor-parpadeo {
   0%, 92%, 100% { transform: scaleY(1); }
   95% { transform: scaleY(0.12); }
 }
-@keyframes alvaro-antena {
+@keyframes tutor-antena {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; filter: drop-shadow(0 0 3px #3B82F6); }
 }
-@keyframes alvaro-think {
+@keyframes tutor-think {
   0%, 100% { opacity: 0.35; transform: translateY(0); }
   50% { opacity: 1; transform: translateY(-1.5px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .alvaro-avatar, .alvaro-ojos, .alvaro-antena, .alvaro-think { animation: none !important; }
+  .tutor-avatar, .tutor-ojos, .tutor-antena, .tutor-think { animation: none !important; }
 }
 
 /* Scrollbar discreta y consciente del tema. */

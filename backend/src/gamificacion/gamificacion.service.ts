@@ -69,7 +69,7 @@ export class GamificacionService {
   }
 
   /**
-   * MOTOR DE RECOMENDACIÓN (reglas, sin IA generativa) — "Recomendado por ALVARO".
+   * MOTOR DE RECOMENDACIÓN (reglas, sin IA generativa) — "Recomendado por PREXI".
    *
    * Con datos REALES del estudiante puntúa cada TEMA desbloqueado y elige 3
    * ejercicios (de su NIVEL actual en ese tema, aún no resueltos) que más lo

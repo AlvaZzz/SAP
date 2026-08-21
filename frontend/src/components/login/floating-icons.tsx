@@ -2,7 +2,6 @@
 
 import { motion, useReducedMotion, useTransform, type MotionValue } from 'framer-motion';
 import { Brain, Trophy, BarChart3, Code2 } from '@/components/icons';
-import { useImgOk } from './use-img-ok';
 
 /**
  * Tarjetas flotantes con glow alrededor del pingüino. Cada una flota de forma
@@ -27,18 +26,18 @@ const TARJETAS: Tarjeta[] = [
   { icon: 'chart', glow: '#22C55E', pos: 'left-0 bottom-[30%]', depth: 14, dur: 5.6, delay: 0.2 },   // abajo-izq.
 ];
 
-/** Logo de Python (marca PSF): imagen sin deformar; si falta, cae a un ícono. */
 const ICON_CLS = 'h-6 w-6 lg:h-7 lg:w-7';
 
-function PythonMark() {
-  const ok = useImgOk('/python-logo.svg');
-  if (!ok) return <Code2 className={ICON_CLS} style={{ color: '#F5C542' }} />;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/python-logo.svg" alt="Python" className={`${ICON_CLS} object-contain`} />;
-}
-
+/**
+ * Marca de Python. Se usa el ícono `Code2` en el amarillo de Python y NO el
+ * logo oficial de la PSF: ese logo es una marca registrada y no podemos
+ * incluirlo en el repositorio sin la licencia correspondiente. Antes había una
+ * referencia a `/python-logo.svg`, un archivo que nunca existió: el probe de
+ * carga ocultaba el fallo en pantalla pero el navegador pedía el archivo igual
+ * y devolvía 404 en cada visita al login.
+ */
 function Icono({ tipo, glow }: { tipo: Tarjeta['icon']; glow: string }) {
-  if (tipo === 'python') return <PythonMark />;
+  if (tipo === 'python') return <Code2 className={ICON_CLS} style={{ color: '#F5C542' }} />;
   if (tipo === 'brain') return <Brain className={ICON_CLS} style={{ color: glow }} />;
   if (tipo === 'trophy') return <Trophy className={ICON_CLS} style={{ color: glow }} />;
   return <BarChart3 className={ICON_CLS} style={{ color: glow }} />;

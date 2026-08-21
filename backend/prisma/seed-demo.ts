@@ -283,7 +283,7 @@ function construirCronograma(perfil: Perfil): Cronograma {
     : null;
   const examen = repaso ? new Date(repaso.getTime() + enteroEntre(2, 26) * 3600_000) : null;
 
-  // Retos y consultas a ALVARO, repartidos sobre las sesiones existentes.
+  // Retos y consultas a PREXI, repartidos sobre las sesiones existentes.
   const sobreSesion = () => (sesiones.length
     ? new Date(elegir(sesiones).getTime() + enteroEntre(1, 5) * 3600_000)
     : new Date(pretest.getTime() + 3600_000));
@@ -749,7 +749,7 @@ async function main() {
         if (retosActivos.length === 0) break;
         const reto = elegir(retosActivos);
         try {
-          await retosCtrl.entregar(usuario.id, reto.id, { codigo: '# entrega demo\nprint("ok")\n' } as never);
+          await retosCtrl.entregar(usuario.id, 'estudiante', reto.id, { codigo: '# entrega demo\nprint("ok")\n' } as never);
           await prisma.$executeRawUnsafe(
             `UPDATE retos_usuario SET entregado_en = $1 WHERE usuario_id = $2 AND reto_id = $3`,
             fecha, usuario.id, reto.id,
@@ -775,7 +775,7 @@ async function main() {
         }
       }
 
-      // ── 6. CONSULTAS A ALVARO — escritas directamente, a propósito ──
+      // ── 6. CONSULTAS A PREXI — escritas directamente, a propósito ──
       // `ConsultaIa` es una tabla de BITÁCORA, no estado derivado: nada se
       // calcula a partir de ella, así que escribirla no rompe ningún cálculo.
       // NO se genera llamando a TutorIaService porque ese servicio invoca a

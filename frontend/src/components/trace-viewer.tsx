@@ -34,7 +34,7 @@ export function TraceViewer({ codigo, pasos, error }: { codigo: string; pasos: P
         <input type="range" min={0} max={pasos.length - 1} value={idx} onChange={(e) => setIdx(Number(e.target.value))} className="ml-1 flex-1 accent-prexi-blue" />
       </div>
 
-      <div className="grid gap-3 md:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.4fr_1fr]">
         {/* Código con la línea actual resaltada */}
         <pre className="overflow-x-auto rounded-xl bg-[#04162E] p-3 font-mono text-[12px] leading-relaxed">
           {lineas.map((l, i) => {

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { AdaptatividadService } from './adaptatividad.service';
 import { ResponderDto } from './dto/responder.dto';
 import { corregir } from './correccion';
 import { EmblemasService } from '../gamificacion/emblemas.service';
@@ -29,6 +30,8 @@ export class EjerciciosService {
     private readonly prisma: PrismaService,
     private readonly emblemas: EmblemasService,
     private readonly rangos: RangosService,
+    // Punto único del gating por nivel (ver AdaptatividadService).
+    private readonly adaptatividad: AdaptatividadService,
   ) {}
 
   // ── Niveles con el progreso del usuario ──
@@ -292,11 +295,16 @@ export class EjerciciosService {
         }
       }
 
+      // GATING POR NIVEL. Va aquí, ANTES de corregir, de otorgar XP y de registrar
+      // el intento: si el ejercicio no es del nivel del estudiante en este tema, no
+      // debe dejar ningún rastro en los datos del estudio.
+      await this.adaptatividad.verificarAccesoEjercicio(usuarioId, ej);
+
       const correcto = corregir(ej.tipo, dto.respuestaDada, ej.respuestaCorrecta);
 
       const cfg = await tx.configuracionSistema.findUnique({ where: { id: 1 } });
 
-      // Pistas usadas: se cuentan desde consultas_ia (ALVARO) para este ejercicio
+      // Pistas usadas: se cuentan desde consultas_ia (PREXI) para este ejercicio
       // posteriores al último intento. Fuente de verdad en el backend, no el cliente.
       const ultimoIntento = await tx.intento.findFirst({
         where: { usuarioId, ejercicioId: ej.id },

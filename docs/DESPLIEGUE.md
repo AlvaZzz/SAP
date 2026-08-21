@@ -352,3 +352,186 @@ Verificados en agosto de 2026. Conviene reconfirmarlos: estas condiciones cambia
   `migrate deploy` del arranque la aplicará. **Nunca `db push` contra Neon.**
 - **Variables de entorno**: cambiarlas en Render fuerza un redespliegue; en Vercel
   hay que redesplegar a mano (Deployments → ⋯ → Redeploy).
+
+---
+
+## 9. El proceso de despliegue (obligatorio)
+
+Este es el procedimiento. No es una recomendación: existe porque ya ocurrió lo
+contrario —cuarenta archivos sin commitear mientras `main` llevaba días
+congelada— y en producción se seguía viendo el sistema de la semana anterior.
+
+### Los dos comandos
+
+| Comando | Cuándo | Qué comprueba |
+|---|---|---|
+| `npm run validar` | **Antes** de fusionar | El CÓDIGO: tipos, lint, pruebas, e2e, auditoría, recursos, texto y entorno |
+| `npm run smoke` | **Después** de desplegar | Lo DESPLEGADO: que responde de verdad, recorriendo el camino de un estudiante |
+
+Son cosas distintas y hacen falta las dos. Un despliegue puede estar en verde en
+validación y aun así servir errores 500 porque faltó una variable de entorno en
+Render: eso solo lo ve el humo.
+
+### La secuencia
+
+```bash
+git checkout -b feature/lo-que-sea    # 1. nunca se trabaja sobre main
+npm run validar                       # 2. TIENE que salir en verde
+git checkout main && git merge feature/lo-que-sea
+git push                              # 3. Vercel y Render redespliegan solos
+# 4. esperar a que ambos terminen (Vercel ~2 min · Render ~5 min en frío)
+npm run smoke                         # 5. contra prexi.lat
+```
+
+`npm run validar` sale con código distinto de cero si algo falla **y también si
+algún paso quedó sin ejecutar** (por ejemplo, sin base de datos local). Una
+validación incompleta no es una validación: levanta el stack
+(`docker compose up -d`) y repítela.
+
+### Si el humo falla
+
+No se arregla en caliente. Primero se vuelve a un estado bueno conocido:
+
+- **Vercel** → Deployments → el despliegue anterior → **Instant Rollback**.
+- **Render** → Events → el despliegue anterior → **Redeploy**.
+- **Base de datos**: una migración ya aplicada **no** se revierte sola. Si el
+  despliegue incluía una migración, revisa antes si el código anterior sigue
+  funcionando contra el esquema nuevo.
+
+Con producción ya estabilizada, se reproduce el fallo en local, se corrige en una
+rama y se vuelve a empezar por el paso 1.
+
+### Cuándo NO se despliega
+
+- **Con estudiantes dentro.** Render tarda en reiniciar y Vercel cambia la versión
+  servida a mitad de sesión: quien esté resolviendo un ejercicio pierde el intento.
+  Se despliega fuera del horario de clase, y tras un despliegue se comprueba el
+  humo antes de avisar a nadie.
+- **El día de la defensa.** Ni ese día ni el anterior. El sistema que se defiende
+  es el que lleva días funcionando, no el que se acaba de tocar. Si aparece un
+  fallo grave la víspera, se decide entre convivir con él o revertir al último
+  despliegue estable — nunca desplegar una corrección sin probar.
+- **Sin respaldo reciente**, si el despliegue toca el esquema de la base. Ver
+  [BASE_DE_DATOS.md](BASE_DE_DATOS.md).
+
+### Qué comprueba `npm run validar`
+
+| Paso | Por qué está |
+|---|---|
+| Integridad del texto (U+FFFD) | La pantalla de registro llegó a producción con 73 caracteres de reemplazo. Era UTF-8 válido y compilaba sin una queja |
+| Recursos estáticos | `/python-logo.svg` daba 404 en cada visita al login: el archivo nunca existió y nada lo detectaba |
+| Variables de entorno | Una variable ausente o con el valor de ejemplo no rompe la compilación, rompe el arranque |
+| Tipos y lint (backend y frontend) | Lo de siempre |
+| Pruebas unitarias | 500 pruebas |
+| Pruebas end-to-end | Contra el stack local |
+| Auditoría del contenido | Distribución del banco, gating por nivel, clave de respuestas repartida |
+
+### Qué comprueba `npm run smoke`
+
+Frontend y `/health` responden (con espera para el arranque en frío de Render),
+registro, login con cookies, renovación de sesión, cargar y responder un
+ejercicio, el tutor PREXI y cero 404 en los recursos estáticos.
+
+Usa una cuenta desechable `smoke+<marca>@prexi.test` y la borra al terminar con
+`backend/scripts/limpiar-smoke.ts` (hace falta `DATABASE_URL`; el sistema no
+expone borrado duro de usuarios a propósito). Si no puede borrarla, lo dice con
+el correo exacto en vez de dejar basura en silencio.
+
+---
+
+## 10. Despliegue de esta versión: los pasos de DATOS
+
+Esta versión es distinta de un despliegue normal. Además del código trae tres
+cambios que viven en la **base de datos** y que `git push` **no** aplica:
+equilibrar la clave de respuestas, renombrar al tutor en el texto ya escrito y
+retirar el residuo de demostración. Son de una sola vez: una vez hechos, los
+despliegues vuelven a ser los de la sección 9.
+
+> El orden importa. La clave de respuestas va **antes** de que entren
+> estudiantes, porque reordena las opciones de 474 ejercicios: hacerlo con
+> respuestas ya registradas las invalidaría (se guardan como letra, y esa letra
+> pasaría a significar otra cosa).
+
+### Preparación
+
+Crea `.env.neon` en la raíz (lo ignora `.gitignore`, no puede subirse):
+
+```bash
+DATABASE_URL=postgresql://USUARIO:CLAVE@ep-XXXX-pooler.REGION.aws.neon.tech/DB?sslmode=require
+DIRECT_URL=postgresql://USUARIO:CLAVE@ep-XXXX.REGION.aws.neon.tech/DB?sslmode=require
+```
+
+`DATABASE_URL` es la cadena **pooled** (el host lleva `-pooler`); `DIRECT_URL`
+es la **directa**, y es la que usan las migraciones. Las dos con `sslmode=require`.
+
+### Paso 1 — Mirar antes de tocar
+
+Todos los scripts de datos son **simulación por defecto**: sin `--aplicar` no
+escriben nada. Ejecútalos y lee la salida antes de seguir.
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/auditoria-completa.ts
+```
+
+Las 12 reglas contra el contenido real. Compara con lo que sale en local: lo que
+falle **solo** en producción es contenido real y hay que mirarlo caso por caso.
+
+### Paso 2 — Equilibrar la clave de respuestas
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npm run clave:informe
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/equilibrar-clave-bd.ts
+```
+
+La simulación dice cuántos ejercicios cambiarían y, sobre todo, **si hay
+respuestas ya registradas** de cuentas que no son de demostración. Si las hay, el
+script **aborta a propósito**: esa decisión es del investigador, no del script.
+Solo cuando la simulación salga limpia:
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/equilibrar-clave-bd.ts --aplicar
+```
+
+Es idempotente: volver a ejecutarlo no cambia nada. Verifica después que ninguna
+posición supere el 30 % y que la regla 11 de la auditoría pase.
+
+### Paso 3 — Renombrar al tutor en el texto guardado
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npm run tutor:renombrar
+```
+
+Muestra el antes y el después de cada fila. Si es lo esperado:
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npm run tutor:renombrar:aplicar
+```
+
+Nunca toca `usuarios.nombre` ni `usuarios.email`: ahí viven nombres de personas
+reales y el titular del proyecto se llama Alvaro. La lista de columnas es blanca,
+no negra.
+
+### Paso 4 — Retirar el residuo de demostración
+
+```bash
+cd backend && set -a && . ../.env.neon && set +a && npx tsx scripts/limpiar-demo.ts
+```
+
+Si la salida cuadra, `--aplicar`. **Desactiva, no borra**: algunos de esos retos
+tienen entregas de estudiantes.
+
+### Paso 5 — Desplegar el código
+
+Ya en la secuencia normal de la sección 9. La migración
+`20260820120000_minimos_practica_por_nivel` la aplica sola el Start Command de
+Render (`npx prisma migrate deploy`), no hay que hacer nada.
+
+### Paso 6 — Comprobaciones de producción que no son de código
+
+- **`JWT_SECRET` en Render**: si mide menos de 32 caracteres, cámbialo
+  (`openssl rand -base64 48`). Cambiarlo cierra todas las sesiones abiertas, así
+  que hazlo sin estudiantes dentro.
+- **Rotar la clave de Gemini** si estuvo expuesta. La cuota por minuto es el
+  recurso escaso del sistema.
+- `npm run verificar:entorno -- --produccion` con `.env.neon` cargado comprueba
+  formato y que no sobreviva ningún valor de ejemplo.

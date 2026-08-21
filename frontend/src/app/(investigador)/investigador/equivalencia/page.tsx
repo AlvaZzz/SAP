@@ -81,7 +81,7 @@ export default function EquivalenciaPage() {
           Más allá del puntaje: de qué está hecho cada grupo. Una diferencia marcada en nivel inicial,
           paralelo o institución es una variable interviniente que conviene declarar.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {d.composicion.map((c) => (
             <div key={c.grupo} className="rounded-2xl border border-line p-4">
               <div className="mb-3 flex items-center justify-between">

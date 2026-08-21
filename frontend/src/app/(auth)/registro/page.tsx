@@ -26,6 +26,7 @@ const CARRERAS = [
   'Ingeniería de Sistemas', 'Ingeniería de Software', 'Ingeniería Informática',
   'Ingeniería Electrónica', 'Ingeniería Industrial', 'Otra',
 ];
+const PARALELOS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 /** Fuerza de contraseña → semánticos del sistema (rojo/ámbar/verde). */
 function fuerza(p: string) {
@@ -43,7 +44,6 @@ export default function RegistroPage() {
   const { register } = useAuth();
   const router = useRouter();
   const [f, setF] = useState({ nombre: '', email: '', cedula: '', carrera: '', paralelo: '', password: '', confirmar: '' });
-  const [rol, setRol] = useState('estudiante');
   const [acepta, setAcepta] = useState(false);
   const [verPass, setVerPass] = useState(false);
   const [verConf, setVerConf] = useState(false);
@@ -53,7 +53,7 @@ export default function RegistroPage() {
   const [ondas, setOndas] = useState<{ id: number; x: number; y: number }[]>([]);
 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setF((p) => ({ ...p, [k]: e.target.value }));
+    setF((p) => ({ ...p, [k]: k === 'cedula' ? e.target.value.replace(/\D/g, '') : e.target.value }));
   const toca = (k: keyof typeof f) => () => setTocado((t) => ({ ...t, [k]: true }));
 
   const fz = fuerza(f.password);
@@ -106,29 +106,30 @@ export default function RegistroPage() {
       <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(74,144,226,0.16),transparent_70%)] blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.16),transparent_70%)] blur-3xl" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-6 sm:px-8 lg:flex-row lg:px-12">
+      <div className="relative z-10 flex w-full flex-1 flex-col px-4 sm:px-6 lg:flex-row lg:px-0">
         {/* Panel visual izquierdo — MISMA ESTRUCTURA QUE EL LOGIN a propósito.
-            `LoginHero` coloca la mascota y la lista de beneficios con posiciones
-            absolutas en PORCENTAJE, afinadas para el panel del login. Antes este
-            contenedor usaba `h-screen` + `sticky` + `self-start`: con un alto fijo
-            de 100vh (y sin estirarse con la fila) esos porcentajes caían en otro
-            sitio y el título, la mascota y los beneficios se superponían.
-            Al reproducir el contenedor del login, vuelven a caer donde deben. */}
+            `LoginHero` reparte su contenido en una rejilla (texto | mascota), así
+            que se adapta al alto que le dé este contenedor en vez de depender de
+            porcentajes afinados a mano: ya no hace falta replicar exactamente el
+            panel del login para que nada se superponga.
+            `sticky` + `h-[100svh]`: el formulario de registro es MÁS ALTO que la
+            pantalla; sin esto el hero se estiraría con la columna del formulario
+            y la mascota quedaría fuera de la vista al desplazarse. */}
         <div className="relative z-20 hidden lg:sticky lg:top-0 lg:block lg:h-[100svh] lg:w-[57%] lg:self-start lg:z-auto lg:pl-10 xl:pl-14 2xl:pl-16">
-          <LoginHero />
+          <LoginHero showDescription />
         </div>
 
         {/* Tarjeta de registro (derecha). El panel toma algo más de ancho entre
             1024 y 1536px: ahí es donde los campos se quedaban sin espacio. */}
-        <div className="flex items-center justify-center py-8 lg:w-[43%] lg:py-10">
+        <div className="flex items-start justify-center py-8 sm:py-10 lg:w-[43%] lg:border-l lg:border-line/60 lg:px-8 lg:py-10 xl:px-12 2xl:px-16">
           <form onSubmit={onSubmit} noValidate
-            className="w-full max-w-[600px] 2xl:max-w-[700px] rounded-3xl border border-line bg-card/80 p-6 shadow-lift backdrop-blur-xl supports-[backdrop-filter]:bg-card/70 sm:p-8">
+            className="w-full max-w-[720px] rounded-3xl border border-line bg-card/80 p-6 shadow-lift backdrop-blur-xl supports-[backdrop-filter]:bg-card/70 sm:p-7 lg:p-8 xl:p-9">
 
             {/* Logo (centrado en móvil; en desktop el hero ya lo muestra) */}
             <div className="mb-5 flex justify-center lg:hidden"><PrexiLogo subtitle /></div>
 
-            <h1 className="font-display text-2xl font-extrabold text-fg">Crear cuenta</h1>
-            <p className="mb-5 mt-1 text-sm text-muted">Empieza tu ruta de aprendizaje como estudiante.</p>
+            <h1 className="font-display text-3xl font-extrabold text-fg">Crear cuenta</h1>
+            <p className="mb-5 mt-1 text-[15px] leading-relaxed text-muted">Completa tus datos para registrarte en PREXI.</p>
 
             {error && (
               <p role="alert" className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm font-medium text-red-500">
@@ -140,29 +141,7 @@ export default function RegistroPage() {
                 1024 y 1536px la tarjeta ocupa ~44% del viewport: partirla en dos
                 dejaba los inputs en ~113px, imposibles de leer al escribir un
                 correo. Una columna cómoda vale más que dos columnas apretadas. */}
-            <div className="grid grid-cols-1 gap-x-5 gap-y-3 2xl:grid-cols-2">
-              {/* Tipo de cuenta (full-width) */}
-              <div className="2xl:col-span-2">
-                <span className="mb-1.5 block text-sm font-medium text-fg">Tipo de cuenta</span>
-                <div role="radiogroup" aria-label="Tipo de cuenta" className="grid grid-cols-3 gap-2">
-                  {['estudiante', 'docente', 'admin'].map((r) => {
-                    const dis = r !== 'estudiante';
-                    const activo = rol === r;
-                    return (
-                      <button key={r} type="button" role="radio" aria-checked={activo} disabled={dis} onClick={() => setRol(r)}
-                        title={dis ? 'Se crea desde el panel de administración' : undefined}
-                        className={`rounded-xl border px-2 py-2.5 text-sm font-semibold capitalize transition ${
-                          activo ? 'border-prexi-blue bg-prexi-blue text-accent-on shadow-glow'
-                          : dis ? 'cursor-not-allowed border-line bg-subtle text-faint'
-                          : 'border-line text-muted hover:border-prexi-blue/50 hover:bg-subtle'}`}>
-                        {r}
-                      </button>
-                    );
-                  })}
-                </div>
-                <span className="mt-1 block text-xs text-muted">Docente y Admin se crean desde el panel de administración.</span>
-              </div>
-
+            <div className="grid grid-cols-1 gap-x-5 gap-y-3 lg:grid-cols-2">
               <Campo label="Nombre completo" icon={User} hint="Como figura en tu documento; se mostrará en el ranking." error={tocado.nombre ? errores.nombre : ''}>
                 <input value={f.nombre} onChange={set('nombre')} onBlur={toca('nombre')} autoComplete="name"
                   placeholder="Ej.: Ana Quispe Mamani" className={inputAuthCls(!!tocado.nombre && !!errores.nombre) + ' pl-11'} />
@@ -175,16 +154,19 @@ export default function RegistroPage() {
               </Campo>
 
               <Campo label="Cédula de identidad" icon={ShieldCheck} hint="Solo números, sin extensión ni puntos." error={tocado.cedula ? errores.cedula : ''}>
-                <input value={f.cedula} onChange={set('cedula')} onBlur={toca('cedula')} inputMode="numeric"
+                <input value={f.cedula} onChange={set('cedula')} onBlur={toca('cedula')} inputMode="numeric" pattern="[0-9]*" autoComplete="off"
                   placeholder="Ej.: 9876543" className={inputAuthCls(!!tocado.cedula && !!errores.cedula) + ' pl-11'} />
               </Campo>
 
-              <Campo label="Paralelo" icon={Users} hint="El paralelo de la materia (ej.: A, B, C)." error={tocado.paralelo ? errores.paralelo : ''}>
-                <input value={f.paralelo} onChange={set('paralelo')} onBlur={toca('paralelo')} maxLength={10}
-                  placeholder="Ej.: A" className={inputAuthCls(!!tocado.paralelo && !!errores.paralelo) + ' pl-11'} />
+              <Campo label="Paralelo" icon={Users} hint="Selecciona el paralelo de tu materia." error={tocado.paralelo ? errores.paralelo : ''}>
+                <select value={f.paralelo} onChange={set('paralelo')} onBlur={toca('paralelo')}
+                  className={inputAuthCls(!!tocado.paralelo && !!errores.paralelo) + ' pl-11'}>
+                  <option value="">Selecciona tu paralelo</option>
+                  {PARALELOS.map((paralelo) => <option key={paralelo} value={paralelo}>{paralelo}</option>)}
+                </select>
               </Campo>
 
-              <Campo className="2xl:col-span-2" label="Carrera" icon={GraduationCap} error={tocado.carrera ? errores.carrera : ''}>
+              <Campo className="lg:col-span-2" label="Carrera" icon={GraduationCap} error={tocado.carrera ? errores.carrera : ''}>
                 <select value={f.carrera} onChange={set('carrera')} onBlur={toca('carrera')}
                   className={inputAuthCls(!!tocado.carrera && !!errores.carrera) + ' max-w-full pl-11'}>
                   <option value="">Selecciona tu carrera…</option>
@@ -222,7 +204,7 @@ export default function RegistroPage() {
               </Campo>
 
               {/* Consentimiento (full-width) */}
-              <div className="2xl:col-span-2">
+              <div className="lg:col-span-2">
                 <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-muted">
                   <input type="checkbox" checked={acepta}
                     onChange={(e) => { setAcepta(e.target.checked); setTocado((t) => ({ ...t, terminos: true })); }}
@@ -234,7 +216,7 @@ export default function RegistroPage() {
 
               {/* Botón "Crear cuenta" (full-width, ripple + loading) */}
               <button type="submit" disabled={cargando} aria-busy={cargando} onPointerDown={onDown}
-                className="btn-primary relative col-span-1 mt-1 h-[52px] w-full overflow-hidden 2xl:col-span-2">
+                className="btn-primary relative col-span-1 mt-1 h-[52px] w-full overflow-hidden lg:col-span-2">
                 {ondas.map((w) => (
                   <motion.span key={w.id} initial={{ scale: 0, opacity: 0.5 }} animate={{ scale: 4, opacity: 0 }} transition={{ duration: 0.6 }}
                     className="pointer-events-none absolute h-24 w-24 rounded-full bg-white/40" style={{ left: w.x - 48, top: w.y - 48 }} />
@@ -244,7 +226,7 @@ export default function RegistroPage() {
                   : 'Crear cuenta'}
               </button>
 
-              <p className="mt-1 text-center text-sm text-muted 2xl:col-span-2">
+              <p className="mt-1 text-center text-sm text-muted lg:col-span-2">
                 ¿Ya tienes cuenta? <Link href="/login" className="font-semibold text-prexi-blue-deep hover:underline">Inicia sesión</Link>
               </p>
             </div>

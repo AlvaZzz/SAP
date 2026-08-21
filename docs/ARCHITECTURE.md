@@ -12,7 +12,7 @@ de Sistemas, UPEA) que combina tres ideas:
 1. **Adaptatividad determinística** — un **motor de reglas** decide el nivel del
    estudiante, el orden de los ejercicios y el desbloqueo de niveles/temas. Es
    **predecible y auditable** (requisito para la validez del estudio).
-2. **IA de apoyo (ALVARO, sobre Google Gemini)** — explica, guía y acompaña con
+2. **IA de apoyo (PREXI, sobre Google Gemini)** — explica, guía y acompaña con
    lenguaje natural personalizado. **Nunca** decide calificación, adaptatividad
    ni desbloqueo.
 3. **Gamificación** — XP, rachas, emblemas y rangos, todos derivados del
@@ -48,7 +48,7 @@ backend/src/
   pretest/  postest/     Evaluaciones diagnósticas (datos de la investigación)
   ejercicios/            Corrección, XP, desbloqueo y ruta ADAPTATIVA (motor de reglas)
   practica/              Retos, traza paso a paso y validación de entregas
-  tutor-ia/              ALVARO (Gemini): asistente, pistas, retro, RAG del PDF
+  tutor-ia/              PREXI (Gemini): asistente, pistas, retro, RAG del PDF
   gamificacion/          Emblemas y rangos (derivados del desempeño real)
   ranking/  progreso/    Ranking global y progreso por nivel/tema
   retos/  documentos/    Retos del docente y material (PDF)
@@ -80,7 +80,7 @@ precisión para la tesis.
   desempeño en [`gamificacion/`](backend/src/gamificacion).
 - **Mensajes de progreso**: plantillas con datos reales, no IA.
 
-### IA de apoyo (ALVARO / Gemini) — solo lenguaje explicativo
+### IA de apoyo (PREXI / Gemini) — solo lenguaje explicativo
 Vive **solo** en tres dominios: [`tutor-ia/`](backend/src/tutor-ia),
 `docente-preguntas-ia/` y `docente-revisiones/`. Se usa donde el valor real es
 generar texto personalizado que una regla fija no puede replicar:

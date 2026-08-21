@@ -268,7 +268,7 @@ export class DocenteEstudiantesService {
     const pre = u.evaluaciones.find((e) => e.tipo === 'pre');
     const post = u.evaluaciones.find((e) => e.tipo === 'post');
 
-    // Patrones de error recurrentes (mismo detector que usa ALVARO): nutre el
+    // Patrones de error recurrentes (mismo detector que usa PREXI): nutre el
     // seguimiento del docente sobre las debilidades concretas del estudiante.
     const patronesError = detectarPatrones(intentos.map((it) => ({
       correcto: it.correcto,

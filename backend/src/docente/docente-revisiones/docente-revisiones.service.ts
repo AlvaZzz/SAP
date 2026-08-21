@@ -127,7 +127,7 @@ export class DocenteRevisionesService {
     return { ok: true, estado: aprobado ? 'aprobado' : 'necesita_mejorar', xp };
   }
 
-  /** Borrador de feedback propuesto por ALVARO (Gemini). El docente lo edita antes de enviar. */
+  /** Borrador de feedback propuesto por PREXI (Gemini). El docente lo edita antes de enviar. */
   async sugerirFeedback(retoId: number, estudianteId: number, autorId: number, aprobado?: boolean) {
     const reto = await this.retoPropio(retoId, autorId);
     const entrega = await this.prisma.retoUsuario.findUnique({

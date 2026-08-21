@@ -270,8 +270,18 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  // max-w-full: un <Select> con `!w-auto` se dimensiona a su opción más larga
-  // (p. ej. "Unidad 1: Fundamentos de la Programación") y en móvil desbordaría
-  // la página. El tope al 100% del contenedor lo impide en TODO el sistema.
-  return <select {...props} className={`input max-w-full ${props.className ?? ''}`}>{props.children}</select>;
+  // Un <select> se dimensiona a su opción más larga (p. ej. "Unidad 1:
+  // Fundamentos de la Programación") y, con `white-space: pre`, esa anchura no
+  // puede partirse. `max-w-full` NO basta: limita el ancho USADO, pero no la
+  // CONTRIBUCIÓN de min-content del elemento, que es lo que usa la rejilla o el
+  // flex de arriba para dimensionar su pista. El resultado era una columna de
+  // 758px dentro de un contenedor de 329px: la página de documentos del docente
+  // desbordaba 401px a 375px de ancho, y ningún `min-w-0` en los ancestros lo
+  // arreglaba porque el mínimo lo imponía el propio select.
+  //
+  // `w-full` (width: 100%) sí lo resuelve: un ancho en porcentaje se resuelve
+  // contra el contenedor y aporta CERO al tamaño intrínseco, así que el select
+  // pasa a seguir al contenedor en vez de imponerle su anchura.
+  // `min-w-0` acompaña para que tampoco imponga mínimo dentro de un flex.
+  return <select {...props} className={`input w-full min-w-0 max-w-full ${props.className ?? ''}`}>{props.children}</select>;
 }

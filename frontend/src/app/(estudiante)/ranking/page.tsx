@@ -105,8 +105,11 @@ export default function RankingPage() {
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
+        {/* `min-w-0` tambien AQUI: el `min-width: auto` se hereda por la cadena
+            de rejillas, asi que ponerlo solo en los items del podio no servia de
+            nada mientras esta columna siguiera sin poder encoger. */}
+        <div className="min-w-0">
           {/* Podio */}
           {podio.length === 3 && (
             <div className="mb-6 grid grid-cols-3 items-end gap-3">
@@ -116,7 +119,11 @@ export default function RankingPage() {
                 return (
                   <div key={r.usuario_id}
                     style={{ animationDelay: `${i * 90}ms` }}
-                    className={`flex animate-fade-up flex-col items-center transition-transform duration-200 hover:-translate-y-1 ${r.es_yo ? 'drop-shadow-lg' : ''}`}>
+                    // `min-w-0`: los items de una rejilla arrancan en
+                    // `min-width: auto`, así que NO encogen por debajo de su
+                    // contenido. Un nombre largo ensanchaba su columna y el
+                    // podio se salía de la pantalla (91px de desborde a 414px).
+                    className={`flex min-w-0 animate-fade-up flex-col items-center transition-transform duration-200 hover:-translate-y-1 ${r.es_yo ? 'drop-shadow-lg' : ''}`}>
                     <div className="relative mb-2">
                       <div className="grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-prexi-navy to-prexi-blue text-xl font-bold text-white shadow-lift">
                         {r.nombre.charAt(0)}
@@ -126,8 +133,8 @@ export default function RankingPage() {
                         <RangoIcon svgKey={r.rango.svgKey} color={r.rango.color} className="h-5 w-5" />
                       </span>
                     </div>
-                    <p className="text-center text-sm font-semibold text-fg">{r.nombre.split(' ')[0]}</p>
-                    <p className="mb-1 text-xs font-medium text-prexi-blue-deep">
+                    <p className="w-full truncate text-center text-sm font-semibold text-fg" title={r.nombre}>{r.nombre.split(' ')[0]}</p>
+                    <p className="mb-1 w-full truncate text-center text-xs font-medium text-prexi-blue-deep">
                       <CountUp value={r.xp} format={(n) => n.toLocaleString('es-BO')} /> XP
                     </p>
                     <div className={`flex w-full ${alturas} items-start justify-center rounded-t-2xl bg-gradient-to-b ${colores} pt-2 text-2xl font-extrabold text-white`}>

@@ -80,7 +80,7 @@ export default function ValidezPage() {
           Si un grupo abandona mucho más que el otro, quienes permanecen dejan de ser comparables y el
           resultado queda sesgado.
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {d.attrition.por_grupo.map((a) => (
             <div key={a.grupo} className="rounded-xl border border-line p-3">
               <div className="mb-2 flex items-center justify-between">
@@ -120,7 +120,7 @@ export default function ValidezPage() {
         <p className="mb-4 text-sm text-muted">
           Responde a &ldquo;¿y si el grupo experimental simplemente no usó el sistema?&rdquo;.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {d.dosis.por_grupo.map((g) => (
             <div key={g.grupo} className="rounded-2xl border border-line p-4">
               <div className="mb-3 flex items-center justify-between">

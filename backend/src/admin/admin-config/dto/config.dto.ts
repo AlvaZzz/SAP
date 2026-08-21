@@ -22,7 +22,7 @@ export class ActualizarConfigDto {
   @IsOptional() @IsInt() @Min(100) @Max(300) xpFactorIntermedio?: number;
   @IsOptional() @IsInt() @Min(100) @Max(400) xpFactorAvanzado?: number;
 
-  // Inteligencia Artificial (ALVARO).
+  // Inteligencia Artificial (PREXI).
   @IsOptional() @IsBoolean() iaActiva?: boolean;
   @IsOptional() @IsInt() @Min(0) @Max(10) maxPistasIa?: number;
   @IsOptional() @IsInt() @Min(1) @Max(500) rateLimitIaHora?: number;

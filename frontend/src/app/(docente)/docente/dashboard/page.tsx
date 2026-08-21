@@ -58,7 +58,7 @@ export default function DocenteDashboardPage() {
         )}
       </StatGrid>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Distribución por nivel */}
         <Card className="min-w-0 lg:col-span-2">
           <SectionTitle className="mb-5">Distribución de estudiantes por nivel</SectionTitle>

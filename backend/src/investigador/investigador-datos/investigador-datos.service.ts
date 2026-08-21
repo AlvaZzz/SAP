@@ -5,7 +5,7 @@ const GRUPOS = ['control', 'experimental'] as const;
 
 /**
  * Datos complementarios (rol investigador): relación DESCRIPTIVA entre el uso del
- * sistema (XP, ejercicios, consultas a ALVARO, pistas) y la mejora (ganancia =
+ * sistema (XP, ejercicios, consultas a PREXI, pistas) y la mejora (ganancia =
  * postest − pretest). Evidencia de apoyo para argumentar que la adaptatividad y
  * la gamificación se asocian con más aprendizaje. Reutiliza el dataset canónico.
  */

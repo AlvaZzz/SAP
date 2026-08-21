@@ -26,7 +26,7 @@ requieren atribución ni pago de regalías**.
 | Click GLOBAL de botones        | `click`          | Un *tap* muy corto y suave (una nota). Conectado a TODOS los botones vía `SonidoGlobal`. |
 | Respuesta correcta / "Ya la sé"| `acierto`        | Dos notas altas breves, positivas y muy sutiles.   |
 | Respuesta incorrecta           | `incorrecto`     | Dos notas descendentes **consonantes** y amables (no estridente). |
-| Notificación de ALVARO         | `notificacion`   | *Chime* ascendente breve, tipo campanita.          |
+| Notificación de PREXI         | `notificacion`   | *Chime* ascendente breve, tipo campanita.          |
 | Voltear flashcard              | `flip`           | Subidita rápida de dos notas, casi un soplo.       |
 | Descarte "Repasar" (flashcards)| `neutro`         | Una sola nota media, sin juicio.                   |
 | Mazo completado                | `nivel`          | Dos notas ascendentes (logro corto).               |

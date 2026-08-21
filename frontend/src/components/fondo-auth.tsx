@@ -16,7 +16,7 @@
  * se veía desalineada. Al ir en rem acompaña la escala responsiva del root.
  */
 export function inputAuthCls(error: boolean) {
-  return `w-full min-h-[3rem] rounded-xl border bg-app/70 px-4 py-2.5 text-fg outline-none transition placeholder:text-muted focus:ring-2 ${
+  return `h-[52px] w-full rounded-2xl border bg-app/70 px-4 text-fg outline-none transition placeholder:text-muted focus:ring-2 lg:min-h-[3rem] lg:h-auto lg:py-2.5 ${
     error
       ? 'border-red-400 focus:border-red-400 focus:ring-red-500/25'
       : 'border-line focus:border-prexi-blue focus:ring-prexi-blue/25'

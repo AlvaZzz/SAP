@@ -104,7 +104,7 @@ export default function AdminGruposPage() {
       {/* Asignación por paralelo completo (la forma recomendada de armar los grupos) */}
       <Card className="mb-6">
         <p className="mb-1 text-sm font-semibold text-fg">Asignar un paralelo completo</p>
-        <p className="mb-3 text-xs text-muted">La forma más rápida de armar el diseño: un paralelo entero como grupo experimental (usa PREXI) y otro como control.</p>
+        <p className="mb-3 text-xs text-muted">La forma más rápida de armar el diseño: un paralelo entero como grupo experimental (usa el tutor PREXI) y otro como control.</p>
         {d.paralelos.length === 0 ? (
           <p className="text-sm text-muted">Aún no hay estudiantes con paralelo registrado.</p>
         ) : (

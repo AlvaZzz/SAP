@@ -20,10 +20,10 @@ export class AiRateLimitGuard implements CanActivate {
     const user = req.user;
     if (!user) return false;
 
-    // Interruptor global de ALVARO (config central). Aplica a todos los roles.
+    // Interruptor global de PREXI (config central). Aplica a todos los roles.
     const cfg = await this.prisma.configuracionSistema.findUnique({ where: { id: 1 } }).catch(() => null);
     if (cfg && cfg.iaActiva === false) {
-      throw new HttpException('ALVARO está desactivado por el administrador.', HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException('PREXI está desactivado por el administrador.', HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     if (user.rol !== 'estudiante') return true;

@@ -116,7 +116,7 @@ export function RadarIndicadores() {
         </div>
 
         {/* 5 mini-tarjetas */}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {ejes.map((e) => (
             <div key={e.clave} className="rounded-xl border border-line bg-subtle/40 p-3.5">
               <div className="mb-1 flex items-center justify-between gap-2">

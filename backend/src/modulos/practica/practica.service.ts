@@ -45,7 +45,7 @@ export class PracticaService {
     return { ok: true };
   }
 
-  /** ALVARO revisa el código actual y guía sin resolver. */
+  /** PREXI revisa el código actual y guía sin resolver. */
   asistir(codigo: string, enunciado?: string, pregunta?: string) {
     return this.tutor.asistirCodigo({ codigo, enunciado, pregunta }).then((respuesta) => ({ respuesta }));
   }

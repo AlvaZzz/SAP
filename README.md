@@ -1,8 +1,8 @@
 # PREXI UPEA
 
-Sistema adaptativo con **Inteligencia Artificial (ALVARO/Gemini)** y **gamificación** para aprender **programación en Python** — UPEA, Ingeniería de Sistemas.
+Sistema adaptativo con **Inteligencia Artificial (PREXI/Gemini)** y **gamificación** para aprender **programación en Python** — UPEA, Ingeniería de Sistemas.
 
-> Sistema **adaptativo por un motor de reglas determinístico**; la IA (ALVARO, sobre Google Gemini) es de **apoyo** (explica, guía y acompaña), nunca decide calificación, adaptatividad ni desbloqueo. Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+> Sistema **adaptativo por un motor de reglas determinístico**; la IA (PREXI, sobre Google Gemini) es de **apoyo** (explica, guía y acompaña), nunca decide calificación, adaptatividad ni desbloqueo. Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Stack
 
@@ -62,7 +62,7 @@ Para probar el flujo nuevo de pretest, **regístrate** con cualquier correo (se 
 
 ```
 JWT_SECRET=...                 # secreto para firmar JWT
-GEMINI_API_KEY=...             # opcional; sin ella ALVARO queda deshabilitado. NUNCA se expone al cliente
+GEMINI_API_KEY=...             # opcional; sin ella PREXI queda deshabilitado. NUNCA se expone al cliente
 GEMINI_MODEL=gemini-2.5-flash-lite
 AI_RATE_LIMIT_PER_HOUR=20
 
@@ -113,7 +113,7 @@ npm test          # 93 pruebas unitarias (services críticos y guards, sin BD)
 npm run test:e2e  # pruebas e2e del flujo de la tesis (requiere: docker compose up -d)
 ```
 
-- **Unitarias**: puntaje pretest/postest, ganancia, XP y penalización por pistas, racha, desbloqueo de nivel, ranking, guards de los 4 roles, login/bloqueo de cuenta, asignación de grupos, tutor IA (ALVARO) y recuperación de contraseña.
+- **Unitarias**: puntaje pretest/postest, ganancia, XP y penalización por pistas, racha, desbloqueo de nivel, ranking, guards de los 4 roles, login/bloqueo de cuenta, asignación de grupos, tutor IA (PREXI) y recuperación de contraseña.
 - **E2E** (contra el stack real): registro → pretest → ejercicios → postest → docente/investigador → CSV, más casos límite (doble envío, sesión sin token, examen sin iniciar, revisión bloqueada durante el examen).
 
 El detalle está en [docs/REPORTE_PRUEBAS.md](docs/REPORTE_PRUEBAS.md).
@@ -146,7 +146,7 @@ Obligatorio en producción:
 | `NODE_ENV` | `production` (activa `secure` en la cookie del JWT → requiere HTTPS) |
 | `JWT_SECRET` | secreto largo y aleatorio (`openssl rand -base64 48`) |
 | `DATABASE_URL` | PostgreSQL de producción |
-| `GEMINI_API_KEY` | clave real de Google AI Studio (sin ella, ALVARO queda deshabilitado) |
+| `GEMINI_API_KEY` | clave real de Google AI Studio (sin ella, PREXI queda deshabilitado) |
 | `CLIENT_ORIGIN` | URL pública del frontend (CORS) |
 | `API_URL` (frontend) | URL interna del API para el proxy `/api` |
 

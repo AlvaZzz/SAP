@@ -27,7 +27,7 @@ export function useSound() {
     playCorrect: useCallback(() => reproducir('acierto', on), [on]),
     /** Tono neutro y amable al fallar (no estridente). */
     playWrong: useCallback(() => reproducir('incorrecto', on), [on]),
-    /** Chime suave cuando aparece un mensaje de ALVARO. */
+    /** Chime suave cuando aparece un mensaje de PREXI. */
     playNotify: useCallback(() => reproducir('notificacion', on), [on]),
     /** Celebración corta al conseguir un emblema/medalla. */
     playBadge: useCallback(() => reproducir('emblema', on), [on]),

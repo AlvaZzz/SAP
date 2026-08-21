@@ -42,7 +42,7 @@ export default function DocentePendientesPage() {
           )}
 
           {preguntas.length > 0 && (
-            <Seccion icono={<Bot className="h-5 w-5" />} titulo="Preguntas de ALVARO pendientes de aprobar" total={preguntas.length} enlace="/docente/preguntas-ia">
+            <Seccion icono={<Bot className="h-5 w-5" />} titulo="Preguntas del tutor PREXI pendientes de aprobar" total={preguntas.length} enlace="/docente/preguntas-ia">
               {preguntas.slice(0, 5).map((p) => (
                 <Fila key={p.id} titulo={p.enunciado} detalle={`${p.tema} · ${p.categoria}`} enlace="/docente/preguntas-ia" />
               ))}

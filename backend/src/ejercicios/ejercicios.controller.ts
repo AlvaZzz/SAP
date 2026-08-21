@@ -72,9 +72,20 @@ export class EjerciciosController {
     return this.adaptatividad.evaluarSubida(usuarioId, dto.temaId, dto.respuestas);
   }
 
+  /**
+   * Detalle de un ejercicio. GATING POR NIVEL: antes no pedía siquiera el usuario,
+   * así que cualquier id devolvía el ejercicio completo. Ahora se comprueba contra
+   * el nivel del estudiante en ese tema (ver AdaptatividadService, punto único).
+   */
   @Get('ejercicios/:id')
-  async detalle(@Param('id', ParseIntPipe) id: number) {
-    return { ejercicio: await this.ejercicios.detalle(id) };
+  async detalle(
+    @CurrentUser('sub') usuarioId: number,
+    @CurrentUser('rol') rol: string,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const ejercicio = await this.ejercicios.detalle(id);
+    await this.adaptatividad.verificarAccesoEjercicio(usuarioId, ejercicio, rol);
+    return { ejercicio };
   }
 
   @Post('intentos')

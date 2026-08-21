@@ -96,9 +96,19 @@ export default function DocenteDocumentosPage() {
     <div className="animate-fade-up">
       <PageHeader title="Gestión de documentos" subtitle="Sube material PDF para tus estudiantes." />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* `grid-cols-1` NO es decorativo: sin el, la rejilla usa una pista
+          IMPLICITA de tipo `auto`, que se dimensiona por el min-content de su
+          contenido. Un <select> aporta como min-content su opcion mas larga y
+          con `white-space: pre` no puede partirse, asi que la pista crecia a
+          758px dentro de un contenedor de 329px. `grid-cols-1` genera
+          `minmax(0, 1fr)`: pista definida, minimo cero, y el select pasa a
+          seguir al contenedor. Ni `max-w-full` ni `min-w-0` lo arreglaban. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Zona de carga */}
-        <Card className="lg:col-span-1">
+        {/* `min-w-0`: item de rejilla, arranca en `min-width: auto` y sin esto
+            no encoge por debajo de su contenido (el area de subida y sus textos
+            desbordaban 401px a 375px de ancho). */}
+        <Card className="min-w-0 lg:col-span-1">
           <h2 className="mb-4 font-display text-lg font-bold text-fg">Subir PDF</h2>
           {error && <p className="mb-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{error}</p>}
 
@@ -120,7 +130,7 @@ export default function DocenteDocumentosPage() {
               temas={temas}
               valor={temaId}
               onChange={setTemaId}
-              hint="Ubica el material en el temario: así tus estudiantes lo encuentran junto al tema que estudian. ALVARO también lo usará como referencia y podrás generar preguntas desde él."
+              hint="Ubica el material en el temario: así tus estudiantes lo encuentran junto al tema que estudian. El tutor PREXI también lo usará como referencia y podrás generar preguntas desde él."
             />
             <Field label="Descripción (opcional)"><Textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Breve descripción del material." /></Field>
             <button onClick={subir} disabled={subiendo} className="btn-primary w-full">{subiendo ? 'Subiendo…' : <><Upload className="h-4 w-4" /> Subir documento</>}</button>
@@ -197,7 +207,7 @@ function AccionesDoc({ d, onEditar, onEliminar, grandes = false }: {
   return (
     <div className={`flex items-center gap-1 ${grandes ? '' : 'justify-end'}`}>
       {d.temaId && d.tiene_texto && (
-        <Link href={`/docente/preguntas-ia?documento=${d.id}&tema=${d.temaId}`} title="Generar preguntas con ALVARO" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Bot className="h-4 w-4" /></Link>
+        <Link href={`/docente/preguntas-ia?documento=${d.id}&tema=${d.temaId}`} title="Generar preguntas con el tutor PREXI" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Bot className="h-4 w-4" /></Link>
       )}
       <a href={`/api/documentos/${d.id}/archivo`} target="_blank" rel="noreferrer" title="Ver PDF" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Download className="h-4 w-4" /></a>
       <button onClick={() => onEditar(d)} title="Editar" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Edit className="h-4 w-4" /></button>

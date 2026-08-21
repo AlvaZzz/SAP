@@ -126,7 +126,7 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
           <p className="text-[16px] leading-relaxed text-fg">Al terminar esta unidad, <b>{lead}</b></p>
 
           <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wide text-muted">¿Dónde se usa esto en la vida real?</p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {apps.map(({ icon: Icon, titulo, desc }) => (
               <div key={titulo} className="rounded-xl border border-line bg-subtle/60 p-4" style={{ borderTop: `3px solid ${cU}` }}>
                 <div className="mb-2 grid h-10 w-10 place-items-center rounded-xl" style={{ color: cU, backgroundColor: `${cU}1f` }}><Icon className="h-5 w-5" /></div>

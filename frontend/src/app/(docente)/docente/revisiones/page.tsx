@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { EntregaReto } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, EmptyState } from '@/components/ui';
@@ -21,14 +21,14 @@ export default function DocenteRevisionesPage() {
   const [error, setError] = useState('');
   const [sugiriendo, setSugiriendo] = useState(false);
 
-  async function cargar(todas = verTodas) {
+  const cargar = useCallback(async (todas = verTodas) => {
     setCargando(true);
     try {
       const r = await api.get<{ entregas: EntregaReto[] }>(`/docente/revisiones${todas ? '?todas=1' : ''}`);
       setEntregas(r.entregas);
     } catch { /* noop */ } finally { setCargando(false); }
-  }
-  useEffect(() => { cargar(verTodas); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [verTodas]);
+  }, [verTodas]);
+  useEffect(() => { cargar(verTodas); }, [cargar, verTodas]);
 
   function abrir(e: EntregaReto) {
     setRevisar(e); setAprobado(true); setXp(e.xpSugerido); setFeedback(e.feedback ?? ''); setError('');
@@ -40,7 +40,7 @@ export default function DocenteRevisionesPage() {
     try {
       const r = await api.post<{ sugerencia: string }>(`/docente/revisiones/${revisar.retoId}/${revisar.estudianteId}/sugerir`, { aprobado });
       setFeedback(r.sugerencia);
-    } catch (err) { setError(err instanceof ApiError ? err.message : 'ALVARO no pudo sugerir feedback ahora.'); }
+    } catch (err) { setError(err instanceof ApiError ? err.message : 'El tutor PREXI no pudo sugerir feedback ahora.'); }
     finally { setSugiriendo(false); }
   }
 
@@ -69,19 +69,24 @@ export default function DocenteRevisionesPage() {
           </div>
         } />
 
-      {cargando ? <div className="grid gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}</div>
+      {cargando ? <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}</div>
         : entregas.length === 0 ? (
           <EmptyState icon={<ClipboardList className="h-7 w-7" />}
             title={verTodas ? 'Aún no hay entregas' : 'No hay entregas pendientes'}
             hint={verTodas ? 'Cuando un estudiante entregue un reto, aparecerá aquí.' : 'Todas las entregas están revisadas.'} />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {entregas.map((e) => (
-              <Card key={`${e.retoId}-${e.estudianteId}`} className="flex flex-col gap-3">
+              // `min-w-0`: sin esto la tarjeta arranca en `min-width: auto` y
+              // no encoge por debajo de su contenido, asi que un titulo o un
+              // nombre largo desbordaban la rejilla en movil (497px a 375px).
+              // El `truncate` de dentro no puede actuar mientras el ancestro
+              // siga sin poder encoger.
+              <Card key={`${e.retoId}-${e.estudianteId}`} className="flex min-w-0 flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-display font-bold text-fg">{e.retoTitulo}</p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted"><User className="h-3.5 w-3.5" /> {e.estudiante}</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted"><User className="h-3.5 w-3.5 shrink-0" /> <span className="truncate" title={e.estudiante}>{e.estudiante}</span></p>
                   </div>
                   <EstadoEntregaBadge estado={e.estado} />
                 </div>
@@ -164,12 +169,12 @@ export default function DocenteRevisionesPage() {
                     <span className="text-sm font-medium text-fg">Feedback para el estudiante</span>
                     <button type="button" onClick={sugerir} disabled={sugiriendo}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-prexi-blue/10 px-2.5 py-1 text-xs font-semibold text-prexi-blue-deep transition hover:bg-prexi-blue/20 disabled:opacity-50">
-                      <Bot className="h-3.5 w-3.5" /> {sugiriendo ? 'Pensando…' : 'Sugerir con ALVARO'}
+                      <Bot className="h-3.5 w-3.5" /> {sugiriendo ? 'Pensando…' : 'Sugerir con el tutor PREXI'}
                     </button>
                   </div>
                   <Textarea value={feedback} onChange={(ev) => setFeedback(ev.target.value)} className="min-h-[120px]"
                     placeholder={aprobado ? '¡Buen trabajo! Tu solución es correcta porque…' : 'Revisa el manejo de… e inténtalo de nuevo.'} />
-                  <p className="mt-1 text-xs text-muted">ALVARO solo sugiere un borrador; tú decides el texto final. Se envía como notificación.</p>
+                  <p className="mt-1 text-xs text-muted">El tutor PREXI solo sugiere un borrador; tú decides el texto final. Se envía como notificación.</p>
                 </div>
               </>
             )}

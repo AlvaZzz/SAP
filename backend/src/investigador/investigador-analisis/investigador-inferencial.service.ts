@@ -245,7 +245,7 @@ export class InvestigadorInferencialService {
       { campo: 'ejercicios_resueltos', etiqueta: 'Ejercicios resueltos' },
       { campo: 'intentos_totales', etiqueta: 'Intentos totales' },
       { campo: 'xp_total', etiqueta: 'XP acumulado' },
-      { campo: 'consultas_ia', etiqueta: 'Consultas a ALVARO' },
+      { campo: 'consultas_ia', etiqueta: 'Consultas a PREXI' },
       { campo: 'retos_entregados', etiqueta: 'Retos entregados' },
       { campo: 'tasa_acierto', etiqueta: 'Tasa de acierto (%)' },
     ];

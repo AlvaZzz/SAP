@@ -2,7 +2,7 @@
 //  RAG simple sobre el material del docente
 //  Recuperacion lexica (sin embeddings ni servicios externos): trocea el texto
 //  del PDF del docente y devuelve los fragmentos mas relevantes para la consulta
-//  del estudiante. Asi ALVARO responde con la sintaxis y los ejemplos que enseno
+//  del estudiante. Asi PREXI responde con la sintaxis y los ejemplos que enseno
 //  el docente en clase, no solo con conocimiento generico.
 //  Es PURO y determinista -> testeable y auditable para la tesis.
 // ============================================================

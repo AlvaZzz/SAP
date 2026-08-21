@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Avatar ORIGINAL de ALVARO (SVG propio, sin copyright): una carita-asistente
+ * Avatar ORIGINAL de PREXI (SVG propio, sin copyright): una carita-asistente
  * amable coherente con la paleta azul profunda. Micro-animaciones sutiles:
  *  · parpadeo periódico (siempre),
  *  · saludo/entrada al montarse,
@@ -11,16 +11,16 @@
  *      - "alentando" → ojos felices ^_^ y gran sonrisa (acierto/ánimo).
  * Respeta prefers-reduced-motion (ver globals.css).
  */
-export type EstadoAlvaro = 'atento' | 'pensando' | 'alentando';
+export type EstadoTutor = 'atento' | 'pensando' | 'alentando';
 
-export function AlvaroAvatar({ estado = 'atento', size = 44, className = '' }: {
-  estado?: EstadoAlvaro; size?: number; className?: string;
+export function TutorAvatar({ estado = 'atento', size = 44, className = '' }: {
+  estado?: EstadoTutor; size?: number; className?: string;
 }) {
   const feliz = estado === 'alentando';
   const pensando = estado === 'pensando';
   return (
     <span
-      className={`alvaro-avatar relative inline-grid shrink-0 place-items-center rounded-2xl ${className}`}
+      className={`tutor-avatar relative inline-grid shrink-0 place-items-center rounded-2xl ${className}`}
       style={{ width: size, height: size, background: 'linear-gradient(150deg,#0A3570,#052659)', boxShadow: 'inset 0 0 0 1px rgba(125,160,202,.35), 0 6px 18px -8px rgba(125,160,202,.6)' }}
       aria-hidden="true"
       data-estado={estado}
@@ -28,7 +28,7 @@ export function AlvaroAvatar({ estado = 'atento', size = 44, className = '' }: {
       <svg viewBox="0 0 40 40" width={size * 0.82} height={size * 0.82} fill="none">
         {/* antena con glow */}
         <line x1="20" y1="4.5" x2="20" y2="9" stroke="#7DA0CA" strokeWidth="1.6" strokeLinecap="round" />
-        <circle className="alvaro-antena" cx="20" cy="3.6" r="2" fill="#C1E8FF" />
+        <circle className="tutor-antena" cx="20" cy="3.6" r="2" fill="#C1E8FF" />
         {/* cabeza */}
         <rect x="7" y="9" width="26" height="22" rx="8" fill="#0E3F7E" stroke="#7DA0CA" strokeWidth="1.4" />
         {/* mejillas cuando está alentando */}
@@ -43,7 +43,7 @@ export function AlvaroAvatar({ estado = 'atento', size = 44, className = '' }: {
             <path d="M23 19.5q2.5 -3 5 0" />
           </g>
         ) : (
-          <g className="alvaro-ojos" fill="#C1E8FF">
+          <g className="tutor-ojos" fill="#C1E8FF">
             <circle cx="14.5" cy={pensando ? 17.5 : 19} r="2.2" />
             <circle cx="25.5" cy={pensando ? 17.5 : 19} r="2.2" />
           </g>
@@ -58,9 +58,9 @@ export function AlvaroAvatar({ estado = 'atento', size = 44, className = '' }: {
       {/* burbujas de pensamiento */}
       {pensando && (
         <span className="absolute -right-0.5 -top-0.5 flex gap-0.5">
-          <i className="alvaro-think block h-1 w-1 rounded-full bg-[#C1E8FF]" style={{ animationDelay: '0s' }} />
-          <i className="alvaro-think block h-1 w-1 rounded-full bg-[#C1E8FF]" style={{ animationDelay: '.2s' }} />
-          <i className="alvaro-think block h-1 w-1 rounded-full bg-[#C1E8FF]" style={{ animationDelay: '.4s' }} />
+          <i className="tutor-think block h-1 w-1 rounded-full bg-[#C1E8FF]" style={{ animationDelay: '0s' }} />
+          <i className="tutor-think block h-1 w-1 rounded-full bg-[#C1E8FF]" style={{ animationDelay: '.2s' }} />
+          <i className="tutor-think block h-1 w-1 rounded-full bg-[#C1E8FF]" style={{ animationDelay: '.4s' }} />
         </span>
       )}
     </span>

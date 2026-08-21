@@ -124,7 +124,7 @@ export function OrdenarLineas({ ejercicio, resultado, onChange }: ExerciseProps)
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActivo(null)}>
       {/* data-sonido-off: mover/enviar/arrastrar ya reproducen su propio click. */}
-      <div className="grid gap-4 md:grid-cols-2" data-sonido-off>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2" data-sonido-off>
         {/* Banco */}
         <Zona id="banco" titulo="Bloques disponibles" fondo="bg-subtle/60 border-line" vacio="Arrastra los bloques aquí para quitarlos de la solución.">
           <SortableContext items={listas.banco} strategy={verticalListSortingStrategy}>

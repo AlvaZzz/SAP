@@ -128,7 +128,7 @@ export default function DocumentosPage() {
       )}
 
       {cargando ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
       ) : filtrados.length === 0 ? (
         <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-card px-4 py-16 text-center">
           <Search className="mb-3 h-9 w-9 text-muted" />
@@ -172,7 +172,7 @@ export default function DocumentosPage() {
                 {g.temas.map((t) => (
                   <div key={t.clave}>
                     {t.titulo && <h3 className="mb-2.5 text-sm font-bold text-fg">{t.titulo}</h3>}
-                    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                       {t.docs.map((d) => <TarjetaDoc key={d.id} d={d} />)}
                     </div>
                   </div>

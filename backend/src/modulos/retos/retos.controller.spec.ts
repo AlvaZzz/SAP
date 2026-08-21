@@ -12,7 +12,9 @@ describe('RetosController.detalle · trazabilidad sin filtrar soluciones', () =>
 
   beforeEach(() => {
     prisma = crearPrismaMock();
-    controller = new RetosController(prisma as never, {} as never, {} as never, {} as never);
+    // El gating por nivel se prueba aparte; aquí se deja pasar para aislar la trazabilidad.
+    const adaptatividad = { verificarAccesoReto: jest.fn().mockResolvedValue(undefined) };
+    controller = new RetosController(prisma as never, {} as never, {} as never, {} as never, adaptatividad as never);
     prisma.retoUsuario.findUnique.mockResolvedValue(null);
   });
 
@@ -38,7 +40,7 @@ describe('RetosController.detalle · trazabilidad sin filtrar soluciones', () =>
 
   it('expone el ejercicio origen con lo necesario para MOSTRARLO', async () => {
     prisma.reto.findFirst.mockResolvedValue(retoBase);
-    const r = await controller.detalle(1, 7);
+    const r = await controller.detalle(1, 'estudiante', 7);
 
     expect(r.reto!.origen).toMatchObject({
       ejercicio_id: 99,
@@ -54,19 +56,19 @@ describe('RetosController.detalle · trazabilidad sin filtrar soluciones', () =>
 
   it('NUNCA incluye la respuesta correcta (ni del reto ni del origen)', async () => {
     prisma.reto.findFirst.mockResolvedValue(retoBase);
-    const r = await controller.detalle(1, 7);
+    const r = await controller.detalle(1, 'estudiante', 7);
 
     const payload = JSON.stringify(r);
     expect(payload).not.toMatch(/respuestaCorrecta/);
     expect(payload).not.toMatch(/explicacionIa/);
-    // Tampoco las pistas en crudo: se sirven de a una desde ALVARO.
+    // Tampoco las pistas en crudo: se sirven de a una desde PREXI.
     expect(payload).not.toMatch(/"pistas"/);
     expect(r.reto!.total_pistas).toBe(3);
   });
 
   it('no se consulta la respuesta del ejercicio origen en la BD', async () => {
     prisma.reto.findFirst.mockResolvedValue(retoBase);
-    await controller.detalle(1, 7);
+    await controller.detalle(1, 'estudiante', 7);
 
     const select = JSON.stringify(prisma.reto.findFirst.mock.calls[0][0]);
     expect(select).toMatch(/origenEjercicio/);
@@ -75,7 +77,7 @@ describe('RetosController.detalle · trazabilidad sin filtrar soluciones', () =>
 
   it('un reto sin origen (escrito por el docente) devuelve origen null', async () => {
     prisma.reto.findFirst.mockResolvedValue({ ...retoBase, origenEjercicio: null });
-    const r = await controller.detalle(1, 7);
+    const r = await controller.detalle(1, 'estudiante', 7);
     expect(r.reto!.origen).toBeNull();
   });
 });

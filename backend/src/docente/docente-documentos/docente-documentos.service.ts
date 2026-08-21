@@ -74,7 +74,7 @@ export class DocenteDocumentosService {
     // servicio. El nombre opaco se conserva como identificador del archivo.
     const nombreArchivo = `${randomUUID()}.pdf`;
 
-    // Extracción de texto best-effort (para ALVARO y la generación de preguntas).
+    // Extracción de texto best-effort (para PREXI y la generación de preguntas).
     // Nunca bloquea la subida si el PDF no tiene texto extraíble (ej. escaneado).
     const textoExtraido = await extraerTextoPdf(archivo!.buffer);
 
