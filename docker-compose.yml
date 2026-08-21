@@ -96,7 +96,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_cambia_en_produccion}
       JWT_EXPIRES_IN: 15m
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash-lite}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       AI_RATE_LIMIT_PER_HOUR: ${AI_RATE_LIMIT_PER_HOUR:-20}
     ports:
       - "4000:4000"

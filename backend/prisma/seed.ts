@@ -71,7 +71,7 @@ async function main() {
   await prisma.configuracionSistema.create({
     data: {
       id: 1,
-      modeloIa: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite',
+      modeloIa: process.env.GEMINI_MODEL ?? 'gemini-3.5-flash-lite',
       // Demo: retos habilitados para Intermedio y Avanzado (el docente los controla).
       retosIntermedioHabilitado: true,
       retosAvanzadoHabilitado: true,

@@ -12,7 +12,7 @@ Sistema adaptativo con **Inteligencia Artificial (PREXI/Gemini)** y **gamificaci
 | Backend | **NestJS** (Screaming Architecture) + TypeScript |
 | ORM / BD | **Prisma** + PostgreSQL |
 | Auth | JWT en **cookie httpOnly** + bcrypt |
-| IA | **Google Gemini** (variante Flash, `gemini-2.5-flash-lite`), solo en el backend |
+| IA | **Google Gemini** (variante Flash, `gemini-3.5-flash-lite`), solo en el backend |
 | Ejecución de código | **Pyodide** en el navegador del estudiante (CPython compilado a WebAssembly) |
 
 Backend y frontend **completamente separados**: [`backend/`](backend) (NestJS) y [`frontend/`](frontend) (Next.js).
@@ -63,7 +63,7 @@ Para probar el flujo nuevo de pretest, **regístrate** con cualquier correo (se 
 ```
 JWT_SECRET=...                 # secreto para firmar JWT
 GEMINI_API_KEY=...             # opcional; sin ella PREXI queda deshabilitado. NUNCA se expone al cliente
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 AI_RATE_LIMIT_PER_HOUR=20
 
 # Recuperación de contraseña / correo (opcional; ver backend/.env.example)

@@ -75,7 +75,7 @@ export class TutorIaService {
    * anulado mientras `GEMINI_MODEL` esté definida — por eso se registra un aviso
    * explícito cuando el valor del entorno pisa a uno distinto guardado en la BD.
    */
-  static readonly MODELO_DEFECTO = 'gemini-2.5-flash-lite';
+  static readonly MODELO_DEFECTO = 'gemini-3.5-flash-lite';
   private modeloAvisado = '';
 
   /** Resuelve el modelo efectivo y de dónde sale (para poder diagnosticarlo en los logs). */

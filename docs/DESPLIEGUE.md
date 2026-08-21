@@ -144,7 +144,7 @@ Si prefieres crearlo a mano (**New → Web Service**):
 | `APP_URL` | `https://prexi.lat` | **Un solo valor.** Gobierna el OrigenGuard (CSRF) y los enlaces de recuperación de contraseña |
 | `ORIGENES_PERMITIDOS` | `https://www.prexi.lat` | Orígenes extra que acepta el OrigenGuard. Déjalo **vacío** si haces que `www` redirija al dominio raíz (más estricto) |
 | `GEMINI_API_KEY` | tu clave | |
-| `GEMINI_MODEL` | `gemini-2.5-flash-lite` | |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` | |
 | `AI_RATE_LIMIT_PER_HOUR` | `20` | |
 | `MAX_PDF_BYTES` | `15728640` | 15 MB. Ojo: los PDF viven **dentro** de Postgres |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | opcionales | Sin `SMTP_HOST`, el enlace de recuperación se escribe en los logs de Render en vez de enviarse |

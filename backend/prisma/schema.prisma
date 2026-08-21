@@ -1101,7 +1101,7 @@ model ConfiguracionSistema {
   maxPistasIa           Int     @default(3) @map("max_pistas_ia")
   rateLimitIaHora       Int     @default(20) @map("rate_limit_ia_hora") // consultas/hora por estudiante
   modoRetroalimentacion String  @default("inmediata") @map("modo_retroalimentacion") // inmediata | al_finalizar
-  modeloIa              String  @default("gemini-2.5-flash-lite") @map("modelo_ia")
+  modeloIa              String  @default("gemini-3.5-flash-lite") @map("modelo_ia")
 
   // Investigación.
   postestDesdeNivel Int     @default(3) @map("postest_desde_nivel")

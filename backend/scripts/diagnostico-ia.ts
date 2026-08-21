@@ -24,7 +24,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const API = 'https://generativelanguage.googleapis.com/v1beta';
 /** Debe coincidir con TutorIaService.MODELO_DEFECTO. */
-const MODELO_DEFECTO = 'gemini-2.5-flash-lite';
+const MODELO_DEFECTO = 'gemini-3.5-flash-lite';
 
 const ok = (m: string) => console.log(`  ✔ ${m}`);
 const mal = (m: string) => console.log(`  ✖ ${m}`);
