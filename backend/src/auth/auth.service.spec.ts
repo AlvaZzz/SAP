@@ -35,6 +35,44 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
       expect(jwt.verify(r.token)).toMatchObject({ sub: 1, rol: 'estudiante' });
     });
 
+    /*
+     * GRUPO HEREDADO DEL PARALELO. El esquema pone `experimental` por defecto,
+     * así que todo el que se registraba caía ahí. Con el diseño por
+     * conglomerados (un paralelo entero a cada grupo), un estudiante de un
+     * paralelo de CONTROL entraba clasificado como experimental y se quedaba
+     * así hasta que alguien lo notara: el diseño se contaminaba en silencio.
+     */
+    it('hereda el grupo de sus compañeros de paralelo', async () => {
+      prisma.usuario.findUnique.mockResolvedValue(null);
+      prisma.usuario.findFirst.mockResolvedValue({ grupo: 'control' });
+      let creado: { grupo?: string } = {};
+      prisma.usuario.create.mockImplementation(async (args: { data: { grupo?: string } }) => {
+        creado = args.data;
+        return { id: 1, nombre: dto.nombre, email: dto.email, rol: 'estudiante' };
+      });
+
+      await service.register(dto as never);
+      expect(creado.grupo).toBe('control');
+      // Busca compañeros del MISMO paralelo, normalizado a mayúsculas.
+      expect(prisma.usuario.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ rol: 'estudiante', paralelo: 'A' }) }),
+      );
+    });
+
+    it('si el paralelo aún no tiene a nadie, deja el grupo por defecto del esquema', async () => {
+      prisma.usuario.findUnique.mockResolvedValue(null);
+      prisma.usuario.findFirst.mockResolvedValue(null); // paralelo vacío
+      let creado: { grupo?: string } = {};
+      prisma.usuario.create.mockImplementation(async (args: { data: { grupo?: string } }) => {
+        creado = args.data;
+        return { id: 1, nombre: dto.nombre, email: dto.email, rol: 'estudiante' };
+      });
+
+      await service.register(dto as never);
+      // No se inventa un grupo: sin nadie de quien heredar, manda el default.
+      expect(creado.grupo).toBeUndefined();
+    });
+
     it('rechaza correo duplicado con mensaje claro', async () => {
       prisma.usuario.findUnique.mockResolvedValueOnce({ id: 9 });
       await expect(service.register(dto as never)).rejects.toThrow('Ya existe un usuario con ese correo');
