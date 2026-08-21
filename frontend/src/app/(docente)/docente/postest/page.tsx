@@ -51,7 +51,7 @@ export default function DocentePostestPage() {
       {cargando ? <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</div>
         : paralelos.length === 0 ? <EmptyState icon={<Users className="h-7 w-7" />} title="Sin paralelos registrados" hint="Cuando haya estudiantes con paralelo asignado, aparecerán aquí para controlar su evaluación final." />
           : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {paralelos.map((p) => (
                 <Card key={p.paralelo} hover className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">

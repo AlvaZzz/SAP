@@ -55,7 +55,7 @@ export function IndiceModulos({
             <h2 className="mb-3 border-b border-line pb-2 text-[11px] font-bold uppercase tracking-widest text-muted">
               {grupo.titulo}
             </h2>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {grupo.modulos.map((m) => (
                 <Card key={m.href} hover as={Link} href={m.href} className="group block !p-0">
                   <div className="flex gap-4 p-5">

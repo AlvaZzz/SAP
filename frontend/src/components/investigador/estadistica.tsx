@@ -155,7 +155,7 @@ export function ContrasteCard({ c, titulo }: { c: Comparacion; titulo?: string }
       </div>
 
       {/* Descriptivos: siempre visibles, aunque el contraste esté bloqueado. */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <FilaDescriptivos d={c.grupoA} />
         <FilaDescriptivos d={c.grupoB} />
       </div>

@@ -144,7 +144,7 @@ export default function DocentePreguntasIaPage() {
         {error && <p className="mb-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{error}</p>}
         {ok && <p className="mb-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-prexi-green">{ok}</p>}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Tema destino" hint="Las preguntas y el PDF se asocian a este tema.">
             <Select value={temaId} onChange={(e) => setTemaId(e.target.value)}>
               <option value="">Selecciona un tema…</option>
@@ -252,7 +252,7 @@ export default function DocentePreguntasIaPage() {
           <button onClick={confirmarAprobar} disabled={guardando} className="btn-primary">{guardando ? 'Publicando…' : 'Aprobar y publicar'}</button>
         </>}>
         <p className="mb-4 text-sm text-muted">Asigna el nivel de gamificación, la dificultad y el XP de este ejercicio antes de publicarlo para los estudiantes.</p>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Nivel"><Select value={formAprobar.nivel} onChange={(e) => setFormAprobar({ ...formAprobar, nivel: Number(e.target.value) })}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}</Select></Field>
           <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(formAprobar.estrellas)} onChange={(e) => setFormAprobar({ ...formAprobar, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
           <Field label="XP"><Input type="number" min={5} max={500} value={formAprobar.xp} onChange={(e) => setFormAprobar({ ...formAprobar, xp: Number(e.target.value) })} /></Field>

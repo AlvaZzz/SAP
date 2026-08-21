@@ -154,7 +154,7 @@ export default function AdminUsuariosPage() {
           <button onClick={guardar} disabled={guardando} className="btn-primary">{guardando ? 'Guardando…' : 'Guardar'}</button>
         </>}>
         {apiError && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2"><Field label="Nombre completo" error={errores.nombre}><Input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} /></Field></div>
           <Field label="Correo" error={errores.email}><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
           <Field label="Cédula" error={errores.cedula}><Input value={form.cedula} onChange={(e) => setForm({ ...form, cedula: e.target.value })} /></Field>

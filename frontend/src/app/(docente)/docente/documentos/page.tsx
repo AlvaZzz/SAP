@@ -96,9 +96,19 @@ export default function DocenteDocumentosPage() {
     <div className="animate-fade-up">
       <PageHeader title="Gestión de documentos" subtitle="Sube material PDF para tus estudiantes." />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* `grid-cols-1` NO es decorativo: sin el, la rejilla usa una pista
+          IMPLICITA de tipo `auto`, que se dimensiona por el min-content de su
+          contenido. Un <select> aporta como min-content su opcion mas larga y
+          con `white-space: pre` no puede partirse, asi que la pista crecia a
+          758px dentro de un contenedor de 329px. `grid-cols-1` genera
+          `minmax(0, 1fr)`: pista definida, minimo cero, y el select pasa a
+          seguir al contenedor. Ni `max-w-full` ni `min-w-0` lo arreglaban. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Zona de carga */}
-        <Card className="lg:col-span-1">
+        {/* `min-w-0`: item de rejilla, arranca en `min-width: auto` y sin esto
+            no encoge por debajo de su contenido (el area de subida y sus textos
+            desbordaban 401px a 375px de ancho). */}
+        <Card className="min-w-0 lg:col-span-1">
           <h2 className="mb-4 font-display text-lg font-bold text-fg">Subir PDF</h2>
           {error && <p className="mb-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{error}</p>}
 

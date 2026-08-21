@@ -60,7 +60,7 @@ export default function AdminDashboardPage() {
         )}
       </StatGrid>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Distribución por rol */}
         <Card className="lg:col-span-2">
           <SectionTitle className="mb-5">Distribución de usuarios por rol</SectionTitle>

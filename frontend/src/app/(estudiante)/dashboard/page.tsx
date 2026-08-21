@@ -113,7 +113,7 @@ export default function DashboardPage() {
       {/* Sin `items-start`: con él cada columna tomaba solo el alto de su propio
           contenido y la fila quedaba despareja. El valor por defecto de la
           rejilla (stretch) iguala las tres tarjetas, también en `lg` (2 col). */}
-      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
         <Card className="flex h-full min-w-0 flex-col border-l-4 border-l-prexi-blue">
           <div className="mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-blue-deep" /><h2 className="font-display text-xl font-bold text-prexi-blue-deep">Recomendado por tu tutor PREXI</h2></div>
           <p className="mb-4 text-sm text-muted">Elegidos según tu desempeño real: refuerzan tus puntos débiles y te acercan al siguiente nivel.</p>

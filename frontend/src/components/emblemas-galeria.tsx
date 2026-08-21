@@ -53,7 +53,7 @@ export function EmblemasGaleria({ compacto = false }: { compacto?: boolean }) {
           {categorias.map((cat) => (
             <div key={cat}>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">{CAT_LABEL[cat] ?? cat}</p>
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {data.emblemas.filter((e) => e.categoria === cat).map((e) => (
                   <div key={e.id} className={`flex items-start gap-3 rounded-xl border p-3 transition ${e.obtenido ? 'border-prexi-amber/40 bg-amber-500/5' : 'border-line opacity-80'}`}>
                     <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${e.obtenido ? 'bg-amber-500/15 text-prexi-amber' : 'bg-subtle text-muted/50'}`}>

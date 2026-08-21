@@ -78,7 +78,7 @@ export default function PanelEstudioPage() {
         )}
       </StatGrid>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Avance de la recolección */}
         <Card className="lg:col-span-2">
           <div className="mb-5 flex items-center gap-2"><ClipboardList className="h-5 w-5 text-prexi-blue-deep" /><SectionTitle>Avance de la recolección</SectionTitle></div>
@@ -137,7 +137,7 @@ export default function PanelEstudioPage() {
             que no puede desincronizarse de lo que realmente se hizo.
           </p>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <SectionTitle className="mb-3">Diseño</SectionTitle>
               <Dato etiqueta="Tipo" valor={ficha.diseno.tipo} />

@@ -193,7 +193,7 @@ function DetalleEstudiante({ id, onClose }: { id: number; onClose: () => void })
           </div>
 
           {/* Actividad + Pretest/Postest */}
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <h3 className="mb-3 font-display font-bold text-fg">Actividad (7 días)</h3>
               <div className="flex h-24 items-end gap-1.5">

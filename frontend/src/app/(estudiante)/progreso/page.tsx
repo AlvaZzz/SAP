@@ -111,13 +111,13 @@ export default function ProgresoPage() {
         </div>
 
         {habitos ? (
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <Constancia h={habitos} />
             <Autonomia h={habitos} />
             <Eficiencia h={habitos} />
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}</div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}</div>
         )}
       </div>
 

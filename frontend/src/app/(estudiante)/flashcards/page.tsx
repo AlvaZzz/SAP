@@ -28,11 +28,11 @@ export default function FlashcardsSelectorPage() {
       <p className="mb-6 text-[15px] text-muted">Memorización activa por tema. Es repaso libre: <b className="text-fg">no puntúa</b> ni cambia tu nivel.</p>
 
       {unidades === null ? (
-        <div className="grid gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-40" />)}</div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-40" />)}</div>
       ) : unidades.length === 0 ? (
         <EmptyState icon={<Layers className="h-7 w-7" />} title="Aún no hay unidades" hint="Cuando tu docente publique contenido, aquí verás los mazos." />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {unidades.map((u) => {
             const color = colorUnidad(u.numero);
             const bloqueada = !u.desbloqueada;
@@ -56,7 +56,7 @@ export default function FlashcardsSelectorPage() {
                         <p className="text-sm font-semibold text-fg">Elige qué repasar</p>
                         <p className="mt-0.5 text-xs leading-relaxed text-muted">Toca un tema o subtema para abrir sus flashcards.</p>
                       </div>
-                      <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {contenidos.map((t, indice) => (
                         <Link key={t.id} href={`/flashcards/tema/${t.id}?volver=/flashcards`}
                           aria-label={`Repasar ${t.tipo.toLowerCase()} ${t.numero}: ${t.titulo}`}

@@ -181,7 +181,7 @@ export default function SubirNivelPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {p.opciones.map((o) => {
                   const elegido = respuestas[p.id] === o.id;
                   return (

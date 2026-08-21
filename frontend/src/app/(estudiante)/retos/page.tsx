@@ -100,7 +100,7 @@ export default function RetosPage() {
   if (cargando) return (
     <div className="animate-fade-up">
       <PageHeader title="Retos" subtitle="Desafíos de código publicados por tus docentes." />
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-48" />)}</div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-48" />)}</div>
     </div>
   );
 
@@ -213,7 +213,7 @@ export default function RetosPage() {
                 {g.temas.map((t) => (
                   <div key={t.clave}>
                     {t.titulo && <h3 className="mb-2.5 text-sm font-bold text-fg">{t.titulo}</h3>}
-                    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                       {t.retos.map((r) => <TarjetaReto key={r.id} r={r} onAbrir={() => router.push(`/retos/${r.id}`)} />)}
                     </div>
                   </div>

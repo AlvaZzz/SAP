@@ -129,7 +129,7 @@ export default function DetallePage() {
   if (!ej) return (
     <div className="space-y-4">
       <div className="skeleton h-16" />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"><div className="skeleton h-96" /><div className="skeleton h-96" /></div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"><div className="skeleton h-96" /><div className="skeleton h-96" /></div>
     </div>
   );
 
@@ -192,7 +192,7 @@ export default function DetallePage() {
           El corte va en xl y no en lg a propósito: en lg el sidebar (w-64) deja
           ~575px útiles, y partirlos en dos dejaba el ejercicio en ~210px. Por
           debajo de xl, PREXI se apila DEBAJO a todo el ancho. */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <div className="min-w-0">
           <div className={`card ${resultado && !resultado.correcto ? 'animate-shake' : ''}`}>
             {/* Badges del ejercicio */}

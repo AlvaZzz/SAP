@@ -82,7 +82,7 @@ export default function PerfilPage() {
       <RadarIndicadores />
 
 
-      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
         {/* ── Columna izquierda ── */}
         <div className="space-y-6">
           {/* Tarjeta de identidad */}

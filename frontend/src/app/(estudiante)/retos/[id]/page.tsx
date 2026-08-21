@@ -220,7 +220,7 @@ export default function RetoEditorPage() {
 
       {/* Escritorio amplio (xl): editor ancho + panel de PREXI cómodo. Por debajo
           de xl, el panel de PREXI se apila DEBAJO del editor, a todo el ancho. */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
         {/* Editor + consola */}
         <div className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#04162E] shadow-soft xl:min-h-[72vh]">
           <div className="flex items-center justify-between border-b border-slate-700/80 px-4 py-3">

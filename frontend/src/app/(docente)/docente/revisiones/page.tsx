@@ -69,19 +69,24 @@ export default function DocenteRevisionesPage() {
           </div>
         } />
 
-      {cargando ? <div className="grid gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}</div>
+      {cargando ? <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}</div>
         : entregas.length === 0 ? (
           <EmptyState icon={<ClipboardList className="h-7 w-7" />}
             title={verTodas ? 'Aún no hay entregas' : 'No hay entregas pendientes'}
             hint={verTodas ? 'Cuando un estudiante entregue un reto, aparecerá aquí.' : 'Todas las entregas están revisadas.'} />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {entregas.map((e) => (
-              <Card key={`${e.retoId}-${e.estudianteId}`} className="flex flex-col gap-3">
+              // `min-w-0`: sin esto la tarjeta arranca en `min-width: auto` y
+              // no encoge por debajo de su contenido, asi que un titulo o un
+              // nombre largo desbordaban la rejilla en movil (497px a 375px).
+              // El `truncate` de dentro no puede actuar mientras el ancestro
+              // siga sin poder encoger.
+              <Card key={`${e.retoId}-${e.estudianteId}`} className="flex min-w-0 flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate font-display font-bold text-fg">{e.retoTitulo}</p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted"><User className="h-3.5 w-3.5" /> {e.estudiante}</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted"><User className="h-3.5 w-3.5 shrink-0" /> <span className="truncate" title={e.estudiante}>{e.estudiante}</span></p>
                   </div>
                   <EstadoEntregaBadge estado={e.estado} />
                 </div>
