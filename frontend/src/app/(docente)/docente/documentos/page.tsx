@@ -18,7 +18,6 @@ export default function DocenteDocumentosPage() {
   // Formulario de subida.
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [nivel, setNivel] = useState('');
   const [temaId, setTemaId] = useState<number | null>(null);
   const [archivo, setArchivo] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
@@ -29,7 +28,6 @@ export default function DocenteDocumentosPage() {
   const [editDoc, setEditDoc] = useState<DocenteDocumento | null>(null);
   const [editTitulo, setEditTitulo] = useState('');
   const [editDesc, setEditDesc] = useState('');
-  const [editNivel, setEditNivel] = useState('');
   const [editTemaId, setEditTemaId] = useState<number | null>(null);
 
   async function cargar() {
@@ -57,14 +55,13 @@ export default function DocenteDocumentosPage() {
     const fd = new FormData();
     fd.append('titulo', titulo.trim());
     if (descripcion.trim()) fd.append('descripcion', descripcion.trim());
-    if (nivel) fd.append('nivel', nivel);
     if (temaId != null) fd.append('temaId', String(temaId));
     fd.append('archivo', archivo);
     try {
       // Multipart: fetch directo (no el cliente JSON) para que el navegador fije el boundary.
       const res = await fetch('/api/docente/documentos', { method: 'POST', body: fd, credentials: 'include' });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.message || 'No se pudo subir'); }
-      setTitulo(''); setDescripcion(''); setNivel(''); setTemaId(null); setArchivo(null);
+      setTitulo(''); setDescripcion(''); setTemaId(null); setArchivo(null);
       if (fileRef.current) fileRef.current.value = '';
       await cargar();
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo subir'); }
@@ -72,12 +69,12 @@ export default function DocenteDocumentosPage() {
   }
 
   function abrirEditar(d: DocenteDocumento) {
-    setEditDoc(d); setEditTitulo(d.titulo); setEditDesc(d.descripcion ?? ''); setEditNivel(d.nivel ? String(d.nivel) : ''); setEditTemaId(d.temaId);
+    setEditDoc(d); setEditTitulo(d.titulo); setEditDesc(d.descripcion ?? ''); setEditTemaId(d.temaId);
   }
   async function guardarEdicion() {
     if (!editDoc) return;
     await api.put(`/docente/documentos/${editDoc.id}`, {
-      titulo: editTitulo.trim(), descripcion: editDesc.trim() || undefined, nivel: editNivel ? Number(editNivel) : undefined,
+      titulo: editTitulo.trim(), descripcion: editDesc.trim() || undefined,
       // `null` (no `undefined`) para poder DESASIGNAR el tema: undefined significa
       // "no tocar el campo" y dejaba el documento pegado a su tema para siempre.
       temaId: editTemaId,
@@ -122,10 +119,6 @@ export default function DocenteDocumentosPage() {
 
           <div className="space-y-3">
             <Field label="Título"><Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ej: Guía de funciones" /></Field>
-            <Field label="Nivel asociado (opcional)"><Select value={nivel} onChange={(e) => setNivel(e.target.value)}>
-              <option value="">Sin nivel</option>
-              {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}
-            </Select></Field>
             <SelectorTema
               temas={temas}
               valor={temaId}
@@ -155,7 +148,6 @@ export default function DocenteDocumentosPage() {
                         </div>
                       ),
                     },
-                    { header: 'Nivel', cell: (d) => d.nivel ? <Badge tone="blue">Nivel {d.nivel}</Badge> : <span className="text-muted">—</span> },
                     { header: 'Tema', cell: (d) => d.tema_titulo ? <Badge tone="green">{d.tema_titulo}</Badge> : <span className="text-muted">—</span> },
                     { header: 'Tamaño', cell: (d) => <span className="text-muted">{mb(d.tamano_bytes)}</span> },
                     { header: 'Fecha', cell: (d) => <span className="whitespace-nowrap text-muted">{fecha(d.fecha)}</span> },
@@ -168,7 +160,6 @@ export default function DocenteDocumentosPage() {
                         <div className="min-w-0"><p className="font-semibold text-fg">{d.titulo}</p>{d.descripcion && <p className="truncate text-xs text-muted">{d.descripcion}</p>}</div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                        {d.nivel && <Badge tone="blue">Nivel {d.nivel}</Badge>}
                         {d.tema_titulo && <Badge tone="green">{d.tema_titulo}</Badge>}
                         <span>{mb(d.tamano_bytes)}</span><span>· {fecha(d.fecha)}</span>
                       </div>
@@ -187,10 +178,6 @@ export default function DocenteDocumentosPage() {
         </>}>
         <div className="space-y-4">
           <Field label="Título"><Input value={editTitulo} onChange={(e) => setEditTitulo(e.target.value)} /></Field>
-          <Field label="Nivel asociado"><Select value={editNivel} onChange={(e) => setEditNivel(e.target.value)}>
-            <option value="">Sin nivel</option>
-            {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}
-          </Select></Field>
           <SelectorTema temas={temas} valor={editTemaId} onChange={setEditTemaId} />
           <Field label="Descripción"><Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} /></Field>
         </div>

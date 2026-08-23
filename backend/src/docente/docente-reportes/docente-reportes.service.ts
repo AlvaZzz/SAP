@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { ETIQUETA_NIVEL, ORDEN_NIVEL, nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
 
 interface CatEval { categoria: string; aciertos: number; total: number; porcentaje: number }
 
@@ -82,47 +84,75 @@ export class DocenteReportesService {
     };
   }
 
-  // ── Distribución de estudiantes por nivel + tiempo promedio por nivel ──
+  /* ══════════════════════════════════════════════════════════════════════
+     DISTRIBUCIÓN DE ESTUDIANTES POR NIVEL ADAPTATIVO
+
+     Esta función mostraba la distribución sobre el modelo VIEJO de niveles
+     (`Nivel.numero`, 1 a 5): una gamificación plana, previa al diseño
+     adaptativo, que el sistema ya no usa para adaptar nada y que la tesis no
+     defiende. El docente veía "Nivel 1 … Nivel 5" mientras el motor real
+     trabajaba con básico / intermedio / avanzado por tema.
+
+     Ahora se calcula desde `ProgresoTema.nivelActual`, que ES el nivel con el
+     que el sistema decide qué ejercicios sirve.
+
+     POR QUÉ EL DOMINIO AGREGADO Y NO OTRA COSA: un estudiante no tiene "un"
+     nivel, tiene uno POR TEMA (puede ir Avanzado en bucles y Básico en
+     matrices). Para colocarlo en una sola barra hay que resumir, y se usa
+     `nivelDominioAgregado` —el mismo helper que calcula el dominio que ve el
+     estudiante en su vista de unidad—. Así el docente y el estudiante nunca
+     ven cifras que se contradigan.
+
+     Las dos alternativas descartadas, y por qué:
+      · `Usuario.nivelInicialAdaptativo` — es la foto del PRETEST y no cambia
+        nunca: mostraría el punto de partida, no el avance.
+      · el máximo entre temas — premia un solo tema bueno y esconde el resto,
+        justo lo contrario de lo que un docente necesita ver.
+
+     Un estudiante SIN ningún `ProgresoTema` (no ha practicado) cuenta como
+     Básico, igual que en el gate del examen de unidad: no haber empezado no
+     puede valer lo mismo que haber trabajado hasta Intermedio.
+     ══════════════════════════════════════════════════════════════════════ */
   async progresoNiveles() {
-    const [niveles, estudiantes, intentosPorNivel] = await Promise.all([
-      this.prisma.nivel.findMany({ orderBy: { numero: 'asc' } }),
-      this.prisma.usuario.findMany({ where: { rol: 'estudiante' }, include: { progreso: true } }),
-      // Tiempo invertido por nivel (solo intentos correctos, tiempo > 0).
+    const [estudiantes, intentos] = await Promise.all([
+      this.prisma.usuario.findMany({
+        where: { rol: 'estudiante' },
+        select: { id: true, progresoTemas: { select: { nivelActual: true } } },
+      }),
+      // Tiempo invertido por nivel ADAPTATIVO del ejercicio (no por su nivelId).
       this.prisma.intento.findMany({
         where: { correcto: true, tiempoSeg: { gt: 0 } },
-        select: { tiempoSeg: true, ejercicio: { select: { nivelId: true } } },
+        select: { tiempoSeg: true, ejercicio: { select: { nivelDificultad: true } } },
       }),
     ]);
-    const numeroPorNivel = new Map(niveles.map((n) => [n.id, n.numero]));
 
-    const conteo = new Map<number, number>(niveles.map((n) => [n.numero, 0]));
+    const conteo: Record<NivelDificultad, number> = { basico: 0, intermedio: 0, avanzado: 0 };
     for (const u of estudiantes) {
-      const desbloqueados = u.progreso.filter((p) => p.desbloqueado);
-      const nivelActual = desbloqueados.length
-        ? Math.max(...desbloqueados.map((p) => numeroPorNivel.get(p.nivelId) ?? 1))
-        : 1;
-      conteo.set(nivelActual, (conteo.get(nivelActual) ?? 0) + 1);
+      const niveles = u.progresoTemas.map((p) => p.nivelActual);
+      const { nivelDominio } = nivelDominioAgregado(niveles);
+      conteo[nivelDominio]++;
     }
 
-    // Tiempo promedio (seg) por número de nivel.
-    const tiempo = new Map<number, { suma: number; n: number }>();
-    for (const it of intentosPorNivel) {
-      const num = numeroPorNivel.get(it.ejercicio.nivelId);
-      if (!num) continue;
-      const e = tiempo.get(num) ?? { suma: 0, n: 0 };
-      e.suma += it.tiempoSeg; e.n++;
-      tiempo.set(num, e);
+    const tiempo: Record<NivelDificultad, { suma: number; n: number }> = {
+      basico: { suma: 0, n: 0 }, intermedio: { suma: 0, n: 0 }, avanzado: { suma: 0, n: 0 },
+    };
+    for (const it of intentos) {
+      const n = it.ejercicio.nivelDificultad;
+      tiempo[n].suma += it.tiempoSeg;
+      tiempo[n].n++;
     }
 
     return {
       total_estudiantes: estudiantes.length,
-      niveles: niveles.map((n) => {
-        const t = tiempo.get(n.numero);
-        return {
-          numero: n.numero, titulo: n.titulo, estudiantes: conteo.get(n.numero) ?? 0,
-          tiempo_promedio_seg: t && t.n ? Math.round(t.suma / t.n) : 0,
-        };
-      }),
+      // `numero` se conserva (1-3) SOLO como orden para pintar las barras; ya no
+      // es el número del modelo viejo. La clave real es `nivel`.
+      niveles: (Object.keys(ORDEN_NIVEL) as NivelDificultad[]).map((n) => ({
+        nivel: n,
+        numero: ORDEN_NIVEL[n],
+        titulo: ETIQUETA_NIVEL[n],
+        estudiantes: conteo[n],
+        tiempo_promedio_seg: tiempo[n].n ? Math.round(tiempo[n].suma / tiempo[n].n) : 0,
+      })),
     };
   }
 

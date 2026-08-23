@@ -48,8 +48,6 @@ export class CrearEjercicioDto {
   @IsOptional() @IsEnum(Banco)
   banco?: Banco;
 
-  @IsInt() @Min(1) @Max(5)
-  nivel!: number; // número de nivel (1-5), para XP/gamificación
 
   // Tema (jerarquía académica Unidad → Tema → Subtema) al que pertenece. Opcional.
   @IsOptional() @IsInt() @Min(1)
@@ -98,8 +96,6 @@ export class EditarEjercicioDto {
   @IsOptional() @IsEnum(Banco)
   banco?: Banco;
 
-  @IsOptional() @IsInt() @Min(1) @Max(5)
-  nivel?: number;
 
   @IsOptional() @IsInt() @Min(1)
   temaId?: number;

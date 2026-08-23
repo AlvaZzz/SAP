@@ -16,8 +16,6 @@ export class CrearRetoDto {
   categoria!: string;
 
   // Nivel temático asociado (1-5), opcional.
-  @IsOptional() @IsInt() @Min(1) @Max(5)
-  nivel?: number;
 
   // Tema (o subtema) académico al que pertenece el reto. Ubica el reto en el
   // temario para agruparlo en la vista del estudiante.
@@ -64,8 +62,6 @@ export class EditarRetoDto {
   @IsOptional() @IsString() @MinLength(2) @MaxLength(80)
   categoria?: string;
 
-  @IsOptional() @IsInt() @Min(1) @Max(5)
-  nivel?: number;
 
   // `null` explícito desasigna el tema (el reto vuelve a "General"); omitirlo lo
   // deja como estaba. Por eso admite null además de número.

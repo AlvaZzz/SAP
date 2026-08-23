@@ -11,14 +11,6 @@ import { CrearRetoDto, EditarRetoDto } from './dto/reto.dto';
 export class DocenteRetosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Traduce número de nivel (1-5) al id real; null si no se indica. */
-  private async nivelId(numero?: number): Promise<number | null> {
-    if (numero === undefined || numero === null) return null;
-    const nivel = await this.prisma.nivel.findUnique({ where: { numero } });
-    if (!nivel) throw new BadRequestException(`No existe el nivel ${numero}`);
-    return nivel.id;
-  }
-
   /** El tema (o subtema) asociado debe existir: de él cuelga la unidad con la que
    *  se agrupa el reto en la vista del estudiante. */
   private async validarTema(temaId?: number | null) {
@@ -69,7 +61,8 @@ export class DocenteRetosService {
       data: {
         titulo: dto.titulo,
         categoria: dto.categoria,
-        nivelId: await this.nivelId(dto.nivel),
+        // `Reto.nivelId` es opcional: el reto ya no cuelga del modelo viejo.
+        nivelId: null,
         temaId: dto.temaId ?? null,
         estrellas: dto.estrellas,
         tipo: dto.tipo ?? 'completar_codigo',
@@ -95,7 +88,6 @@ export class DocenteRetosService {
       data: {
         ...(dto.titulo !== undefined ? { titulo: dto.titulo } : {}),
         ...(dto.categoria !== undefined ? { categoria: dto.categoria } : {}),
-        ...(dto.nivel !== undefined ? { nivelId: await this.nivelId(dto.nivel) } : {}),
         ...(dto.temaId !== undefined ? { temaId: dto.temaId } : {}),
         ...(dto.estrellas !== undefined ? { estrellas: dto.estrellas } : {}),
         ...(dto.tipo !== undefined ? { tipo: dto.tipo } : {}),

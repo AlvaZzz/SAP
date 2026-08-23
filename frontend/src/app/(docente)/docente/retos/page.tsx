@@ -11,11 +11,11 @@ import { Plus, Edit, Trash2, Power, Target, ClipboardList, Clock, Lock, CheckCir
 interface RetosConfig { intermedio: boolean; avanzado: boolean }
 
 interface FormState {
-  titulo: string; categoria: string; nivel: string; temaId: number | null; estrellas: number; enunciado: string;
+  titulo: string; categoria: string; temaId: number | null; estrellas: number; enunciado: string;
   codigoInicial: string; ejemploEntrada: string; ejemploSalida: string; xp: number; fechaLimite: string; activo: boolean; esBugHunt: boolean;
 }
 const VACIO: FormState = {
-  titulo: '', categoria: '', nivel: '', temaId: null, estrellas: 3, enunciado: '',
+  titulo: '', categoria: '', temaId: null, estrellas: 3, enunciado: '',
   codigoInicial: '', ejemploEntrada: '', ejemploSalida: '', xp: 60, fechaLimite: '', activo: true, esBugHunt: false,
 };
 
@@ -53,7 +53,7 @@ export default function DocenteRetosPage() {
   function abrirEditar(r: DocenteReto) {
     setEditId(r.id); setErrores({}); setApiError('');
     setForm({
-      titulo: r.titulo, categoria: r.categoria, nivel: r.nivel ? String(r.nivel) : '', temaId: r.temaId ?? null, estrellas: r.estrellas,
+      titulo: r.titulo, categoria: r.categoria, temaId: r.temaId ?? null, estrellas: r.estrellas,
       enunciado: r.enunciado, codigoInicial: r.codigoInicial ?? '', ejemploEntrada: r.ejemploEntrada ?? '',
       ejemploSalida: r.ejemploSalida ?? '', xp: r.xp, fechaLimite: r.fechaLimite ? r.fechaLimite.slice(0, 10) : '', activo: r.activo, esBugHunt: r.esBugHunt,
     });
@@ -75,7 +75,6 @@ export default function DocenteRetosPage() {
     setGuardando(true); setApiError('');
     const payload = {
       titulo: form.titulo.trim(), categoria: form.categoria.trim(),
-      nivel: form.nivel ? Number(form.nivel) : undefined,
       // `null` (no `undefined`) para poder DESASIGNAR el tema al editar.
       temaId: editId ? form.temaId : (form.temaId ?? undefined),
       estrellas: form.estrellas,
@@ -176,7 +175,6 @@ export default function DocenteRetosPage() {
           <Field label="Categoría" error={errores.categoria}><Input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="Bucles, Cadenas…" /></Field>
           <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(form.estrellas)} onChange={(e) => setForm({ ...form, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
           <Field label="XP máximo" error={errores.xp}><Input type="number" min={5} max={500} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
-          <Field label="Nivel asociado (opcional)"><Select value={form.nivel} onChange={(e) => setForm({ ...form, nivel: e.target.value })}><option value="">Sin nivel</option>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}</Select></Field>
           {/* Ubicación académica: agrupa el reto en la vista del estudiante por Unidad → Tema → Subtema. */}
           <div className="sm:col-span-2"><SelectorTema temas={temas} valor={form.temaId} onChange={(temaId) => setForm({ ...form, temaId })} hint="Ubica el reto en el temario: tus estudiantes lo verán junto al tema que estudian." /></div>
           <div className="sm:col-span-2"><Field label="Enunciado / descripción del problema" error={errores.enunciado}><Textarea value={form.enunciado} onChange={(e) => setForm({ ...form, enunciado: e.target.value })} placeholder="Describe el reto de programación." /></Field></div>

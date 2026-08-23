@@ -35,7 +35,7 @@ async function crearEjercicioRelleno(token: string, temaId: number, i: number) {
   const r = await req('POST', '/docente/ejercicios', {
     token,
     body: {
-      titulo: `Relleno E2E ${i}`, categoria: 'Variables', nivel: 1, temaId, estrellas: 1, tipo: 'opcion_multiple',
+      titulo: `Relleno E2E ${i}`, categoria: 'Variables', temaId, estrellas: 1, tipo: 'opcion_multiple',
       enunciado: `Ejercicio de relleno ${i}`,
       opciones: [{ id: 'A', texto: 'Uno' }, { id: 'B', texto: 'Dos' }],
       respuestaCorrecta: 'A', xp: 20,
@@ -120,7 +120,7 @@ describe('2 · Nuevos tipos de pregunta: se crean sin publicar el tema todavía'
     const r = await req('POST', '/docente/ejercicios', {
       token: docenteTk,
       body: {
-        titulo: 'Completar E2E', categoria: 'Bucles', nivel: 1, temaId, estrellas: 2, tipo: 'completar_codigo',
+        titulo: 'Completar E2E', categoria: 'Bucles', temaId, estrellas: 2, tipo: 'completar_codigo',
         enunciado: 'Completa el bucle que recorre 10 veces', codigoPython: 'for ___:\n    print(i)',
         respuestaCorrecta: 'i in range(10)|i in range(0,10)', xp: 40,
       },
@@ -134,7 +134,7 @@ describe('2 · Nuevos tipos de pregunta: se crean sin publicar el tema todavía'
     const r = await req('POST', '/docente/ejercicios', {
       token: docenteTk,
       body: {
-        titulo: 'Ordenar E2E', categoria: 'Funciones', nivel: 1, temaId, estrellas: 2, tipo: 'ordenar_lineas',
+        titulo: 'Ordenar E2E', categoria: 'Funciones', temaId, estrellas: 2, tipo: 'ordenar_lineas',
         enunciado: 'Ordena las líneas para definir una función que suma dos números',
         opciones: [
           { id: 'A', texto: 'def sumar(a, b):' },

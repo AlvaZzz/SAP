@@ -70,7 +70,7 @@ export default function DocentePreguntasIaPage() {
   const [editando, setEditando] = useState<PreguntaIa | null>(null);
   const [formEdit, setFormEdit] = useState({ categoria: '', enunciado: '', codigoPython: '', respuestaCorrecta: '', explicacionIa: '' });
   const [aprobando, setAprobando] = useState<PreguntaIa | null>(null);
-  const [formAprobar, setFormAprobar] = useState({ nivel: 1, estrellas: 3, xp: 50 });
+  const [formAprobar, setFormAprobar] = useState({ estrellas: 3, xp: 50 });
   const [guardando, setGuardando] = useState(false);
 
   const cargarPreguntas = useCallback(async () => {
@@ -253,7 +253,6 @@ export default function DocentePreguntasIaPage() {
         </>}>
         <p className="mb-4 text-sm text-muted">Asigna el nivel de gamificación, la dificultad y el XP de este ejercicio antes de publicarlo para los estudiantes.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Nivel"><Select value={formAprobar.nivel} onChange={(e) => setFormAprobar({ ...formAprobar, nivel: Number(e.target.value) })}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Nivel {n}</option>)}</Select></Field>
           <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(formAprobar.estrellas)} onChange={(e) => setFormAprobar({ ...formAprobar, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
           <Field label="XP"><Input type="number" min={5} max={500} value={formAprobar.xp} onChange={(e) => setFormAprobar({ ...formAprobar, xp: Number(e.target.value) })} /></Field>
         </div>

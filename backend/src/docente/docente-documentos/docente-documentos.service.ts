@@ -21,13 +21,6 @@ import { CrearDocumentoDto, EditarDocumentoDto } from './dto/documento.dto';
 export class DocenteDocumentosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async nivelId(numero?: number): Promise<number | null> {
-    if (!numero) return null;
-    const nivel = await this.prisma.nivel.findUnique({ where: { numero } });
-    if (!nivel) throw new BadRequestException(`No existe el nivel ${numero}`);
-    return nivel.id;
-  }
-
   /** El tema (o subtema) asociado debe existir: de él cuelga la unidad con la
    *  que se agrupa el material en la vista del estudiante. */
   private async validarTema(temaId?: number) {
@@ -66,7 +59,8 @@ export class DocenteDocumentosService {
 
   async subir(autorId: number, dto: CrearDocumentoDto, archivo?: ArchivoSubido) {
     this.validarPdf(archivo);
-    const nivelId = await this.nivelId(dto.nivel);
+    // `Documento.nivelId` es opcional: el documento se ubica por TEMA.
+    const nivelId = null;
     await this.validarTema(dto.temaId);
 
     // El binario va a la BASE DE DATOS, no al disco: en el hosting gratuito el
@@ -106,7 +100,7 @@ export class DocenteDocumentosService {
 
   async editar(id: number, autorId: number, dto: EditarDocumentoDto) {
     await this.propio(id, autorId);
-    const nivelId = dto.nivel !== undefined ? await this.nivelId(dto.nivel) : undefined;
+    const nivelId = undefined;
     // `null` explícito = DESASIGNAR (el documento pasa a "General / Sin categoría");
     // `undefined` = no tocar el campo.
     await this.validarTema(dto.temaId ?? undefined);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { NivelDificultad, NIVEL_COLOR } from '@/lib/types';
 import { useAuth } from '@/providers/auth-provider';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
 import { EstadoBadge } from '@/components/docente/estado-badge';
@@ -10,7 +11,9 @@ import { Users, UserCheck, CheckCircle, AlertTriangle, Star, Code, Target, FileT
 
 interface Dashboard {
   stats: { estudiantes_total: number; estudiantes_activos: number; completados_hoy: number; promedio_xp: number; en_riesgo: number; entregas_pendientes: number };
-  distribucion_niveles: { numero: number; titulo: string; estudiantes: number }[];
+  // Distribución por NIVEL ADAPTATIVO (básico/intermedio/avanzado), que es el
+  // que el sistema usa para adaptar. Antes venía del modelo viejo de 5 niveles.
+  distribucion_niveles: { nivel: NivelDificultad; numero: number; titulo: string; estudiantes: number }[];
   en_riesgo: { id: number; nombre: string; estado: string; xp: number; ejercicios_completados: number }[];
   actividad_reciente: { estudiante: string; titulo: string; categoria: string; correcto: boolean; xp: number; fecha: string }[];
 }
@@ -61,15 +64,19 @@ export default function DocenteDashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Distribución por nivel */}
         <Card className="min-w-0 lg:col-span-2">
-          <SectionTitle className="mb-5">Distribución de estudiantes por nivel</SectionTitle>
+          <SectionTitle className="mb-1">Distribución de estudiantes por nivel</SectionTitle>
+          <p className="mb-5 text-xs text-muted">Nivel adaptativo (dominio combinado de todos sus temas), que es el que decide qué ejercicios recibe cada estudiante.</p>
           {cargando ? <div className="space-y-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8" />)}</div> : (
             <div className="space-y-3.5">
               {d?.distribucion_niveles.map((n) => (
-                <div key={n.numero} className="flex items-center gap-3">
-                  <span className="w-28 shrink-0 text-sm font-medium text-fg">Nivel {n.numero}</span>
+                <div key={n.nivel} className="flex items-center gap-3">
+                  {/* Etiqueta y color del NIVEL ADAPTATIVO: los mismos que ve el
+                      estudiante en su vista de unidad, para que docente y
+                      estudiante nunca lean cifras que se contradigan. */}
+                  <span className="w-28 shrink-0 text-sm font-medium text-fg">{n.titulo}</span>
                   <div className="h-7 flex-1 overflow-hidden rounded-lg bg-subtle">
-                    <div className="flex h-full items-center justify-end rounded-lg bg-prexi-blue px-2 text-xs font-bold text-accent-on transition-all duration-700"
-                      style={{ width: `${Math.max(6, (n.estudiantes / maxNivel) * 100)}%` }}>
+                    <div className="flex h-full items-center justify-end rounded-lg px-2 text-xs font-bold text-white transition-all duration-700"
+                      style={{ width: `${Math.max(6, (n.estudiantes / maxNivel) * 100)}%`, backgroundColor: NIVEL_COLOR[n.nivel] }}>
                       {n.estudiantes > 0 && n.estudiantes}
                     </div>
                   </div>

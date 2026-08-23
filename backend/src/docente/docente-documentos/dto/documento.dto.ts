@@ -1,4 +1,4 @@
-import { IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength, ValidateIf } from 'class-validator';
+import { IsInt, IsString, Min, IsOptional, MinLength, MaxLength, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -12,8 +12,6 @@ export class CrearDocumentoDto {
   @IsOptional() @IsString() @MaxLength(600)
   descripcion?: string;
 
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(5)
-  nivel?: number; // número de nivel asociado (opcional)
 
   // Tema (jerarquía académica) asociado: fuente de contexto para PREXI y para
   // "Generar preguntas desde este PDF".
@@ -28,8 +26,6 @@ export class EditarDocumentoDto {
   @IsOptional() @IsString() @MaxLength(600)
   descripcion?: string;
 
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(5)
-  nivel?: number;
 
   // `null` explícito desasigna el tema (el documento vuelve a "General");
   // omitirlo deja el valor como estaba. Por eso admite null además de número.

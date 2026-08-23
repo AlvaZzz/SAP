@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { nivelLegadoId } from '../../common/niveles/nivel-legado';
 import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
 import { GenerarPreguntasDto, EditarPreguntaIaDto, AprobarPreguntaIaDto } from './dto/pregunta-ia.dto';
 import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
@@ -18,12 +19,6 @@ export class DocentePreguntasIaService {
     private readonly prisma: PrismaService,
     private readonly tutorIa: TutorIaService,
   ) {}
-
-  private async nivelId(numero: number): Promise<number> {
-    const nivel = await this.prisma.nivel.findUnique({ where: { numero } });
-    if (!nivel) throw new BadRequestException(`No existe el nivel ${numero}`);
-    return nivel.id;
-  }
 
   private async propia(id: number, autorId: number) {
     const p = await this.prisma.preguntaGenerada.findUnique({ where: { id } });
@@ -106,7 +101,8 @@ export class DocentePreguntasIaService {
   async aprobar(id: number, autorId: number, dto: AprobarPreguntaIaDto) {
     const p = await this.propia(id, autorId);
     if (p.estado !== 'borrador') throw new BadRequestException('Esta pregunta ya fue revisada');
-    const nivelId = await this.nivelId(dto.nivel);
+    // Vestigio de compatibilidad: `Ejercicio.nivelId` sigue siendo obligatorio.
+    const nivelId = await nivelLegadoId(this.prisma);
 
     const ejercicio = await this.prisma.$transaction(async (tx) => {
       const ej = await tx.ejercicio.create({

@@ -166,9 +166,8 @@ export default function DocenteEjerciciosPage() {
     // El tema efectivo es el subtema si se eligió; si no, el tema. El nivel de
     // gamificación se DERIVA de la unidad (Unidad N ↔ Nivel N): sin campo suelto.
     const temaIdFinal = form.subtemaId ? Number(form.subtemaId) : Number(form.temaId);
-    const nivelDerivado = unidades.find((u) => String(u.id) === form.unidadId)?.numero ?? 1;
     const payload = {
-      titulo: form.titulo.trim(), categoria: form.categoria.trim(), nivel: nivelDerivado,
+      titulo: form.titulo.trim(), categoria: form.categoria.trim(),
       temaId: temaIdFinal, estrellas: form.estrellas, banco,
       tipo: form.tipo, enunciado: form.enunciado.trim(), codigoPython: form.codigoPython.trim() || undefined,
       opciones: CON_OPCIONES.includes(form.tipo) ? form.opciones.map((o) => ({ id: o.id, texto: o.texto.trim() })) : [],

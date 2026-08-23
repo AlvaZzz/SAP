@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Banco } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { nivelLegadoId } from '../../common/niveles/nivel-legado';
 import { CrearEjercicioDto, EditarEjercicioDto, BANCOS_DOCENTE } from './dto/ejercicio.dto';
 import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
 import { dificultadDesdeEstrellas } from '../../mediciones/irt/irt';
@@ -18,13 +19,6 @@ export class DocenteEjerciciosService {
   /** Normaliza el banco recibido a uno gestionable por el docente (default práctica). */
   private banco(b?: Banco): Banco {
     return b && BANCOS_DOCENTE.includes(b) ? b : 'practica';
-  }
-
-  /** Traduce número de nivel (1-5) al id real del nivel. */
-  private async nivelId(numero: number): Promise<number> {
-    const nivel = await this.prisma.nivel.findUnique({ where: { numero } });
-    if (!nivel) throw new BadRequestException(`No existe el nivel ${numero}`);
-    return nivel.id;
   }
 
   async listar(filtros: { nivel?: number; categoria?: string; dificultad?: number; temaId?: number; banco?: Banco }) {
@@ -69,7 +63,8 @@ export class DocenteEjerciciosService {
   }
 
   async crear(dto: CrearEjercicioDto) {
-    const nivelId = await this.nivelId(dto.nivel);
+    // Vestigio de compatibilidad: `Ejercicio.nivelId` sigue siendo obligatorio.
+    const nivelId = await nivelLegadoId(this.prisma);
     const e = await this.prisma.ejercicio.create({
       data: {
         titulo: dto.titulo,
@@ -101,7 +96,6 @@ export class DocenteEjerciciosService {
     const data: Prisma.EjercicioUpdateInput = {
       ...(dto.titulo !== undefined ? { titulo: dto.titulo } : {}),
       ...(dto.categoria !== undefined ? { categoria: dto.categoria } : {}),
-      ...(dto.nivel !== undefined ? { nivel: { connect: { id: await this.nivelId(dto.nivel) } } } : {}),
       ...(dto.temaId !== undefined ? { tema: dto.temaId ? { connect: { id: dto.temaId } } : { disconnect: true } } : {}),
       ...(dto.estrellas !== undefined
         ? {

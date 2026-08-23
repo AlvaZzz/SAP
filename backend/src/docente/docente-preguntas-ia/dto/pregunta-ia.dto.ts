@@ -41,8 +41,6 @@ export class EditarPreguntaIaDto {
 
 /** Aprueba el borrador: el docente asigna nivel/XP/dificultad y se crea el Ejercicio real. */
 export class AprobarPreguntaIaDto {
-  @IsInt() @Min(1) @Max(5)
-  nivel!: number;
 
   @IsInt() @Min(1) @Max(5)
   estrellas!: number;

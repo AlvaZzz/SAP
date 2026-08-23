@@ -6,7 +6,7 @@ import { UnidadDocente, TemaDocente } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, EmptyState } from '@/components/ui';
 import { ImageUpload } from '@/components/image-upload';
 import { Markdown } from '@/components/markdown';
-import { Plus, Edit, Trash2, Layers, CheckCircle, Lock, AlertTriangle, ClipboardList } from '@/components/icons';
+import { Plus, Edit, Trash2, Layers, CheckCircle, Lock, AlertTriangle, ClipboardList, Eye } from '@/components/icons';
 
 interface FormUnidad { numero: number; titulo: string; descripcion: string; introduccion: string; repaso: string; dashObjetivos: string; dashAnalogias: string; xp: number }
 const VACIO_UNIDAD: FormUnidad = { numero: 1, titulo: '', descripcion: '', introduccion: '', repaso: '', dashObjetivos: '', dashAnalogias: '', xp: 0 };
@@ -154,6 +154,32 @@ export default function DocenteUnidadesPage() {
                       <button onClick={() => eliminarUnidad(u)} title="Eliminar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </div>
+
+                  {/* POR QUÉ EL ESTUDIANTE TODAVÍA NO VE ESTA UNIDAD.
+                      Son DOS candados independientes y el docente los confundía
+                      con un fallo: publicar todos los temas no basta si la
+                      unidad anterior no está superada, y aprobar la anterior no
+                      basta si los temas siguen en borrador. Decirlo aquí evita
+                      buscar un defecto donde solo hay una regla. */}
+                  {(() => {
+                    const publicados = u.temas.filter((t) => t.publicado).length;
+                    const avisos: string[] = [];
+                    if (u.temas.length === 0 || publicados === 0) {
+                      avisos.push('ningún tema está publicado todavía');
+                    } else if (publicados < u.temas.length) {
+                      avisos.push(`${u.temas.length - publicados} de ${u.temas.length} temas siguen en borrador`);
+                    }
+                    if (u.numero > 1) {
+                      avisos.push(`se desbloquea al aprobar el examen de la Unidad ${u.numero - 1} con nivel Intermedio`);
+                    }
+                    if (avisos.length === 0) return null;
+                    return (
+                      <p className="mb-3 flex items-start gap-2 rounded-xl border border-line bg-subtle/60 px-3.5 py-2.5 text-xs text-muted">
+                        <Eye className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        <span><b className="text-fg">Visibilidad para el estudiante:</b> {avisos.join(' · ')}.</span>
+                      </p>
+                    );
+                  })()}
 
                   {u.temas.length === 0 ? (
                     <p className="rounded-xl bg-subtle px-4 py-3 text-sm text-muted">Sin temas todavía. Usa &quot;+ Tema&quot; para agregar el primero.</p>
