@@ -128,6 +128,23 @@ describe('1 · Contenido MÁS ALLÁ de la quinta unidad', () => {
     expect(JSON.stringify(r.data)).toMatch(/nivel/);
   });
 
+  it('RECHAZA un XP por encima del techo, con el valor aceptable', async () => {
+    // El rango llegaba a 500, veinte veces por encima del ítem más generoso del
+    // banco: aceptaba cualquier cifra tecleada por error y desequilibraba el
+    // ranking sin avisar.
+    const r = await req('POST', '/docente/ejercicios', {
+      token: docenteTk,
+      body: {
+        titulo: 'Ejercicio con XP desbordado', categoria: 'Variables', temaId, estrellas: 2,
+        tipo: 'opcion_multiple', enunciado: 'Este no deberia crearse por el XP',
+        opciones: [{ id: 'A', texto: 'a' }, { id: 'B', texto: 'b' }, { id: 'C', texto: 'c' }, { id: 'D', texto: 'd' }],
+        respuestaCorrecta: 'A', xp: 500,
+      },
+    });
+    expect(r.status).toBe(400);
+    expect(JSON.stringify(r.data)).toMatch(/xp/i);
+  });
+
   it('EDITA el ejercicio recién creado', async () => {
     const id = ejerciciosCreados[0];
     const r = await req('PUT', `/docente/ejercicios/${id}`, {
@@ -142,7 +159,7 @@ describe('1 · Contenido MÁS ALLÁ de la quinta unidad', () => {
       token: docenteTk,
       body: {
         titulo: 'Reto E2E', categoria: 'Variables', temaId, estrellas: 3,
-        enunciado: 'Escribe un programa que sume dos numeros enteros', xp: 40,
+        enunciado: 'Escribe un programa que sume dos numeros enteros', xp: 25,
       },
     });
     expect(r.status).toBe(201);

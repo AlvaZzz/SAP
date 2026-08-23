@@ -174,7 +174,7 @@ export default function DocenteRetosPage() {
           <div className="sm:col-span-2"><Field label="Título" error={errores.titulo}><Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ej: FizzBuzz" /></Field></div>
           <Field label="Categoría" error={errores.categoria}><Input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="Bucles, Cadenas…" /></Field>
           <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(form.estrellas)} onChange={(e) => setForm({ ...form, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
-          <Field label="XP máximo" error={errores.xp}><Input type="number" min={5} max={500} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
+          <Field label="XP máximo" error={errores.xp}><Input type="number" min={5} max={25} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
           {/* Ubicación académica: agrupa el reto en la vista del estudiante por Unidad → Tema → Subtema. */}
           <div className="sm:col-span-2"><SelectorTema temas={temas} valor={form.temaId} onChange={(temaId) => setForm({ ...form, temaId })} hint="Ubica el reto en el temario: tus estudiantes lo verán junto al tema que estudian." /></div>
           <div className="sm:col-span-2"><Field label="Enunciado / descripción del problema" error={errores.enunciado}><Textarea value={form.enunciado} onChange={(e) => setForm({ ...form, enunciado: e.target.value })} placeholder="Describe el reto de programación." /></Field></div>

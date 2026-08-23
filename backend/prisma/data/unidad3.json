@@ -761,7 +761,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: ¿por qué la independencia relativa entre módulos facilita el trabajo en equipo?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Al poder desarrollarse, probarse y mantenerse de forma separada, distintos programadores pueden trabajar en módulos distintos con menor riesgo de interferencia.",
           "fuenteDoc": {
             "unidad": "3",
@@ -795,7 +795,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un sistema divide el problema gestionar una biblioteca en los sub-problemas registrar libros, registrar préstamos y generar reportes, cada uno implementado como un módulo independiente con una interfaz clara de parámetros. Evalúe si cumple las cuatro características de la modularización.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Cumplir las cuatro características exige, además de la división en tareas concretas y la interfaz definida, que cada módulo sea independiente y potencialmente reutilizable.",
           "fuenteDoc": {
             "unidad": "3",
@@ -829,7 +829,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe por qué programar es resolver problemas justifica el enfoque modular:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Si programar equivale a resolver problemas, y la forma más eficaz de resolver un problema complejo es dividirlo, la modularización es una consecuencia directa de esa lógica.",
           "fuenteDoc": {
             "unidad": "3",
@@ -863,7 +863,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: La ausencia de ______ definida entre módulos puede provocar que un cambio interno en un módulo rompa el funcionamiento de otro que dependía de su estructura interna.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La interfaz definida limita la comunicación a parámetros, funciones o métodos específicos, protegiendo a los demás módulos de cambios internos.",
           "fuenteDoc": {
             "unidad": "3",
@@ -879,7 +879,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice la afirmación: un módulo con alta reutilización y alta independencia relativa, pero sin funcionalidad clara, sigue siendo un buen módulo. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Las cuatro características son complementarias; la falta de funcionalidad clara implica que el módulo no tiene un propósito bien delimitado, lo que compromete su utilidad real.",
           "fuenteDoc": {
             "unidad": "3",
@@ -1669,7 +1669,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué la escalabilidad depende indirectamente de la independencia relativa de los módulos vista en el tema anterior:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Si los módulos no fueran independientes, agregar una nueva función obligaría a modificar el resto del sistema, contradiciendo la escalabilidad.",
           "fuenteDoc": {
             "unidad": "3",
@@ -1703,7 +1703,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un sistema bancario reutiliza el mismo módulo de validación de cuenta en los procesos de retiros, depósitos y transferencias. Al corregir un error en ese módulo, el error se soluciona simultáneamente en los tres procesos. ¿Qué combinación de ventajas se observa?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Reutilizar el módulo valida la ventaja de reutilización, y corregir el error en un solo lugar beneficia a todos los procesos gracias al mantenimiento más sencillo.",
           "fuenteDoc": {
             "unidad": "3",
@@ -1737,7 +1737,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe la afirmación: la legibilidad es una ventaja secundaria que no impacta la calidad técnica del software. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La legibilidad no es meramente estética: favorece directamente el mantenimiento y la colaboración, ventajas con impacto técnico real.",
           "fuenteDoc": {
             "unidad": "3",
@@ -1771,7 +1771,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Si un equipo de programadores divide un sistema grande en módulos independientes, la ventaja que más directamente permite que trabajen en paralelo sin bloquearse es la de trabajo en ______.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El módulo define esta ventaja precisamente como la posibilidad de que varios programadores trabajen en módulos distintos sin interferir.",
           "fuenteDoc": {
             "unidad": "3",
@@ -1787,7 +1787,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: un sistema no modular (todo en un solo bloque de código) necesita ser reescrito casi por completo cada vez que se agrega una función. ¿Qué ventaja de la modularización está ausente en este sistema?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La necesidad de reescribir todo el programa para agregar una función es exactamente lo que la escalabilidad de la modularización busca evitar.",
           "fuenteDoc": {
             "unidad": "3",
@@ -1823,7 +1823,7 @@
           "nivelSugerido": "avanzado",
           "enunciado": "Escribe una función es_primo(n) que devuelva True si n es primo y False en caso contrario.",
           "codigoInicial": "def es_primo(n):\n    # tu código aquí\n    return False\n\nprint(es_primo(7))",
-          "xp": 100,
+          "xp": 25,
           "esBugHunt": false,
           "activo": true,
           "fuenteDoc": {
@@ -2608,7 +2608,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: un módulo de procesamiento de pagos tiene alta cohesión (solo procesa pagos) pero alto acoplamiento (depende directamente de variables internas de otros tres módulos). ¿Qué riesgo principal enfrenta el sistema?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Aunque la cohesión interna sea buena, el alto acoplamiento externo sigue haciendo vulnerable al módulo ante cambios en los módulos de los que depende.",
           "fuenteDoc": {
             "unidad": "3",
@@ -2642,7 +2642,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un arquitecto de software rediseña un sistema separando la lógica de negocio de la lógica de acceso a datos, definiendo interfaces claras entre ambos módulos. ¿Qué efecto es más probable sobre acoplamiento y cohesión?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Separar responsabilidades con interfaces claras reduce las dependencias directas (bajo acoplamiento) y permite que cada módulo se enfoque en un propósito único (alta cohesión).",
           "fuenteDoc": {
             "unidad": "3",
@@ -2676,7 +2676,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe: un sistema puede tener alta cohesión en todos sus módulos y aun así presentar alto acoplamiento entre ellos. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Cohesión y acoplamiento son dimensiones independientes: una mide la organización interna de un módulo y la otra mide la interdependencia entre módulos distintos.",
           "fuenteDoc": {
             "unidad": "3",
@@ -2710,7 +2710,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Dos módulos con alta cohesión interna pero que comparten y modifican las mismas variables globales directamente presentan un ______ acoplamiento a pesar de su buen diseño interno.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Compartir y modificar variables globales directamente crea una fuerte interdependencia, es decir, alto acoplamiento, independientemente de la cohesión interna de cada módulo.",
           "fuenteDoc": {
             "unidad": "3",
@@ -2726,7 +2726,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué la combinación bajo acoplamiento/alta cohesión favorece específicamente la escalabilidad de un sistema, vista en el tema de ventajas de la modularización:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Un bajo acoplamiento permite añadir nuevos módulos sin romper los existentes, y una alta cohesión asegura que cada nuevo módulo tenga un propósito claro, lo que favorece la escalabilidad.",
           "fuenteDoc": {
             "unidad": "3",
@@ -3512,7 +3512,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué Divide y Vencerás se considera el pilar fundamental de la programación modular y no solo una técnica de algoritmos:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La programación modular divide problemas en módulos (subprogramas), y Divide y Vencerás aplica esa misma lógica de descomposición y combinación a nivel algorítmico, de ahí que se le considere su pilar fundamental.",
           "fuenteDoc": {
             "unidad": "3",
@@ -3546,7 +3546,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un desarrollador reutiliza una función ya existente sumaDigitos() en tres programas distintos sin modificarla. Al mismo tiempo, otro desarrollador nota que un cálculo de IVA se repite copiado y pegado en esos mismos tres programas. Evalúe cuál principio está bien aplicado y cuál no.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Reutilizar sumaDigitos() sin duplicarla es correcto; en cambio, copiar y pegar el cálculo de IVA contradice el principio de reusabilidad, que recomienda convertirlo en una función.",
           "fuenteDoc": {
             "unidad": "3",
@@ -3580,7 +3580,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe la afirmación: toda función reutilizada en varios programas es un ejemplo de Divide y Vencerás. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Son principios relacionados pero distintos: la reutilización evita duplicar código, mientras que Divide y Vencerás es una estrategia de descomposición y combinación de problemas.",
           "fuenteDoc": {
             "unidad": "3",
@@ -3614,7 +3614,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Cuando una función resuelve un problema llamándose a sí misma sobre una versión más pequeña del mismo problema hasta llegar a un caso base, se dice que aplica ______, mecanismo típico de Divide y Vencerás.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El módulo señala que los subproblemas de Divide y Vencerás se resuelven de forma independiente, generalmente mediante recursión.",
           "fuenteDoc": {
             "unidad": "3",
@@ -3630,7 +3630,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: un sistema aplica Divide y Vencerás para ordenar una lista, pero cada subproblema se resuelve con código totalmente distinto y no reutilizable. ¿Qué principio de la programación modular no se está aprovechando plenamente?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Aunque se aplique Divide y Vencerás, no reutilizar el código de resolución de los subproblemas desaprovecha el principio de reusabilidad que complementa a la modularización.",
           "fuenteDoc": {
             "unidad": "3",
@@ -4434,7 +4434,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué el Diseño Top-Down reduce el riesgo de errores en sistemas grandes en comparación con escribir el programa completo de una sola vez:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Descomponer el problema en niveles manejables permite verificar cada parte por separado, reduciendo la complejidad de detectar errores respecto a un bloque de código único y extenso.",
           "fuenteDoc": {
             "unidad": "3",
@@ -4468,7 +4468,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un arquitecto de software diseña un sistema de reservas dividiendo el problema en Buscar Disponibilidad, Reservar y Confirmar Pago, y cada uno de estos en subniveles más específicos, definiendo claramente qué datos entrega cada nivel al siguiente. Evalúe si este enfoque corresponde al Diseño Top-Down.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El enfoque descrito reproduce exactamente los elementos definitorios del Diseño Top-Down: niveles jerárquicos, subdivisión progresiva y comunicación mediante entradas y salidas.",
           "fuenteDoc": {
             "unidad": "3",
@@ -4502,7 +4502,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe la afirmación: el Diseño Top-Down y el principio de modularidad son conceptos independientes sin relación entre sí. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El Top-Down es el método de diseño que produce los módulos (funciones o procedimientos) sobre los cuales luego se aplican y se aprovechan las ventajas de la programación modular.",
           "fuenteDoc": {
             "unidad": "3",
@@ -4536,7 +4536,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Cuando un nivel jerárquico superior del diseño Top-Down no puede continuar hasta recibir el resultado de su nivel inferior, se evidencia que ambos niveles están relacionados mediante entradas y ______ de información.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Esta relación de dependencia mediante entradas y salidas es justamente la que describe el módulo entre etapas jerárquicas consecutivas.",
           "fuenteDoc": {
             "unidad": "3",
@@ -4552,7 +4552,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: un equipo aplica el diseño Top-Down pero refina los niveles hasta unidades demasiado grandes para implementar directamente en una sola función clara. ¿Qué principio del Top-Down no se cumplió?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El Top-Down exige refinar cada paso hasta un tamaño suficientemente pequeño para su implementación directa; detenerse antes de ese punto contradice ese principio.",
           "fuenteDoc": {
             "unidad": "3",
@@ -5351,7 +5351,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué la analogía y=f(x) es útil para entender las funciones en programación, más allá de lo matemático:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La analogía resalta la idea conceptual de transformar una entrada en una salida mediante un proceso, que es aplicable a cualquier tipo de dato en programación, no solo a números.",
           "fuenteDoc": {
             "unidad": "3",
@@ -5385,7 +5385,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un estudiante escribe una función que calcula el promedio de una lista de números, pero olvida incluir la sentencia return y en su lugar usa print dentro de la función. Evalúe qué limitación tiene ese diseño si se necesita usar el promedio en un cálculo posterior.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "print solo muestra el valor en pantalla; sin return, ese valor no queda disponible como resultado utilizable en otras partes del programa.",
           "fuenteDoc": {
             "unidad": "3",
@@ -5419,7 +5419,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe: toda función en Python debe tener al menos un argumento de entrada, igual que y=f(x) siempre tiene una x. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Como se profundiza en el resto del módulo, Python permite funciones sin parámetros; la analogía y=f(x) ilustra el caso general, pero no es un requisito obligatorio.",
           "fuenteDoc": {
             "unidad": "3",
@@ -5453,7 +5453,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: La expresión matemática Y = f(x1, x2, x3, x4…) generaliza el concepto de función a ______ argumentos de entrada, no solo a uno.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Esta notación extiende la idea de y=f(x) a funciones que reciben más de un argumento de entrada.",
           "fuenteDoc": {
             "unidad": "3",
@@ -5469,7 +5469,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: una función definida como def transformar(x): return x, sin ninguna operación sobre x. ¿Qué relación entrada-salida representa?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Al retornar directamente x sin modificarlo, la función actúa como una función identidad matemática, donde y=x.",
           "fuenteDoc": {
             "unidad": "3",
@@ -6259,7 +6259,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: una función def suma(a, b, c=0) se llama como suma(5, 4, 3). ¿Qué tipo de argumentos se están utilizando en esta llamada específica, aunque la función admita valores por defecto?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Aunque c tenga un valor por defecto, en esta llamada los tres valores se pasan por posición (orden), sin usar nombre=valor.",
           "fuenteDoc": {
             "unidad": "3",
@@ -6293,7 +6293,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe el siguiente código y determine su salida:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Al usar argumentos por nombre, el orden de escritura no importa; a=10, b=2, c=5, por lo que 10+2+5=17.",
           "fuenteDoc": {
             "unidad": "3",
@@ -6328,7 +6328,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué una función con argumentos de longitud variable definida mediante una lista (como suma(numeros)) resuelve una limitación que ni los argumentos por posición ni los argumentos por defecto pueden resolver completamente:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El módulo aclara que incluso con valores por defecto existe un número máximo de argumentos posibles; solo la técnica de longitud variable (mediante una lista) permite una cantidad verdaderamente indefinida.",
           "fuenteDoc": {
             "unidad": "3",
@@ -6362,7 +6362,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Si una función usa return valor1, valor2 y se captura con x, y = funcion(), Python interpreta esto internamente como la devolución de una ______ que luego se desempaqueta en x e y.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Cuando return devuelve varios valores separados por coma, Python los agrupa como una tupla que se puede desempaquetar en múltiples variables al llamarla.",
           "fuenteDoc": {
             "unidad": "3",
@@ -6378,7 +6378,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe la afirmación: da igual usar argumentos por posición o por nombre, el resultado de la función siempre será exactamente el mismo en cualquier caso. Analice bajo qué condición esto es cierto:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "En operaciones no conmutativas (como la resta), invertir el orden posicional sin usar nombre cambia el resultado (por ejemplo, resta(15,8) no es igual a resta(8,15)), mientras que usar argumentos por nombre garantiza asignar el valor correcto a cada parámetro independientemente del orden escrito.",
           "fuenteDoc": {
             "unidad": "3",
@@ -7164,7 +7164,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por qué el ejemplo de la función Capicua(N), que reutiliza Invertir(N), es un caso representativo de los principios vistos en toda la Unidad 3:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Capicua(N) ejemplifica de forma integrada la definición de funciones, la reutilización de código y la descomposición de problemas en subproblemas (Divide y Vencerás), pilares de la Unidad 3.",
           "fuenteDoc": {
             "unidad": "3",
@@ -7198,7 +7198,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe la función SumaSerie(N,X) para determinar si genera un error cuando N=0: dado que el bucle recorre i=1,N,1 y no se ejecutaría ninguna iteración, ¿qué valor devolvería S?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Como S se inicializa en 0 antes del bucle y el bucle no itera si N=0, la función retornaría S=0 sin ejecutar ninguna suma.",
           "fuenteDoc": {
             "unidad": "3",
@@ -7232,7 +7232,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalúe la afirmación: generar los primeros N números primos con GeneraPrimo(N) no depende de ninguna otra función, ya que verifica los números directamente. Esta afirmación es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Según el diagrama del módulo, GeneraPrimo(N) llama a Verifica(CN) en cada iteración para decidir si el número candidato CN debe contarse como primo.",
           "fuenteDoc": {
             "unidad": "3",
@@ -7266,7 +7266,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: El ejercicio propuesto en el módulo que solicita reutilizar las funciones esPar y sumatoriaDigitos para contar cuántos números impares ingresó el usuario, corta la repetición cuando la suma de dígitos de un número es mayor a 1000 o es múltiplo de ______.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El enunciado del ejercicio propuesto en el módulo establece esas dos condiciones de corte: suma de dígitos mayor a 1000 o múltiplo de 5.",
           "fuenteDoc": {
             "unidad": "3",
@@ -7282,7 +7282,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: en el ejercicio propuesto sobre sumatoriaDigitos, se indica reutilizar la estrategia utilizada en un ejercicio anterior de la guía. ¿Qué principio de la Unidad 3 se está aplicando explícitamente al pedir esa reutilización?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Pedir explícitamente que se reutilice una estrategia ya desarrollada en otro ejercicio es una aplicación directa del principio de reusabilidad presentado en el módulo.",
           "fuenteDoc": {
             "unidad": "3",
@@ -7492,7 +7492,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Evalúe por qué Divide y Vencerás se considera el pilar de la programación modular:",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "Comparten la estrategia de descomposición y combinación de un problema complejo.",
       "fuenteDoc": {
         "unidad": "3",
@@ -7526,7 +7526,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Un arquitecto separa un sistema en niveles jerárquicos donde cada nivel entrega datos al siguiente. ¿Qué técnica aplica?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "Estructurar el diseño en niveles jerárquicos relacionados por entradas y salidas es el Diseño Top-Down.",
       "fuenteDoc": {
         "unidad": "3",
@@ -7560,7 +7560,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Evalúe: un sistema con alta cohesión en todos sus módulos garantiza automáticamente bajo acoplamiento entre ellos. Esta afirmación es:",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "La cohesión describe el interior de un módulo; el acoplamiento describe la relación entre módulos distintos; una no garantiza la otra.",
       "fuenteDoc": {
         "unidad": "3",
@@ -7594,7 +7594,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Evalúe la salida:",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "Con argumentos por nombre el orden no importa: a=10,b=2,c=5, entonces 10+2+5=17.",
       "fuenteDoc": {
         "unidad": "3",
@@ -7629,7 +7629,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Analice por qué Capicua(N), reutilizando Invertir(N), ejemplifica los principios centrales de la Unidad 3:",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "Capicua(N) combina la definición de funciones, el principio de reusabilidad (reutiliza Invertir) y la descomposición de un problema en un subproblema ya resuelto.",
       "fuenteDoc": {
         "unidad": "3",

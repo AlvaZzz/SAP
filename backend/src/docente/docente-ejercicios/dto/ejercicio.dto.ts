@@ -4,6 +4,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TipoEjercicio, Banco } from '@prisma/client';
+import { XP_MAX_ITEM } from '../../../common/xp/tope';
 
 // El docente solo gestiona estos dos bancos (nunca pretest/postest, que son la
 // medición de la tesis): práctica (5 niveles) y examen de fin de unidad.
@@ -73,7 +74,11 @@ export class CrearEjercicioDto {
   @IsString() @MinLength(1) @MaxLength(300)
   respuestaCorrecta!: string;
 
-  @IsInt() @Min(5) @Max(500)
+  // TOPE DE XP: 25. El rango anterior llegaba a 500, veinte veces por encima
+  // del ejercicio mas generoso que existe en el banco. Un rango asi no valida
+  // nada: acepta cualquier cifra que el docente teclee por error y desequilibra
+  // el ranking sin avisar. 25 es el techo pedagogico acordado.
+  @IsInt() @Min(5) @Max(XP_MAX_ITEM)
   xp!: number;
 
   @IsOptional() @IsString()
@@ -118,7 +123,7 @@ export class EditarEjercicioDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(300)
   respuestaCorrecta?: string;
 
-  @IsOptional() @IsInt() @Min(5) @Max(500)
+  @IsOptional() @IsInt() @Min(5) @Max(XP_MAX_ITEM)
   xp?: number;
 
   @IsOptional() @IsString()

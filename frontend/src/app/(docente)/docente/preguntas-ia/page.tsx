@@ -254,7 +254,7 @@ export default function DocentePreguntasIaPage() {
         <p className="mb-4 text-sm text-muted">Asigna el nivel de gamificación, la dificultad y el XP de este ejercicio antes de publicarlo para los estudiantes.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(formAprobar.estrellas)} onChange={(e) => setFormAprobar({ ...formAprobar, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
-          <Field label="XP"><Input type="number" min={5} max={500} value={formAprobar.xp} onChange={(e) => setFormAprobar({ ...formAprobar, xp: Number(e.target.value) })} /></Field>
+          <Field label="XP"><Input type="number" min={5} max={25} value={formAprobar.xp} onChange={(e) => setFormAprobar({ ...formAprobar, xp: Number(e.target.value) })} /></Field>
         </div>
       </Modal>
     </div>

@@ -1,4 +1,5 @@
 import { IsInt, IsString, Min, Max, IsOptional, IsBoolean, MaxLength } from 'class-validator';
+import { XP_MAX_ITEM } from '../../../common/xp/tope';
 
 /** Revisión de una entrega de reto: aprobar (con XP) o pedir mejoras. */
 export class RevisarEntregaDto {
@@ -6,7 +7,9 @@ export class RevisarEntregaDto {
   aprobado!: boolean;
 
   // XP a otorgar si se aprueba (0 si se pide mejorar). Acotado al máximo del reto en el backend.
-  @IsOptional() @IsInt() @Min(0) @Max(500)
+  // No puede superar el tope de XP de un reto (25): lo que se otorga al
+  // revisar es el XP de ESE reto, no una cifra libre.
+  @IsOptional() @IsInt() @Min(0) @Max(XP_MAX_ITEM)
   xp?: number;
 
   @IsOptional() @IsString() @MaxLength(1000)

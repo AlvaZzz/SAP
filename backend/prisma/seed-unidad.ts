@@ -28,6 +28,7 @@ import { PrismaClient, Prisma, NivelDificultad, TipoEjercicio, Banco } from '@pr
 import * as fs from 'fs';
 import * as path from 'path';
 import { equilibrarClavesLetras, ItemLetra, SEMILLA_BANCO } from '../src/common/banco/clave-equilibrada';
+import { XP_MAX_ITEM, toparXp } from '../src/common/xp/tope';
 
 const prisma = new PrismaClient();
 
@@ -309,7 +310,7 @@ async function main() {
             codigoPython: it.codigoPython ?? null,
             opciones: (it.opciones ?? []) as unknown as Prisma.InputJsonValue,
             respuestaCorrecta: it.respuestaCorrecta,
-            xp: it.xp ?? XP_DEFECTO[it.nivel],
+            xp: toparXp(it.xp ?? XP_DEFECTO[it.nivel]),
             explicacionIa: it.explicacion ?? null,
             banco: Banco.practica, activo: true,
             fuenteDoc: it.fuenteDoc as unknown as Prisma.InputJsonValue,
@@ -343,7 +344,7 @@ async function main() {
             ejemploSalida: r.ejemploSalida ?? null,
             // La SOLUCIÓN DE REFERENCIA viaja en respuestaCorrecta (la ve el docente al revisar).
             respuestaCorrecta: r.solucionReferencia ?? null,
-            xp: r.xp ?? 50,
+            xp: toparXp(r.xp ?? XP_MAX_ITEM),
             esBugHunt: r.esBugHunt ?? false,
             activo: r.activo ?? true,
             autorId: autor!.id,
@@ -370,7 +371,7 @@ async function main() {
           codigoPython: it.codigoPython ?? null,
           opciones: (it.opciones ?? []) as unknown as Prisma.InputJsonValue,
           respuestaCorrecta: it.respuestaCorrecta,
-          xp: it.xp ?? XP_DEFECTO[it.nivel],
+          xp: toparXp(it.xp ?? XP_DEFECTO[it.nivel]),
           explicacionIa: it.explicacion ?? null,
           banco: Banco.examen, activo: true,
           fuenteDoc: it.fuenteDoc as unknown as Prisma.InputJsonValue,

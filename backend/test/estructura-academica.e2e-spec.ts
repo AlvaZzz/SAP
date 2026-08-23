@@ -122,7 +122,7 @@ describe('2 · Nuevos tipos de pregunta: se crean sin publicar el tema todavía'
       body: {
         titulo: 'Completar E2E', categoria: 'Bucles', temaId, estrellas: 2, tipo: 'completar_codigo',
         enunciado: 'Completa el bucle que recorre 10 veces', codigoPython: 'for ___:\n    print(i)',
-        respuestaCorrecta: 'i in range(10)|i in range(0,10)', xp: 40,
+        respuestaCorrecta: 'i in range(10)|i in range(0,10)', xp: 25,
       },
     });
     expect(r.status).toBe(201);
@@ -140,7 +140,7 @@ describe('2 · Nuevos tipos de pregunta: se crean sin publicar el tema todavía'
           { id: 'A', texto: 'def sumar(a, b):' },
           { id: 'B', texto: '    return a + b' },
         ],
-        respuestaCorrecta: 'A,B', xp: 45,
+        respuestaCorrecta: 'A,B', xp: 25,
       },
     });
     expect(r.status).toBe(201);

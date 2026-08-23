@@ -761,7 +761,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un algoritmo indica 'repita hasta que el usuario se canse'. Analice cuales caracteristicas se ven comprometidas.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La condicion de parada es subjetiva (viola definibilidad) y no garantiza termino (viola finitud).",
           "fuenteDoc": {
             "unidad": "1",
@@ -795,7 +795,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Por que la especificacion clara de entradas y salidas es condicion previa a la definibilidad?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Si no se define que recibe y que produce, existen interpretaciones multiples, lo que rompe la definibilidad.",
           "fuenteDoc": {
             "unidad": "1",
@@ -829,7 +829,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un algoritmo de busqueda no especifica que hacer si el elemento no existe. Que problema representa?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Todos los casos posibles deben estar definidos; dejar un caso abierto introduce ambiguedad.",
           "fuenteDoc": {
             "unidad": "1",
@@ -863,7 +863,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Euclides y Al-Kowaritzmi son considerados los dos grandes padres de la ciencia de los ______.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo senala que Euclides se considera junto a Al-Kowaritzmi el otro gran padre de la ciencia de los algoritmos.",
           "fuenteDoc": {
             "unidad": "1",
@@ -879,7 +879,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue: 'Todo programa implementa un algoritmo, pero no todo algoritmo esta implementado en un programa'. Esta afirmacion es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El algoritmo es un concepto abstracto que puede expresarse en pseudocodigo o diagrama sin llegar a codificarse.",
           "fuenteDoc": {
             "unidad": "1",
@@ -1669,7 +1669,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: por que la prueba de escritorio se realiza antes de codificar en la guia de practica?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La prueba de escritorio verifica la logica en la fase de representacion, evitando codificar un diseno erroneo.",
           "fuenteDoc": {
             "unidad": "1",
@@ -1703,7 +1703,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un proyecto entrego a tiempo, compila sin errores, pero el cliente dice que no resuelve su necesidad. Que fase fallo?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Un producto tecnicamente correcto que no resuelve la necesidad indica que el problema fue mal definido.",
           "fuenteDoc": {
             "unidad": "1",
@@ -1737,7 +1737,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue el costo relativo de corregir un error segun la fase en que se detecta:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Un error de definicion detectado en prueba obliga a rehacer representacion y codificacion, multiplicando el costo.",
           "fuenteDoc": {
             "unidad": "1",
@@ -1771,7 +1771,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: El modelo de fases descrito en el modulo es de caracter ______ porque cada etapa avanza hacia la siguiente.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Las fases se recorren en orden, apoyandose cada una en el producto de la anterior.",
           "fuenteDoc": {
             "unidad": "1",
@@ -1787,7 +1787,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Se detecta un fallo estructural del algoritmo durante la codificacion. Cual es la conducta tecnicamente correcta?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Corregir en la fase donde se origino el error evita arrastrar deuda tecnica y errores adicionales.",
           "fuenteDoc": {
             "unidad": "1",
@@ -2569,7 +2569,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por que la clasificacion por niveles es relativa y no absoluta:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El nivel indica distancia respecto del hardware; entre bajo y alto existe el nivel medio, mostrando que es un continuo.",
           "fuenteDoc": {
             "unidad": "1",
@@ -2603,7 +2603,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un programa correcto en sintaxis y semantica falla al resolver el problema del usuario. Donde esta el error?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Si la sentencia esta bien formada y significa lo que dice, el fallo esta antes: en el diseno o en la definicion.",
           "fuenteDoc": {
             "unidad": "1",
@@ -2637,7 +2637,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue: 'Elegir un lenguaje de alto nivel elimina la necesidad de disenar el algoritmo'. Esta afirmacion es:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El lenguaje es el medio de expresion; el algoritmo sigue siendo indispensable.",
           "fuenteDoc": {
             "unidad": "1",
@@ -2671,7 +2671,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: La distincion entre sintaxis y ______ explica por que un programa puede compilar y aun asi hacer algo incorrecto.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La sintaxis valida la forma; la semantica el significado. Un programa bien formado puede significar algo no deseado.",
           "fuenteDoc": {
             "unidad": "1",
@@ -2687,7 +2687,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Por que el lenguaje ensamblador se considera de bajo nivel pese a usar palabras y no ceros y unos?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El ensamblador es una representacion simbolica directa del lenguaje maquina, por eso sigue siendo de bajo nivel.",
           "fuenteDoc": {
             "unidad": "1",
@@ -3469,7 +3469,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: por que se afirma que Python es compilado e interpretado a la vez?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo indica que Python y Java primero se compilan y luego se interpretan cuando se ejecutan.",
           "fuenteDoc": {
             "unidad": "1",
@@ -3503,7 +3503,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un programa compilado se distribuye como ejecutable a maquinas con distinto sistema operativo y no funciona. Explique:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La compilacion produce codigo maquina ligado a una plataforma; por eso el interpretado es mas portable.",
           "fuenteDoc": {
             "unidad": "1",
@@ -3537,7 +3537,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue el compromiso entre flexibilidad y velocidad en interpretes y compiladores:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo senala que los interpretados dan flexibilidad y desarrollo mas rapido a costa de velocidad de ejecucion.",
           "fuenteDoc": {
             "unidad": "1",
@@ -3571,7 +3571,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Cuando la CPU ejecuta un programa ya compilado no necesita un ______ porque ejecuta directamente las instrucciones traducidas.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo indica que tras la compilacion la CPU ya no necesita traductor.",
           "fuenteDoc": {
             "unidad": "1",
@@ -3587,7 +3587,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un IDE no compila ni interpreta por si mismo. Que rol cumple entonces respecto de esas herramientas?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El IDE agrupa y coordina editor, compilador o interprete y depurador en una sola interfaz.",
           "fuenteDoc": {
             "unidad": "1",
@@ -4377,7 +4377,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue la expresion con la jerarquia del modulo: 7 * 10 - 15 mod 3 * 4 + 9",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Siguiendo la jerarquia del modulo (que ubica div y mod tras suma y resta) el desarrollo del ejemplo da 13.",
           "fuenteDoc": {
             "unidad": "1",
@@ -4411,7 +4411,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue: (7 * (10 - 5) mod 3) * 4 + 9",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "10-5=5, 7*5=35, 35 mod 3=2, 2*4=8, 8+9=17, como en el ejemplo del modulo.",
           "fuenteDoc": {
             "unidad": "1",
@@ -4445,7 +4445,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Cual es la salida del siguiente codigo Python?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La division real da 3.5, la division entera da 3 y el resto da 1.",
           "fuenteDoc": {
             "unidad": "1",
@@ -4480,7 +4480,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete el codigo del ejercicio 7 de la practica (rotacion a la derecha sin variables auxiliares):",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La asignacion multiple permite rotar sin auxiliares: el nuevo X toma el valor de Z, Y toma X y Z toma Y, dando 67 24 3.",
           "fuenteDoc": {
             "unidad": "1",
@@ -4497,7 +4497,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un estudiante escribe: Pepe <- 14 y luego Pepe <- 2.5 en una variable declarada ENTERO. Segun el modulo, que ocurre?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo advierte que el resultado depende del compilador y recomienda no usar variable entera para guardar reales.",
           "fuenteDoc": {
             "unidad": "1",
@@ -5323,7 +5323,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Con a=10, b=12, c=13, d=10, evalue paso a paso: not((a>=d) and (b<c)) or (c=d)",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "a>=d es V y b<c es V, la conjuncion da V, su negacion da F; c=d es F; F or F da falso.",
           "fuenteDoc": {
             "unidad": "1",
@@ -5357,7 +5357,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por que (a<b) and (b<c) no es equivalente a escribir a<b<c en pseudocodigo:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo presenta a<b<c entre los ejemplos no logicos: las comparaciones deben unirse con operadores logicos.",
           "fuenteDoc": {
             "unidad": "1",
@@ -5391,7 +5391,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Cual es la salida del siguiente codigo Python?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "En Python and devuelve el primer operando falso (0) y or devuelve el primer operando verdadero (5).",
           "fuenteDoc": {
             "unidad": "1",
@@ -5426,7 +5426,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete la condicion compuesta del ejercicio 12 de la practica (entre 501 y 1000 panes):",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Ambas condiciones deben cumplirse simultaneamente, por lo que se unen con el operador logico and.",
           "fuenteDoc": {
             "unidad": "1",
@@ -5443,7 +5443,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un estudiante escribe if 0 <= nota <= 100 en Python y funciona, pero en pseudocodigo el modulo lo marcaria como no logico. Explique:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Es una diferencia entre la sintaxis particular de Python y la notacion formal del pseudocodigo del modulo.",
           "fuenteDoc": {
             "unidad": "1",
@@ -6247,7 +6247,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Ejercicio 26 de la practica: si a=12 y b=15, el producto por factores primos es 2*2*3*3*5. Cual es el resultado?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La guia indica que el resultado de multiplicar los factores primos 2*2*3*3*5 es 180.",
           "fuenteDoc": {
             "unidad": "1",
@@ -6281,7 +6281,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por que la heuristica no garantiza siempre la solucion optima:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La heuristica orienta el descubrimiento de soluciones, pero no ofrece por si sola la garantia formal de optimalidad.",
           "fuenteDoc": {
             "unidad": "1",
@@ -6315,7 +6315,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Ejercicio 37 de la practica: con a=3 y b=1, la serie de Fibonacci generalizada da 3,1,4,5,9,14,23. Que regla se aplica?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La serie mostrada en la guia se construye sumando los dos terminos anteriores.",
           "fuenteDoc": {
             "unidad": "1",
@@ -6349,7 +6349,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: Sin una logica ______, los programas pueden volverse incoherentes, confusos y propensos a errores.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo advierte explicitamente sobre las consecuencias de carecer de una logica solida.",
           "fuenteDoc": {
             "unidad": "1",
@@ -6365,7 +6365,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue la relacion entre razonamiento heuristico y logica matematica en el diseno de algoritmos:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Ambos se complementan: uno orienta el hallazgo y el otro valida formalmente el resultado.",
           "fuenteDoc": {
             "unidad": "1",
@@ -7184,7 +7184,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: por que el Teorema Fundamental limita a solo tres estructuras de control?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Restringirse a esas tres estructuras garantiza programas con flujo unico y comprensible, base de la programacion estructurada.",
           "fuenteDoc": {
             "unidad": "1",
@@ -7218,7 +7218,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un diagrama tiene dos simbolos de Fin en ramas distintas. Que principio del teorema se incumple?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El teorema exige un solo punto de entrada y un solo punto de salida.",
           "fuenteDoc": {
             "unidad": "1",
@@ -7252,7 +7252,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Ordene el algoritmo del ejercicio 4 de la practica (salario con retroactivo del 20% por mes de enero a mayo):",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Son cinco meses de enero a mayo, cada uno con 20% adicional, siguiendo entrada, proceso y salida.",
           "fuenteDoc": {
             "unidad": "1",
@@ -7286,7 +7286,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: El pseudocodigo se utiliza en la fase de ______ del software porque permite visualizar el flujo antes de implementarlo.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo indica que es comunmente utilizado en la fase de diseno de software.",
           "fuenteDoc": {
             "unidad": "1",
@@ -7302,7 +7302,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue por que un algoritmo correcto puede representarse con distintos diagramas de flujo validos:",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Existen representaciones equivalentes siempre que se respeten las restricciones del teorema fundamental.",
           "fuenteDoc": {
             "unidad": "1",
@@ -7516,7 +7516,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Evalue la expresion aplicando la jerarquia de operaciones del modulo: (7 * (10 - 5) mod 3) * 4 + 9",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "10-5=5; 7*5=35; 35 mod 3=2; 2*4=8; 8+9=17, tal como desarrolla el ejemplo del modulo.",
       "fuenteDoc": {
         "unidad": "1",
@@ -7550,7 +7550,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Con a=10, b=12, c=13, d=10, evalue: ((a>b) or (a<c)) and ((a=c) or (a>=b))",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "El primer grupo da verdadero y el segundo falso; verdadero and falso da falso.",
       "fuenteDoc": {
         "unidad": "1",
@@ -7584,7 +7584,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Un diagrama de flujo presenta dos simbolos de fin en ramas distintas. Que principio se incumple?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "El teorema establece un solo punto de entrada y un solo punto de salida.",
       "fuenteDoc": {
         "unidad": "1",
@@ -7618,7 +7618,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Un programa compila sin errores y fue entregado a tiempo, pero el usuario indica que no resuelve su necesidad. Que fase fallo?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "Un producto tecnicamente correcto que no atiende la necesidad revela que el problema fue mal definido al inicio.",
       "fuenteDoc": {
         "unidad": "1",
@@ -7652,7 +7652,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Evalue la afirmacion: elegir un lenguaje de alto nivel vuelve innecesario disenar el algoritmo.",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "El lenguaje es el medio de expresion; el algoritmo sigue siendo indispensable en cualquier nivel. CRITERIO DE CALIFICACION Aciertos Porcentaje Resultado 10 de 10 100 % Aprobado - dominio avanzado de la unidad 8 a 9 80 a 90 % Aprobado - habilita la Unidad 2 7 70 % Aprobado en el limite - se sugiere repaso 6 o menos menos de 70 % No aprobado - repetir practica del nivel intermedio",
       "fuenteDoc": {
         "unidad": "1",

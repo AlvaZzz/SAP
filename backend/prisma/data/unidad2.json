@@ -771,7 +771,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice: por que un programa con multiples goto puede violar el espiritu del Teorema Fundamental aunque tecnicamente tenga un solo inicio y un solo fin declarados?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El teorema busca flujo claro y predecible; los goto pueden crear rutas de ejecucion caoticas (codigo spaghetti) aunque formalmente exista un solo inicio y un solo fin.",
           "fuenteDoc": {
             "unidad": "2",
@@ -805,7 +805,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Evalue: es posible que un programa use solo secuencia y condicion, sin ninguna estructura repetitiva, y aun asi sea valido segun el Teorema Fundamental?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El teorema restringe el diseno a esas tres estructuras posibles, no obliga a que un programa particular use las tres.",
           "fuenteDoc": {
             "unidad": "2",
@@ -839,7 +839,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: la diferencia entre un paradigma y una estructura de control es que el paradigma es un enfoque general de diseno, mientras que la estructura de control es un ______ concreto del lenguaje.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Un paradigma es una filosofia general; una estructura de control (if, for, while) es su implementacion concreta en un lenguaje.",
           "fuenteDoc": {
             "unidad": "2",
@@ -855,7 +855,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Por que Joyanes vincula la programacion estructurada con la fiabilidad del software?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Al limitar las estructuras posibles y modularizar el codigo, es mas facil predecir y verificar el comportamiento del software, reduciendo errores.",
           "fuenteDoc": {
             "unidad": "2",
@@ -889,7 +889,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Un algoritmo usa una cadena de if-elif-else con seis ramas distintas. Respeta el Teorema Fundamental?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El numero de ramas condicionales no viola el teorema mientras se respete un unico punto de entrada/salida y solo se usen las estructuras permitidas.",
           "fuenteDoc": {
             "unidad": "2",
@@ -1729,7 +1729,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio de obtener el residuo de una division (ejemplo 12 del modulo), con A=7 y B=3, cual es R = A mod B?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "7 dividido entre 3 da residuo 1, tal como muestra la prueba de escritorio del modulo (A=7,B=3,R=1).",
           "fuenteDoc": {
             "unidad": "2",
@@ -1763,7 +1763,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio de area de circulo con r=5, usando A = Pi * r^2 con Pi=3.1416, cual es el resultado aproximado que muestra el modulo?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo indica en su prueba de escritorio que con R=5 el area resultante es aproximadamente 78.5375.",
           "fuenteDoc": {
             "unidad": "2",
@@ -1797,7 +1797,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por que la estructura secuencial exige que 'la salida de una tarea sea la entrada de la siguiente'.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Esta caracteristica asegura que el flujo permanezca lineal: cada paso se apoya en el resultado exacto del paso previo, sin desvios.",
           "fuenteDoc": {
             "unidad": "2",
@@ -1831,7 +1831,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: en el ejercicio de las cuatro operaciones basicas del modulo, con A=4 y B=7, la resta R = A - B da ______.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "4 - 7 = -3, tal como muestra la prueba de escritorio del ejercicio de las cuatro operaciones basicas.",
           "fuenteDoc": {
             "unidad": "2",
@@ -1847,7 +1847,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Siguiendo el mismo ejercicio de las cuatro operaciones basicas, con A=4 y B=7, la division R = A / B da aproximadamente?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "4/7 es aproximadamente 0.57, tal como muestra la prueba de escritorio del modulo.",
           "fuenteDoc": {
             "unidad": "2",
@@ -2705,7 +2705,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio del obrero que calcula su salario semanal, con ht=60 horas trabajadas (pago de $16 por las primeras 40 horas y $20 por cada hora extra), cual es el total ttrab?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "he = 60-40 = 20 horas extra; ttrab = 20*20 + 40*16 = 400+640 = 1040, tal como muestra la prueba de escritorio del modulo.",
           "fuenteDoc": {
             "unidad": "2",
@@ -2739,7 +2739,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Por que el switch-case no es directamente traducible a Python en versiones anteriores a la 3.10?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo aclara que Python carecia de switch-case nativo y que debia simularse con if-elif-else antes de la introduccion de match-case.",
           "fuenteDoc": {
             "unidad": "2",
@@ -2773,7 +2773,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio de la ecuacion de segundo grado, si el discriminante D es menor que 0, que tipo de raices tiene la ecuacion segun el modulo?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo indica que si D<0 la ecuacion no tiene raices reales sino imaginarias.",
           "fuenteDoc": {
             "unidad": "2",
@@ -2807,7 +2807,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete la logica del ejercicio de descuento por monto de compra: si compra > 1000 entonces desc = compra * ______, caso contrario desc = 0.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo establece un descuento del 20% cuando la compra supera los 1000, segun el ejercicio de almacen del modulo.",
           "fuenteDoc": {
             "unidad": "2",
@@ -2823,7 +2823,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice la diferencia entre una estructura condicional anidada y una estructura condicional multiple en cascada.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La anidacion coloca una estructura condicional completa dentro de una rama de otra; la estructura multiple evalua una sola expresion comparandola contra varios valores posibles (casos).",
           "fuenteDoc": {
             "unidad": "2",
@@ -2860,7 +2860,7 @@
           "enunciado": "Debe contar cuántos números pares hay en la lista (=3), pero el conteo está mal. Corrige el bug.",
           "codigoInicial": "nums = [4, 7, 10, 3, 8]\npares = 0\nfor x in nums:\n    if x % 2 == 1:\n        pares = pares + 1\nprint(pares)",
           "ejemploSalida": "3",
-          "xp": 80,
+          "xp": 25,
           "esBugHunt": true,
           "activo": true,
           "fuenteDoc": {
@@ -3699,7 +3699,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio del Maximo Comun Divisor por restas sucesivas con WHILE, segun la tabla del modulo con X=10 y Y=8, cual es el MCD resultante?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La tabla del modulo muestra que restando sucesivamente el mayor menos el menor (10,8 -> 2,6 -> 4 -> 2) se llega a un MCD de 2.",
           "fuenteDoc": {
             "unidad": "2",
@@ -3733,7 +3733,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio del Minimo Comun Multiplo con WHILE, segun la tabla del modulo con X=8 y Y=2 (A=8, B=2), cual es el resultado final?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "La tabla del modulo muestra que sumando sucesivamente A y B hasta igualar X y Y, el resultado final coincide en 8.",
           "fuenteDoc": {
             "unidad": "2",
@@ -3767,7 +3767,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "En el ejercicio de invertir un numero utilizando la estructura DO WHILE, con N=1234, cual es NI segun el modulo?",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo muestra paso a paso que invertir 1234 mediante do-while da como resultado 4321.",
           "fuenteDoc": {
             "unidad": "2",
@@ -3801,7 +3801,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Complete: en el ejemplo de la serie generada con DO WHILE '10100100010000100000...', si n=3 el resultado mostrado por el modulo es ______.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El modulo indica explicitamente que para n=3 la serie generada es 101001000.",
           "fuenteDoc": {
             "unidad": "2",
@@ -3817,7 +3817,7 @@
           "nivel": "avanzado",
           "b": 1.0,
           "enunciado": "Analice por que 'cualquier problema resuelto con FOR es posible resolver con WHILE, y cualquier problema resuelto con WHILE es posible resolver con DO WHILE, pero no siempre a la inversa', segun la nota del modulo.",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "El FOR es un caso particular con iteraciones conocidas (expresable como WHILE); el WHILE evalua antes y el DO WHILE despues (ejecutando al menos una vez), por lo que la generalidad aumenta en ese sentido pero no siempre a la inversa.",
           "fuenteDoc": {
             "unidad": "2",
@@ -3853,7 +3853,7 @@
           "nivelSugerido": "intermedio",
           "enunciado": "Imprime los números del 1 al 20. Para múltiplos de 3 imprime \"Fizz\", de 5 \"Buzz\", y de ambos \"FizzBuzz\".",
           "codigoInicial": "for i in range(1, 21):\n    # tu código aquí\n    pass",
-          "xp": 80,
+          "xp": 25,
           "esBugHunt": false,
           "activo": true,
           "fuenteDoc": {
@@ -3870,7 +3870,7 @@
           "enunciado": "Este código debería imprimir la suma de 1 a 5 (=15), pero da otro resultado. Encuentra y corrige el bug.",
           "codigoInicial": "total = 0\nfor n in range(1, 5):\n    total = total + n\nprint(total)",
           "ejemploSalida": "15",
-          "xp": 70,
+          "xp": 25,
           "esBugHunt": true,
           "activo": true,
           "fuenteDoc": {
@@ -3950,7 +3950,7 @@
             }
           ],
           "respuestaCorrecta": "C",
-          "xp": 30,
+          "xp": 25,
           "explicacion": "n % 10 extrae el último dígito (unidades): 253 → 3.",
           "fuenteDoc": {
             "unidad": "2",
@@ -3985,7 +3985,7 @@
             }
           ],
           "respuestaCorrecta": "D",
-          "xp": 30,
+          "xp": 25,
           "explicacion": "(253//10)=25; 25%10 = 5 (dígito de las decenas).",
           "fuenteDoc": {
             "unidad": "2",
@@ -4002,7 +4002,7 @@
           "enunciado": "Completa para obtener el último dígito de un número.",
           "codigoPython": "n = 189\nultimo = n ____ 10\nprint(ultimo)",
           "respuestaCorrecta": "%",
-          "xp": 30,
+          "xp": 25,
           "explicacion": "n % 10 devuelve el dígito de las unidades.",
           "fuenteDoc": {
             "unidad": "2",
@@ -4037,7 +4037,7 @@
             }
           ],
           "respuestaCorrecta": "D",
-          "xp": 30,
+          "xp": 25,
           "explicacion": "Pares 2+4+6+8+10 = 30.",
           "fuenteDoc": {
             "unidad": "2",
@@ -4072,7 +4072,7 @@
             }
           ],
           "respuestaCorrecta": "B",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Suma de 1 a 10 = 55.",
           "fuenteDoc": {
             "unidad": "2",
@@ -4107,7 +4107,7 @@
             }
           ],
           "respuestaCorrecta": "C",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Factorial de 4 = 1*2*3*4 = 24.",
           "fuenteDoc": {
             "unidad": "2",
@@ -4142,7 +4142,7 @@
             }
           ],
           "respuestaCorrecta": "A",
-          "xp": 50,
+          "xp": 25,
           "explicacion": "Fibonacci: tras 5 pasos a=5 (0,1,1,2,3,5).",
           "fuenteDoc": {
             "unidad": "2",
@@ -4172,7 +4172,7 @@
             }
           ],
           "respuestaCorrecta": "A,B,C",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Se extrae cada dígito con // y % y se suman: 3+4+7=14.",
           "fuenteDoc": {
             "unidad": "2",
@@ -4207,7 +4207,7 @@
             }
           ],
           "respuestaCorrecta": "B",
-          "xp": 40,
+          "xp": 25,
           "explicacion": "Múltiplos de 3 entre 1 y 20: 3,6,9,12,15,18 → 6.",
           "fuenteDoc": {
             "unidad": "2",
@@ -4379,7 +4379,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Analice: un programa con multiples goto pero con un solo inicio y un solo fin declarados formalmente, respeta el espiritu del Teorema Fundamental?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "El teorema busca flujo claro y predecible; el uso extensivo de goto puede generar codigo dificil de seguir aunque formalmente exista un solo inicio y un solo fin.",
       "fuenteDoc": {
         "unidad": "2",
@@ -4413,7 +4413,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "En el ejercicio de las cuatro operaciones basicas, con A=4 y B=7, cual es el resultado aproximado de R = A / B?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "4/7 es aproximadamente 0.57, tal como muestra la prueba de escritorio del modulo.",
       "fuenteDoc": {
         "unidad": "2",
@@ -4447,7 +4447,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "En el ejercicio de la ecuacion de segundo grado, si el discriminante D es menor que 0, que tipo de raices tiene la ecuacion?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "El modulo indica que si D<0 la ecuacion no tiene raices reales sino imaginarias.",
       "fuenteDoc": {
         "unidad": "2",
@@ -4481,7 +4481,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "En el ejercicio del Maximo Comun Divisor por restas sucesivas con WHILE, con X=10 y Y=8, cual es el MCD resultante segun la tabla del modulo?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "Restando sucesivamente el mayor menos el menor (10,8 -> 2,6 -> 4 -> 2) se llega a un MCD de 2, tal como muestra la tabla del modulo.",
       "fuenteDoc": {
         "unidad": "2",
@@ -4515,7 +4515,7 @@
       "nivel": "avanzado",
       "b": 1.0,
       "enunciado": "Por que no siempre es posible resolver con FOR un problema que se resuelve con WHILE o DO WHILE, segun la nota del modulo?",
-      "xp": 40,
+      "xp": 25,
       "explicacion": "El FOR es un contador automatico pensado para un numero de iteraciones conocido; WHILE y DO WHILE permiten repetir un numero indeterminado de veces segun una condicion, siendo mas generales en ese sentido. CRITERIO DE CALIFICACION Aciertos Porcentaje Resultado 10 de 10 100 % Aprobado - dominio avanzado de la unidad 8 a 9 80 a 90 % Aprobado - habilita la Unidad 3 7 70 % Aprobado en el limite - se sugiere repaso 6 o menos menos de 70 % No aprobado - repetir practica del nivel intermedio",
       "fuenteDoc": {
         "unidad": "2",

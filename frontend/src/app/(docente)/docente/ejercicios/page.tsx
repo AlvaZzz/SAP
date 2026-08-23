@@ -417,7 +417,7 @@ export default function DocenteEjerciciosPage() {
             </div>
           )}
 
-          <Field label="XP" error={errores.xp}><Input type="number" min={5} max={500} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
+          <Field label="XP" error={errores.xp}><Input type="number" min={5} max={25} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
           <label className="flex items-center gap-2 self-end pb-2.5">
             <input type="checkbox" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} className="h-4 w-4 accent-prexi-blue" />
             <span className="text-sm font-medium text-fg">Activo (visible para estudiantes)</span>
