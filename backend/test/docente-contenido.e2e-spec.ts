@@ -27,6 +27,14 @@
 const BASE = process.env.E2E_API_URL ?? 'http://localhost:4000/api';
 const PASS_SEED = 'Prexi123*';
 
+/**
+ * El caracter de reemplazo U+FFFD, construido desde su punto de codigo.
+ * NO se escribe literal: este repositorio lo prohibe en el codigo fuente
+ * (`npm run validar`, comprobacion de integridad del texto), y ponerlo tal
+ * cual haria fallar justo la comprobacion que esta prueba acompana.
+ */
+const REEMPLAZO = String.fromCharCode(0xfffd);
+
 /** Todo lo que un enunciado en español puede llevar y suele romperse. */
 const TEXTO_ESPANOL = '¿Cuál es el resultado? áéíóú ÁÉÍÓÚ ñÑ ¡Hola! üÜ «comillas» —guion— 30° · ½';
 
@@ -173,7 +181,9 @@ describe('2 · Integridad del texto en español (acentos, eñes y signos de aper
   it('el texto guardado no contiene NINGÚN carácter de reemplazo (U+FFFD)', async () => {
     const lista = await req('GET', '/docente/ejercicios?banco=practica', { token: docenteTk });
     const traido = (lista.data.ejercicios as { id: number; enunciado: string }[]).find((e) => e.id === idAcentos);
-    expect(traido!.enunciado).not.toMatch(/�/);
+    // repositorio prohíbe U+FFFD en el código fuente (`npm run validar`), y
+    // ponerlo tal cual haría fallar la propia comprobación que defiende.
+    expect(traido!.enunciado).not.toContain(REEMPLAZO);
   });
 
   it('la respuesta declara charset UTF-8', async () => {
