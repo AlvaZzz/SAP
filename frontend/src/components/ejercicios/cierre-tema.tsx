@@ -90,16 +90,16 @@ export function CierreTema({ temaId, tituloTema, progreso }: {
             </>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-2.5">
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap">
             {!esAvanzado && (
-              <button onClick={subirNivel} className="btn-primary !py-2">
+              <button onClick={subirNivel} className="btn-primary w-full justify-center !py-2 sm:w-auto">
                 <TrendingUp className="h-4 w-4" /> Repetir en nivel superior
               </button>
             )}
-            <button onClick={irASiguiente} className={esAvanzado ? 'btn-primary !py-2' : 'btn-ghost'}>
+            <button onClick={irASiguiente} className={`w-full justify-center sm:w-auto ${esAvanzado ? 'btn-primary !py-2' : 'btn-ghost'}`}>
               {siguiente ? <>Siguiente tema: {siguiente.tema.titulo} <ArrowRight className="h-4 w-4" /></> : <>Volver a la unidad <ArrowRight className="h-4 w-4" /></>}
             </button>
-            <button onClick={() => router.push(`/flashcards/tema/${temaId}`)} className="btn-ghost">
+            <button onClick={() => router.push(`/flashcards/tema/${temaId}`)} className="btn-ghost w-full justify-center sm:w-auto">
               <Sparkles className="h-4 w-4" /> Repasar con flashcards
             </button>
           </div>
@@ -128,14 +128,28 @@ export function AvisoRacha({ tipo, aciertos, temaId, onSeguir }: {
 }) {
   const router = useRouter();
 
+  /*
+   * DISPOSICIÓN EN MÓVIL PRIMERO, y no por gusto: la versión anterior ponía
+   * icono, texto y botón en una sola fila con `flex-wrap`. El párrafo llevaba
+   * `flex-1 min-w-0`, que significa "encoge todo lo que haga falta", así que en
+   * un teléfono se comprimía hasta una palabra por línea mientras el botón —que
+   * no encoge— se quedaba a su lado, encima del texto. `flex-wrap` no lo salvaba:
+   * nunca llegaba a faltar sitio, porque el texto cedía primero.
+   *
+   * Ahora se apila hasta `sm` y solo pasa a fila cuando hay ancho de verdad.
+   */
   if (tipo === 'racha') {
     return (
-      <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-prexi-amber/40 bg-prexi-amber/10 p-3.5 animate-fade-up">
-        <Sparkles className="h-5 w-5 shrink-0 text-prexi-amber" />
-        <p className="min-w-0 flex-1 text-sm font-semibold text-fg">
-          ¡{aciertos} seguidas! Estás en racha — este es el mejor momento para seguir.
-        </p>
-        <button onClick={onSeguir} className="btn-primary !py-1.5 !text-xs">
+      <div className="mt-4 flex flex-col gap-3 rounded-xl border border-prexi-amber/40 bg-prexi-amber/10 p-3.5 animate-fade-up sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:items-center">
+          <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-prexi-amber sm:mt-0" />
+          <p className="min-w-0 text-sm font-semibold leading-snug text-fg">
+            ¡{aciertos} seguidas! Estás en racha, este es el mejor momento para seguir.
+          </p>
+        </div>
+        {/* A todo el ancho en móvil: es el botón que se quiere pulsar, y a media
+            pantalla un objetivo pequeño y descentrado se falla. */}
+        <button onClick={onSeguir} className="btn-primary w-full shrink-0 !py-2 !text-xs sm:w-auto sm:!py-1.5">
           Seguir practicando <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -149,16 +163,18 @@ export function AvisoRacha({ tipo, aciertos, temaId, onSeguir }: {
         Cuando se acumulan los fallos, insistir cansa más de lo que enseña. Puedes repasar la teoría del tema o parar un
         rato y volver: el progreso queda guardado.
       </p>
-      <div className="mt-3 flex flex-wrap gap-2.5">
+      {/* En móvil, un botón por fila y a todo el ancho: tres botones repartidos
+          por `flex-wrap` acaban en tamaños distintos y difíciles de acertar. */}
+      <div className="mt-3 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap">
         {temaId != null && (
-          <button onClick={() => router.push(`/flashcards/tema/${temaId}`)} className="btn-primary !py-1.5 !text-xs">
+          <button onClick={() => router.push(`/flashcards/tema/${temaId}`)} className="btn-primary w-full justify-center !py-2 !text-xs sm:w-auto sm:!py-1.5">
             <RotateCcw className="h-3.5 w-3.5" /> Repasar el tema
           </button>
         )}
-        <button onClick={() => router.push('/dashboard')} className="btn-ghost !py-1.5 !text-xs">
+        <button onClick={() => router.push('/dashboard')} className="btn-ghost w-full justify-center !py-2 !text-xs sm:w-auto sm:!py-1.5">
           Tomar una pausa
         </button>
-        <button onClick={onSeguir} className="btn-ghost !py-1.5 !text-xs">
+        <button onClick={onSeguir} className="btn-ghost w-full justify-center !py-2 !text-xs sm:w-auto sm:!py-1.5">
           Seguir intentando
         </button>
       </div>
