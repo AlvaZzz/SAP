@@ -617,6 +617,37 @@ Responde SOLO un JSON array (sin markdown, sin texto extra) con esta forma exact
     return this.parsearPreguntas(texto_respuesta, tipo);
   }
 
+  // ── 7) Ayuda al DOCENTE a reconocer las columnas de su lista de estudiantes ──
+  //  Solo recibe los ENCABEZADOS y la FORMA de unas celdas ya enmascaradas por
+  //  quien llama (letras → "A", dígitos → "9"): ningún dato personal llega a
+  //  Gemini. Devuelve el índice de columna de cada campo, o null si no lo ve.
+  async sugerirMapeoColumnas(encabezados: string[], muestraEnmascarada: string[][]): Promise<Record<string, number | null> | null> {
+    const system = `Eres un asistente que reconoce columnas de una lista de estudiantes universitarios de Bolivia.
+Recibes los encabezados (con su índice desde 0) y unas filas de muestra ENMASCARADAS (A = letra, 9 = dígito).
+Indica qué índice de columna corresponde a cada campo:
+- apellidoPaterno, apellidoMaterno, nombres
+- nombreCompleto (solo si apellidos y nombres vienen juntos en UNA columna)
+- ci (cédula de identidad, 5 a 10 dígitos)
+- ru (registro universitario, número de matrícula)
+- paralelo (letra o nombre del grupo)
+Usa null si el campo no existe. No repitas un índice. Responde SOLO un objeto JSON, sin markdown:
+{"apellidoPaterno":0,"apellidoMaterno":1,"nombres":2,"nombreCompleto":null,"ci":3,"ru":4,"paralelo":null}`;
+    const mensaje = `ENCABEZADOS:\n${encabezados.map((e, i) => `${i}: ${e.slice(0, 60)}`).join('\n')}\n\nMUESTRA:\n${muestraEnmascarada.map((f) => f.join(' | ')).join('\n')}`;
+    const texto = await this.generar(system, mensaje, 200);
+    const limpio = texto.trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    try {
+      const data: unknown = JSON.parse(limpio);
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+      const out: Record<string, number | null> = {};
+      for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+        out[k] = Number.isInteger(v) ? (v as number) : null;
+      }
+      return out;
+    } catch {
+      return null;
+    }
+  }
+
   /** Parseo defensivo del JSON de Gemini: descarta preguntas mal formadas en vez de fallar todo. */
   private parsearPreguntas(texto: string, tipo: TipoEjercicio): PreguntaPropuesta[] {
     const limpio = texto.trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();

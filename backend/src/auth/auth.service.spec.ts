@@ -68,11 +68,11 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
     it('correo inexistente y contraseña incorrecta dan el MISMO mensaje (sin filtrar cuáles existen)', async () => {
       prisma.usuario.findUnique.mockResolvedValue(null);
       await expect(service.login({ email: 'no@x.com', password: 'x' }))
-        .rejects.toThrow('Correo o contraseña incorrectos');
+        .rejects.toThrow('Usuario o contraseña incorrectos');
 
       prisma.usuario.findUnique.mockResolvedValue(usuario);
       await expect(service.login({ email: usuario.email, password: 'incorrecta' }))
-        .rejects.toThrow('Correo o contraseña incorrectos');
+        .rejects.toThrow('Usuario o contraseña incorrectos');
     });
 
     // El bloqueo responde 429 (no 423) con `retryAfterSeconds`: el frontend

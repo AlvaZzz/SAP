@@ -96,6 +96,13 @@ export default function PerfilPage() {
                 <Medal className="h-3.5 w-3.5" /> Nivel {nivelActual}{nivelLabel ? ` — ${nivelLabel}` : ''}
               </span>
               <p className="mt-3 text-xs leading-relaxed text-muted">{usuario?.carrera ?? 'Carrera no registrada'}</p>
+              {usuario?.paraleloRef && (
+                <div className="mt-3 rounded-xl bg-subtle px-3 py-2 text-left text-xs leading-relaxed">
+                  <p className="font-semibold text-fg">{usuario.paraleloRef.materia.nombre} · Paralelo {usuario.paraleloRef.nombre}</p>
+                  <p className="text-muted">{usuario.paraleloRef.docente ? `Docente: ${usuario.paraleloRef.docente.nombre}` : 'Docente por asignar'}</p>
+                  {usuario.ru && <p className="text-muted">RU: {usuario.ru}</p>}
+                </div>
+              )}
 
               <div className="mt-4 flex border-t border-line pt-4 text-center">
                 <div className="flex-1"><p className="font-display text-lg font-bold text-fg"><CountUp value={res?.puntos ?? 0} /></p><p className="text-[11px] text-muted">XP</p></div>

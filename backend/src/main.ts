@@ -1,15 +1,19 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  // El registro de estudiantes envía la lista completa (hasta 1000 filas) para la
+  // vista previa: el límite por defecto de 100 kb se queda corto.
+  app.useBodyParser('json', { limit: '2mb' });
 
   // Valida y transforma los DTOs entrantes; rechaza propiedades extra.
   app.useGlobalPipes(

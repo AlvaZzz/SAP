@@ -3,7 +3,7 @@ import { Request, Response, CookieOptions } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import {
-  RegisterDto, LoginDto, PerfilDto, PasswordDto, TourVistoDto,
+  RegisterDto, LoginDto, PerfilDto, PasswordDto, PrimerIngresoDto, TourVistoDto,
   RecuperarDto, RestablecerDto, ValidarTokenDto, PreferenciasAudioDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard, AUTH_COOKIE, JwtPayload } from '../common/auth/jwt.guard';
@@ -215,6 +215,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   preferenciasAudio(@CurrentUser('sub') usuarioId: number, @Body() dto: PreferenciasAudioDto) {
     return this.auth.guardarPreferenciasAudio(usuarioId, dto);
+  }
+
+  /** Primer ingreso: define la contraseña definitiva (cuentas con contraseña temporal). */
+  @Post('primer-ingreso')
+  @UseGuards(JwtAuthGuard)
+  primerIngreso(@CurrentUser('sub') usuarioId: number, @Body() dto: PrimerIngresoDto) {
+    return this.auth.primerIngreso(usuarioId, dto);
   }
 
   @Put('password')

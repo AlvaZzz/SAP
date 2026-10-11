@@ -144,8 +144,19 @@ export const TOURS: Tour[] = [
     ],
   },
   {
+    clave: 'docente-registro',
+    ruta: en('/docente/estudiantes/registro'),
+    pasos: [
+      { titulo: 'Registro de estudiantes', texto: 'Aquí creas las cuentas de tu curso en cuatro pasos: eliges la materia y el paralelo, subes tu lista, revisas las columnas y confirmas la vista previa.' },
+      { titulo: 'Sirve la lista que ya tienes', texto: 'No hace falta copiar nada a una plantilla: sube tu Excel tal como está. PREXI reconoce qué columna es el nombre, el CI, el RU y el paralelo.' },
+      { titulo: 'Nada se guarda sin tu revisión', texto: 'Antes de registrar verás a todos los estudiantes en una tabla. Ahí corriges datos, mueves estudiantes de paralelo y ves marcados en rojo los problemas.' },
+      { titulo: 'Cómo entran', texto: 'Cada estudiante usa su RU como usuario y su CI como contraseña inicial. En su primer ingreso el sistema le pide crear la suya.' },
+    ],
+  },
+  {
     clave: 'docente-estudiantes',
-    ruta: en('/docente/estudiantes'),
+    // Coincidencia exacta: el registro (subruta) tiene su propio tutorial.
+    ruta: (p: string) => p === '/docente/estudiantes' || /^\/docente\/estudiantes\/\d+$/.test(p),
     pasos: [
       { titulo: 'Seguimiento de estudiantes', texto: 'Lista completa con nivel, XP, avance y última actividad de cada estudiante. Haz clic en uno para ver su detalle.' },
       { titulo: 'Estudiantes en riesgo', texto: 'El sistema marca automáticamente a quienes llevan días sin actividad o tienen baja tasa de acierto, para que intervengas a tiempo.' },

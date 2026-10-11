@@ -3,7 +3,7 @@ export type Rol = 'estudiante' | 'docente' | 'admin' | 'investigador';
 export interface Usuario {
   id: number;
   nombre: string;
-  email: string;
+  email: string | null;
   rol: Rol;
   carrera: string | null;
   introduccionCompletada: boolean;
@@ -11,6 +11,16 @@ export interface Usuario {
   nivelInicial: number;
   paralelo?: string | null;
   semestre?: number;
+  ru?: string | null;
+  nombres?: string | null;
+  /** true mientras use una contraseña temporal: debe pasar por /primer-ingreso. */
+  mustChangePassword?: boolean;
+  /** Curso del estudiante: paralelo, materia y docente a cargo. */
+  paraleloRef?: {
+    nombre: string;
+    materia: { nombre: string; sigla: string | null; gestion: string };
+    docente: { nombre: string } | null;
+  } | null;
   // Preferencias de audio (persistidas por usuario en el backend).
   sonidosActivados?: boolean;
   vozAutomatica?: boolean;

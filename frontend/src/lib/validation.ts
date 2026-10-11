@@ -10,11 +10,18 @@ import { z } from 'zod';
  * desincronizado. NO reintroducir aquí una restricción de dominio.
  */
 export const loginSchema = z.object({
+  // RU (solo dígitos) o correo. Los estudiantes que registró el docente entran
+  // con su RU; el campo conserva el nombre `email` porque así lo espera el API.
   email: z
     .string()
-    .min(1, 'Ingresa tu correo electrónico.')
-    .email('Escribe un correo válido, por ejemplo tucorreo@ejemplo.com.'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
+    .trim()
+    .min(1, 'Ingresa tu RU o tu correo electrónico.')
+    .refine(
+      (v) => /^\d{4,12}$/.test(v) || z.string().email().safeParse(v).success,
+      'Escribe tu RU (solo números) o un correo válido.',
+    ),
+  // Mínimo 5: la contraseña inicial de un estudiante registrado es su CI.
+  password: z.string().min(5, 'La contraseña debe tener al menos 5 caracteres.'),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

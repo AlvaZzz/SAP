@@ -12,7 +12,7 @@ import { BuscadorNav } from './buscador-nav';
 import {
   LayoutDashboard, Code, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
   LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
-  Layers, Bot, Inbox, Sparkles, ShieldCheck, AlertTriangle,
+  Layers, Bot, Inbox, Sparkles, ShieldCheck, AlertTriangle, UserCheck,
 } from './icons';
 
 type Area = 'estudiante' | 'docente' | 'investigador' | 'admin';
@@ -89,6 +89,7 @@ const NAV_DOCENTE: NavGrupo[] = [
       { href: '/docente/indice', label: 'Índice', icon: LayoutDashboard },
       { href: '/docente/dashboard', label: 'Dashboard', icon: Activity },
       { href: '/docente/pendientes', label: 'Pendientes', icon: Inbox },
+      { href: '/docente/estudiantes/registro', label: 'Registro de estudiantes', icon: UserCheck },
       { href: '/docente/estudiantes', label: 'Estudiantes', icon: Users },
       { href: '/docente/riesgo', label: 'En riesgo', icon: AlertTriangle },
       { href: '/docente/revisiones', label: 'Revisiones', icon: ClipboardList },
@@ -186,6 +187,12 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
         : NAV_ESTUDIANTE;
   // El buscador trabaja sobre la lista plana de destinos del rol activo.
   const nav = useMemo(() => grupos.flatMap((g) => g.items), [grupos]);
+  // Ítem activo = el de ruta MÁS específica que coincide: así "Registro de
+  // estudiantes" (/docente/estudiantes/registro) no enciende también "Estudiantes".
+  const hrefActivo = useMemo(
+    () => nav.filter((n) => pathname === n.href || pathname.startsWith(n.href + '/')).sort((a, b) => b.href.length - a.href.length)[0]?.href,
+    [nav, pathname],
+  );
   const homeHref = HOME_ROL[(usuario?.rol as Rol) ?? 'estudiante'] ?? '/dashboard';
 
   // Control de acceso en la UI (el backend lo refuerza con guard de rol).
@@ -195,6 +202,8 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
     // distinto de "nunca inició sesión": se lo decimos explícitamente en /login.
     if (!usuario) { router.replace(sesionExpirada ? '/login?motivo=expirada' : '/login'); return; }
     const rol = usuario.rol as Rol;
+    // Contraseña temporal: no entra a ningún área hasta definir la suya.
+    if (usuario.mustChangePassword) { router.replace('/primer-ingreso'); return; }
     if (!areaPermite(area, rol)) { router.replace(HOME_ROL[rol]); return; }
     if (area === 'estudiante' && !usuario.introduccionCompletada) router.replace('/introduccion');
     else if (area === 'estudiante' && !usuario.pretestCompletado) router.replace('/pretest');
@@ -248,7 +257,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
               </h2>
               <ul aria-labelledby={tituloId} className="flex flex-col gap-1">
                 {grupo.items.map(({ href, label, icon: Icon }) => {
-                  const activo = pathname === href || pathname.startsWith(href + '/');
+                  const activo = href === hrefActivo;
                   return (
                     <li key={href}>
                       <Link href={href} aria-current={activo ? 'page' : undefined}

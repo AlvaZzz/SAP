@@ -169,15 +169,14 @@ export function LoginForm() {
         </motion.p>
       )}
 
-      {/* Correo electrónico — cualquier dominio (es el canal de contacto). */}
+      {/* RU o correo: los estudiantes registrados por el docente entran con su RU. */}
       <motion.label variants={item} className="mb-4 block sm:mb-5">
-        <span className="mb-1.5 block text-sm font-medium text-fg">Correo electrónico</span>
+        <span className="mb-1.5 block text-sm font-medium text-fg">RU o correo electrónico</span>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
           <input
-            type="email"
-            autoComplete="email"
-            inputMode="email"
+            type="text"
+            autoComplete="username"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -188,21 +187,21 @@ export function LoginForm() {
               revalidar();
             }}
             aria-invalid={!!tocado.email && !!errores.email}
-            aria-label="Correo electrónico"
+            aria-label="RU o correo electrónico"
             className={campo(!!tocado.email && !!errores.email) + ' pr-12'}
-            placeholder="tucorreo@ejemplo.com"
+            placeholder="Tu RU o tucorreo@ejemplo.com"
           />
           {emailValido && (
             <CheckCircle
               className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-prexi-green"
-              aria-label="Correo válido"
+              aria-label="Dato válido"
             />
           )}
         </div>
         {tocado.email && errores.email ? (
           <span className="mt-1 block text-xs font-medium text-red-500">{errores.email}</span>
         ) : (
-          <span className="mt-1 block text-xs text-muted">Usaremos este correo para contactarte.</span>
+          <span className="mt-1 block text-xs text-muted">Si tu docente te registró, entra con tu RU y tu CI como contraseña.</span>
         )}
       </motion.label>
 

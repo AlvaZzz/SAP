@@ -48,7 +48,9 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @IsEmail({}, { message: 'Correo inválido' })
+  // Correo O RU: los estudiantes registrados por el docente entran con su RU.
+  // Se conserva el nombre `email` del campo para no romper a los clientes.
+  @IsString() @MinLength(3, { message: 'Escribe tu RU o tu correo' }) @MaxLength(120)
   email!: string;
 
   @IsString() @MinLength(1)
@@ -83,6 +85,15 @@ export class PreferenciasAudioDto {
 
   @IsOptional() @IsBoolean()
   vozAutomatica?: boolean;
+}
+
+/** Primer ingreso con contraseña temporal (ver AuthService.primerIngreso). */
+export class PrimerIngresoDto {
+  @IsString() @MaxLength(100) @Matches(PASSWORD_REGEX, { message: PASSWORD_MENSAJE })
+  nueva!: string;
+
+  @IsOptional() @IsBoolean()
+  aceptaTerminos?: boolean;
 }
 
 export class PasswordDto {

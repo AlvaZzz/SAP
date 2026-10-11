@@ -79,9 +79,20 @@ enum EstadoEntrega {
 // ── Usuarios ────────────────────────────────────────────────
 model Usuario {
   id           Int     @id @default(autoincrement())
+  // Nombre COMPLETO ("Paterno Materno Nombres"). En los estudiantes registrados
+  // por el docente se DERIVA de los tres campos de abajo; se conserva como
+  // columna para no romper las vistas que ya lo muestran.
   nombre       String
-  email        String  @unique
+  apellidoPaterno String? @map("apellido_paterno")
+  apellidoMaterno String? @map("apellido_materno")
+  nombres         String?
+  // Opcional: los estudiantes que registra el docente desde su lista no tienen
+  // correo; entran con su RU.
+  email        String? @unique
+  // CI (cédula de identidad). Es la contraseña INICIAL del estudiante importado.
   cedula       String? @unique
+  // RU (registro universitario). Usuario de acceso del estudiante importado.
+  ru           String? @unique
   rol          Rol     @default(estudiante)
   carrera      String?
   // Institución/cohorte para el desglose del estudio (UPEA, EMI, preuniversitario…).
@@ -112,8 +123,12 @@ model Usuario {
   thetaFinal   Float? @map("theta_final")
 
   // Paralelo (ej. "A", "B", "C") y semestre del estudiante.
-  paralelo String? // solo aplica a estudiantes; null en docente/admin/investigador
-  semestre Int     @default(1)
+  // `paraleloId` es la relación real (Materia → Paralelo → docente). `paralelo`
+  // guarda el NOMBRE del paralelo, sincronizado, porque ranking, evaluación
+  // final y exportaciones ya filtran por ese texto.
+  paralelo   String? // solo aplica a estudiantes; null en docente/admin/investigador
+  paraleloId Int?    @map("paralelo_id")
+  semestre   Int     @default(1)
 
   // CONSENTIMIENTO INFORMADO (ética de la investigación). La casilla de
   // aceptación siempre fue obligatoria en el formulario de registro, pero hasta
@@ -178,6 +193,10 @@ model Usuario {
   logsAdaptacion      LogAdaptacion[]
   historialRanking    HistorialRanking[]
   respuestasInstrumento RespuestaInstrumento[]
+  paraleloRef         Paralelo?            @relation("EstudiantesParalelo", fields: [paraleloId], references: [id], onDelete: SetNull)
+  paralelosACargo     Paralelo[]           @relation("DocenteParalelos")
+
+  @@index([paraleloId])
 
   @@map("usuarios")
 }
@@ -1213,4 +1232,38 @@ model RespuestaInstrumento {
   @@id([usuarioId, instrumento, itemId, version])
   @@index([instrumento, version])
   @@map("respuestas_instrumento")
+}
+
+// ── MATERIA y PARALELO (organización del curso) ─────────────
+//  El docente registra a sus estudiantes dentro de un PARALELO de una MATERIA
+//  y puede asignarse como docente de ese paralelo. El estudiante ve en su
+//  panel "Materia · Paralelo · Docente".
+model Materia {
+  id       Int      @id @default(autoincrement())
+  nombre   String // ej. "Programación I"
+  sigla    String? // ej. "PRG-111"
+  gestion  String // ej. "2026-II"
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  paralelos Paralelo[]
+
+  @@unique([nombre, gestion])
+  @@map("materias")
+}
+
+model Paralelo {
+  id        Int      @id @default(autoincrement())
+  materiaId Int      @map("materia_id")
+  nombre    String // "A", "B", "C"…
+  // Docente a cargo. Null = paralelo aún sin docente asignado.
+  docenteId Int?     @map("docente_id")
+  creadoEn  DateTime @default(now()) @map("creado_en")
+
+  materia     Materia   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  docente     Usuario?  @relation("DocenteParalelos", fields: [docenteId], references: [id], onDelete: SetNull)
+  estudiantes Usuario[] @relation("EstudiantesParalelo")
+
+  @@unique([materiaId, nombre])
+  @@index([docenteId])
+  @@map("paralelos")
 }

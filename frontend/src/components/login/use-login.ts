@@ -29,6 +29,8 @@ const REDIRECT_AFTER_LOGIN = '/dashboard'; // destino por defecto (estudiante li
  * recorrido completo en vez de un fragmento.
  */
 function destinoPorRol(u: Usuario): string {
+  // Contraseña temporal (su CI, o un reseteo): primero debe definir la suya.
+  if (u.mustChangePassword) return '/primer-ingreso';
   if (u.rol === 'admin') return '/admin/dashboard';
   if (u.rol === 'investigador') return '/investigador/indice';
   if (u.rol === 'docente') return '/docente/indice';

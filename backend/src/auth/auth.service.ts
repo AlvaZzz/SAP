@@ -50,7 +50,15 @@ export class CuentaBloqueadaException extends HttpException {
 const SELECT_PUBLICO = {
   id: true, nombre: true, email: true, rol: true, carrera: true,
   introduccionCompletada: true, pretestCompletado: true, nivelInicial: true, mustChangePassword: true,
-  paralelo: true, semestre: true,
+  paralelo: true, semestre: true, ru: true, nombres: true,
+  // Curso del estudiante: materia, paralelo y docente a cargo (lo ve en su panel).
+  paraleloRef: {
+    select: {
+      nombre: true,
+      materia: { select: { nombre: true, sigla: true, gestion: true } },
+      docente: { select: { nombre: true } },
+    },
+  },
   // Preferencias de audio (sonidos de logros / lectura en voz alta automática).
   sonidosActivados: true, vozAutomatica: true,
 } as const;
@@ -78,11 +86,17 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const paralelo = dto.paralelo.trim().toUpperCase();
 
+    // Si el docente ya creó ese paralelo, el estudiante queda enlazado a él (y con
+    // eso a su materia y a su docente). Se toma el de la materia más reciente.
+    const paraleloReal = await this.prisma.paralelo.findFirst({
+      where: { nombre: paralelo }, orderBy: { id: 'desc' }, select: { id: true },
+    });
+
     const usuario = await this.prisma.usuario.create({
       data: {
         nombre: dto.nombre, email: dto.email, cedula: dto.cedula,
         carrera: dto.carrera, passwordHash, rol: 'estudiante',
-        paralelo, semestre: dto.semestre ?? 1,
+        paralelo, paraleloId: paraleloReal?.id ?? null, semestre: dto.semestre ?? 1,
         // Constancia del consentimiento informado, con fecha. Solo si el cliente
         // lo declara de forma explícita: si no llega, queda sin registro y el
         // rol investigador lo reporta como tal (no se presume otorgado).
@@ -118,10 +132,16 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, contexto: { ip?: string } = {}) {
-    const u = await this.prisma.usuario.findUnique({ where: { email: dto.email } });
-    // MISMO mensaje si el correo no existe o si la contraseña es incorrecta: de
-    // otro modo se podrían enumerar las cuentas registradas probando correos.
-    const credInvalidas = () => new UnauthorizedException('Correo o contraseña incorrectos');
+    // El identificador puede ser el CORREO o el RU: los estudiantes que registra el
+    // docente desde su lista no tienen correo y entran con su RU.
+    const identificador = dto.email.trim();
+    const u = identificador.includes('@')
+      ? await this.prisma.usuario.findUnique({ where: { email: identificador.toLowerCase() } })
+        ?? await this.prisma.usuario.findUnique({ where: { email: identificador } })
+      : await this.prisma.usuario.findUnique({ where: { ru: identificador.replace(/[^0-9]/g, '') || identificador } });
+    // MISMO mensaje si la cuenta no existe o si la contraseña es incorrecta: de
+    // otro modo se podrían enumerar las cuentas registradas probando valores.
+    const credInvalidas = () => new UnauthorizedException('Usuario o contraseña incorrectos');
     if (!u) throw credInvalidas();
 
     // Cuenta desactivada por el administrador (soft-disable): no puede ingresar.
@@ -271,8 +291,44 @@ export class AuthService {
     const ok = await bcrypt.compare(dto.actual, u.passwordHash);
     if (!ok) throw new BadRequestException('La contraseña actual no es correcta');
     const passwordHash = await bcrypt.hash(dto.nueva, 10);
-    await this.prisma.usuario.update({ where: { id: usuarioId }, data: { passwordHash } });
+    await this.prisma.usuario.update({ where: { id: usuarioId }, data: { passwordHash, mustChangePassword: false } });
     return { ok: true };
+  }
+
+  /**
+   * PRIMER INGRESO de una cuenta con contraseña temporal (estudiante registrado
+   * por el docente: su contraseña inicial es su CI; o cuenta reseteada por el
+   * admin). Solo funciona mientras `mustChangePassword` esté activo: no pide la
+   * contraseña actual porque el usuario acaba de escribirla para entrar.
+   *
+   * Es además el momento en que el estudiante importado da su CONSENTIMIENTO
+   * informado: no pasó por el formulario de registro, así que se registra aquí.
+   */
+  async primerIngreso(usuarioId: number, dto: { nueva: string; aceptaTerminos?: boolean }) {
+    const u = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { mustChangePassword: true, passwordHash: true, consentimientoEn: true, rol: true },
+    });
+    if (!u) throw new UnauthorizedException();
+    if (!u.mustChangePassword) throw new BadRequestException('Tu contraseña ya fue definida. Cámbiala desde tu perfil.');
+    if (await bcrypt.compare(dto.nueva, u.passwordHash)) {
+      throw new BadRequestException('Elige una contraseña distinta a la inicial.');
+    }
+    if (u.rol === 'estudiante' && !u.consentimientoEn && dto.aceptaTerminos !== true) {
+      throw new BadRequestException('Debes aceptar los términos para continuar.');
+    }
+    const usuario = await this.prisma.usuario.update({
+      where: { id: usuarioId },
+      data: {
+        passwordHash: await bcrypt.hash(dto.nueva, 10),
+        mustChangePassword: false,
+        ...(dto.aceptaTerminos === true && !u.consentimientoEn
+          ? { consentimientoEn: new Date(), consentimientoVersion: VERSION_TERMINOS }
+          : {}),
+      },
+      select: SELECT_PUBLICO,
+    });
+    return { usuario };
   }
 
   // ════════════════════════════════════════════════════════════
@@ -324,7 +380,7 @@ export class AuthService {
       const base = (this.config.get<string>('APP_URL') ?? 'http://localhost:3000').replace(/\/+$/, '');
       const enlace = `${base}/restablecer-contrasena?token=${token}`;
       // El envío nunca debe filtrar existencia ni romper la respuesta.
-      await this.mail.enviarRecuperacion(u.email, u.nombre, enlace).catch(() => undefined);
+      if (u.email) await this.mail.enviarRecuperacion(u.email, u.nombre, enlace).catch(() => undefined);
     }
 
     return this.RESPUESTA_GENERICA;
