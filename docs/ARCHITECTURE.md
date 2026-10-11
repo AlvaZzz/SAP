@@ -55,8 +55,10 @@ backend/src/
   unidades/              Jerarquía académica Unidad → Tema → Subtema
   notificaciones/        Campana del estudiante
   docente-*/             7 dominios del rol docente (dashboard, ejercicios, revisiones…)
-  investigador-*/        4 dominios del rol investigador (solo lectura + export CSV)
-  admin-*/               5 dominios del rol admin (usuarios, grupos, config, auditoría)
+  investigador-*/        4 dominios del rol investigador (panel de validación, solo lectura + CSV)
+  admin-*/               4 dominios del rol admin (usuarios, config, auditoría, dashboard)
+  mediciones/            diagnóstico, evaluación final, IRT, motor (rango objetivo),
+                         instrumentos (SUS) y calidad (ISO/IEC 25010)
   common/                Transversal: prisma, guards de auth/rol, mail, pdf, filtros
 ```
 
@@ -121,11 +123,22 @@ esos parámetros está "hardcodeado".
 
 ## 7. Datos para la investigación
 
-`Evaluacion` (pretest/postest) es la **fuente de verdad** del puntaje: un test
-completado se lee de la evaluación persistida, no se recomputa. El investigador
-exporta un dataset canónico (CSV anonimizado) con `puntaje_pretest`,
-`puntaje_postest`, `ganancia`, `tiempo` y `grupo` (control/experimental) para la
-prueba t de Student, que se realiza fuera del sistema.
+El estudio es **no experimental transversal**: no hay grupos ni comparación
+pre→post. El sistema mide tres cosas, al final del período de uso:
+
+- **Precisión del motor adaptativo** — `LogAdaptacion` guarda una fila por cada
+  decisión del motor (θ antes y después, dificultad b, probabilidad de acierto
+  esperada, si cae en el rango objetivo y la latencia). El registro se lanza sin
+  esperar, después de tener lista la respuesta al estudiante.
+- **Usabilidad percibida** — escala SUS, respondida una vez por los estudiantes.
+- **Calidad del producto** — cuestionario ISO/IEC 25010, respondido por docentes y
+  evaluadores. Ambos instrumentos viven en `RespuestaInstrumento`.
+
+El rol investigador calcula los indicadores con su IC 95 % por bootstrap, muestra
+la tabla de criterios de aceptación y exporta un CSV anonimizado por instrumento.
+`Evaluacion` sigue siendo la **fuente de verdad** del puntaje del diagnóstico
+inicial (pretest) y de la evaluación final del curso (postest). Ver
+[DISENO_INVESTIGACION.md](DISENO_INVESTIGACION.md).
 
 ## 8. Persistencia
 

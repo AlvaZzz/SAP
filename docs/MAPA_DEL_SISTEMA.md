@@ -3,11 +3,12 @@
 > **Guía de referencia del sistema completo**, organizada por rol. Sirve como
 > mapa para navegar el código y como base para documentar la tesis.
 >
-> **PREXI** es la *herramienta de recolección de datos* de una investigación
-> cuasi-experimental sobre el efecto de la **adaptatividad** y la **gamificación**
-> en el aprendizaje de programación en Python. El sistema recolecta y muestra
-> estadística **descriptiva**; la estadística **inferencial** (prueba t de
-> Student) se realiza **fuera** del sistema (Google Colab) con el CSV exportado.
+> **PREXI** es un sistema adaptativo con gamificación para aprender programación en
+> Python, y a la vez el objeto de una investigación **no experimental transversal**:
+> al final del período de uso se evalúa **si el sistema funciona bien** (precisión del
+> motor adaptativo, usabilidad percibida y calidad del software). El sistema registra,
+> calcula y exporta esos indicadores; el análisis definitivo se hace fuera, con
+> Python, Pandas y SciPy. Ver [DISENO_INVESTIGACION.md](DISENO_INVESTIGACION.md).
 
 - **Institución:** UPEA (Ing. de Sistemas) · **Tutor IA:** PREXI (Google Gemini)
 - **Paleta:** azul `#1e3a5f` / `#2563eb` / `#dbeafe`, verde `#16a34a`, ámbar `#f59e0b`, rojo `#ef4444`. Modo claro/oscuro.
@@ -69,7 +70,7 @@ Tablas principales (Prisma → PostgreSQL). Todas se leen/escriben solo desde el
 
 | Tabla | Para qué sirve |
 |---|---|
-| `Usuario` | Cuentas. Campos clave: `rol`, `grupo` (control/experimental), `institucion`, `activo` (soft-disable), `pretestCompletado`, `nivelInicial`. |
+| `Usuario` | Cuentas. Campos clave: `rol`, `paralelo`, `institucion`, `activo` (soft-disable), `pretestCompletado`, `nivelInicial`. |
 | `Nivel` | Los 5 niveles temáticos (Variables → Estructuras de datos) con su `umbral`. |
 | `Ejercicio` | Banco de contenido. `banco` = `practica` \| `pretest` \| `postest`; `activo` para publicar/ocultar. |
 | `Intento` | Cada respuesta a un ejercicio de práctica (correcto, tiempo, XP otorgado). **Inmutable.** |
@@ -86,6 +87,9 @@ Tablas principales (Prisma → PostgreSQL). Todas se leen/escriben solo desde el
 | `CodigoPractica` | Guardado del código de la Zona de Práctica. |
 | `ConfiguracionSistema` | **Fila única (id=1).** Parámetros centralizados que TODO el sistema lee. |
 | `LogAuditoria` | Traza de acciones sensibles del admin. |
+| `LogAdaptacion` | **Log del motor adaptativo**: una fila por decisión (θ, dificultad, P esperada, ¿en rango objetivo?, latencia). Instrumento de la tesis. |
+| `HistorialRanking` | Cada cambio de posición en el ranking (indicador de gamificación). |
+| `RespuestaInstrumento` | Respuestas crudas al SUS (estudiantes) y al cuestionario ISO/IEC 25010 (docentes y evaluadores). Una aplicación por usuario y versión. |
 
 ---
 
@@ -131,7 +135,7 @@ aprendizaje adaptativa y gamificada de Python, apoyado por el tutor IA PREXI.
 | **Ranking** | `/ranking` | Tabla de posiciones por XP. | Se alimenta de la actividad de todos. | Lee `Ranking`. |
 | **Perfil** | `/perfil` | Datos personales, cambio de contraseña. | — | Lee/escribe `Usuario`. |
 | **Postest (desbloqueable)** | `/postest` | 20 preguntas del **banco postest** (distinto al pretest), timer y autosave, **sin PREXI**. Se habilita al completar el avance configurado (ej. Nivel 3). | Umbral definido por el **admin** (`postestDesdeNivel`). | Escribe `PretestRespuesta` (post) y `Evaluacion` (post). |
-| **Resultado postest** | `/postest/resultado` | Puntaje real, aciertos, **ganancia = postest − pretest**, fortalezas/debilidades por categoría. | — | Lee `Evaluacion` (pre y post). |
+| **Resultado postest** | `/postest/resultado` | Puntaje real, aciertos, **avance = postest − diagnóstico**, fortalezas/debilidades por categoría. | — | Lee `Evaluacion` (pre y post). |
 | **Campana de notificaciones** | (topbar) | Badge de no leídas, lista, marcar leídas, enlace al contenido. | La dispara la **revisión de retos** del docente. | Lee/escribe `Notificacion`. |
 
 > **Regla clave:** el resultado de un pretest/postest **completado** se lee de la
@@ -156,7 +160,7 @@ documentos), **revisa** sus entregas y **da seguimiento** a su progreso. Gestió
 | **Revisión de retos** ⭐ | `/docente/revisiones` | Lista entregas pendientes; ve el **código del estudiante** con resaltado; marca **Aprobado / Necesita mejorar**, asigna **XP** y escribe **feedback**. Botón "**Sugerir con PREXI**" (borrador de Gemini). | Otorga XP (ranking) y **dispara notificación** al estudiante. | Lee/escribe `RetoUsuario`, `Ranking`, `Notificacion`. |
 | **Documentos** | `/docente/documentos` | Subir PDFs (título, nivel, descripción). Validación real de PDF + límite de tamaño + nombre UUID opaco. Editar/eliminar los propios. | Aparecen en `/documentos` del estudiante. | Escribe `Documento`. |
 | **Seguimiento de estudiantes** | `/docente/estudiantes` | Lista con nivel, XP, ejercicios, última sesión y **estado** (en progreso/completado/inactivo/en riesgo). Detalle: progreso por nivel, actividad, historial, pre/postest y **nota del docente**. | Todo desde actividad **real**; umbral de "en riesgo" lo fija el **admin**. | Lee `Intento`, `Evaluacion`, `Ranking`; escribe `NotaDocente`. |
-| **Reportes** ⭐ | `/docente/reportes` | Tabs: **Pretest vs Postest** (por categoría + tabla por estudiante con ganancia), **Progreso por nivel** (con tiempo promedio), **Actividad semanal**. **Exporta CSV**. | Insumo pedagógico; se complementa con el rol investigador. | Lee `Evaluacion`, `Intento`. |
+| **Reportes** ⭐ | `/docente/reportes` | Tabs: **Pretest vs Postest** (por categoría + tabla por estudiante con su avance), **Progreso por nivel** (con tiempo promedio), **Actividad semanal**. **Exporta CSV**. | Insumo pedagógico; se complementa con el rol investigador. | Lee `Evaluacion`, `Intento`. |
 
 > El docente solo gestiona/edita/elimina **su propio** contenido (autor validado contra el JWT).
 
@@ -164,93 +168,81 @@ documentos), **revisa** sus entregas y **da seguimiento** a su progreso. Gestió
 
 ## 6. Rol INVESTIGADOR
 
-**Propósito:** rol de **solo lectura** que **consolida y exporta** los datos del estudio
-para demostrar el efecto de la adaptatividad y la gamificación. **No** administra usuarios ni
-configura el sistema; **no** duplica funciones del docente ni del admin.
+**Propósito:** rol de **solo lectura** que **calcula y exporta** los indicadores del estudio
+(diseño **no experimental transversal**): precisión del motor adaptativo, usabilidad percibida
+y calidad del producto de software. **No** administra usuarios ni configura el sistema.
 
-**Backend (módulos):** `investigador-panel/`, `investigador-resultados/`,
-`investigador-datos/`, `investigador-exportacion/`.
+**Backend (módulos):** `investigador-panel/`, `investigador-analisis/`,
+`investigador-validacion/`, `investigador-exportacion/`.
 
-| Apartado | Ruta | Qué hace | Enganche | Datos |
-|---|---|---|---|---|
-| **Panel del estudio** | `/investigador/panel` | Muestra total, control vs experimental, desglose por institución/cohorte, avance de la recolección (cuántos rindieron pre/postest) y fechas. | El **admin** asigna los grupos que aquí se cuentan. | Lee `Usuario`, `Evaluacion`. |
-| **Resultados** | `/investigador/resultados` | Comparativa pretest/postest **por grupo**, **ganancia media** control vs experimental, comparativa por categoría y **estadística descriptiva** (media, desv. estándar, mín, máx). **Solo descriptiva.** | Reutiliza el dataset canónico. | Lee `Evaluacion`. |
-| **Datos complementarios** | `/investigador/datos` | Relación **descriptiva** entre uso del sistema (XP, ejercicios, consultas a PREXI, pistas) y la **ganancia**. Dispersión + promedios por grupo + ganancia por nivel de práctica. | Evidencia de apoyo (no causalidad). | Lee `Evaluacion`, `Intento`, `ConsultaIa`, `RetoUsuario`. |
-| **Exportación** ⭐ | `/investigador/exportacion` | Vista previa + **descarga del CSV consolidado y ANONIMIZADO** (`id_anonimo`, sin nombres/correos/cédulas), una fila por estudiante, con el **grupo** y todas las métricas. Insumo directo para la prueba t. | El grupo lo asigna el **admin**; los puntajes los generan los **estudiantes**. | Lee todo (solo lectura). |
+| Apartado | Ruta | Qué hace | Datos |
+|---|---|---|---|
+| **Diseño y muestra** | `/investigador/panel` | Muestra total, estudiantes por paralelo, período de uso y **ficha metodológica** (diseño, población, instrumentos, variables, hipótesis). | Lee `Usuario`, `Evaluacion`, `Intento`. |
+| **Participantes y uso** | `/investigador/validez` | Cascada registrados → diagnóstico → uso real → evaluación final, datos faltantes y uso del sistema. | Dataset canónico. |
+| **Validación del sistema** ⭐ | `/investigador/validacion` | Los indicadores de la tesis: **% de asignaciones en rango objetivo con IC 95 % por bootstrap**, latencia de reajuste, **puntaje medio SUS**, **calidad ISO/IEC 25010** por característica, variable independiente descrita y **tabla de criterios de aceptación**. | Lee `LogAdaptacion`, `RespuestaInstrumento`, `HistorialRanking`, `RetoUsuario`. |
+| **Fiabilidad del diagnóstico** | `/investigador/fiabilidad` | KR-20, dificultad y discriminación por ítem y ajuste de Rasch del diagnóstico y de la evaluación final. | Lee `PretestRespuesta`. |
+| **Mecanismo adaptativo** | `/investigador/clasificacion` | Validación de la clasificación por niveles (umbrales θ). | Lee `Intento`, `ProgresoTema`. |
+| **Exportación** ⭐ | `/investigador/exportacion` | **Un CSV anonimizado por instrumento** (`log_adaptacion`, `sus`, `iso25010`, `uso_gamificacion`), dataset principal, codebook, metadatos del corte con hash y ética. | Lee todo (solo lectura). |
 
-> **Fuente única de verdad:** `investigador-exportacion` construye el dataset; resultados y
-> datos lo **reutilizan**. Los números del investigador coinciden con los del docente y el admin.
+> **Sin datos personales:** todas las exportaciones usan `id_anonimo` (sin nombre, CI, RU ni correo).
 
 ---
 
 ## 7. Rol ADMINISTRADOR
 
-**Propósito:** gestión **técnica** del sistema y **habilitador del diseño cuasi-experimental**
-(asigna los grupos). Es soporte técnico: **no** hace el análisis de la tesis (eso es del
-investigador). Acciones **auditadas**.
+**Propósito:** gestión **técnica** del sistema. Es soporte técnico: **no** hace el análisis de
+la tesis (eso es del investigador). Acciones **auditadas**.
 
-**Backend (módulos):** `admin-dashboard/`, `admin-usuarios/`, `admin-grupos/`,
-`admin-config/`, `admin-auditoria/`.
+**Backend (módulos):** `admin-dashboard/`, `admin-usuarios/`, `admin-config/`, `admin-auditoria/`.
 
 | Apartado | Ruta | Qué hace | Enganche | Datos |
 |---|---|---|---|---|
-| **Dashboard** | `/admin/dashboard` | Totales de usuarios, activos, docentes/admins, ejercicios, **por revisar**; distribución por rol; estado del estudio (control vs experimental, enlaza al investigador); registros por semana; actividad reciente (auditoría). | Vista global; coincide con docente e investigador. | Lee `Usuario`, `Ejercicio`, `LogAuditoria`. |
+| **Dashboard** | `/admin/dashboard` | Totales de usuarios, activos, docentes/admins, ejercicios; distribución por rol; estudiantes registrados y activos; registros por semana; actividad reciente (auditoría). | Vista global. | Lee `Usuario`, `Ejercicio`, `LogAuditoria`. |
 | **Gestión de usuarios** | `/admin/usuarios` | CRUD de **todos los roles** (crea docentes, investigadores y admins que no se registran públicamente). Filtros, búsqueda, **activar/desactivar** (soft-disable), **reset de contraseña** (temporal, sin ver la actual). Valida correo/cédula únicos. | Un usuario creado puede iniciar sesión en su rol; uno desactivado no. | Escribe `Usuario`; registra en `LogAuditoria`. |
-| **Grupos de investigación** ⭐ | `/admin/grupos` | Asigna cada estudiante a **control** o **experimental** (individual o masivo) + institución. Conteos y balance. **Bloqueo** de cambios una vez iniciada la recolección (con confirmación/forzar). | **Sin esta asignación no hay comparación estadística.** El investigador la consume. | Escribe `Usuario.grupo`/`institucion`; audita. |
-| **Configuración del sistema** | `/admin/sistema` | Tabs **General** (nombre, institución, periodo, logo), **Gamificación** (XP, bonus racha, umbral de nivel), **IA** (activar PREXI, máx. pistas, **rate limit**, modo de retro), **Investigación** (umbral de postest, bloqueo de grupos, umbrales de "en riesgo"). | **TODO el sistema lee de aquí** (estudiante e IA), nada hardcodeado. | Lee/escribe `ConfiguracionSistema`; audita. |
-| **Auditoría** | `/admin/auditoria` | Registro de acciones sensibles (crear/editar/desactivar usuario, cambio de rol, cambio de grupo, cambio de config, reset de contraseña) con filtros por acción y fecha. | Trazabilidad para la seriedad del estudio. | Lee `LogAuditoria`. |
+| **Configuración del sistema** | `/admin/sistema` | Tabs **General**, **Gamificación**, **IA** e **Investigación**: fase de evaluación del sistema (SUS / ISO 25010), **rango objetivo** del motor adaptativo, **umbrales de los tres criterios de aceptación**, umbral de la evaluación final y umbrales de "en riesgo". | **TODO el sistema lee de aquí**, nada hardcodeado. | Lee/escribe `ConfiguracionSistema`; audita. |
+| **Auditoría** | `/admin/auditoria` | Registro de acciones sensibles (crear/editar/desactivar usuario, cambio de rol, cambio de config, reset de contraseña) con filtros por acción y fecha. | Trazabilidad. | Lee `LogAuditoria`. |
 
 > **Límites del admin:** nunca ve contraseñas (solo fuerza reseteo); **no** edita datos de
-> medición (pretest/postest/intentos son inmutables); no puede desactivarse ni quitarse su
-> propio rol admin.
+> medición (diagnóstico, evaluación final, intentos y logs son inmutables); no puede
+> desactivarse ni quitarse su propio rol admin.
 
 ---
 
 ## 8. Flujo de la investigación
 
-Recorrido de los datos desde que se generan hasta que salen para el análisis externo:
+El estudio es **no experimental transversal**: un único grupo, sin manipular variables, y una
+única medición al final del período de uso. Esquema `M: X → (O₁, O₂, O₃)`.
 
 ```
-   ADMIN                    ESTUDIANTE                     DOCENTE            INVESTIGADOR
-     │                          │                             │                    │
- 1) crea usuarios          2) rinde PRETEST ──► Evaluacion(pre)                    │
-    (docente/invest.)          │  (20 preg. banco pretest, sin PREXI)            │
-     │                         │                                                   │
- 3) asigna GRUPO ─────────► Usuario.grupo                                          │
-    control / experimental     │  (control | experimental) + institución          │
-     │                         │                                                   │
- 4) fija parámetros        5) resuelve ejercicios, usa PREXI, entrega retos       │
-    (config central)           │  ──► Intento / Ranking / ConsultaIa / RetoUsuario │
-     │                         │                              │                    │
-     │                         │                       6) revisa retos ──► XP+notif │
-     │                         │                                                   │
-     │                     7) rinde POSTEST ──► Evaluacion(post)                   │
-     │                         │  (se desbloquea al completar el avance)          │
-     │                         │       ganancia = post − pre                       │
-     │                         │                              │                    │
-     └─────────────────────────┴──────────────────────────────┴──► 8) EXPORTA CSV ─┘
-                                                                     anonimizado + grupo
-                                                                          │
-                                                                          ▼
-                                                     9) PRUEBA t de STUDENT (Google Colab)
-                                                        — FUERA del sistema —
+   ESTUDIANTE                               SISTEMA                         DOCENTE / EVALUADOR
+       │                                       │                                    │
+ 1) rinde el DIAGNÓSTICO ──────────► θ inicial + nivel por tema                      │
+    (pretest)                                  │                                    │
+ 2) practica: el motor asigna ─────► LogAdaptacion (una fila por decisión):          │
+    ejercicios de SU nivel                     │  θ, b, P esperada, ¿en rango?,      │
+                                               │  latencia y tiempo de respuesta     │
+ 3) retos, ranking, tutor ─────────► RetoUsuario · HistorialRanking · ConsultaIa     │
+       │                                       │                                    │
+       │        ── fin del período de uso: se habilita la FASE DE EVALUACIÓN ──      │
+       │                                       │                                    │
+ 4) responde el SUS (una vez) ─────► RespuestaInstrumento ◄──── 5) responde ISO/IEC 25010
+       │                                       │                                    │
+       └───────────────────────────────────────┴──► 6) INVESTIGADOR: panel de validación
+                                                     O₁ precisión · O₂ usabilidad · O₃ calidad
+                                                     + CSV por instrumento ──► Python / SciPy
 ```
 
-1. **Admin** crea las cuentas de docentes e investigadores (los estudiantes se registran solos).
-2. Cada **estudiante** rinde el **pretest** obligatorio → se persiste `Evaluacion(pre)`.
-3. **Admin** asigna a cada estudiante al grupo **control** o **experimental** (y su institución).
-   *Este paso habilita la comparación; sin grupos no hay prueba t posible.*
-4. **Admin** configura los parámetros (umbral de postest, gamificación, IA) que consume todo el sistema.
-5. El **estudiante** usa el sistema (ejercicios, PREXI, retos) → genera actividad real.
-6. El **docente** revisa retos, otorga XP y feedback → notifica al estudiante.
-7. Al completar el avance configurado, el estudiante rinde el **postest** → `Evaluacion(post)` y **ganancia = post − pre**.
-8. El **investigador** exporta el **CSV anonimizado** (una fila por estudiante, con el grupo y todas las métricas).
-9. La **prueba t de Student** se ejecuta **fuera del sistema** (Google Colab) sobre ese CSV.
+1. El **estudiante** rinde el **diagnóstico inicial** (pretest): se estima su habilidad θ y su nivel por tema.
+2. Al practicar, el **motor adaptativo** le asigna ejercicios de su nivel; cada respuesta deja una fila en `LogAdaptacion`.
+3. La **gamificación** (retos, ranking) y la retroalimentación quedan registradas en la base.
+4. Al final del período, el docente o el admin **habilita la fase de evaluación**: cada estudiante responde el **SUS** una sola vez.
+5. Los **docentes y evaluadores** responden el cuestionario **ISO/IEC 25010**.
+6. El **investigador** ve los tres indicadores con su IC 95 % y la tabla de criterios, y **exporta** un CSV anonimizado por instrumento.
 
-**El sistema recolecta y describe; NO calcula la prueba t.**
+La **evaluación final del curso** (postest) la administra el docente y no forma parte del
+contraste de la hipótesis. Detalle de cada fórmula: [DISENO_INVESTIGACION.md](DISENO_INVESTIGACION.md).
 
 ---
-
 ## 9. Tabla resumen de rutas (API)
 
 Prefijo global: `/api`. Todas requieren JWT salvo login/registro. Las de rol usan `RolesGuard`.
@@ -296,12 +288,20 @@ Prefijo global: `/api`. Todas requieren JWT salvo login/registro. Las de rol usa
 | PUT | `/api/docente/estudiantes/:id/nota` | Guardar nota del docente. |
 | GET | `/api/docente/reportes/pretest-postest` · `/progreso-niveles` · `/actividad-semanal` · `/export.csv` | Reportes + exportación. |
 
+### Instrumentos de valoración (cualquier usuario autenticado)
+| Método | Ruta | Función |
+|---|---|---|
+| GET | `/api/instrumentos/estado` | Qué cuestionario le toca al usuario y si ya lo respondió. |
+| GET/POST | `/api/instrumentos/SUS` · `/api/instrumentos/ISO25010` | Ver y responder (una sola vez, con la fase habilitada). |
+| POST | `/api/instrumentos/fase` | Habilitar o cerrar la fase de evaluación (docente/admin). |
+
 ### Investigador (`@Roles('investigador','admin')`)
 | Método | Ruta | Función |
 |---|---|---|
 | GET | `/api/investigador/panel` | Resumen y avance del estudio. |
-| GET | `/api/investigador/resultados` | Descriptivos pre/post por grupo. |
-| GET | `/api/investigador/datos` | Relación uso ↔ mejora. |
+| GET | `/api/investigador/validacion` | **Indicadores de la tesis** y criterios de aceptación. |
+| GET | `/api/investigador/validacion/log-adaptacion.csv` · `sus.csv` · `iso25010.csv` · `uso-gamificacion.csv` | Un CSV anonimizado por instrumento. |
+| GET | `/api/investigador/validez` · `fiabilidad` · `clasificacion` · `ficha-metodologica` · `codebook` · `metadatos-corte` · `etica` | Participantes, instrumentos y reproducibilidad. |
 | GET | `/api/investigador/exportacion/dataset` · `/export.csv` | Vista previa y **CSV anonimizado**. |
 
 ### Admin (`@Roles('admin')`)
@@ -309,7 +309,6 @@ Prefijo global: `/api`. Todas requieren JWT salvo login/registro. Las de rol usa
 |---|---|---|
 | GET | `/api/admin/dashboard` | Estado técnico del sistema. |
 | GET/POST/PUT/PATCH | `/api/admin/usuarios[...]` | CRUD, estado y reset de contraseña. |
-| GET | `/api/admin/grupos` · POST `/asignar` | Ver y asignar grupos de investigación. |
 | GET/PUT | `/api/admin/config` | Leer/actualizar la configuración central. |
 | GET | `/api/admin/auditoria` | Registro de acciones sensibles. |
 
@@ -319,14 +318,14 @@ Prefijo global: `/api`. Todas requieren JWT salvo login/registro. Las de rol usa
 
 | Dentro del sistema (PREXI) | Fuera del sistema |
 |---|---|
-| Recolecta datos de la **actividad real** (pretest/postest, ejercicios, uso de IA, gamificación). | El **análisis inferencial**. |
-| Asigna grupos control/experimental (admin). | La **prueba t de Student** (Google Colab). |
-| Muestra estadística **descriptiva**: medias, desviación estándar, mínimos/máximos, **ganancia** por grupo. | El cálculo de **significancia** (valor *p*). |
-| **Exporta** el dataset anonimizado (CSV) con el grupo por estudiante. | La **interpretación** y redacción en la tesis. |
+| Registra cada decisión del motor adaptativo (logs), los cambios de ranking y los retos. | El **análisis estadístico definitivo** (Python, Pandas, SciPy). |
+| Aplica el SUS y el cuestionario ISO/IEC 25010, una vez por persona. | La **validación por expertos** de los instrumentos (V de Aiken). |
+| Muestra los tres indicadores con su **IC 95 % por bootstrap** y la tabla de criterios. | La **decisión final** sobre la hipótesis y su redacción en la tesis. |
+| **Exporta** un CSV anonimizado por instrumento, con su codebook. | La **interpretación** de los resultados. |
 
-> **En una frase:** PREXI es la herramienta que *recolecta, describe y exporta* los datos;
-> la *inferencia estadística* que demuestra el efecto se hace fuera, con el CSV, y se documenta
-> en la tesis.
+> **En una frase:** PREXI *registra, calcula y exporta* los indicadores que dicen si el
+> sistema funciona bien; el análisis definitivo y la decisión sobre la hipótesis se hacen
+> fuera, con los CSV, y se documentan en la tesis.
 
 ---
 

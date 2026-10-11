@@ -89,11 +89,22 @@ cd frontend && npm install && npm run dev           # :3000 (proxy /api → :400
 
 > **Nota (Windows):** los watchers en contenedores a veces no detectan cambios del bind mount. Si editas el backend y no se refleja, `docker compose restart api`.
 
-## Investigación (pretest/postest)
+## Investigación (diseño no experimental transversal)
 
-`GET /api/progreso/export.csv` (rol docente/admin) exporta por estudiante:
-`puntaje_pretest, puntaje_postest, ganancia, tiempo, grupo (control/experimental)`
-— para la prueba t de Student, que se realiza fuera del sistema.
+PREXI es también el objeto de estudio de la tesis: sin manipular variables ni comparar
+grupos, al final del período de uso se evalúa **si el sistema funciona bien**.
+
+| Variable | Indicador | De dónde sale |
+|---|---|---|
+| Precisión del motor adaptativo | % de asignaciones dentro del rango objetivo (IC 95 % por bootstrap) y latencia de reajuste | `LogAdaptacion` |
+| Usabilidad percibida | Puntaje medio SUS (0–100) | `RespuestaInstrumento` (estudiantes) |
+| Calidad del producto de software | Media por característica ISO/IEC 25010 y % de subcaracterísticas en nivel aceptable | `RespuestaInstrumento` (docentes y evaluadores) |
+
+El rol investigador los muestra en **Validación del sistema** (`/investigador/validacion`),
+junto a la tabla de criterios de aceptación, y exporta un CSV anonimizado por instrumento
+(`log_adaptacion`, `sus`, `iso25010`, `uso_gamificacion`) para analizar con Python, Pandas y
+SciPy. El pretest es el **diagnóstico inicial** y el postest la **evaluación final del curso**:
+no se comparan entre sí. Detalle y fórmulas en [docs/DISENO_INVESTIGACION.md](docs/DISENO_INVESTIGACION.md).
 
 ## Mapa de la reescritura
 
@@ -109,12 +120,12 @@ cd frontend && npm install && npm run dev           # :3000 (proxy /api → :400
 
 ```bash
 cd backend
-npm test          # 93 pruebas unitarias (services críticos y guards, sin BD)
+npm test          # pruebas unitarias (services críticos, estadística y guards, sin BD)
 npm run test:e2e  # pruebas e2e del flujo de la tesis (requiere: docker compose up -d)
 ```
 
-- **Unitarias**: puntaje pretest/postest, ganancia, XP y penalización por pistas, racha, desbloqueo de nivel, ranking, guards de los 4 roles, login/bloqueo de cuenta, asignación de grupos, tutor IA (PREXI) y recuperación de contraseña.
-- **E2E** (contra el stack real): registro → pretest → ejercicios → postest → docente/investigador → CSV, más casos límite (doble envío, sesión sin token, examen sin iniciar, revisión bloqueada durante el examen).
+- **Unitarias**: puntaje del diagnóstico y de la evaluación final, XP y penalización por pistas, racha, desbloqueo de nivel, ranking, guards de los 4 roles, login/bloqueo de cuenta, tutor IA (PREXI), recuperación de contraseña, y los indicadores de la tesis: rango objetivo y latencia del motor adaptativo, puntaje SUS, calidad ISO/IEC 25010, bootstrap y criterios de aceptación.
+- **E2E** (contra el stack real): registro → pretest → ejercicios → evaluación final → docente/investigador → CSV, más casos límite (doble envío, sesión sin token, examen sin iniciar, revisión bloqueada durante el examen).
 
 El detalle está en [docs/REPORTE_PRUEBAS.md](docs/REPORTE_PRUEBAS.md).
 

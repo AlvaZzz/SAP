@@ -16,7 +16,7 @@
  *   · Pearson / Spearman              → asociación entre dos variables
  *
  *  El estudio es no experimental transversal: aquí NO hay pruebas pareadas
- *  pre→post ni ganancia normalizada. El IC por bootstrap vive en bootstrap.ts.
+ *  pre→post. El IC por bootstrap vive en bootstrap.ts.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 

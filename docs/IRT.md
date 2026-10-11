@@ -130,13 +130,58 @@ Detalles de robustez en `estimarTheta`:
 
 (Umbrales ajustables mediante las constantes del módulo.)
 
-### 2.6. Ganancia de habilidad — `gananciaTheta`
+### 2.6. Asignación dentro del rango objetivo — `evaluarAsignacion`
+
+Es la definición operativa del indicador de **precisión del motor adaptativo**
+(`backend/src/mediciones/motor/motor.ts`). Para cada ejercicio que el motor asigna:
 
 ```
-Δθ = θ_final − θ_inicial
+P = 1 / (1 + e^-(θ_antes − b))          en rango  ⇔  rango_min ≤ P ≤ rango_max
 ```
 
-Complementa la ganancia en puntaje con la **ganancia en habilidad estimada**.
+- `θ_antes` = habilidad del estudiante **antes** de responder (la vigente; si aún
+  no practicó, la del diagnóstico inicial).
+- `b` = dificultad del ejercicio asignado.
+- Rango objetivo por defecto: **0,50 ≤ P ≤ 0,85**, configurable en
+  `ConfiguracionSistema.rangoObjetivoMin/Max`. Por debajo de 0,50 el ejercicio es
+  más difícil de lo que el estudiante puede resolver con más probabilidad que
+  fallar; por encima de 0,85 es demasiado fácil para producir aprendizaje.
+- Si el estudiante todavía no tiene θ, la asignación es **no evaluable** (`null`) y
+  se excluye del denominador.
+
+```
+precisión (%) = asignaciones en rango ÷ asignaciones evaluables × 100
+```
+
+El IC 95 % se obtiene por **bootstrap de percentil** (2000 remuestreos, semilla
+fija) sobre la serie 0/1 de `en_rango_objetivo` (`common/estadistica/bootstrap.ts`).
+
+### 2.7. Nivel de personalización del contenido — `porcentajePersonalizacion`
+
+Indicador de **adaptabilidad** de la variable independiente:
+
+```
+personalización (%) = ejercicios servidos por la ruta adaptativa ÷ ejercicios servidos × 100
+```
+
+Un ejercicio cuenta como **personalizado** cuando salió de la ruta adaptativa de un
+tema: se filtró por el nivel del estudiante en ese tema y se ordenó por máxima
+información respecto a su θ (`AdaptatividadService.ruta`). No cuenta cuando se
+sirvió en orden fijo, igual para todos (ejercicios sin tema).
+
+### 2.8. Latencia de reajuste y tiempo de retroalimentación
+
+Ambos se miden **en el backend** con `process.hrtime.bigint()`, desde que la
+respuesta llega al controlador (`POST /api/intentos`):
+
+- **Latencia de reajuste** (`latencia_ms`): hasta que la habilidad queda
+  re-estimada y persistida, es decir, hasta que el motor ya tiene la dificultad
+  con la que elegirá el siguiente ejercicio.
+- **Tiempo de retroalimentación** (`tiempo_respuesta_ms`): hasta que la corrección
+  está lista para enviarse al estudiante.
+
+El registro en `LogAdaptacion` se lanza sin esperar, después de medir: no frena
+la respuesta.
 
 ---
 
@@ -148,7 +193,8 @@ Complementa la ganancia en puntaje con la **ganancia en habilidad estimada**.
 | **Selección adaptativa**       | La ruta de práctica ordena los ejercicios pendientes por **máxima información** (b más cercano a θ), presentando primero los más informativos para la habilidad actual. | `adaptatividad.service.ts` → `ruta` / `thetaActual` |
 | **Actualización continua**     | Tras cada intento de práctica se **re-estima θ** con todas las respuestas y se persiste `Usuario.thetaActual`; se registra un punto en la evolución si cambia ≥ 0.1 logit. | `ejercicios.service.ts` → `responder` |
 | **Subir de nivel**             | El mini-diagnóstico **re-estima θ** con las nuevas respuestas y lo registra (origen `subir_nivel`). El cambio de nivel se opera con el umbral de % (equivalente al gate por θ del nivel objetivo). | `adaptatividad.service.ts` → `evaluarSubida` |
-| **Postest**                    | Se estima **θ_final** desde el postest y se calcula **Δθ = θ_final − θ_inicial** (evidencia cuantitativa de progreso, además del puntaje). Se guarda `Usuario.thetaFinal`. | `postest.service.ts` → `finalizar` / `estimarThetaPostest` |
+| **Registro del motor**          | Cada respuesta de práctica deja una fila en `LogAdaptacion` con θ antes/después, b, P esperada, si cae en el rango objetivo y la latencia. | `ejercicios.controller.ts` → `responder` / `log-adaptacion.service.ts` |
+| **Evaluación final (postest)** | Se estima **θ_final** desde la evaluación final del curso y se guarda `Usuario.thetaFinal`. No se compara con θ_inicial: el estudio es transversal. | `postest.service.ts` → `finalizar` / `estimarThetaPostest` |
 
 ---
 
@@ -157,16 +203,17 @@ Complementa la ganancia en puntaje con la **ganancia en habilidad estimada**.
 Se registran y se exponen para exportación (rol investigador,
 `investigador-exportacion.service.ts`):
 
-- **θ_inicial** (pretest) y **θ_final** (postest) por estudiante, con
-  **Δθ = θ_final − θ_inicial** → dataset consolidado y CSV
-  (`theta_inicial`, `theta_final`, `delta_theta`).
+- **Log del motor adaptativo** (`LogAdaptacion`) → CSV `log_adaptacion`: es el
+  instrumento del que salen la precisión y la latencia.
+- **θ_inicial** (diagnóstico) y **θ_final** (evaluación final) por estudiante →
+  dataset principal (`theta_inicial`, `theta_final`), descritas por separado.
 - **Evolución de θ** a lo largo del uso (modelo `HistorialTheta`: pretest,
   práctica, subida de nivel, postest) → endpoint `evolucion-theta`.
 - **Dificultad `b`** de cada ítem → endpoint `items-irt`.
 - **Nivel inicial** y niveles alcanzados por tema (ya existentes).
 
-Esto enriquece el estudio: además de la ganancia en **puntaje**, se dispone de
-la ganancia en **habilidad estimada (θ)**, fundamentada en la IRT.
+El estudio es **no experimental transversal**: θ no se usa para medir ganancia
+entre momentos, sino como base del motor cuya precisión se evalúa.
 
 ---
 
@@ -177,8 +224,10 @@ la ganancia en **habilidad estimada (θ)**, fundamentada en la IRT.
 - Los `b` iniciales son **estimaciones del docente por nivel**; podrían
   **calibrarse con más datos** en trabajo futuro.
 - La IRT **calcula la habilidad y guía la dificultad**; el **pretest y el
-  postest siguen siendo IGUALES para todos** (instrumento de medición), y la
-  **comparación experimental vs. control se mantiene**.
+  postest siguen siendo IGUALES para todos** (diagnóstico inicial y evaluación
+  final del curso).
+- El rango objetivo (0,50–0,85) es un **criterio de diseño declarado**, no un
+  resultado: debe fundamentarse en el marco teórico de la tesis.
 - Toda la matemática está en el **backend**, con **pruebas unitarias** que
   verifican las funciones (p. ej. que `P(θ) = 0.5` cuando `θ = b`, y que
   `estimarTheta` converge correctamente con patrones conocidos).

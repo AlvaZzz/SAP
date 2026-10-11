@@ -84,7 +84,8 @@ export const B_POR_NIVEL: Record<NivelDificultad, number> = {
  *     tercio". Ver docs/CLASIFICACION_NIVELES.md.
  *
  *  ⚠️ NO MODIFICAR estos valores a mitad del estudio: cambiarlos reclasifica
- *  retroactivamente a los participantes e invalida las comparaciones pre/post.
+ *  retroactivamente a los participantes y cambia el nivel que el motor les asigna,
+ *  es decir, altera el indicador de precisión que la tesis reporta.
  *  El procedimiento de revisión está en la sección "Cuándo revisarlos" del
  *  documento, y exige evidencia empírica previa (rol investigador →
  *  Validación de la clasificación).

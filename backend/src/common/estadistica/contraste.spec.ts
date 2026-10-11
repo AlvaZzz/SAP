@@ -37,7 +37,7 @@ describe('bloqueo por tamaño de muestra insuficiente', () => {
     expect(c.grupoB.n).toBe(10);
   });
 
-  it('reproduce el caso real del estudio (2 control vs 7 experimental): bloquea', () => {
+  it('con 2 y 7 casos (por debajo del mínimo en una serie): bloquea', () => {
     const control = [45, 52];
     const experimental = [50, 55, 60, 58, 62, 49, 66];
     const c = compararGrupos(control, experimental, { variable: 'postest' });

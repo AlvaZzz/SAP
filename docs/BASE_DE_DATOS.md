@@ -165,3 +165,24 @@ El coste es que consumen del medio giga de Neon: unos 15 MB por PDF. Vigílalo c
 ```sql
 SELECT pg_size_pretty(pg_database_size(current_database()));
 ```
+
+---
+
+## 8. Migraciones del diseño no experimental transversal (octubre 2026)
+
+La tesis adoptó un diseño **no experimental transversal**. Tres migraciones
+alinean el esquema con él:
+
+| Migración | Qué hace | ¿Destruye datos? |
+|---|---|---|
+| `retirar_grupos` | Elimina `usuarios.grupo`, el tipo `Grupo`, `configuracion_sistema.grupos_bloqueados` y la tabla obsoleta `perfil_adaptativo`. Agrega `encuesta_motivacion_activa`. | **Sí**: la asignación control/experimental se pierde. |
+| `log_adaptacion` | Crea `log_adaptacion` (una fila por decisión del motor) e `historial_ranking`. Agrega el rango objetivo a la configuración. | No |
+| `instrumentos_sus_iso25010` | Crea `respuestas_instrumento` (SUS e ISO/IEC 25010). Agrega la fase de evaluación y los umbrales de los criterios de aceptación. | No |
+
+> ⚠ **Antes de desplegar esta rama en producción, respalda Neon** (sección 4).
+> Render ejecuta `prisma migrate deploy` en cada despliegue, así que `retirar_grupos`
+> se aplicará sola y **no tiene vuelta atrás**: la columna `grupo` desaparece.
+> El respaldo local previo a estas migraciones quedó en
+> `backend/prisma/backups/2026-10-11_pre-transversal.sql` (ignorado por git).
+
+Qué tabla alimenta cada indicador de la tesis: [DISENO_INVESTIGACION.md](DISENO_INVESTIGACION.md).

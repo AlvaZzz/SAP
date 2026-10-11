@@ -20,11 +20,11 @@ Fecha: 2026-07-03 · Stack: NestJS + Prisma/PostgreSQL (backend) · Next.js 14 (
 ### Unitarias (Prisma simulado, sin BD) — `backend/src/**/*.spec.ts`
 
 - **PretestService**: puntaje real = aciertos/total×100; clasificación Bajo/Medio/Alto (40/70); nivel inicial 2 si es Alto (desbloquea niveles 1 y 2, no el 3); el estado de un pretest completado se lee de la `Evaluacion` persistida (regresión del bug 0/100); corrección evaluada en backend (case-insensitive); preguntas ajenas rechazadas; respuestas en blanco cuentan como incorrectas sin romper el cálculo.
-- **PostestService**: disponibilidad según `postestDesdeNivel` y `umbralPorcentaje` de la config; **ganancia = postest − pretest** exacta; ganancia `null` sin pretest; finalizar sin preguntas cargadas rechazado (no persiste un 0); no se puede repetir; estado desde la `Evaluacion` persistida.
+- **PostestService**: disponibilidad según `postestDesdeNivel` y `umbralPorcentaje` de la config; **avance = postest − diagnóstico** exacto; `null` sin diagnóstico; finalizar sin preguntas cargadas rechazado (no persiste un 0); no se puede repetir; estado desde la `Evaluacion` persistida.
 - **EjerciciosService**: XP base; penalización por pistas de PREXI (contadas en backend) con piso de 5 XP; multiplicadores de racha (1.2/1.5/2.0) y corte de racha; desbloqueo del siguiente nivel al alcanzar el umbral (y no antes); nivel bloqueado → 403; recálculo de posiciones del ranking por XP.
 - **Guards**: `JwtAuthGuard` (sin token, token inválido, token expirado, cookie y Bearer) y `RolesGuard` (estudiante ✗ docente/admin/investigador, docente ✗ admin, investigador ✗ docente/admin, cada rol ✓ sus rutas).
 - **AuthService**: bcrypt (nunca texto plano), mensaje idéntico para correo inexistente y contraseña errada, bloqueo 15 min al 5.º fallo (HTTP 423), cuenta desactivada no entra, email/cédula duplicados con mensaje claro.
-- **AdminGruposService**: asigna solo a estudiantes reales, respeta el bloqueo de grupos (con opción de forzar) y registra auditoría.
+- **Indicadores de la tesis** (diseño no experimental transversal): `motor.spec` (rango objetivo, personalización, latencia), `log-adaptacion.service.spec` (una fila por decisión, nunca rompe la respuesta), `bootstrap.spec` (IC reproducible con semilla fija), `instrumentos.spec` (SUS contra cálculo manual, ISO/IEC 25010, una sola aplicación) e `investigador-validacion.service.spec` (criterios de aceptación y CSV sin datos personales).
 
 ### E2E del flujo crítico de la tesis — `backend/test/flujo-tesis.e2e-spec.ts`
 
@@ -35,7 +35,7 @@ Corre por HTTP contra el stack real (`docker compose up -d`), con la BD sembrada
 3. **Pretest**: 20 preguntas **sin filtrar la respuesta correcta**; autosave por pregunta; puntaje persistido consistente 1:1 con la revisión; el estado lee lo persistido; no se puede repetir ni alterar tras finalizar.
 4. **Ejercicios**: incorrecta = 0 XP; correcta = XP > 0 y aparece en el ranking; nivel bloqueado → 403.
 5. **Postest**: bloqueado hasta el avance configurado; **finalizar sin iniciar → 400 (el examen NO salta al resultado — bug conocido, verificado que no reaparece)**; ganancia exacta postest−pretest; doble envío rechazado; `/progreso` refleja los valores persistidos.
-6. **Docente/Investigador**: el estudiante nuevo aparece en el seguimiento docente; el **CSV** exporta columna por columna el pretest, postest y ganancia reales; el investigador accede a panel y dataset.
+6. **Docente/Investigador**: el estudiante nuevo aparece en el seguimiento docente; el **CSV** exporta columna por columna el pretest y el postest reales; el investigador accede a panel y dataset.
 7. **Tours**: persistencia por usuario (vacío → marcar idempotente → reiniciar), clave vacía → 400.
 
 ### Casos límite cubiertos
@@ -75,7 +75,7 @@ Nueva suite `backend/test/estructura-academica.e2e-spec.ts` (16 pruebas, incluid
 - **Unidad → Tema**: creación, número duplicado rechazado, regla de publicación (mínimo 10 ejercicios activos, mensaje "X/10"), guard de rol (estudiante no accede a `/docente/unidades`).
 - **Nuevos tipos de pregunta**: `completar_codigo` acepta variantes separadas por `|`; `ordenar_lineas` califica comparando el orden de ids; ambos se crean sin exigir `opciones` cuando no aplica.
 - **Desbloqueo por tema**: el primer tema de la primera unidad se habilita solo tras publicarse; un segundo tema no publicado permanece bloqueado (403) aunque el ejercicio exista.
-- **Paralelo**: registro con paralelo obligatorio; `POST /admin/grupos/asignar-paralelo` asigna un paralelo completo a control/experimental de una sola vez y rechaza paralelos inexistentes; el conteo por paralelo se refleja en `/admin/grupos`.
+- **Paralelo**: registro con paralelo obligatorio. (La asignación de grupos control/experimental se retiró junto con el diseño cuasiexperimental.)
 
 Total actualizado: **50 unitarias + 44 e2e**, todas en verde. Build de producción de frontend y backend verificado tras el cambio.
 
@@ -100,7 +100,7 @@ Nueva suite `backend/test/rol-docente-mejoras.e2e-spec.ts` (11 pruebas) + 8 unit
 - **Responsividad**: `Modal` (ui.tsx) reescrito con `flex-col` + alto máximo del diálogo (`max-h-[calc(100dvh-3rem)]`), header/footer fijos y cuerpo scrolleable → nunca corta ni desborda; en móvil casi full-width. Dashboard docente: stat cards `grid-cols-2 sm:grid-cols-3 lg:grid-cols-5`, fila de actividad oculta badge/fecha en móvil. Todas las tablas ya con `overflow-x-auto`.
 - **Ejercicios por Unidad → Tema → Subtema**: el formulario docente usa dropdowns dependientes (reutiliza `/docente/unidades`); el `temaId` final es el subtema si se elige, si no el tema padre.
 - **Evaluación final controlada por el docente**: modelo `PostestControl` (por paralelo, deshabilitado por defecto). `PostestService.disponibilidad` ahora gatea por el switch docente. `/docente/postest` (listar + toggle) notifica a los estudiantes al habilitar. E2E: default bloqueado (400 "docente la habilite"), estudiante no puede togglear (403), al habilitar → disponible + notificación, deshabilitar → vuelve a bloquear. El módulo va al final del menú del estudiante.
-- **Adaptatividad de la ruta**: `PerfilAdaptativo` (dificultad objetivo 1-5, inicia del pretest) + `PasoRuta` (registro de la secuencia). `AdaptatividadService`: ruta ordenada por cercanía a la dificultad objetivo (bajo→fáciles primero, avanzado→difíciles antes); motor de reglas sube/baja tras cada intento. Banco y pretest/postest IGUALES para todos. Endpoints `/ejercicios/ruta` y `/ejercicios/mi-ruta` (evidencia). Unitarias cubren perfil inicial, orden por dificultad, resueltos al final, y el ajuste ±1 con topes.
+- **Adaptatividad de la ruta**: (`PerfilAdaptativo` se eliminó por obsoleta en la migración `retirar_grupos`) `PasoRuta` (registro de la secuencia). `AdaptatividadService`: ruta ordenada por cercanía a la dificultad objetivo (bajo→fáciles primero, avanzado→difíciles antes); motor de reglas sube/baja tras cada intento. Banco y pretest/postest IGUALES para todos. Endpoints `/ejercicios/ruta` y `/ejercicios/mi-ruta` (evidencia). Unitarias cubren perfil inicial, orden por dificultad, resueltos al final, y el ajuste ±1 con topes.
 - **Subida de PDF en generación**: el módulo `/docente/preguntas-ia` ahora tiene subida directa (input file + drag & drop) que sube a `/docente/documentos` con el tema y auto-selecciona el PDF. Verificado de punta a punta: subida → extracción de texto (`pdf-parse`) → Gemini propone borradores citando el material del docente → aprobación docente.
 
 **Nota**: se detectó y eliminó una unidad huérfana VACÍA (0 ejercicios/progreso) que quedaba de exploración previa y alteraba el determinismo de los tests de desbloqueo (la "primera unidad" se decide por orden/número ascendente).
