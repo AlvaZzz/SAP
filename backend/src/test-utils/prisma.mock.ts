@@ -59,6 +59,8 @@ export function crearPrismaMock() {
     intentoSubidaNivel: delegate(),
     tokenRecuperacion: delegate(),
     historialTheta: delegate(),
+    logAdaptacion: delegate(),
+    historialRanking: delegate(),
     diagnosticoTema: delegate(),
     repasoUnidad: delegate(),
     examenUnidad: delegate(),

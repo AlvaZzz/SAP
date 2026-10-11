@@ -31,6 +31,9 @@ export class ActualizarConfigDto {
   // Evaluación final.
   @IsOptional() @IsInt() @Min(1) @Max(5) postestDesdeNivel?: number;
   @IsOptional() @IsBoolean() encuestaMotivacionActiva?: boolean;
+  // Rango objetivo del motor adaptativo (% de probabilidad de acierto esperada).
+  @IsOptional() @IsInt() @Min(0) @Max(100) rangoObjetivoMin?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(100) rangoObjetivoMax?: number;
   @IsOptional() @IsInt() @Min(1) @Max(60) riesgoDiasInactivo?: number;
   @IsOptional() @IsInt() @Min(0) @Max(100) riesgoTasaAciertoMin?: number;
   @IsOptional() @IsInt() @Min(1) @Max(50) riesgoMinIntentos?: number;

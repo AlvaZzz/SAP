@@ -8,6 +8,8 @@ import { EmblemasService } from '../gamificacion/emblemas.service';
 import { RangosService } from '../gamificacion/rangos.service';
 import { factorXpNivel, nivelAlMenos, nivelDominioAgregado } from '../common/niveles/nivel-dificultad';
 import { estimarTheta, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
+import { msDesde } from '../mediciones/motor/motor';
+import type { DecisionMotor } from './log-adaptacion.service';
 
 // Campos del ejercicio que SÍ ve el estudiante (sin la respuesta correcta).
 const SELECT_PUBLICO = {
@@ -264,7 +266,10 @@ export class EjerciciosService {
   }
 
   // ── Registrar intento (corrección + XP + desbloqueo en backend) ──
-  async responder(usuarioId: number, dto: ResponderDto) {
+  // `inicio` es el instante en que llegó la respuesta (process.hrtime.bigint),
+  // medido en el backend: de él salen la latencia de reajuste y el tiempo de
+  // retroalimentación del log del motor adaptativo.
+  async responder(usuarioId: number, dto: ResponderDto, inicio: bigint = process.hrtime.bigint()) {
     return this.prisma.$transaction(async (tx) => {
       const ej = await tx.ejercicio.findUnique({
         where: { id: dto.ejercicioId },
@@ -299,6 +304,14 @@ export class EjerciciosService {
       // el intento: si el ejercicio no es del nivel del estudiante en este tema, no
       // debe dejar ningún rastro en los datos del estudio.
       await this.adaptatividad.verificarAccesoEjercicio(usuarioId, ej);
+
+      // LOG DEL MOTOR: habilidad con la que el motor ASIGNÓ este ejercicio (antes de
+      // que esta respuesta la modifique). Sin práctica previa, la del diagnóstico.
+      const uAntes = await tx.usuario.findUnique({
+        where: { id: usuarioId }, select: { thetaActual: true, thetaInicial: true },
+      });
+      const thetaAntes = uAntes?.thetaActual ?? uAntes?.thetaInicial ?? null;
+      let thetaDespues: number | null = thetaAntes;
 
       const correcto = corregir(ej.tipo, dto.respuestaDada, ej.respuestaCorrecta);
 
@@ -408,9 +421,9 @@ export class EjerciciosService {
           .map((f) => ({ b: f.ejercicio!.dificultadB, correcto: !!f.correcto }));
         if (respuestas.length > 0) {
           const theta = redondearTheta(estimarTheta(respuestas));
-          const prev = await tx.usuario.findUnique({ where: { id: usuarioId }, select: { thetaActual: true } });
           await tx.usuario.update({ where: { id: usuarioId }, data: { thetaActual: theta } });
-          if (prev?.thetaActual == null || Math.abs(theta - prev.thetaActual) >= 0.1) {
+          thetaDespues = theta;
+          if (uAntes?.thetaActual == null || Math.abs(theta - uAntes.thetaActual) >= 0.1) {
             await tx.historialTheta.create({
               data: { usuarioId, theta, origen: 'practica', n: respuestas.length, temaId: ej.temaId },
             });
@@ -419,12 +432,25 @@ export class EjerciciosService {
       } catch {
         /* la evolución de θ es best-effort: no interrumpe el flujo del estudiante */
       }
+      // LATENCIA DE REAJUSTE: la nueva habilidad (y con ella la dificultad que el
+      // motor usará para el siguiente ejercicio) ya está lista en este punto.
+      const latenciaMs = msDesde(inicio);
 
-      // Recalcular posiciones del ranking.
-      const orden = await tx.ranking.findMany({ orderBy: [{ xpTotal: 'desc' }, { usuarioId: 'asc' }], select: { usuarioId: true } });
+      // Recalcular posiciones del ranking. Solo se escribe a quien CAMBIA de
+      // posición, y cada cambio queda en HistorialRanking (indicador de
+      // gamificación de la tesis: "cambios de posición en el ranking").
+      const orden = await tx.ranking.findMany({
+        orderBy: [{ xpTotal: 'desc' }, { usuarioId: 'asc' }],
+        select: { usuarioId: true, posicion: true },
+      });
+      const cambios: { usuarioId: number; posicionAntes: number | null; posicionDespues: number }[] = [];
       for (let i = 0; i < orden.length; i++) {
+        if (orden[i].posicion === i + 1) continue;
         await tx.ranking.update({ where: { usuarioId: orden[i].usuarioId }, data: { posicion: i + 1 } });
+        cambios.push({ usuarioId: orden[i].usuarioId, posicionAntes: orden[i].posicion ?? null, posicionDespues: i + 1 });
       }
+      if (cambios.length) await tx.historialRanking.createMany({ data: cambios });
+
 
       // Emblemas disparados por este intento (validados en el backend, sin duplicar).
       const emblemasNuevos = await this.emblemas.evaluarIntento(tx, usuarioId, {
@@ -453,6 +479,21 @@ export class EjerciciosService {
         logros_nuevos: emblemasNuevos.map((e) => e.clave),
         emblemas_nuevos: emblemasNuevos,
         rango_subido: rangoSubido,
+        // Datos de la decisión del motor para LogAdaptacion. El controlador los
+        // separa: NO viajan al cliente.
+        motor: {
+          ejercicioId: ej.id,
+          temaId: ej.temaId,
+          dificultadB: ej.dificultadB,
+          thetaAntes,
+          thetaDespues,
+          nivelAntes: ej.temaId != null ? ej.nivelDificultad : null,
+          // Personalizado = servido por la ruta adaptativa de un tema (filtrada
+          // por el nivel del estudiante y ordenada por información respecto a θ).
+          personalizado: ej.temaId != null && ej.banco === 'practica',
+          correcto,
+          latenciaMs,
+        } satisfies DecisionMotor,
       };
     });
   }

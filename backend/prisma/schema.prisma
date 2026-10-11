@@ -175,6 +175,8 @@ model Usuario {
   respuestasEncuesta  RespuestaEncuesta[]
   consultasRanking    ConsultaRanking[]
   examenesUnidad      ExamenUnidad[]
+  logsAdaptacion      LogAdaptacion[]
+  historialRanking    HistorialRanking[]
 
   @@map("usuarios")
 }
@@ -328,6 +330,7 @@ model Tema {
   intentosSubidaNivel IntentoSubidaNivel[]
   diagnosticos        DiagnosticoTema[]
   pretestRespuestas   PretestRespuesta[]
+  logsAdaptacion      LogAdaptacion[]
 
   @@index([unidadId])
   @@index([padreId])
@@ -509,6 +512,7 @@ model Ejercicio {
   pretestRespuestas PretestRespuesta[]
   pasosRuta         PasoRuta[]
   retosDerivados    Reto[]             @relation("RetosDerivados")
+  logsAdaptacion    LogAdaptacion[]
 
   @@index([nivelId])
   @@index([temaId])
@@ -1072,6 +1076,12 @@ model ConfiguracionSistema {
   // investigación (ver docs/INSTRUMENTO_MOTIVACION.md). Apagada por defecto.
   encuestaMotivacionActiva Boolean @default(false) @map("encuesta_motivacion_activa")
 
+  // ── Investigación (diseño no experimental transversal) ──
+  // RANGO OBJETIVO del motor adaptativo, en % de probabilidad de acierto esperada.
+  // Una asignación está "en rango" si rangoObjetivoMin ≤ P ≤ rangoObjetivoMax.
+  rangoObjetivoMin Int @default(50) @map("rango_objetivo_min")
+  rangoObjetivoMax Int @default(85) @map("rango_objetivo_max")
+
   // Detección de estudiantes "en riesgo" (configurable, centralizado aquí).
   riesgoDiasInactivo   Int @default(7) @map("riesgo_dias_inactivo") // días sin actividad
   riesgoTasaAciertoMin Int @default(40) @map("riesgo_tasa_acierto_min") // % mínimo de aciertos
@@ -1096,4 +1106,73 @@ model LogAuditoria {
   @@index([accion, fecha])
   @@index([fecha])
   @@map("log_auditoria")
+}
+
+// ── LOG DEL MOTOR ADAPTATIVO (instrumento de la tesis: precisión y latencia) ──
+//  Una fila por cada DECISIÓN del motor, es decir, por cada ejercicio de
+//  práctica que el sistema asignó y el estudiante respondió. Es el "registro de
+//  logs del sistema" del que salen dos indicadores de la variable dependiente
+//  "precisión del motor adaptativo":
+//
+//   · Ajuste de dificultad → `enRangoObjetivo`: la probabilidad de acierto
+//     esperada P = 1/(1+e^-(θ−b)) del ejercicio asignado, calculada con la θ que
+//     el estudiante tenía ANTES de responder, cae dentro del rango objetivo
+//     (ConfiguracionSistema.rangoObjetivoMin/Max).
+//   · Latencia de reajuste → `latenciaMs`: desde que llega la respuesta hasta
+//     que el sistema tiene re-estimada la habilidad (la nueva dificultad).
+//
+//  Y dos de la variable independiente: `personalizado` (¿el ejercicio se
+//  seleccionó según el nivel/θ del estudiante?) y `tiempoRespuestaMs` (desde que
+//  llega la respuesta hasta que la retroalimentación está lista para enviarse).
+//
+//  Los tiempos se miden en el BACKEND (process.hrtime), nunca en el cliente.
+//  Fórmulas en docs/DISENO_INVESTIGACION.md y docs/IRT.md.
+model LogAdaptacion {
+  id          Int  @id @default(autoincrement())
+  usuarioId   Int  @map("usuario_id")
+  temaId      Int? @map("tema_id")
+  ejercicioId Int  @map("ejercicio_id")
+
+  thetaAntes   Float? @map("theta_antes") // null si el estudiante aún no tenía θ
+  thetaDespues Float? @map("theta_despues")
+  dificultadB  Float  @map("dificultad_b")
+  probAcierto  Float? @map("prob_acierto") // P esperada con thetaAntes; null sin θ
+
+  nivelAntes   NivelDificultad? @map("nivel_antes")
+  nivelDespues NivelDificultad? @map("nivel_despues")
+  // null = no evaluable (sin θ previa): se excluye del denominador, no cuenta como fallo.
+  enRangoObjetivo Boolean? @map("en_rango_objetivo")
+  // true = servido por la ruta adaptativa (filtrado por nivel y ordenado por θ).
+  personalizado   Boolean  @default(false)
+  correcto        Boolean
+
+  latenciaMs        Int @map("latencia_ms")
+  tiempoRespuestaMs Int @map("tiempo_respuesta_ms")
+
+  fecha DateTime @default(now())
+
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio @relation(fields: [ejercicioId], references: [id], onDelete: Cascade)
+  tema      Tema?     @relation(fields: [temaId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, fecha])
+  @@index([temaId])
+  @@map("log_adaptacion")
+}
+
+// ── CAMBIOS DE POSICIÓN EN EL RANKING (indicador de gamificación) ──
+//  Una fila cada vez que la posición de un estudiante cambia al recalcularse el
+//  ranking. La tesis operacionaliza la gamificación como "retos completados y
+//  cambios de posición en el ranking (cantidad)".
+model HistorialRanking {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int      @map("usuario_id")
+  posicionAntes   Int?     @map("posicion_antes") // null = primera vez que entra al ranking
+  posicionDespues Int      @map("posicion_despues")
+  fecha           DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, fecha])
+  @@map("historial_ranking")
 }

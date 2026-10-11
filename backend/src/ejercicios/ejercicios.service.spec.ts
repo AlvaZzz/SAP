@@ -128,4 +128,66 @@ describe('EjerciciosService (XP, racha, desbloqueo de nivel y ranking)', () => {
     expect(prisma.ranking.update).toHaveBeenNthCalledWith(2, { where: { usuarioId: 7 }, data: { posicion: 2 } });
     expect(prisma.ranking.update).toHaveBeenNthCalledWith(3, { where: { usuarioId: 5 }, data: { posicion: 3 } });
   });
+
+  it('solo escribe a quien CAMBIA de posición y lo deja en HistorialRanking', async () => {
+    // El 7 adelanta al 2; el 5 conserva su tercer puesto.
+    prisma.ranking.findMany.mockResolvedValue([
+      { usuarioId: 7, posicion: 2 }, { usuarioId: 2, posicion: 1 }, { usuarioId: 5, posicion: 3 },
+    ]);
+    await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' });
+    expect(prisma.ranking.update).toHaveBeenCalledTimes(2);
+    expect(prisma.historialRanking.createMany).toHaveBeenCalledWith({
+      data: [
+        { usuarioId: 7, posicionAntes: 2, posicionDespues: 1 },
+        { usuarioId: 2, posicionAntes: 1, posicionDespues: 2 },
+      ],
+    });
+  });
+
+  describe('log del motor adaptativo (instrumento de la tesis)', () => {
+    const EJ_TEMA = { ...EJERCICIO, temaId: 4, banco: 'practica', dificultadB: -1, nivelDificultad: 'basico' };
+
+    beforeEach(() => {
+      // Aísla el progreso por tema: aquí solo interesa lo que se mide del motor.
+      jest.spyOn(service as never, 'temaDesbloqueado' as never).mockResolvedValue(true as never);
+      jest.spyOn(service as never, 'unidadDesbloqueada' as never).mockResolvedValue(true as never);
+      jest.spyOn(service as never, 'avanzarProgresoTema' as never).mockResolvedValue(undefined as never);
+      prisma.tema.findUnique.mockResolvedValue({ unidadId: 1 });
+      prisma.ejercicio.findUnique.mockResolvedValue(EJ_TEMA);
+    });
+
+    it('devuelve la θ con la que se ASIGNÓ el ejercicio y la re-estimada tras responder', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ thetaActual: -0.8, thetaInicial: -1.2 });
+      prisma.intento.findMany.mockResolvedValue([
+        { correcto: true, ejercicio: { dificultadB: -1 } },
+        { correcto: false, ejercicio: { dificultadB: 0 } },
+      ]);
+      const r = await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' });
+      expect(r.motor.thetaAntes).toBe(-0.8);
+      expect(r.motor.thetaDespues).not.toBeNull();
+      expect(r.motor.thetaDespues).not.toBe(-0.8);
+      expect(r.motor).toMatchObject({
+        ejercicioId: 10, temaId: 4, dificultadB: -1, nivelAntes: 'basico', personalizado: true, correcto: true,
+      });
+    });
+
+    it('sin práctica previa usa la θ del diagnóstico inicial', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ thetaActual: null, thetaInicial: 0.3 });
+      const r = await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' });
+      expect(r.motor.thetaAntes).toBe(0.3);
+    });
+
+    it('mide la latencia de reajuste en el backend, desde el instante de llegada', async () => {
+      const inicio = process.hrtime.bigint() - 50_000_000n; // la respuesta "llegó" hace 50 ms
+      const r = await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' }, inicio);
+      expect(r.motor.latenciaMs).toBeGreaterThanOrEqual(50);
+    });
+
+    it('un ejercicio sin tema NO cuenta como personalizado (orden fijo)', async () => {
+      prisma.ejercicio.findUnique.mockResolvedValue({ ...EJERCICIO, banco: 'practica', dificultadB: 0 });
+      const r = await service.responder(7, { ejercicioId: 10, respuestaDada: 'B' });
+      expect(r.motor.personalizado).toBe(false);
+      expect(r.motor.nivelAntes).toBeNull();
+    });
+  });
 });

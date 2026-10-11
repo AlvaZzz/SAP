@@ -3,6 +3,8 @@ import { IsArray, IsInt, IsString, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EjerciciosService } from './ejercicios.service';
 import { AdaptatividadService } from './adaptatividad.service';
+import { LogAdaptacionService } from './log-adaptacion.service';
+import { msDesde } from '../mediciones/motor/motor';
 import { ResponderDto } from './dto/responder.dto';
 import { JwtAuthGuard } from '../common/auth/jwt.guard';
 import { CurrentUser } from '../common/auth/current-user.decorator';
@@ -23,6 +25,7 @@ export class EjerciciosController {
   constructor(
     private readonly ejercicios: EjerciciosService,
     private readonly adaptatividad: AdaptatividadService,
+    private readonly logMotor: LogAdaptacionService,
   ) {}
 
   @Get('niveles')
@@ -90,12 +93,18 @@ export class EjerciciosController {
 
   @Post('intentos')
   async responder(@CurrentUser('sub') usuarioId: number, @Body() dto: ResponderDto) {
-    const resultado = await this.ejercicios.responder(usuarioId, dto);
+    // Instante de llegada de la respuesta, medido en el backend (no en el cliente).
+    const inicio = process.hrtime.bigint();
+    const { motor, ...resultado } = await this.ejercicios.responder(usuarioId, dto, inicio);
     // Registra el paso de la ruta como evidencia (best-effort).
     const ej = await this.ejercicios.detalle(dto.ejercicioId).catch(() => null);
     await this.adaptatividad.registrarIntento(
       usuarioId, dto.ejercicioId, resultado.correcto, ej?.nivelDificultad ?? 'basico', ej?.estrellas ?? 0,
     );
+    // LOG DEL MOTOR ADAPTATIVO (instrumento de la tesis). El tiempo de
+    // retroalimentación se cierra aquí, con la respuesta ya lista; el registro se
+    // lanza SIN esperar para no frenar al estudiante.
+    void this.logMotor.registrar(usuarioId, motor, msDesde(inicio));
     return resultado;
   }
 }
