@@ -4,11 +4,10 @@ import { NivelDificultad } from './types';
 /**
  * FLASHCARDS — apoyo al estudio (repaso libre / memorización activa).
  *
- * FRONTERA CON LA INVESTIGACIÓN: las flashcards NO puntúan, NO cronometran y NO
+ * FRONTERA CON LA MEDICIÓN: las flashcards NO puntúan, NO cronometran y NO
  * afectan al θ (IRT) ni a ninguna métrica de medición (pretest/postest/nivel). Se
- * derivan del banco de ejercicios en el backend (única fuente de verdad). Su
- * disponibilidad debe ser coherente con el diseño experimental (mismo tratamiento
- * para quienes correspondan); no registran desempeño evaluado.
+ * derivan del banco de ejercicios en el backend (única fuente de verdad). No
+ * registran desempeño evaluado.
  */
 export interface Flashcard {
   id: string;
@@ -43,7 +42,7 @@ export const fetchFlashcardsExamen = (unidadId: number | string, limit = 12) => 
 
 /**
  * Configuración del REPASO PREVIO con flashcards, POR TIPO DE EXAMEN. Metodología
- * del estudio (cuasi-experimento): un repaso formativo justo antes de un
+ * de la medición: un repaso formativo justo antes de un
  * instrumento de MEDICIÓN contaminaría la medida, por eso:
  *  - examen_unidad → ✅ ACTIVADO: es formativo, ayuda a consolidar antes del gate.
  *  - pretest       → ❌ SIEMPRE DESACTIVADO: mide el nivel de ENTRADA en crudo; un

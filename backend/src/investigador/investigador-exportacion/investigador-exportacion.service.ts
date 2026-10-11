@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { gananciaTheta } from '../../mediciones/irt/irt';
 import { MIN_INTENTOS_TENDENCIA, deltaMitades, promedio, redondear } from '../../common/estadistica/tendencia';
 import { calcularUso } from '../../common/estadistica/uso';
-import {
-  ITEMS as ITEMS_ENCUESTA, instrumentoCargado, itemPorCodigo, puntuar as puntuarItem,
-} from '../../mediciones/encuesta/instrumento';
 
 /** Puntajes por categoría temática (0-100) del pretest o postest. */
 export interface PorCategoria {
@@ -20,23 +16,20 @@ export interface PorCategoria {
 /** Fila ANONIMIZADA del dataset del estudio (una por estudiante). */
 export interface FilaDataset {
   id_anonimo: string;
-  grupo: 'control' | 'experimental';
   institucion: string;
   paralelo: string;
   // Nivel adaptativo inicial PERMANENTE (Básico/Intermedio/Avanzado) del pretest.
   nivel_inicial: string | null;
   // Habilidad estimada por IRT (modelo de Rasch), en logits:
-  //  θ_inicial (pretest), θ_final (postest) y Δθ = θ_final − θ_inicial.
-  //  Complementa la ganancia en puntaje con la ganancia en habilidad estimada.
+  //  θ_inicial (diagnóstico) y θ_final (evaluación final). Se describen por
+  //  separado: el diseño transversal no las compara entre sí.
   theta_inicial: number | null;
   theta_final: number | null;
-  delta_theta: number | null;
   // Evidencia de la ruta adaptativa: intentos de subir de nivel y cuántos aprobó.
   subidas_nivel_intentos: number;
   subidas_nivel_aprobadas: number;
   pretest_total: number | null;
   postest_total: number | null;
-  ganancia: number | null;
   pre: PorCategoria;
   post: PorCategoria;
   tiempo_pretest: number | null;
@@ -49,8 +42,7 @@ export interface FilaDataset {
   pistas_usadas: number;
   retos_entregados: number;
   // ── Hábitos de estudio (proceso) ──
-  //  Mismos indicadores que el estudiante ve en su vista de progreso, para poder
-  //  cruzarlos con la ganancia. Los *_delta comparan la segunda mitad de su
+  //  Mismos indicadores que el estudiante ve en su vista de progreso. Los *_delta comparan la segunda mitad de su
   //  historial de intentos contra la primera; null si aún no hay suficientes.
   intentos_totales: number;
   tasa_acierto: number;
@@ -60,11 +52,8 @@ export interface FilaDataset {
   autonomia_delta: number | null;
   tasa_acierto_delta: number | null;
   tiempo_medio_delta: number | null;
-  // ── DOSIS DE LA INTERVENCIÓN (uso real de la plataforma) ──
-  //  Sin esto la hipótesis es indefendible ante "¿y si el grupo experimental
-  //  simplemente no usó el sistema?". Además habilita el análisis
-  //  dosis-respuesta, que es el argumento causal más fuerte disponible sin
-  //  aleatorización estricta. Ver common/estadistica/uso.ts.
+  // ── USO REAL DE LA PLATAFORMA (describe el período de uso) ──
+  //  Ver common/estadistica/uso.ts.
   dias_activos: number;
   primer_dia: Date | null;
   ultimo_dia: Date | null;
@@ -74,39 +63,11 @@ export interface FilaDataset {
   minutos_por_sesion: number;
   /** Días activos ÷ días del periodo: uso sostenido (→1) vs. atracón (→0). */
   regularidad: number | null;
-  // ── MOTIVACIÓN ACADÉMICA (MSLQ, escala 1–7) ──
-  //  null = NO respondió la encuesta. Es un dato faltante, nunca un cero: un 0
-  //  significaría "motivación nula", que es una afirmación que nadie hizo.
-  motivacion_pre: number | null;
-  motivacion_post: number | null;
-  motivacion_delta: number | null;
-  /** Nº de veces que consultó el ranking (indicador conductual de competitividad). */
+  /** Nº de veces que consultó el ranking (indicador de uso de la gamificación). */
   consultas_ranking: number;
 }
 
 interface CatRaw { categoria: string; aciertos: number; total: number; porcentaje: number }
-
-/**
- * Puntaje de motivación (MSLQ) de un estudiante en un momento: media de sus
- * ítems, con los inversos recodificados.
- *
- * Devuelve `null` —y no 0— cuando la encuesta está incompleta o no se respondió.
- * La distinción no es cosmética: un 0 afirmaría "motivación nula", que es una
- * afirmación que el estudiante nunca hizo, y contaminaría cualquier media de
- * grupo. Un dato faltante debe viajar como faltante hasta el análisis.
- */
-function puntajeMotivacion(respuestas: { itemId: string; valor: number }[]): number | null {
-  if (!instrumentoCargado() || respuestas.length < ITEMS_ENCUESTA.length) return null;
-  let suma = 0;
-  let n = 0;
-  for (const r of respuestas) {
-    const item = itemPorCodigo(r.itemId);
-    if (!item) continue; // ítem de otra versión del instrumento
-    suma += puntuarItem(item, r.valor);
-    n++;
-  }
-  return n ? Math.round((suma / n) * 100) / 100 : null;
-}
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -119,7 +80,7 @@ function puntajeMotivacion(respuestas: { itemId: string; valor: number }[]): num
  *
  *  Este filtro es el candado central: como TODAS las pantallas del rol
  *  investigador derivan de este servicio, excluirlos aquí los excluye de una
- *  sola vez de resultados, fiabilidad, inferencial, validez y exportaciones.
+ *  sola vez de el panel de validación, fiabilidad y exportaciones.
  *
  *  Los otros dos candados: (1) los datos se autoidentifican —correo bajo
  *  `@demo.prexi.local` e `institucion = 'DEMO'`— y (3) el Panel del
@@ -188,7 +149,7 @@ export interface MatrizRespuestas {
  * Exportación del estudio (rol investigador, SOLO LECTURA). Construye el dataset
  * consolidado y ANONIMIZADO (id_anonimo, sin nombres/correos/cédulas) desde la
  * actividad REAL registrada. Es la ÚNICA fuente de verdad: resultados, datos
- * complementarios, fiabilidad e inferencial derivan todos de este servicio; no
+ * complementarios y fiabilidad derivan todos de este servicio; no
  * existen consultas paralelas que puedan contradecirlo.
  */
 /**
@@ -283,7 +244,7 @@ export class InvestigadorExportacionService {
 
   /** Construcción real, siempre contra la base. No usar directamente. */
   private async reconstruirDataset(): Promise<FilaDataset[]> {
-    const [estudiantes, intentos, consultas, entregas, subidas, codigos, fechasIntentos, rankings, encuesta] = await Promise.all([
+    const [estudiantes, intentos, consultas, entregas, subidas, codigos, fechasIntentos, rankings] = await Promise.all([
       this.prisma.usuario.findMany({
         where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
@@ -307,10 +268,6 @@ export class InvestigadorExportacionService {
       this.prisma.intento.findMany({ select: { usuarioId: true, fecha: true } }),
       // Consulta del ranking: indicador conductual que la tesis promete medir.
       this.prisma.consultaRanking.findMany({ select: { usuarioId: true, fecha: true } }),
-      // Motivación (MSLQ): puntaje total por estudiante en cada momento.
-      this.prisma.respuestaEncuesta.findMany({
-        select: { usuarioId: true, itemId: true, valor: true, momento: true },
-      }),
     ]);
 
     // ── DOSIS: se juntan TODOS los eventos con marca temporal de cada usuario ──
@@ -357,14 +314,6 @@ export class InvestigadorExportacionService {
     const rankingPorUsuario = new Map<number, number>();
     for (const r of rankings) rankingPorUsuario.set(r.usuarioId, (rankingPorUsuario.get(r.usuarioId) ?? 0) + 1);
 
-    // Motivación: se puntúa solo a quien respondió el instrumento COMPLETO.
-    const encuestaPorUsuario = new Map<number, { pre: { itemId: string; valor: number }[]; post: { itemId: string; valor: number }[] }>();
-    for (const r of encuesta) {
-      const e = encuestaPorUsuario.get(r.usuarioId) ?? { pre: [], post: [] };
-      e[r.momento].push({ itemId: r.itemId, valor: r.valor });
-      encuestaPorUsuario.set(r.usuarioId, e);
-    }
-
     const subidasPorUsuario = new Map<number, { intentos: number; aprobadas: number }>();
     for (const s of subidas) {
       const e = subidasPorUsuario.get(s.usuarioId) ?? { intentos: 0, aprobadas: 0 };
@@ -385,25 +334,18 @@ export class InvestigadorExportacionService {
       const hayTendencia = h.length >= MIN_INTENTOS_TENDENCIA;
       // Dosis: días activos, sesiones, regularidad… sobre TODOS sus eventos.
       const uso = calcularUso(eventosPorUsuario.get(u.id) ?? []);
-      // Motivación: null si no respondió (dato faltante, nunca un cero).
-      const enc = encuestaPorUsuario.get(u.id);
-      const motivacionPre = enc ? puntajeMotivacion(enc.pre) : null;
-      const motivacionPost = enc ? puntajeMotivacion(enc.post) : null;
 
       return {
         id_anonimo: `E-${String(i + 1).padStart(3, '0')}`,
-        grupo: u.grupo,
         institucion: u.institucion ?? 'Sin institución',
         paralelo: u.paralelo ?? 'Sin paralelo',
         nivel_inicial: u.nivelInicialAdaptativo ?? null,
         theta_inicial: u.thetaInicial ?? null,
         theta_final: u.thetaFinal ?? null,
-        delta_theta: gananciaTheta(u.thetaInicial ?? null, u.thetaFinal ?? null),
         subidas_nivel_intentos: sub.intentos,
         subidas_nivel_aprobadas: sub.aprobadas,
         pretest_total: pre?.puntajeTotal ?? null,
         postest_total: post?.puntajeTotal ?? null,
-        ganancia: pre && post ? post.puntajeTotal - pre.puntajeTotal : null,
         pre: this.agregarPorCategoria(pre?.porCategoria),
         post: this.agregarPorCategoria(post?.porCategoria),
         tiempo_pretest: pre?.tiempoSeg ?? null,
@@ -415,11 +357,8 @@ export class InvestigadorExportacionService {
         consultas_ia: cIa.total,
         pistas_usadas: cIa.pistas,
         retos_entregados: entregasPorUsuario.get(u.id) ?? 0,
-        // ── Variables de HÁBITOS para el análisis complementario ──
-        //  Permiten cruzar proceso (constancia/autonomía/eficiencia) con la
-        //  ganancia pretest→postest. Los *_delta comparan la segunda mitad del
-        //  historial de intentos contra la primera: negativo en autonomía =
-        //  el estudiante pasó a necesitar menos pistas.
+        // ── Hábitos: los *_delta comparan la segunda mitad del historial de
+        //  intentos contra la primera (negativo en autonomía = menos pistas). ──
         intentos_totales: h.length,
         tasa_acierto: h.length ? Math.round((h.filter((x) => x.correcto).length / h.length) * 100) : 0,
         pistas_por_ejercicio: redondear(promedio(h.map((x) => x.pistasUsadas)), 2),
@@ -429,7 +368,7 @@ export class InvestigadorExportacionService {
         tiempo_medio_delta: hayTendencia && conTiempo.length >= MIN_INTENTOS_TENDENCIA
           ? Math.round(deltaMitades(conTiempo.map((x) => x.tiempoSeg)))
           : null,
-        // ── Dosis de la intervención ──
+        // ── Uso de la plataforma ──
         dias_activos: uso.dias_activos,
         primer_dia: uso.primer_dia,
         ultimo_dia: uso.ultimo_dia,
@@ -438,12 +377,6 @@ export class InvestigadorExportacionService {
         minutos_estimados: uso.minutos_estimados,
         minutos_por_sesion: uso.minutos_por_sesion,
         regularidad: uso.regularidad,
-        // ── Motivación (MSLQ) y competitividad ──
-        motivacion_pre: motivacionPre,
-        motivacion_post: motivacionPost,
-        motivacion_delta: motivacionPre !== null && motivacionPost !== null
-          ? Math.round((motivacionPost - motivacionPre) * 100) / 100
-          : null,
         consultas_ranking: rankingPorUsuario.get(u.id) ?? 0,
       };
     });
@@ -453,10 +386,10 @@ export class InvestigadorExportacionService {
   async exportCsv(): Promise<string> {
     const filas = await this.construirDataset();
     const cols = [
-      'id_anonimo', 'grupo', 'institucion', 'paralelo',
-      'nivel_inicial', 'theta_inicial', 'theta_final', 'delta_theta',
+      'id_anonimo', 'institucion', 'paralelo',
+      'nivel_inicial', 'theta_inicial', 'theta_final',
       'subidas_nivel_intentos', 'subidas_nivel_aprobadas',
-      'pretest_total', 'postest_total', 'ganancia',
+      'pretest_total', 'postest_total',
       'pretest_variables', 'postest_variables',
       'pretest_condicionales', 'postest_condicionales',
       'pretest_bucles', 'postest_bucles',
@@ -465,14 +398,14 @@ export class InvestigadorExportacionService {
       'tiempo_pretest', 'tiempo_postest',
       'ejercicios_resueltos', 'tiempo_promedio_ejercicio',
       'xp_total', 'racha', 'consultas_ia', 'pistas_usadas', 'retos_entregados',
-      // Hábitos (proceso) — para cruzarlos con la ganancia.
+      // Hábitos (proceso).
       'intentos_totales', 'tasa_acierto', 'pistas_por_ejercicio', 'sin_pistas_pct',
       'autonomia_delta', 'tasa_acierto_delta', 'tiempo_medio_delta',
-      // Dosis de la intervención (uso real de la plataforma).
+      // Uso real de la plataforma.
       'dias_activos', 'primer_dia', 'ultimo_dia', 'periodo_dias',
       'sesiones', 'minutos_estimados', 'minutos_por_sesion', 'regularidad',
-      // Motivación (MSLQ) y competitividad.
-      'motivacion_pre', 'motivacion_post', 'motivacion_delta', 'consultas_ranking',
+      // Gamificación.
+      'consultas_ranking',
     ];
     const esc = (v: string | number | null): string => {
       if (v === null || v === undefined) return '';
@@ -480,10 +413,10 @@ export class InvestigadorExportacionService {
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
     const lineas = filas.map((f) => [
-      f.id_anonimo, f.grupo, f.institucion, f.paralelo,
-      f.nivel_inicial, f.theta_inicial, f.theta_final, f.delta_theta,
+      f.id_anonimo, f.institucion, f.paralelo,
+      f.nivel_inicial, f.theta_inicial, f.theta_final,
       f.subidas_nivel_intentos, f.subidas_nivel_aprobadas,
-      f.pretest_total, f.postest_total, f.ganancia,
+      f.pretest_total, f.postest_total,
       f.pre.variables, f.post.variables,
       f.pre.condicionales, f.post.condicionales,
       f.pre.bucles, f.post.bucles,
@@ -498,7 +431,7 @@ export class InvestigadorExportacionService {
       f.primer_dia ? f.primer_dia.toISOString().slice(0, 10) : null,
       f.ultimo_dia ? f.ultimo_dia.toISOString().slice(0, 10) : null,
       f.periodo_dias, f.sesiones, f.minutos_estimados, f.minutos_por_sesion, f.regularidad,
-      f.motivacion_pre, f.motivacion_post, f.motivacion_delta, f.consultas_ranking,
+      f.consultas_ranking,
     ].map(esc).join(','));
     return [cols.join(','), ...lineas].join('\n');
   }
@@ -584,7 +517,7 @@ export class InvestigadorExportacionService {
         where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         orderBy: { id: 'asc' },
         select: {
-          id: true, grupo: true,
+          id: true,
           nivelInicialAdaptativo: true, thetaInicial: true, thetaActual: true,
           progresoTemas: { select: { temaId: true, nivelActual: true } },
         },
@@ -611,7 +544,6 @@ export class InvestigadorExportacionService {
       const tasa = (n: string) => (d[n]?.total ? d[n].aciertos / d[n].total : null);
       return {
         id_anonimo: `E-${String(i + 1).padStart(3, '0')}`,
-        grupo: u.grupo,
         nivel_asignado: u.nivelInicialAdaptativo ?? null,
         theta_inicial: u.thetaInicial ?? null,
         theta_actual: u.thetaActual ?? null,
@@ -655,8 +587,7 @@ export class InvestigadorExportacionService {
   /**
    * DIAGNÓSTICO INICIAL DESGLOSADO POR TEMA, anonimizado. Una fila por
    * estudiante×tema: nivel inicial, θ (IRT), puntaje y aciertos del tema. Permite
-   * segmentar el desempeño del ANTES por área (no solo global), para un análisis
-   * más fino del pre/post. Fuente: DiagnosticoTema (permanente).
+   * describir el diagnóstico por área (no solo global). Fuente: DiagnosticoTema (permanente).
    */
   async diagnosticoTemas() {
     const estudiantes = await this.prisma.usuario.findMany({

@@ -31,7 +31,7 @@ export class AdminUsuariosService {
       orderBy: [{ activo: 'desc' }, { creadoEn: 'desc' }],
       select: {
         id: true, nombre: true, email: true, cedula: true, rol: true, carrera: true,
-        institucion: true, grupo: true, activo: true, creadoEn: true,
+        institucion: true, paralelo: true, activo: true, creadoEn: true,
       },
     });
     return usuarios;

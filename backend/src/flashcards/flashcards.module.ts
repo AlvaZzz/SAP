@@ -6,7 +6,6 @@ import { AuthModule } from '../auth/auth.module';
 /**
  * Flashcards: apoyo al estudio (repaso libre). Deriva las tarjetas del banco de
  * ejercicios existente y NO altera métricas de medición (pretest/postest/θ).
- * Su disponibilidad debe ser coherente con el diseño experimental del estudio.
  */
 @Module({
   imports: [AuthModule], // JwtModule para el guard

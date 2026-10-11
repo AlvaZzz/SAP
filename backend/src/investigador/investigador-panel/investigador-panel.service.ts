@@ -6,8 +6,8 @@ import {
 
 /**
  * Panel del estudio (rol investigador, SOLO LECTURA): resumen de la muestra
- * (n total, control/experimental, desglose por institución), avance de la
- * recolección (pretest/postest/intervención) y fechas. Todo desde datos reales.
+ * (n total, desglose por paralelo), avance (diagnóstico inicial, uso real,
+ * evaluación final) y período de uso. Todo desde datos reales.
  */
 @Injectable()
 export class InvestigadorPanelService {
@@ -17,7 +17,7 @@ export class InvestigadorPanelService {
     const [estudiantes, evaluaciones, primerIntento, ultimoIntento, cuentasDemo] = await Promise.all([
       this.prisma.usuario.findMany({
         where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
-        select: { id: true, grupo: true, institucion: true, creadoEn: true },
+        select: { id: true, paralelo: true, creadoEn: true },
       }),
       this.prisma.evaluacion.findMany({ select: { usuarioId: true, tipo: true, fecha: true } }),
       this.prisma.intento.findFirst({ orderBy: { fecha: 'asc' }, select: { fecha: true } }),
@@ -34,20 +34,16 @@ export class InvestigadorPanelService {
     ]);
 
     const total = estudiantes.length;
-    const control = estudiantes.filter((e) => e.grupo === 'control').length;
-    const experimental = estudiantes.filter((e) => e.grupo === 'experimental').length;
 
-    // Desglose por institución (control/experimental).
-    const porInst = new Map<string, { total: number; control: number; experimental: number }>();
+    // Desglose por paralelo.
+    const porParalelo = new Map<string, number>();
     for (const e of estudiantes) {
-      const inst = e.institucion ?? 'Sin institución';
-      const acc = porInst.get(inst) ?? { total: 0, control: 0, experimental: 0 };
-      acc.total++; acc[e.grupo]++;
-      porInst.set(inst, acc);
+      const p = e.paralelo ?? 'Sin paralelo';
+      porParalelo.set(p, (porParalelo.get(p) ?? 0) + 1);
     }
-    const instituciones = [...porInst.entries()]
-      .map(([institucion, v]) => ({ institucion, ...v }))
-      .sort((a, b) => b.total - a.total);
+    const paralelos = [...porParalelo.entries()]
+      .map(([paralelo, total]) => ({ paralelo, total }))
+      .sort((a, b) => a.paralelo.localeCompare(b.paralelo));
 
     // Avance de la recolección.
     const conPre = new Set<number>();
@@ -56,7 +52,6 @@ export class InvestigadorPanelService {
       if (ev.tipo === 'pre') conPre.add(ev.usuarioId);
       else conPost.add(ev.usuarioId);
     }
-    const completaronIntervencion = [...conPost].filter((id) => conPre.has(id)).length;
 
     // Fechas de la recolección (mínimo registro real → último).
     const fechasEval = evaluaciones.map((e) => e.fecha.getTime());
@@ -65,7 +60,7 @@ export class InvestigadorPanelService {
     const candidatosFin = [...fechasEval, ...(ultimoIntento ? [ultimoIntento.fecha.getTime()] : [])];
 
     return {
-      muestra: { total, control, experimental },
+      muestra: { total, paralelos: paralelos.length },
       // CANDADO 3 de 3: visibilidad explícita de las cuentas sintéticas.
       demo: {
         cuentas: cuentasDemo,
@@ -85,11 +80,10 @@ export class InvestigadorPanelService {
               'investigación: están excluidas de todos los cálculos del estudio y de las exportaciones. ' +
               'Se identifican por el dominio @demo.prexi.local y por institución DEMO.',
       },
-      instituciones,
+      paralelos,
       avance: {
         con_pretest: conPre.size,
         con_postest: conPost.size,
-        completaron_intervencion: completaronIntervencion,
         pct_pretest: total ? Math.round((conPre.size / total) * 100) : 0,
         pct_postest: total ? Math.round((conPost.size / total) * 100) : 0,
       },

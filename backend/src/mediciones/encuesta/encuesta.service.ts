@@ -29,6 +29,19 @@ import {
 export class EncuestaService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * La encuesta está apagada salvo que el administrador la active: no forma
+   * parte de la investigación (ver docs/INSTRUMENTO_MOTIVACION.md).
+   */
+  async exigirActiva(): Promise<void> {
+    const cfg = await this.prisma.configuracionSistema.findUnique({
+      where: { id: 1 }, select: { encuestaMotivacionActiva: true },
+    });
+    if (!cfg?.encuestaMotivacionActiva) {
+      throw new ServiceUnavailableException('La encuesta de motivación no está habilitada.');
+    }
+  }
+
   /** Barrera única: nada se aplica sin instrumento cargado. */
   private exigirInstrumento(): void {
     if (!instrumentoCargado()) throw new ServiceUnavailableException(MENSAJE_SIN_INSTRUMENTO);

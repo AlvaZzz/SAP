@@ -24,7 +24,7 @@ import { TrendingUp, TrendingDown, Minus, Sparkles, Flame, Bot, Clock, Target } 
 
 interface Cat { categoria: string; pretest: number | null; postest: number | null; mejora: number | null; promedio_grupal: number | null }
 interface Sesion { titulo: string; categoria: string; correcto: boolean; xp: number; tiempo_seg: number; fecha: string }
-interface Datos { comparativa: Cat[]; pretest_total: number | null; postest_total: number | null; ganancia: number | null; sesiones: Sesion[] }
+interface Datos { comparativa: Cat[]; pretest_total: number | null; postest_total: number | null; avance: number | null; sesiones: Sesion[] }
 
 interface RangoInfo { clave: string; nombre: string; orden: number; svgKey: string; color: string }
 interface RangoResumen {
@@ -166,7 +166,7 @@ function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | nul
             <div className="rounded-2xl bg-prexi-green px-5 py-3 text-center">
               <div className="flex items-center justify-center gap-1.5">
                 <TrendingUp className="h-5 w-5" />
-                <p className="font-display text-2xl font-extrabold">{d.ganancia != null && d.ganancia >= 0 ? '+' : ''}{d.ganancia}</p>
+                <p className="font-display text-2xl font-extrabold">{d.avance != null && d.avance >= 0 ? '+' : ''}{d.avance}</p>
               </div>
               <p className="text-[11px] text-green-50">puntos de mejora</p>
             </div>
@@ -180,9 +180,9 @@ function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | nul
 
       {/* Qué significa */}
       <p className="mt-4 border-t border-white/10 pt-3 text-sm text-blue-100/85">
-        {hayPost && d.ganancia != null
-          ? d.ganancia > 0
-            ? <>Subiste <b className="text-white">{d.ganancia} puntos</b> desde tu diagnóstico inicial{mejoras.length > 0 && <> — creciste sobre todo en <b className="text-white">{mejoras.map((m) => m.categoria).join(', ')}</b></>}.</>
+        {hayPost && d.avance != null
+          ? d.avance > 0
+            ? <>Subiste <b className="text-white">{d.avance} puntos</b> desde tu diagnóstico inicial{mejoras.length > 0 && <> — creciste sobre todo en <b className="text-white">{mejoras.map((m) => m.categoria).join(', ')}</b></>}.</>
             : <>Tu puntaje final quedó parejo al inicial. Revisa abajo qué temas conviene reforzar.</>
           : <>Aquí verás cuánto creciste cuando rindas la evaluación final. Mientras tanto, tu avance real se refleja en el dominio por unidad.</>}
       </p>

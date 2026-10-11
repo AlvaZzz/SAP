@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { EmblemasService } from '../../gamificacion/emblemas.service';
 import { RangosService } from '../../gamificacion/rangos.service';
-import { estimarTheta, gananciaTheta, redondearTheta, RespuestaIrt } from '../irt/irt';
+import { estimarTheta, redondearTheta, RespuestaIrt } from '../irt/irt';
 
 export const TOTAL_POSTEST = 20;
 
@@ -11,11 +11,10 @@ export interface ResultadoPostest {
   puntaje: number;
   aciertos: number;
   total: number;
-  ganancia: number | null; // postest - pretest
-  // Evidencia IRT del progreso: θ del postest, θ del pretest y Δθ = θ_final − θ_inicial.
+  // Retroalimentación para el estudiante: puntos frente a su diagnóstico inicial.
+  avance: number | null;
+  // Habilidad estimada (θ, Rasch) en esta evaluación.
   theta: number | null;
-  theta_pre: number | null;
-  ganancia_theta: number | null;
   por_categoria: { categoria: string; aciertos: number; total: number; porcentaje: number }[];
   fortalezas: string[];
   debilidades: string[];
@@ -25,8 +24,8 @@ export interface ResultadoPostest {
 /**
  * POSTEST — misma mecánica del pretest pero con el banco 'postest' (preguntas
  * distintas) y tipo='post'. Se desbloquea al completar un avance configurable
- * (ConfiguracionSistema.postestDesdeNivel). No modifica niveles ni XP: solo
- * recolecta datos de la investigación (ganancia = postest − pretest).
+ * (ConfiguracionSistema.postestDesdeNivel). Es la EVALUACIÓN FINAL DEL CURSO que
+ * administra el docente; no modifica niveles ni XP.
  */
 @Injectable()
 export class PostestService {
@@ -93,7 +92,7 @@ export class PostestService {
     const [evalPost, evalPre, u] = await Promise.all([
       this.prisma.evaluacion.findUnique({ where: { usuarioId_tipo: { usuarioId, tipo: 'post' } } }),
       this.prisma.evaluacion.findUnique({ where: { usuarioId_tipo: { usuarioId, tipo: 'pre' } } }),
-      this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { thetaInicial: true, thetaFinal: true } }),
+      this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { thetaFinal: true } }),
     ]);
     return {
       disponible: disp.disponible,
@@ -105,7 +104,7 @@ export class PostestService {
       // (Evaluacion), no se recalcula desde pretest_respuestas (que pueden estar
       // vacías tras finalizar/seed y darían 0). calcular() solo se usa al finalizar.
       resultado: evalPost
-        ? this.resultadoDesdeEvaluacion(evalPost, evalPre?.puntajeTotal ?? null, u?.thetaInicial ?? null, u?.thetaFinal ?? null)
+        ? this.resultadoDesdeEvaluacion(evalPost, evalPre?.puntajeTotal ?? null, u?.thetaFinal ?? null)
         : null,
     };
   }
@@ -114,7 +113,6 @@ export class PostestService {
   private resultadoDesdeEvaluacion(
     evalPost: { puntajeTotal: number; porCategoria: unknown },
     prePuntaje: number | null,
-    thetaPre: number | null = null,
     thetaPost: number | null = null,
   ): ResultadoPostest {
     const por = this.catsGuardadas(evalPost.porCategoria);
@@ -124,10 +122,8 @@ export class PostestService {
       puntaje: evalPost.puntajeTotal,
       aciertos,
       total,
-      ganancia: prePuntaje != null ? evalPost.puntajeTotal - prePuntaje : null,
+      avance: prePuntaje != null ? evalPost.puntajeTotal - prePuntaje : null,
       theta: thetaPost,
-      theta_pre: thetaPre,
-      ganancia_theta: gananciaTheta(thetaPre, thetaPost),
       por_categoria: por,
       fortalezas: por.filter((c) => c.porcentaje >= 60).map((c) => c.categoria),
       debilidades: por.filter((c) => c.porcentaje < 60).map((c) => c.categoria),
@@ -206,8 +202,8 @@ export class PostestService {
     const pre = await this.prisma.evaluacion.findUnique({ where: { usuarioId_tipo: { usuarioId, tipo: 'pre' } } });
     return {
       puntaje, aciertos, total,
-      ganancia: pre ? puntaje - pre.puntajeTotal : null,
-      theta: null, theta_pre: null, ganancia_theta: null, // se rellenan en finalizar()
+      avance: pre ? puntaje - pre.puntajeTotal : null,
+      theta: null, // se rellena en finalizar()
       por_categoria: por,
       fortalezas: por.filter((c) => c.porcentaje >= 60).map((c) => c.categoria),
       debilidades: por.filter((c) => c.porcentaje < 60).map((c) => c.categoria),
@@ -267,17 +263,13 @@ export class PostestService {
       update: { puntajeTotal: r.puntaje, tiempoSeg, porCategoria: r.por_categoria, fecha: new Date() },
     });
 
-    // IRT: estima θ_final desde el postest y registra la ganancia de habilidad
-    // Δθ = θ_final − θ_inicial (evidencia cuantitativa, además de la ganancia en
-    // puntaje). θ_final se persiste y se añade a la evolución de θ.
+    // IRT: estima θ_final desde la evaluación final; se persiste y se añade a la
+    // evolución de θ.
     const est = await this.estimarThetaPostest(usuarioId);
     if (est) {
-      const u = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { thetaInicial: true } });
       await this.prisma.usuario.update({ where: { id: usuarioId }, data: { thetaFinal: est.theta } });
       await this.prisma.historialTheta.create({ data: { usuarioId, theta: est.theta, origen: 'postest', n: est.n } });
       r.theta = est.theta;
-      r.theta_pre = u?.thetaInicial ?? null;
-      r.ganancia_theta = gananciaTheta(u?.thetaInicial ?? null, est.theta);
     }
 
     // El postest es proxy de dominio para el rango: recalcúlalo en todas las

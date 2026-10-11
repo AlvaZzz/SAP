@@ -3,7 +3,7 @@
  *
  *   Unidad → Tema (mínimo 10 ejercicios para publicar) → el estudiante los
  *   resuelve con los NUEVOS TIPOS de pregunta (completar_codigo,
- *   ordenar_lineas) → desbloqueo por tema → asignación de grupo por paralelo.
+ *   ordenar_lineas) → desbloqueo por tema.
  *
  * Requiere: docker compose up -d (API en :4000 con la BD sembrada: seed.ts).
  */
@@ -203,38 +203,3 @@ describe('4 · Un segundo tema (no publicado / no es el primero) permanece bloqu
   });
 });
 
-describe('5 · Asignación de grupos de investigación por paralelo', () => {
-  const paralelo = `E2E${stamp % 100000}`;
-
-  it('registra 2 estudiantes en el mismo paralelo nuevo', async () => {
-    for (let i = 0; i < 2; i++) {
-      const r = await req('POST', '/auth/register', {
-        body: {
-          nombre: `Paralelo Test ${i}`, email: `paralelo${stamp}.${i}@test.bo`, password: 'segura123',
-          cedula: `${stamp}${i}`.slice(-9), carrera: 'Sistemas', paralelo,
-        },
-      });
-      expect(r.status).toBe(201);
-    }
-  });
-
-  it('rechaza asignar un paralelo que no existe', async () => {
-    const r = await req('POST', '/admin/grupos/asignar-paralelo', { token: adminTk, body: { paralelo: 'NO-EXISTE-XYZ', grupo: 'control' } });
-    expect(r.status).toBe(400);
-  });
-
-  it('asigna el paralelo completo a "control" de una sola vez', async () => {
-    const r = await req('POST', '/admin/grupos/asignar-paralelo', { token: adminTk, body: { paralelo, grupo: 'control' } });
-    expect(r.status).toBe(201);
-    expect(r.data.actualizados).toBe(2);
-  });
-
-  it('el conteo por paralelo refleja la asignación', async () => {
-    const r = await req('GET', '/admin/grupos', { token: adminTk });
-    expect(r.status).toBe(200);
-    const fila = r.data.paralelos.find((p: { paralelo: string }) => p.paralelo === paralelo);
-    expect(fila).toBeDefined();
-    expect(fila.control).toBe(2);
-    expect(fila.experimental).toBe(0);
-  });
-});

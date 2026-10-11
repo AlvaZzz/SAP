@@ -6,13 +6,13 @@ import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 
 /**
- * Encuesta de motivación académica (instrumento de la variable dependiente).
+ * Encuesta de motivación académica (MSLQ).
  *
- * TODO: REVISAR_ANTES_DE_ELIMINAR — el módulo completo está SIN PANTALLA en el
- * frontend: ninguna ruta de `frontend/src` llama a `/encuesta/*`. No es código
- * muerto sino una funcionalidad a medio terminar (el MSLQ es parte del diseño de
- * la tesis). Decisión pendiente: construir la pantalla del estudiante o retirar
- * el instrumento del documento. No borrar sin tomar esa decisión.
+ * FUNCIONALIDAD DEL SISTEMA NO EMPLEADA EN ESTA INVESTIGACIÓN: la motivación no
+ * es una variable de la tesis (diseño no experimental transversal). El código
+ * del instrumento se conserva, pero queda APAGADO por configuración
+ * (ConfiguracionSistema.encuestaMotivacionActiva = false) y sin pantalla en el
+ * frontend. Ver docs/INSTRUMENTO_MOTIVACION.md.
  */
 @Controller('encuesta')
 @UseGuards(JwtAuthGuard)
@@ -39,16 +39,18 @@ export class EncuestaController {
   }
 
   @Get(':momento')
-  cuestionario(@CurrentUser('sub') usuarioId: number, @Param('momento') momento: string) {
+  async cuestionario(@CurrentUser('sub') usuarioId: number, @Param('momento') momento: string) {
+    await this.service.exigirActiva();
     return this.service.cuestionario(usuarioId, this.momento(momento));
   }
 
   @Post(':momento')
-  responder(
+  async responder(
     @CurrentUser('sub') usuarioId: number,
     @Param('momento') momento: string,
     @Body() dto: ResponderEncuestaDto,
   ) {
+    await this.service.exigirActiva();
     return this.service.responder(usuarioId, this.momento(momento), dto.respuestas);
   }
 }

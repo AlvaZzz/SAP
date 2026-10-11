@@ -28,9 +28,9 @@ export class ActualizarConfigDto {
   @IsOptional() @IsInt() @Min(1) @Max(500) rateLimitIaHora?: number;
   @IsOptional() @IsIn(['inmediata', 'al_finalizar']) modoRetroalimentacion?: string;
 
-  // Investigación.
+  // Evaluación final.
   @IsOptional() @IsInt() @Min(1) @Max(5) postestDesdeNivel?: number;
-  @IsOptional() @IsBoolean() gruposBloqueados?: boolean;
+  @IsOptional() @IsBoolean() encuestaMotivacionActiva?: boolean;
   @IsOptional() @IsInt() @Min(1) @Max(60) riesgoDiasInactivo?: number;
   @IsOptional() @IsInt() @Min(0) @Max(100) riesgoTasaAciertoMin?: number;
   @IsOptional() @IsInt() @Min(1) @Max(50) riesgoMinIntentos?: number;

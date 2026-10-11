@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { PostestService } from './postest.service';
 import { crearPrismaMock, PrismaMock } from '../../test-utils/prisma.mock';
 
-describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
+describe('PostestService (avance y candados anti-resultado-vacío)', () => {
   let prisma: PrismaMock;
   let service: PostestService;
 
@@ -97,7 +97,7 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     );
   });
 
-  it('finalizar calcula la GANANCIA real: postest − pretest', async () => {
+  it('finalizar calcula el avance frente al diagnóstico: postest − pretest', async () => {
     habilitarPostest();
     simularRespuestasPost([{ categoria: 'Variables', aciertos: 17, total: 20 }]);
     prisma.evaluacion.findUnique.mockImplementation((args: { where: { usuarioId_tipo: { tipo: string } } }) => {
@@ -108,7 +108,7 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     const r = await service.finalizar(7, 900);
 
     expect(r.puntaje).toBe(85);
-    expect(r.ganancia).toBe(40); // 85 − 45
+    expect(r.avance).toBe(40); // 85 − 45
     expect(prisma.evaluacion.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({ tipo: 'post', puntajeTotal: 85 }),
@@ -116,15 +116,11 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     );
   });
 
-  it('IRT: estima θ_final y calcula la ganancia de habilidad Δθ = θ_final − θ_inicial', async () => {
+  it('IRT: estima θ_final de la evaluación final y lo persiste', async () => {
     habilitarPostest();
     simularRespuestasPost([{ categoria: 'Variables', aciertos: 18, total: 20 }]);
     prisma.evaluacion.findUnique.mockImplementation((args: { where: { usuarioId_tipo: { tipo: string } } }) =>
       Promise.resolve(args.where.usuarioId_tipo.tipo === 'pre' ? { puntajeTotal: 40 } : null),
-    );
-    // θ_inicial guardado del pretest.
-    prisma.usuario.findUnique.mockImplementation((args: { select?: { thetaInicial?: boolean } }) =>
-      Promise.resolve(args.select?.thetaInicial ? { thetaInicial: -1 } : { paralelo: 'A', repasoPostestCompletado: true }),
     );
     prisma.pretestRespuesta.findMany.mockResolvedValue([
       { correcto: true, ejercicio: { dificultadB: 1 } },
@@ -135,8 +131,6 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
     const r = await service.finalizar(7, 600);
 
     expect(r.theta).not.toBeNull();
-    expect(r.theta_pre).toBe(-1);
-    expect(r.ganancia_theta).toBeCloseTo(r.theta! - -1, 5);
     // Persiste θ_final y añade el punto postest a la evolución de θ.
     expect(prisma.usuario.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ thetaFinal: r.theta }) }),
@@ -179,14 +173,14 @@ describe('PostestService (ganancia y candados anti-resultado-vacío)', () => {
 
     expect(e.completado).toBe(true);
     expect(e.resultado?.puntaje).toBe(90);
-    expect(e.resultado?.ganancia).toBe(40);
+    expect(e.resultado?.avance).toBe(40);
   });
 
-  it('ganancia es null si no existe pretest previo', async () => {
+  it('avance es null si no existe pretest previo', async () => {
     habilitarPostest();
     simularRespuestasPost([{ categoria: 'Variables', aciertos: 10, total: 20 }]);
     prisma.evaluacion.findUnique.mockResolvedValue(null);
     const r = await service.finalizar(7);
-    expect(r.ganancia).toBeNull();
+    expect(r.avance).toBeNull();
   });
 });

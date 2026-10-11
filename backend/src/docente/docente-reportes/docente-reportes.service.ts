@@ -6,7 +6,7 @@ import { ETIQUETA_NIVEL, ORDEN_NIVEL, nivelDominioAgregado } from '../../common/
 interface CatEval { categoria: string; aciertos: number; total: number; porcentaje: number }
 
 /**
- * Reportes del grupo (rol docente) — insumo central de la investigación.
+ * Reportes del curso (rol docente).
  * Todo se calcula sobre datos reales de pretest/postest e intentos.
  */
 @Injectable()
@@ -45,12 +45,10 @@ export class DocenteReportesService {
         const debil = base.length ? base.reduce((a, b) => (b.porcentaje < a.porcentaje ? b : a)).categoria : null;
 
         return {
-          // SIN `grupo`: el docente debe permanecer ciego a la asignación
-          // control/experimental (ver la nota al inicio del archivo).
           id: u.id, nombre: u.nombre,
           pretest: pre?.puntajeTotal ?? null,
           postest: post?.puntajeTotal ?? null,
-          ganancia: pre && post ? post.puntajeTotal - pre.puntajeTotal : null,
+          avance: pre && post ? post.puntajeTotal - pre.puntajeTotal : null,
           categoria_mas_debil: debil,
         };
       })
@@ -79,7 +77,7 @@ export class DocenteReportesService {
         estudiantes_con_postest: conPost.length,
         promedio_pretest: prom(tabla.map((r) => r.pretest)),
         promedio_postest: prom(tabla.map((r) => r.postest)),
-        ganancia_promedio: prom(tabla.map((r) => r.ganancia)),
+        avance_promedio: prom(tabla.map((r) => r.avance)),
       },
     };
   }
@@ -180,28 +178,4 @@ export class DocenteReportesService {
     return { dias };
   }
 
-  /*
-   * ── ELIMINADO: export CSV de pretest/postest por estudiante ──────────────
-   *
-   * Existía aquí un `exportCsv()` con las columnas
-   *   usuario_id, nombre, GRUPO, puntaje_pretest, puntaje_postest, ganancia…
-   * pensado como insumo para hacer la prueba t fuera del sistema.
-   *
-   * Se retiró el 2026-08-08 por dos razones:
-   *
-   *  1. REVELABA EL GRUPO del estudio, y encima en un archivo descargable que
-   *     sobrevive fuera del sistema. El docente debe permanecer ciego a la
-   *     asignación control/experimental.
-   *  2. NO ERA UNA HERRAMIENTA PEDAGÓGICA. Un dataset de pretest/postest por
-   *     estudiante sirve a la investigación, no a la enseñanza; y esa función
-   *     ya la cubre el rol INVESTIGADOR con su CSV anonimizado, derivado del
-   *     dataset canónico. Mantener ambos creaba una segunda fuente de verdad
-   *     que podía contradecir a la primera.
-   *
-   * Quitarle solo la columna `grupo` habría dejado lo peor de las dos opciones:
-   * un export a medias que sigue duplicando el dataset canónico.
-   *
-   * El docente conserva sus reportes de progreso, que es lo que necesita para
-   * enseñar. Para analizar el estudio: rol investigador → Exportación.
-   */
 }

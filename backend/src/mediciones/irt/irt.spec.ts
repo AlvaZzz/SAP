@@ -6,7 +6,6 @@ import {
   nivelDesdeTheta,
   logVerosimilitud,
   estimarTheta,
-  gananciaTheta,
   redondearTheta,
   RespuestaIrt,
   THETA_MIN,
@@ -237,14 +236,7 @@ describe('IRT — modelo de Rasch (matemática pura)', () => {
     });
   });
 
-  describe('gananciaTheta y redondearTheta', () => {
-    it('Δθ = θ_final − θ_inicial', () => {
-      expect(gananciaTheta(-1, 0.5)).toBeCloseTo(1.5);
-    });
-    it('null si falta alguno de los dos', () => {
-      expect(gananciaTheta(null, 0.5)).toBeNull();
-      expect(gananciaTheta(-1, null)).toBeNull();
-    });
+  describe('redondearTheta', () => {
     it('redondea a 3 decimales', () => {
       expect(redondearTheta(0.123456)).toBe(0.123);
     });

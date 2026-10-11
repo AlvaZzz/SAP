@@ -62,11 +62,6 @@ enum TipoTest {
   post
 }
 
-enum Grupo {
-  control
-  experimental
-}
-
 enum ContextoCodigo {
   libre
   ejercicio
@@ -109,17 +104,14 @@ model Usuario {
   // ── HABILIDAD ESTIMADA POR IRT (modelo de Rasch), en logits (escala de θ) ──
   //  θ_inicial: estimada del PRETEST por máxima verosimilitud (diagnóstico).
   //  θ_actual : re-estimada de forma continua con la práctica (nivel vigente).
-  //  θ_final  : estimada del POSTEST → Δθ = θ_final − θ_inicial (ganancia IRT).
-  //  Son evidencia cuantitativa para la investigación (ver módulo src/irt).
+  //  θ_final  : estimada de la EVALUACIÓN FINAL del curso (postest).
+  //  θ es parte del motor adaptativo (ver src/mediciones/irt). El estudio es no
+  //  experimental transversal: NO compara θ_inicial contra θ_final.
   thetaInicial Float? @map("theta_inicial")
   thetaActual  Float? @map("theta_actual")
   thetaFinal   Float? @map("theta_final")
 
-  // Grupo para la investigación (prueba t pretest/postest).
-  grupo                  Grupo            @default(experimental)
-
-  // Paralelo (ej. "A", "B", "C") y semestre: permiten armar los grupos de
-  // investigación por paralelo completo (ver AdminGruposService.asignarPorParalelo).
+  // Paralelo (ej. "A", "B", "C") y semestre del estudiante.
   paralelo String? // solo aplica a estudiantes; null en docente/admin/investigador
   semestre Int     @default(1)
 
@@ -173,7 +165,6 @@ model Usuario {
   unidadesCompletadas UnidadCompletada[]
   preguntasGeneradas  PreguntaGenerada[]   @relation("AutorPreguntaIa")
   desempenoUnidades   DesempenoUnidad[]
-  perfilAdaptativo    PerfilAdaptativo?
   pasosRuta           PasoRuta[]
   intentosSubidaNivel IntentoSubidaNivel[]
   tokensRecuperacion  TokenRecuperacion[]
@@ -383,34 +374,6 @@ model IntentoSubidaNivel {
 
   @@index([usuarioId, temaId, fecha])
   @@map("intentos_subida_nivel")
-}
-
-// ── Adaptatividad de la ruta de práctica (por estudiante) ──
-//  El banco de ejercicios es EL MISMO para todos; lo que se personaliza es el
-//  ORDEN y el ritmo. `dificultadObjetivo` (1-5) parte del pretest y el motor de
-//  reglas la sube con aciertos y la baja con fallos tras cada intento.
-//
-//  ⚠️ OBSOLETA (constatado el 2026-08-07). NINGÚN servicio la escribe y NADIE la
-//  lee: no queda una sola referencia en `backend/src` fuera de los mocks de
-//  prueba. La adaptatividad terminó implementándose sobre el nivel POR TEMA
-//  (`ProgresoTema.nivelActual`, derivado de θ) en lugar de una dificultad
-//  objetivo global, y esta tabla quedó atrás sin que nadie la retirara.
-//
-//  NO se elimina todavía a propósito: quitarla exige una migración, y no
-//  conviene tocar el esquema justo antes de desplegar y empezar a recolectar
-//  datos reales. Retirarla cuando la recolección haya terminado.
-//
-//  El seed de demostración NO la puebla: inventar filas en una tabla que el
-//  sistema real nunca escribe sería fabricar un estado imposible.
-model PerfilAdaptativo {
-  usuarioId          Int      @id @map("usuario_id")
-  dificultadObjetivo Int      @default(1) @map("dificultad_objetivo")
-  rachaAciertos      Int      @default(0) @map("racha_aciertos")
-  actualizadoEn      DateTime @default(now()) @updatedAt @map("actualizado_en")
-
-  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-
-  @@map("perfil_adaptativo")
 }
 
 // Registro de la RUTA personalizada: cada ejercicio servido/resuelto por el
@@ -1103,9 +1066,11 @@ model ConfiguracionSistema {
   modoRetroalimentacion String  @default("inmediata") @map("modo_retroalimentacion") // inmediata | al_finalizar
   modeloIa              String  @default("gemini-3.5-flash-lite") @map("modelo_ia")
 
-  // Investigación.
+  // Evaluación final.
   postestDesdeNivel Int     @default(3) @map("postest_desde_nivel")
-  gruposBloqueados  Boolean @default(false) @map("grupos_bloqueados") // congela cambios de grupo
+  // Encuesta de motivación (MSLQ): funcionalidad del sistema NO empleada en la
+  // investigación (ver docs/INSTRUMENTO_MOTIVACION.md). Apagada por defecto.
+  encuestaMotivacionActiva Boolean @default(false) @map("encuesta_motivacion_activa")
 
   // Detección de estudiantes "en riesgo" (configurable, centralizado aquí).
   riesgoDiasInactivo   Int @default(7) @map("riesgo_dias_inactivo") // días sin actividad
@@ -1120,8 +1085,8 @@ model ConfiguracionSistema {
 model LogAuditoria {
   id        Int      @id @default(autoincrement())
   actorId   Int      @map("actor_id")
-  accion    String // usuario_crear | usuario_editar | usuario_estado | rol_cambiar | grupo_cambiar | config_cambiar | password_reset
-  entidad   String   @default("") // usuario | configuracion | grupo
+  accion    String // usuario_crear | usuario_editar | usuario_estado | rol_cambiar | config_cambiar | password_reset
+  entidad   String   @default("") // usuario | configuracion
   entidadId Int?     @map("entidad_id")
   detalle   String   @default("") @db.Text
   fecha     DateTime @default(now())

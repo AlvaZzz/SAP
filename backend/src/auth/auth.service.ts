@@ -21,7 +21,7 @@ const BLOQUEO_MIN = 15;
  * acepta al registrarse. Se guarda junto a la fecha para que quede constancia
  * de QUÉ se consintió, no solo de que se consintió. Súbela si cambia el texto.
  */
-export const VERSION_TERMINOS = '2026-08-v1';
+export const VERSION_TERMINOS = '2026-10-v2';
 // Vida útil del enlace de recuperación (corta, por seguridad).
 const RECUPERACION_MIN = 45;
 // Sesión larga (refresh token): con "Recordarme" dura 30 días; sin él, 1 día.
@@ -49,7 +49,7 @@ export class CuentaBloqueadaException extends HttpException {
 // Campos públicos del usuario (nunca exponer hash ni internos de bloqueo).
 const SELECT_PUBLICO = {
   id: true, nombre: true, email: true, rol: true, carrera: true,
-  introduccionCompletada: true, pretestCompletado: true, nivelInicial: true, grupo: true, mustChangePassword: true,
+  introduccionCompletada: true, pretestCompletado: true, nivelInicial: true, mustChangePassword: true,
   paralelo: true, semestre: true,
   // Preferencias de audio (sonidos de logros / lectura en voz alta automática).
   sonidosActivados: true, vozAutomatica: true,
@@ -78,30 +78,11 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const paralelo = dto.paralelo.trim().toUpperCase();
 
-    // GRUPO DE INVESTIGACIÓN: se HEREDA del paralelo, no del valor por defecto.
-    //
-    // El esquema pone `experimental` por defecto, así que hasta ahora TODO el
-    // que se registraba caía ahí. Con el diseño por conglomerados (un paralelo
-    // entero a cada grupo) eso significa que un estudiante de un paralelo de
-    // CONTROL entraba clasificado como experimental y se quedaba así hasta que
-    // alguien lo notara — contaminando el diseño en silencio, que es la peor
-    // forma de contaminarlo.
-    //
-    // Si el paralelo aún no tiene grupo asignado (nadie de ese paralelo se ha
-    // registrado todavía), se conserva el valor por defecto: no hay nada de lo
-    // que heredar, y forzar una elección aquí sería inventarse el diseño.
-    const companero = await this.prisma.usuario.findFirst({
-      where: { rol: 'estudiante', paralelo },
-      select: { grupo: true },
-      orderBy: { id: 'asc' },
-    });
-
     const usuario = await this.prisma.usuario.create({
       data: {
         nombre: dto.nombre, email: dto.email, cedula: dto.cedula,
         carrera: dto.carrera, passwordHash, rol: 'estudiante',
         paralelo, semestre: dto.semestre ?? 1,
-        ...(companero ? { grupo: companero.grupo } : {}),
         // Constancia del consentimiento informado, con fecha. Solo si el cliente
         // lo declara de forma explícita: si no llega, queda sin registro y el
         // rol investigador lo reporta como tal (no se presume otorgado).

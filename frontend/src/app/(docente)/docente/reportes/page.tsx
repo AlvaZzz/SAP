@@ -9,9 +9,8 @@ type Tab = 'prepost' | 'progreso' | 'actividad';
 
 interface PrePost {
   por_categoria: { categoria: string; pretest: number | null; postest: number | null }[];
-  // Sin `grupo`: el rol docente es ciego a la asignación control/experimental.
-  tabla: { id: number; nombre: string; pretest: number | null; postest: number | null; ganancia: number | null; categoria_mas_debil: string | null }[];
-  resumen: { estudiantes_con_pretest: number; estudiantes_con_postest: number; promedio_pretest: number | null; promedio_postest: number | null; ganancia_promedio: number | null };
+  tabla: { id: number; nombre: string; pretest: number | null; postest: number | null; avance: number | null; categoria_mas_debil: string | null }[];
+  resumen: { estudiantes_con_pretest: number; estudiantes_con_postest: number; promedio_pretest: number | null; promedio_postest: number | null; avance_promedio: number | null };
 }
 interface Progreso { total_estudiantes: number; niveles: { numero: number; titulo: string; estudiantes: number; tiempo_promedio_seg: number }[] }
 interface ActividadSemanal { dias: { dia: string; intentos: number; aciertos: number; estudiantes_activos: number }[] }
@@ -27,9 +26,6 @@ export default function DocenteReportesPage() {
 
   return (
     <div className="animate-fade-up">
-      {/* Sin botón de exportación: el CSV de pretest/postest se retiró de este
-          rol porque revelaba el grupo del estudio y duplicaba el dataset
-          canónico. El análisis se exporta desde el rol investigador. */}
       <PageHeader title="Reportes del curso" subtitle="Avance del curso para el seguimiento pedagógico." />
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -65,7 +61,7 @@ function TabPrePost() {
           { label: 'Con pretest', value: d.resumen.estudiantes_con_pretest },
           { label: 'Con postest', value: d.resumen.estudiantes_con_postest },
           { label: 'Prom. pretest', value: d.resumen.promedio_pretest ?? '—' },
-          { label: 'Ganancia prom.', value: d.resumen.ganancia_promedio != null ? `${d.resumen.ganancia_promedio > 0 ? '+' : ''}${d.resumen.ganancia_promedio}` : '—' },
+          { label: 'Avance prom.', value: d.resumen.avance_promedio != null ? `${d.resumen.avance_promedio > 0 ? '+' : ''}${d.resumen.avance_promedio}` : '—' },
         ].map((s) => (
           <Card key={s.label} className="text-center !p-4"><p className="font-display text-2xl font-extrabold text-fg">{s.value}</p><p className="text-[11px] uppercase tracking-wide text-muted">{s.label}</p></Card>
         ))}
@@ -108,10 +104,10 @@ function TabPrePost() {
           { header: 'Pretest', cell: (r) => <span className="text-muted">{r.pretest ?? '—'}</span> },
           { header: 'Postest', cell: (r) => <span className="text-muted">{r.postest ?? '—'}</span> },
           {
-            header: 'Ganancia',
+            header: 'Avance',
             cell: (r) => (
-              <span className={`font-semibold ${r.ganancia != null && r.ganancia > 0 ? 'text-prexi-green' : r.ganancia != null && r.ganancia < 0 ? 'text-prexi-red' : 'text-muted'}`}>
-                {r.ganancia != null ? `${r.ganancia > 0 ? '+' : ''}${r.ganancia}` : '—'}
+              <span className={`font-semibold ${r.avance != null && r.avance > 0 ? 'text-prexi-green' : r.avance != null && r.avance < 0 ? 'text-prexi-red' : 'text-muted'}`}>
+                {r.avance != null ? `${r.avance > 0 ? '+' : ''}${r.avance}` : '—'}
               </span>
             ),
           },

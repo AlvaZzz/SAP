@@ -23,7 +23,7 @@ async function main() {
   const us = await prisma.usuario.findMany({
     where: { OR: [{ intentos: { some: {} } }, { pretestRespuestas: { some: {} } }] },
     select: {
-      id: true, nombre: true, email: true, rol: true, paralelo: true, grupo: true,
+      id: true, nombre: true, email: true, rol: true, paralelo: true,
       institucion: true, consentimientoEn: true, creadoEn: true, pretestCompletado: true,
       _count: { select: { intentos: true, pretestRespuestas: true, evaluaciones: true } },
     },

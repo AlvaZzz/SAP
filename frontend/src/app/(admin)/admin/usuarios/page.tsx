@@ -9,7 +9,7 @@ import { Plus, Edit, Search, Power, KeyRound, CheckCircle, X } from '@/component
 type Rol = 'estudiante' | 'docente' | 'investigador' | 'admin';
 interface Usuario {
   id: number; nombre: string; email: string; cedula: string; rol: Rol;
-  carrera: string | null; institucion: string | null; grupo: string; activo: boolean; creadoEn: string;
+  carrera: string | null; institucion: string | null; paralelo: string | null; activo: boolean; creadoEn: string;
 }
 interface FormState { nombre: string; email: string; cedula: string; rol: Rol; password: string; carrera: string; institucion: string }
 const VACIO: FormState = { nombre: '', email: '', cedula: '', rol: 'docente', password: '', carrera: '', institucion: '' };

@@ -6,7 +6,7 @@
  * `inferencia.spec.ts`; aquí se verifica la lógica metodológica que los usa.
  */
 
-import { compararGrupos, compararPrePost, formatearP, MIN_CALCULO, MIN_INTERPRETABLE } from './contraste';
+import { compararGrupos, formatearP, MIN_CALCULO, MIN_INTERPRETABLE } from './contraste';
 
 // Dos grupos normales, varianzas parecidas, sin diferencia real.
 const NORMAL_A = [52, 55, 58, 60, 62, 64, 66, 68, 70, 73];
@@ -117,55 +117,6 @@ describe('contenido del resultado', () => {
     expect(r.significativo).toBe(true);
     expect(r.efecto!.magnitud).toBe('grande');
     expect(r.interpretacion).toContain('significativa');
-  });
-});
-
-describe('comparación pre-post (medidas repetidas)', () => {
-  // Diferencias verificadas como normales en scipy:
-  //   stats.shapiro(POST-PRE) → W=0.970164611230666, p=0.8923673075239242
-  //   stats.ttest_rel(POST, PRE) → t=15.144756068145712, p=1.0377923374742305e-07
-  const PRE = [40, 45, 38, 50, 42, 47, 44, 41, 46, 43];
-  const POST = [56, 57, 56, 60, 57, 60, 61, 52, 60, 62];
-
-  it('evalúa la normalidad de las DIFERENCIAS, no de cada serie por separado', () => {
-    const c = compararPrePost(PRE, POST, { variable: 'puntaje', etiqueta: 'Experimental' });
-    expect(c.supuestos).toHaveLength(1);
-    expect(c.supuestos[0].nombre).toContain('diferencias');
-  });
-
-  it('con diferencias normales usa la t pareada', () => {
-    const c = compararPrePost(PRE, POST, { variable: 'puntaje', etiqueta: 'Experimental' });
-    expect(c.prueba).toContain('pareadas');
-    expect(c.significativo).toBe(true);
-    expect(c.interpretacion).toContain('MEJORA');
-  });
-
-  it('con diferencias no normales cae a Wilcoxon', () => {
-    // Casi todos mejoran 1 punto y uno mejora 60: diferencias muy asimétricas.
-    const pre = [40, 41, 42, 43, 44, 45, 46, 47, 48, 49];
-    const post = [41, 42, 43, 44, 45, 46, 47, 48, 49, 109];
-    const c = compararPrePost(pre, post, { variable: 'puntaje', etiqueta: 'Control' });
-    expect(c.supuestos[0].cumple).toBe(false);
-    expect(c.prueba).toContain('Wilcoxon');
-  });
-
-  it('bloquea con menos de 3 casos completos', () => {
-    const c = compararPrePost([40, 45], [55, 58], { variable: 'puntaje' });
-    expect(c.calculado).toBe(false);
-    expect(c.bloqueo).toContain('pretest Y postest');
-  });
-
-  it('rechaza series no emparejadas', () => {
-    expect(() => compararPrePost([1, 2, 3], [1, 2], { variable: 'x' })).toThrow();
-  });
-
-  it('detecta un retroceso además de una mejora', () => {
-    // scipy: shapiro(d) → p=0.9146187005560238 (normales)
-    //        ttest_rel → t=-14.714285714285714, p=1.333024572323029e-07
-    const pre = [60, 62, 65, 63, 61, 64, 66, 60, 63, 62];
-    const post = [50, 50, 57, 52, 52, 51, 59, 50, 49, 53];
-    const c = compararPrePost(pre, post, { variable: 'puntaje', etiqueta: 'Control' });
-    expect(c.interpretacion).toContain('RETROCEDE');
   });
 });
 

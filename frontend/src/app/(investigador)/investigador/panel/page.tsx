@@ -3,30 +3,26 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, ProgressBar, EmptyState, ResponsiveTable, PageHeader } from '@/components/ui';
-import { Users, UserCheck, GraduationCap, CheckCircle, ClipboardList, Calendar, FlaskConical } from '@/components/icons';
+import { Users, UserCheck, GraduationCap, Layers, ClipboardList, Calendar, FlaskConical } from '@/components/icons';
 
 interface Panel {
-  muestra: { total: number; control: number; experimental: number };
+  muestra: { total: number; paralelos: number };
   demo: { cuentas: number; modo_demo: boolean; aviso: string | null };
-  instituciones: { institucion: string; total: number; control: number; experimental: number }[];
-  avance: { con_pretest: number; con_postest: number; completaron_intervencion: number; pct_pretest: number; pct_postest: number };
+  paralelos: { paralelo: string; total: number }[];
+  avance: { con_pretest: number; con_postest: number; pct_pretest: number; pct_postest: number };
   recoleccion: { inicio: string | null; fin: string | null };
 }
 
 interface Ficha {
-  diseno: { tipo: string; esquema: string; por_que_cuasi: string };
+  diseno: { tipo: string; esquema: string; por_que: string };
   poblacion: {
-    descripcion: string; instituciones: string[]; paralelos: string[];
-    n_registrados: number; n_control: number; n_experimental: number; n_casos_completos: number;
+    descripcion: string; paralelos: string[]; n_registrados: number; n_con_actividad: number;
   };
   muestreo: { tipo: string; implicacion: string };
-  instrumentos: { nombre: string; tipo: string; areas: string; fiabilidad: string; calibracion: string }[];
-  variables: { independiente: string; dependientes: string[]; intervinientes: string };
-  hipotesis: {
-    nula: string; alterna: string; nivel_significancia: number;
-    criterio_decision: string; potencia: string;
-  };
-  tratamiento_datos: { faltantes: string; anonimizacion: string; supuestos: string };
+  instrumentos: { nombre: string; tipo: string; mide: string; responde: string }[];
+  variables: { independiente: string; dependientes: string[] };
+  hipotesis: { investigacion: string; criterio_decision: string };
+  tratamiento_datos: { faltantes: string; anonimizacion: string; analisis: string };
 }
 
 export default function PanelEstudioPage() {
@@ -43,7 +39,7 @@ export default function PanelEstudioPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Panel del estudio" subtitle="Resumen de la muestra y avance de la recolección de datos (solo lectura)." />
+      <PageHeader title="Panel del estudio" subtitle="Diseño no experimental transversal: muestra, período de uso y ficha metodológica (solo lectura)." />
 
       {/* CANDADO 3: si hay cuentas sintéticas en la base, se dice. Nada oculto.
           Si además el MODO DEMOSTRACIÓN está activo, las cifras de pantalla las
@@ -71,9 +67,9 @@ export default function PanelEstudioPage() {
         {cargando ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
           <>
             <StatCard icon={<Users className="h-7 w-7" />} accent="blue" label="Muestra total (n)" value={d?.muestra.total ?? 0} />
-            <StatCard icon={<UserCheck className="h-7 w-7" />} accent="navy" label="Grupo control" value={d?.muestra.control ?? 0} />
-            <StatCard icon={<GraduationCap className="h-7 w-7" />} accent="green" label="Grupo experimental" value={d?.muestra.experimental ?? 0} />
-            <StatCard icon={<CheckCircle className="h-7 w-7" />} accent="blue" label="Completaron intervención" value={d?.avance.completaron_intervencion ?? 0} />
+            <StatCard icon={<UserCheck className="h-7 w-7" />} accent="navy" label="Paralelos" value={d?.muestra.paralelos ?? 0} />
+            <StatCard icon={<Layers className="h-7 w-7" />} accent="green" label="Con diagnóstico inicial" value={d?.avance.con_pretest ?? 0} />
+            <StatCard icon={<GraduationCap className="h-7 w-7" />} accent="blue" label="Con evaluación final" value={d?.avance.con_postest ?? 0} />
           </>
         )}
       </StatGrid>
@@ -81,15 +77,15 @@ export default function PanelEstudioPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Avance de la recolección */}
         <Card className="lg:col-span-2">
-          <div className="mb-5 flex items-center gap-2"><ClipboardList className="h-5 w-5 text-prexi-blue-deep" /><SectionTitle>Avance de la recolección</SectionTitle></div>
+          <div className="mb-5 flex items-center gap-2"><ClipboardList className="h-5 w-5 text-prexi-blue-deep" /><SectionTitle>Avance del período de uso</SectionTitle></div>
           {cargando ? <div className="space-y-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div>
             : !d || d.muestra.total === 0 ? <EmptyState icon={<Users className="h-7 w-7" />} title="Aún no hay datos suficientes" hint="Cuando los estudiantes se registren y rindan las evaluaciones, verás el avance aquí." />
             : (
               <div className="space-y-5">
-                <Avance label="Rindieron el pretest" valor={d.avance.con_pretest} total={d.muestra.total} pct={d.avance.pct_pretest} tone="blue" />
-                <Avance label="Rindieron el postest" valor={d.avance.con_postest} total={d.muestra.total} pct={d.avance.pct_postest} tone="green" />
+                <Avance label="Rindieron el diagnóstico inicial" valor={d.avance.con_pretest} total={d.muestra.total} pct={d.avance.pct_pretest} tone="blue" />
+                <Avance label="Rindieron la evaluación final del curso" valor={d.avance.con_postest} total={d.muestra.total} pct={d.avance.pct_postest} tone="green" />
                 <div className="rounded-xl bg-subtle p-4 text-sm text-muted">
-                  <b className="text-fg">{d.avance.completaron_intervencion}</b> estudiantes completaron la intervención (rindieron pretest y postest) — base para la comparación estadística.
+                  El estudio no compara momentos ni grupos: el diagnóstico clasifica el nivel inicial y la evaluación final es del curso. Los indicadores de la tesis están en <b className="text-fg">Validación del sistema</b>.
                 </div>
               </div>
             )}
@@ -107,21 +103,19 @@ export default function PanelEstudioPage() {
         </Card>
       </div>
 
-      {/* Desglose por institución */}
+      {/* Desglose por paralelo */}
       <div className="mt-6">
         {cargando ? <Card className="!p-0"><div className="space-y-2 p-6">{[0, 1].map((i) => <Skeleton key={i} className="h-10" />)}</div></Card>
-          : !d || d.instituciones.length === 0 ? <Card><SectionTitle>Desglose por institución / cohorte</SectionTitle><p className="py-6 text-center text-sm text-muted">Sin datos de institución.</p></Card>
+          : !d || d.paralelos.length === 0 ? <Card><SectionTitle>Estudiantes por paralelo</SectionTitle><p className="py-6 text-center text-sm text-muted">Sin estudiantes registrados.</p></Card>
           : (
             <>
-              <SectionTitle className="mb-3">Desglose por institución / cohorte</SectionTitle>
+              <SectionTitle className="mb-3">Estudiantes por paralelo</SectionTitle>
               <ResponsiveTable
-                rows={d.instituciones}
-                rowKey={(i) => i.institucion}
+                rows={d.paralelos}
+                rowKey={(i) => i.paralelo}
                 cols={[
-                  { header: 'Institución / cohorte', cell: (i) => <span className="font-medium text-fg">{i.institucion}</span> },
-                  { header: 'Total', cell: (i) => <span className="text-fg">{i.total}</span> },
-                  { header: 'Control', cell: (i) => <span className="text-muted">{i.control}</span> },
-                  { header: 'Experimental', cell: (i) => <span className="text-muted">{i.experimental}</span> },
+                  { header: 'Paralelo', cell: (i) => <span className="font-medium text-fg">{i.paralelo}</span> },
+                  { header: 'Estudiantes', cell: (i) => <span className="text-fg">{i.total}</span> },
                 ]}
               />
             </>
@@ -144,19 +138,16 @@ export default function PanelEstudioPage() {
               <Dato etiqueta="Esquema" valor={ficha.diseno.esquema} />
               <Dato etiqueta="Muestreo" valor={ficha.muestreo.tipo} />
               <div className="mt-3 rounded-xl bg-subtle p-3 text-xs leading-relaxed text-muted">
-                <p className="mb-2">{ficha.diseno.por_que_cuasi}</p>
+                <p className="mb-2">{ficha.diseno.por_que}</p>
                 <p>{ficha.muestreo.implicacion}</p>
               </div>
             </Card>
 
             <Card>
               <SectionTitle className="mb-3">Hipótesis</SectionTitle>
-              <Dato etiqueta="H₀ (nula)" valor={ficha.hipotesis.nula} />
-              <Dato etiqueta="H₁ (alterna)" valor={ficha.hipotesis.alterna} />
-              <Dato etiqueta="Nivel de significancia" valor={`α = ${ficha.hipotesis.nivel_significancia}`} />
+              <Dato etiqueta="Hipótesis de investigación" valor={ficha.hipotesis.investigacion} />
               <div className="mt-3 rounded-xl bg-subtle p-3 text-xs leading-relaxed text-muted">
-                <p className="mb-2">{ficha.hipotesis.criterio_decision}</p>
-                <p>{ficha.hipotesis.potencia}</p>
+                <p>{ficha.hipotesis.criterio_decision}</p>
               </div>
             </Card>
 
@@ -171,7 +162,6 @@ export default function PanelEstudioPage() {
                   ))}
                 </ul>
               </div>
-              <Dato etiqueta="Intervinientes" valor={ficha.variables.intervinientes} />
             </Card>
 
             <Card>
@@ -180,8 +170,8 @@ export default function PanelEstudioPage() {
                 <div key={i.nombre} className="mb-3 rounded-xl border border-line p-3">
                   <p className="text-sm font-semibold text-fg">{i.nombre}</p>
                   <p className="text-xs text-muted">{i.tipo}</p>
-                  <p className="mt-1 text-xs text-muted">Áreas: {i.areas}</p>
-                  <p className="mt-1 text-xs text-muted">{i.fiabilidad}</p>
+                  <p className="mt-1 text-xs text-muted">Mide: {i.mide}</p>
+                  <p className="mt-1 text-xs text-muted">Responde: {i.responde}</p>
                 </div>
               ))}
             </Card>
@@ -190,7 +180,7 @@ export default function PanelEstudioPage() {
               <SectionTitle className="mb-3">Tratamiento de los datos</SectionTitle>
               <Dato etiqueta="Datos faltantes" valor={ficha.tratamiento_datos.faltantes} />
               <Dato etiqueta="Anonimización" valor={ficha.tratamiento_datos.anonimizacion} />
-              <Dato etiqueta="Supuestos" valor={ficha.tratamiento_datos.supuestos} />
+              <Dato etiqueta="Análisis" valor={ficha.tratamiento_datos.analisis} />
             </Card>
           </div>
         </div>

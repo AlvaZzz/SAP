@@ -10,7 +10,7 @@ interface Config {
   xpPorEjercicio: number; xpBonusRacha: number; xpPorLogro: number; umbralPorcentaje: number; penalizacionPista: number;
   subirNivelPreguntas: number; subirNivelUmbral: number; subirNivelEsperaHoras: number; xpFactorIntermedio: number; xpFactorAvanzado: number;
   iaActiva: boolean; maxPistasIa: number; rateLimitIaHora: number; modoRetroalimentacion: string; modeloIa: string;
-  postestDesdeNivel: number; gruposBloqueados: boolean; riesgoDiasInactivo: number; riesgoTasaAciertoMin: number; riesgoMinIntentos: number;
+  postestDesdeNivel: number; encuestaMotivacionActiva: boolean; riesgoDiasInactivo: number; riesgoTasaAciertoMin: number; riesgoMinIntentos: number;
 }
 type Tab = 'general' | 'gamificacion' | 'ia' | 'investigacion';
 const TABS: { id: Tab; label: string; icon: typeof Cpu }[] = [
@@ -104,7 +104,7 @@ export default function AdminSistemaPage() {
         {tab === 'investigacion' && (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Postest se desbloquea desde el nivel" hint="Nivel que debe completarse para habilitar el postest."><Input type="number" value={cfg.postestDesdeNivel} onChange={(e) => set('postestDesdeNivel', +e.target.value)} /></Field>
-            <div className="sm:col-span-2"><Toggle label="Bloquear cambios de grupo" hint="Congela control/experimental una vez iniciada la recolección." value={cfg.gruposBloqueados} onChange={(v) => set('gruposBloqueados', v)} /></div>
+            <div className="sm:col-span-2"><Toggle label="Encuesta de motivación (MSLQ)" hint="No forma parte de la investigación. Déjala apagada salvo que quieras usarla como función del sistema." value={cfg.encuestaMotivacionActiva} onChange={(v) => set('encuestaMotivacionActiva', v)} /></div>
             <Field label="En riesgo: días sin actividad"><Input type="number" value={cfg.riesgoDiasInactivo} onChange={(e) => set('riesgoDiasInactivo', +e.target.value)} /></Field>
             <Field label="En riesgo: tasa de acierto mínima (%)"><Input type="number" value={cfg.riesgoTasaAciertoMin} onChange={(e) => set('riesgoTasaAciertoMin', +e.target.value)} /></Field>
             <Field label="En riesgo: intentos mínimos para evaluar"><Input type="number" value={cfg.riesgoMinIntentos} onChange={(e) => set('riesgoMinIntentos', +e.target.value)} /></Field>

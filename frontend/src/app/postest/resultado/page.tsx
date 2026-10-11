@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { Award, CheckCircle, TrendingUp, ArrowRight, ClipboardList } from '@/components/icons';
 
 interface Resultado {
-  puntaje: number; aciertos: number; total: number; ganancia: number | null;
+  puntaje: number; aciertos: number; total: number; avance: number | null;
   por_categoria: { categoria: string; aciertos: number; total: number; porcentaje: number }[];
   fortalezas: string[]; debilidades: string[];
 }
@@ -24,7 +24,7 @@ export default function PostestResultadoPage() {
   }, [router]);
 
   if (cargando || !r) return <div className="grid min-h-screen place-items-center bg-app text-muted">Cargando…</div>;
-  const gananciaPos = r.ganancia != null && r.ganancia >= 0;
+  const avancePos = r.avance != null && r.avance >= 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-app to-prexi-blue/5 p-4">
@@ -38,10 +38,10 @@ export default function PostestResultadoPage() {
             <Gauge puntaje={r.puntaje} color="#10B981" />
             <div className="text-left">
               <span className="inline-flex items-center gap-2 rounded-full bg-prexi-green px-4 py-1.5 text-sm font-bold text-white">Puntaje {r.puntaje}/100</span>
-              {r.ganancia != null && (
+              {r.avance != null && (
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-muted">
-                  <TrendingUp className={`h-4 w-4 ${gananciaPos ? 'text-prexi-green' : 'text-prexi-amber'}`} />
-                  Progreso vs. pretest: <b className={gananciaPos ? 'text-prexi-green' : 'text-prexi-amber'}>{gananciaPos ? '+' : ''}{r.ganancia} pts</b>
+                  <TrendingUp className={`h-4 w-4 ${avancePos ? 'text-prexi-green' : 'text-prexi-amber'}`} />
+                  Progreso vs. pretest: <b className={avancePos ? 'text-prexi-green' : 'text-prexi-amber'}>{avancePos ? '+' : ''}{r.avance} pts</b>
                 </p>
               )}
             </div>

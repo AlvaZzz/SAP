@@ -4,8 +4,8 @@
  *   docker exec prexi-api npx tsx scripts/auditoria-investigacion.ts
  *
  * Complementa a `scripts/auditoria-completa.ts` (Bloque A: reglas de negocio del
- * banco y del gating). Aquí se audita lo que sostiene la TESIS: registro y grupos,
- * pretest/postest pareados, θ (IRT), trazabilidad del proceso adaptativo y el
+ * banco y del gating). Aquí se audita lo que sostiene la TESIS: registro,
+ * diagnóstico y evaluación final, θ (IRT), trazabilidad del proceso adaptativo y el
  * dataset exportable.
  *
  * SOLO LECTURA: no escribe, no corrige y no reasigna nada. Los usuarios se
@@ -37,7 +37,7 @@ function muestra(items: string[], max = 12): string[] {
   return items.length <= max ? items : [...items.slice(0, max), `… y ${items.length - max} más`];
 }
 
-/* ══════════════════ B1 · Registro y grupos de investigación ══════════════════ */
+/* ══════════════════ B1 · Registro ══════════════════ */
 
 async function b1Campos() {
   const fallos: string[] = [];
@@ -66,67 +66,6 @@ async function b1Campos() {
 
   reportar('B1.1 Estudiantes con paralelo, carrera y semestre; sin email/cédula de relleno',
     muestra(fallos), `${estudiantes.length} estudiantes evaluados.`);
-}
-
-async function b1Grupos() {
-  const fallos: string[] = [];
-  const estudiantes = await prisma.usuario.findMany({
-    where: { rol: 'estudiante' },
-    select: { id: true, paralelo: true, grupo: true },
-  });
-
-  // El diseño asigna el grupo POR PARALELO COMPLETO. Un paralelo con ambos
-  // grupos solo es válido si cada excepción quedó auditada (asignación forzada).
-  const forzados = await prisma.logAuditoria.findMany({
-    where: { accion: { in: ['grupo_cambiar', 'grupo_asignar'] } },
-    select: { entidadId: true, detalle: true },
-  });
-  const idsForzados = new Set(forzados.filter((l) => /forzar|forzad/i.test(l.detalle)).map((l) => l.entidadId));
-
-  const porParalelo = new Map<string, { control: number[]; experimental: number[] }>();
-  for (const u of estudiantes) {
-    const p = (u.paralelo ?? '(sin paralelo)').toUpperCase();
-    const g = porParalelo.get(p) ?? { control: [], experimental: [] };
-    g[u.grupo].push(u.id);
-    porParalelo.set(p, g);
-  }
-
-  for (const [paralelo, g] of [...porParalelo.entries()].sort()) {
-    if (g.control.length === 0 || g.experimental.length === 0) continue; // homogéneo: correcto
-    const minoria = g.control.length <= g.experimental.length ? g.control : g.experimental;
-    const sinAuditar = minoria.filter((id) => !idsForzados.has(id));
-    if (sinAuditar.length) {
-      fallos.push(`Paralelo ${paralelo}: mezcla control(${g.control.length})/experimental(${g.experimental.length}); ` +
-        `sin LogAuditoria de asignación forzada: usuarioId ${sinAuditar.join(', ')}.`);
-    }
-  }
-
-  reportar('B1.2 Grupo consistente por paralelo (excepciones auditadas como forzadas)',
-    muestra(fallos), `${porParalelo.size} paralelos evaluados.`);
-}
-
-async function b1Bloqueo() {
-  const fallos: string[] = [];
-  const cfg = await prisma.configuracionSistema.findUnique({
-    where: { id: 1 }, select: { gruposBloqueados: true },
-  });
-  if (!cfg?.gruposBloqueados) {
-    informar('B1.3 Con grupos bloqueados, no hay cambios de grupo sin forzar+auditar',
-      'gruposBloqueados = false: la regla no aplica en este momento.');
-    return;
-  }
-  // Con el bloqueo activo, cualquier cambio de grupo posterior debe estar auditado
-  // y marcado como forzado.
-  const cambios = await prisma.logAuditoria.findMany({
-    where: { accion: { in: ['grupo_cambiar', 'grupo_asignar'] } },
-    orderBy: { fecha: 'desc' }, select: { id: true, entidadId: true, detalle: true, fecha: true },
-  });
-  for (const c of cambios) {
-    if (!/forzar|forzad/i.test(c.detalle)) {
-      fallos.push(`LogAuditoria ${c.id} (usuarioId ${c.entidadId}, ${c.fecha.toISOString()}): cambio de grupo con el bloqueo activo y sin marca de forzado.`);
-    }
-  }
-  reportar('B1.3 Con grupos bloqueados, no hay cambios de grupo sin forzar+auditar', muestra(fallos));
 }
 
 /* ══════════════════ B2 · Pretest y clasificación inicial ══════════════════ */
@@ -275,7 +214,7 @@ async function b5Dataset() {
   const estudiantes = await prisma.usuario.findMany({
     where: { rol: 'estudiante' },
     orderBy: { id: 'asc' },
-    select: { id: true, grupo: true, thetaInicial: true, pretestCompletado: true, paralelo: true, institucion: true },
+    select: { id: true, thetaInicial: true, pretestCompletado: true, paralelo: true, institucion: true },
   });
   const evals = await prisma.evaluacion.findMany({ select: { usuarioId: true, tipo: true, puntajeTotal: true } });
   const preDe = new Map(evals.filter((e) => e.tipo === 'pre').map((e) => [e.usuarioId, e.puntajeTotal]));
@@ -290,7 +229,6 @@ async function b5Dataset() {
 
   // B5.2 — campos críticos sin una fracción alta de nulos.
   const criticos: { campo: string; nulos: number[] }[] = [
-    { campo: 'grupo', nulos: estudiantes.filter((u) => !u.grupo).map((u) => u.id) },
     { campo: 'pretest_total', nulos: estudiantes.filter((u) => !preDe.has(u.id)).map((u) => u.id) },
     // θ inicial solo se exige a quien completó el pretest.
     { campo: 'theta_inicial (con pretest completado)', nulos: estudiantes.filter((u) => u.pretestCompletado && u.thetaInicial == null).map((u) => u.id) },
@@ -308,11 +246,6 @@ async function b5Dataset() {
   reportar(`B5.2 Campos críticos del dataset con ≤${MAX_FRACCION_NULOS * 100}% de nulos`, fallosNulos,
     criticos.map((c) => `${c.campo}: ${c.nulos.length} nulos`).join(' · '));
 
-  // B5.3 — balance de grupos (INFORMATIVO: no se reasigna nada).
-  const control = estudiantes.filter((u) => u.grupo === 'control').length;
-  const experimental = estudiantes.filter((u) => u.grupo === 'experimental').length;
-  informar('B5.3 Balance control vs experimental (informativo, no se reasigna)',
-    `control=${control} · experimental=${experimental} (total ${estudiantes.length}).`);
 }
 
 /* ══════════════════ Main ══════════════════ */
@@ -322,8 +255,6 @@ async function main() {
   console.log('   Solo lectura · usuarios identificados por id (sin PII)\n');
 
   await b1Campos();
-  await b1Grupos();
-  await b1Bloqueo();
   await b2Pretest();
   await b3Postest();
   await b4Trazabilidad();

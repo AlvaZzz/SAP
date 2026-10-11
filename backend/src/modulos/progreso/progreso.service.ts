@@ -123,7 +123,7 @@ export class ProgresoService {
       comparativa,
       pretest_total: pre?.puntajeTotal ?? null,
       postest_total: post?.puntajeTotal ?? null,
-      ganancia: pre && post ? post.puntajeTotal - pre.puntajeTotal : null,
+      avance: pre && post ? post.puntajeTotal - pre.puntajeTotal : null,
     };
   }
 
@@ -286,7 +286,7 @@ export class ProgresoService {
     };
   }
 
-  // ── Export CSV de pretest/postest (investigación) ──
+  // ── Export CSV del diagnóstico inicial y la evaluación final (uso docente) ──
   async exportCsv(): Promise<string> {
     const estudiantes = await this.prisma.usuario.findMany({
       where: { rol: 'estudiante' },
@@ -294,15 +294,14 @@ export class ProgresoService {
       orderBy: { id: 'asc' },
     });
 
-    const cols = ['usuario_id', 'nombre', 'grupo', 'puntaje_pretest', 'tiempo_pretest_seg', 'puntaje_postest', 'tiempo_postest_seg', 'ganancia'];
+    const cols = ['usuario_id', 'nombre', 'paralelo', 'puntaje_pretest', 'tiempo_pretest_seg', 'puntaje_postest', 'tiempo_postest_seg'];
     const filas = estudiantes.map((u) => {
       const pre = u.evaluaciones.find((e) => e.tipo === 'pre');
       const post = u.evaluaciones.find((e) => e.tipo === 'post');
-      const ganancia = pre && post ? post.puntajeTotal - pre.puntajeTotal : '';
       return [
-        u.id, `"${u.nombre.replace(/"/g, '""')}"`, u.grupo,
+        u.id, `"${u.nombre.replace(/"/g, '""')}"`, u.paralelo ?? '',
         pre?.puntajeTotal ?? '', pre?.tiempoSeg ?? '',
-        post?.puntajeTotal ?? '', post?.tiempoSeg ?? '', ganancia,
+        post?.puntajeTotal ?? '', post?.tiempoSeg ?? '',
       ].join(',');
     });
 

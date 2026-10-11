@@ -12,7 +12,7 @@ export interface RegistroAuditoria {
 
 /**
  * Auditoría de acciones sensibles del admin (crear/editar/desactivar usuarios,
- * cambios de rol, de grupo y de configuración). Trazabilidad para la seriedad
+ * cambios de rol y de configuración). Trazabilidad para la seriedad
  * del estudio. Otros módulos admin inyectan este servicio para registrar.
  */
 @Injectable()

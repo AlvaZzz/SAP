@@ -519,11 +519,10 @@ async function main() {
           institucion: INSTITUCION_DEMO,        // candado 1
           paralelo: i % 3 === 0 ? 'B' : 'A',
           semestre: 1,
-          grupo: i % 2 === 0 ? 'control' : 'experimental',
           introduccionCompletada: true,
           creadoEn: new Date(crono.pretest.getTime() - DIA_MS),
           consentimientoEn: new Date(crono.pretest.getTime() - DIA_MS),
-          consentimientoVersion: '2026-08-v1',
+          consentimientoVersion: '2026-10-v2',
         },
       });
 
@@ -873,14 +872,13 @@ async function main() {
     const resumen = await prisma.usuario.findMany({
       where: { email: { endsWith: DOMINIO_DEMO } },
       select: {
-        grupo: true, thetaFinal: true, nivelInicialAdaptativo: true,
+        thetaFinal: true, nivelInicialAdaptativo: true,
         ranking: { select: { xpTotal: true } },
       },
     });
     const conPostest = resumen.filter((u) => u.thetaFinal !== null).length;
 
     console.log(`\n[seed-demo] Listo: ${resumen.length} estudiantes de demostración.`);
-    console.log(`[seed-demo]   control: ${resumen.filter((u) => u.grupo === 'control').length} · experimental: ${resumen.filter((u) => u.grupo === 'experimental').length}`);
     console.log(`[seed-demo]   intentos simulados por el servicio real: ${totalIntentos}`);
     console.log(`[seed-demo]   con postest: ${conPostest} · sin postest (a propósito): ${resumen.length - conPostest}`);
     console.log(`[seed-demo]   correo: demo.NNN${DOMINIO_DEMO} · contraseña: ${PASSWORD_DEMO}`);

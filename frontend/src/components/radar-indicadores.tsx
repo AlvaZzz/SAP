@@ -17,7 +17,7 @@ import { TrendingUp, Layers, Flame, Bot, Target } from '@/components/icons';
  * del tutor) y eficiencia (acierto). Enfoque siempre positivo.
  */
 
-interface DatosProgreso { pretest_total: number | null; postest_total: number | null; ganancia: number | null }
+interface DatosProgreso { pretest_total: number | null; postest_total: number | null; avance: number | null }
 interface UnidadDet { dominio_pct: number; temas: unknown[] }
 
 interface Eje {
@@ -57,9 +57,9 @@ export function RadarIndicadores() {
     // ① APRENDIZAJE — nivel de la evaluación (postest si existe, si no pretest).
     const hayPost = prog.postest_total != null;
     const aprendizaje = clamp(prog.postest_total ?? prog.pretest_total ?? 0);
-    const aprFrase = hayPost && prog.ganancia != null
-      ? prog.ganancia > 0
-        ? `Creciste +${prog.ganancia} pts desde tu diagnóstico. ¡Vas en la dirección correcta!`
+    const aprFrase = hayPost && prog.avance != null
+      ? prog.avance > 0
+        ? `Creciste +${prog.avance} pts desde tu diagnóstico. ¡Vas en la dirección correcta!`
         : 'Tu postest quedó parejo al inicial. Refuerza los temas más flojos.'
       : 'Aún no rindes el postest. Tu diagnóstico marca tu punto de partida.';
     const aprDetalle = hayPost ? `${prog.postest_total} pts` : prog.pretest_total != null ? `${prog.pretest_total} pts` : '—';

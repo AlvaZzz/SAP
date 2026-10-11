@@ -1,7 +1,28 @@
 # Instrumento de motivación académica (MSLQ)
 
-Documentación del instrumento y **borrador de la sección del marco metodológico**,
-listo para adaptar y pegar en la tesis.
+> ## ⚠ Funcionalidad del sistema no empleada en esta investigación
+>
+> La tesis adopta un diseño **no experimental transversal** cuyas variables son la
+> precisión del motor adaptativo, la usabilidad percibida (SUS) y la calidad del
+> producto de software (ISO/IEC 25010). **La motivación académica no es una
+> variable del estudio.**
+>
+> Por eso, desde la migración `retirar_grupos`:
+>
+> - La encuesta está **apagada por configuración**
+>   (`ConfiguracionSistema.encuestaMotivacionActiva = false`); mientras siga así,
+>   `GET/POST /encuesta/:momento` responden `503`.
+> - No tiene pantalla en el frontend ni aparece en el flujo del estudiante.
+> - Se retiró del rol investigador: ya no hay endpoint `/investigador/motivacion`,
+>   ni contrastes pre/post o entre grupos, ni columnas `motivacion_*` en el dataset.
+> - El código del instrumento (`backend/src/mediciones/encuesta`) y la tabla
+>   `RespuestaEncuesta` **se conservan** por si se quiere usar más adelante.
+>
+> El resto de este documento describe el instrumento tal como quedó implementado
+> y se mantiene solo como referencia.
+
+Documentación del instrumento y **borrador de la sección del marco metodológico**
+(no aplicable a la tesis actual).
 
 ---
 

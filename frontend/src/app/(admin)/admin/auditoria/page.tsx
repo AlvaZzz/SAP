@@ -10,11 +10,11 @@ interface Respuesta { total: number; acciones: string[]; logs: Log[] }
 
 const ACCION_LABEL: Record<string, string> = {
   usuario_crear: 'Creó usuario', usuario_editar: 'Editó usuario', usuario_estado: 'Cambió estado',
-  rol_cambiar: 'Cambió rol', grupo_cambiar: 'Cambió grupo', config_cambiar: 'Cambió config', password_reset: 'Reseteó contraseña',
+  rol_cambiar: 'Cambió rol', config_cambiar: 'Cambió config', password_reset: 'Reseteó contraseña',
 };
 const ACCION_TONE: Record<string, 'blue' | 'green' | 'amber' | 'red' | 'slate'> = {
   usuario_crear: 'green', usuario_editar: 'blue', usuario_estado: 'amber',
-  rol_cambiar: 'amber', grupo_cambiar: 'blue', config_cambiar: 'slate', password_reset: 'red',
+  rol_cambiar: 'amber', config_cambiar: 'slate', password_reset: 'red',
 };
 
 export default function AdminAuditoriaPage() {
@@ -40,7 +40,7 @@ export default function AdminAuditoriaPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Auditoría del sistema" subtitle="Registro de acciones sensibles: usuarios, roles, grupos y configuración. Trazabilidad para el estudio." />
+      <PageHeader title="Auditoría del sistema" subtitle="Registro de acciones sensibles: usuarios, roles y configuración." />
 
       {/* Filtros */}
       <Card className="mb-5 flex flex-wrap items-end gap-3">

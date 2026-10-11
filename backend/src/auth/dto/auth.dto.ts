@@ -29,8 +29,7 @@ export class RegisterDto {
   @IsString() @MinLength(2) @MaxLength(120)
   carrera!: string;
 
-  // Paralelo del estudiante (ej. "A", "B", "C"): permite al admin armar los
-  // grupos de investigación (control/experimental) por paralelo completo.
+  // Paralelo del estudiante (ej. "A", "B", "C").
   @IsString() @MinLength(1) @MaxLength(10)
   paralelo!: string;
 

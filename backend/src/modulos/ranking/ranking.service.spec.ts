@@ -91,19 +91,10 @@ describe('RankingService', () => {
     expect(r.xp_para_subir).toBeNull();
   });
 
-  describe('integridad de la investigación', () => {
-    it('NUNCA consulta ni devuelve el grupo control/experimental', async () => {
+  describe('privacidad', () => {
+    it('ninguna fila expone el paralelo de nadie', async () => {
       escenario([[1, 10], [2, 20]]);
       const r = await service.tabla(1, { ambito: 'paralelo' });
-
-      // No se selecciona `grupo` en ninguna consulta de usuarios…
-      for (const llamada of prisma.usuario.findMany.mock.calls) {
-        expect(JSON.stringify(llamada[0])).not.toMatch(/grupo/);
-      }
-      // …ni aparece en la respuesta.
-      const payload = JSON.stringify(r);
-      expect(payload).not.toMatch(/grupo/);
-      expect(payload).not.toMatch(/control|experimental/);
 
       // Ninguna FILA expone el paralelo de nadie. (`ambito: "paralelo"` sí viaja:
       // es el nombre del modo activo, no el paralelo de ningún estudiante.)

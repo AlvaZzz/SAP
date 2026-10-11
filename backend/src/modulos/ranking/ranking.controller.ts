@@ -9,8 +9,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
  * y rango cruzado) vive en el BACKEND; el cliente solo pinta lo que recibe.
  *
  * `ambito=paralelo` filtra por el paralelo del PROPIO usuario y no devuelve el
- * paralelo de nadie: los grupos del estudio se asignan por paralelo completo, así
- * que etiquetarlos permitiría deducirlos (ver la nota en RankingService).
+ * paralelo de nadie (ver la nota en RankingService).
  */
 @Controller('ranking')
 @UseGuards(JwtAuthGuard)

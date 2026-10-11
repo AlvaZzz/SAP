@@ -24,6 +24,4 @@ export class DocenteReportesController {
     return this.service.actividadSemanal();
   }
 
-  // La ruta `export.csv` se eliminó: revelaba el grupo del estudio y duplicaba
-  // el dataset canónico del rol investigador. Ver la nota en el servicio.
 }

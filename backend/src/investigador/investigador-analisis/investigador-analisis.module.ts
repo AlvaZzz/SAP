@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
 import { InvestigadorAnalisisController } from './investigador-analisis.controller';
 import { InvestigadorFiabilidadService } from './investigador-fiabilidad.service';
-import { InvestigadorInferencialService } from './investigador-inferencial.service';
 import { InvestigadorValidezService } from './investigador-validez.service';
 import { InvestigadorReproducibilidadService } from './investigador-reproducibilidad.service';
 import { InvestigadorClasificacionService } from './investigador-clasificacion.service';
-import { InvestigadorMotivacionService } from './investigador-motivacion.service';
-import { EncuestaModule } from '../../mediciones/encuesta/encuesta.module';
 import { AuthModule } from '../../auth/auth.module';
 import { InvestigadorExportacionModule } from '../investigador-exportacion/investigador-exportacion.module';
 
@@ -16,15 +13,13 @@ import { InvestigadorExportacionModule } from '../investigador-exportacion/inves
  * puedan contradecir a las demás pantallas.
  */
 @Module({
-  imports: [AuthModule, InvestigadorExportacionModule, EncuestaModule],
+  imports: [AuthModule, InvestigadorExportacionModule],
   controllers: [InvestigadorAnalisisController],
   providers: [
     InvestigadorFiabilidadService,
-    InvestigadorInferencialService,
     InvestigadorValidezService,
     InvestigadorReproducibilidadService,
     InvestigadorClasificacionService,
-    InvestigadorMotivacionService,
   ],
 })
 export class InvestigadorAnalisisModule {}

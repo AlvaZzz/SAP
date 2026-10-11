@@ -2,7 +2,7 @@
  * E2E DEL FLUJO CRÍTICO DE LA TESIS (contra el stack Docker real):
  *
  *   registro → pretest (respuestas reales, puntaje real) → ejercicios (XP) →
- *   postest (ganancia real) → datos visibles para docente/investigador →
+ *   postest (avance real) → datos visibles para docente/investigador →
  *   exportación CSV correcta.
  *
  * Además: guards de rol entre los 4 roles, sesión sin token, entradas
@@ -260,7 +260,7 @@ describe('4 · Ejercicios: corrección en backend, XP y progreso', () => {
   });
 });
 
-describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
+describe('5 · Postest: candados, respuestas y AVANCE real', () => {
   it('con la config por defecto el postest NO está disponible aún', async () => {
     const r = await req('GET', '/postest/estado', { token: estudiante.token });
     expect(r.status).toBe(200);
@@ -298,7 +298,7 @@ describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
     expect(fin.data.message).toMatch(/Responde al menos una pregunta/);
   });
 
-  it('responde el postest y la ganancia es exactamente postest − pretest', async () => {
+  it('responde el postest y el avance es exactamente postest − pretest', async () => {
     const r = await req('GET', '/postest/preguntas', { token: estudiante.token });
     expect(r.status).toBe(200);
     const preguntas: { id: number }[] = r.data.preguntas;
@@ -320,7 +320,7 @@ describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
     puntajePostest = res.puntaje;
     expect(res.total).toBe(20);
     expect(res.puntaje).toBe(Math.round((res.aciertos / res.total) * 100));
-    expect(res.ganancia).toBe(puntajePostest - puntajePretest);
+    expect(res.avance).toBe(puntajePostest - puntajePretest);
 
     // Consistencia con la revisión (ya permitida).
     const rev2 = await req('GET', '/postest/revision', { token: estudiante.token });
@@ -337,12 +337,12 @@ describe('5 · Postest: candados, respuestas y GANANCIA real', () => {
     expect(alt.status).toBe(400);
   });
 
-  it('el progreso del estudiante refleja pretest, postest y ganancia persistidos', async () => {
+  it('el progreso del estudiante refleja pretest, postest y avance persistidos', async () => {
     const r = await req('GET', '/progreso', { token: estudiante.token });
     expect(r.status).toBe(200);
     expect(r.data.pretest_total).toBe(puntajePretest);
     expect(r.data.postest_total).toBe(puntajePostest);
-    expect(r.data.ganancia).toBe(puntajePostest - puntajePretest);
+    expect(r.data.avance).toBe(puntajePostest - puntajePretest);
   });
 });
 
@@ -438,16 +438,15 @@ describe('6 · Los datos llegan a docente e investigador + CSV', () => {
     expect(JSON.stringify(r.data)).toContain('Estudiante E2E');
   });
 
-  it('la exportación CSV (docente) contiene el pretest, postest y ganancia reales', async () => {
+  it('la exportación CSV (docente) contiene el pretest y el postest reales', async () => {
     const r = await req('GET', '/progreso/export.csv', { token: docente.token });
     expect(r.status).toBe(200);
     const linea = (r.data as string).split('\n').find((l) => l.includes('Estudiante E2E') && l.startsWith(String(estudiante.usuario.id)));
     expect(linea).toBeDefined();
     const cols = (linea as string).split(',');
-    // usuario_id,nombre,grupo,puntaje_pretest,tiempo_pre,puntaje_postest,tiempo_post,ganancia
+    // usuario_id,nombre,paralelo,puntaje_pretest,tiempo_pre,puntaje_postest,tiempo_post
     expect(Number(cols[3])).toBe(puntajePretest);
     expect(Number(cols[5])).toBe(puntajePostest);
-    expect(Number(cols[7])).toBe(puntajePostest - puntajePretest);
   });
 
   it('el investigador accede a su panel y al dataset de exportación', async () => {

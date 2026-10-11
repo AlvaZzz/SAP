@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { InvestigadorExportacionService } from '../investigador-exportacion/investigador-exportacion.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { ALFA, MIN_INTERPRETABLE } from '../../common/estadistica/contraste';
 import { UMBRAL_SESION_MIN, NOTA_TIEMPO_ESTIMADO } from '../../common/estadistica/uso';
 
 /** Una entrada del diccionario de variables (codebook). */
@@ -39,16 +38,13 @@ export class InvestigadorReproducibilidadService {
   codebook(): VariableCodebook[] {
     return [
       { variable: 'id_anonimo', descripcion: 'Identificador anónimo del estudiante. Sustituye a nombre, correo y cédula.', tipo: 'texto', unidad: '—', rango: 'E-001 … E-nnn', calculo: 'Correlativo asignado por orden de id interno. No permite reidentificar.' },
-      { variable: 'grupo', descripcion: 'Grupo experimental al que pertenece.', tipo: 'categórica', unidad: '—', rango: 'control | experimental', calculo: 'Asignado por el administrador del estudio.' },
       { variable: 'institucion', descripcion: 'Institución del estudiante.', tipo: 'categórica', unidad: '—', rango: 'texto libre', calculo: 'Declarada en el registro.' },
       { variable: 'paralelo', descripcion: 'Paralelo o curso.', tipo: 'categórica', unidad: '—', rango: 'texto libre', calculo: 'Declarado en el registro.' },
       { variable: 'nivel_inicial', descripcion: 'Nivel adaptativo permanente asignado tras el diagnóstico.', tipo: 'categórica', unidad: '—', rango: 'basico | intermedio | avanzado', calculo: 'Derivado de θ inicial: θ<−0.5 básico, −0.5≤θ≤0.5 intermedio, θ>0.5 avanzado.' },
-      { variable: 'theta_inicial', descripcion: 'Habilidad estimada por IRT (Rasch) en el pretest.', tipo: 'decimal', unidad: 'logits', rango: '−4 a +4', calculo: 'Máxima verosimilitud (Newton-Raphson) sobre el patrón de respuestas del pretest y la dificultad b de cada ítem.' },
-      { variable: 'theta_final', descripcion: 'Habilidad estimada por IRT en el postest.', tipo: 'decimal', unidad: 'logits', rango: '−4 a +4', calculo: 'Igual que theta_inicial, sobre el postest.' },
-      { variable: 'delta_theta', descripcion: 'Ganancia de habilidad en la escala IRT.', tipo: 'decimal', unidad: 'logits', rango: '−8 a +8', calculo: 'theta_final − theta_inicial. Null si falta alguna de las dos.' },
-      { variable: 'pretest_total', descripcion: 'Puntaje del pretest.', tipo: 'entero', unidad: 'puntos (0–100)', rango: '0 a 100', calculo: 'Porcentaje de aciertos del examen diagnóstico.' },
-      { variable: 'postest_total', descripcion: 'Puntaje del postest.', tipo: 'entero', unidad: 'puntos (0–100)', rango: '0 a 100', calculo: 'Porcentaje de aciertos del examen final.' },
-      { variable: 'ganancia', descripcion: 'Ganancia bruta de aprendizaje.', tipo: 'entero', unidad: 'puntos', rango: '−100 a 100', calculo: 'postest_total − pretest_total. Null si falta alguno.' },
+      { variable: 'theta_inicial', descripcion: 'Habilidad estimada por IRT (Rasch) en el diagnóstico inicial.', tipo: 'decimal', unidad: 'logits', rango: '−4 a +4', calculo: 'Máxima verosimilitud (Newton-Raphson) sobre el patrón de respuestas del pretest y la dificultad b de cada ítem.' },
+      { variable: 'theta_final', descripcion: 'Habilidad estimada por IRT en la evaluación final del curso.', tipo: 'decimal', unidad: 'logits', rango: '−4 a +4', calculo: 'Igual que theta_inicial, sobre el postest.' },
+      { variable: 'pretest_total', descripcion: 'Puntaje del diagnóstico inicial (pretest).', tipo: 'entero', unidad: 'puntos (0–100)', rango: '0 a 100', calculo: 'Porcentaje de aciertos del examen diagnóstico.' },
+      { variable: 'postest_total', descripcion: 'Puntaje de la evaluación final del curso (postest).', tipo: 'entero', unidad: 'puntos (0–100)', rango: '0 a 100', calculo: 'Porcentaje de aciertos del examen final.' },
       { variable: 'pretest_<categoría>', descripcion: 'Puntaje del pretest en una de las 5 áreas temáticas.', tipo: 'entero', unidad: '% de aciertos', rango: '0 a 100', calculo: 'Aciertos/total de los ítems de esa categoría. Null si el examen no incluyó ítems del área.' },
       { variable: 'postest_<categoría>', descripcion: 'Ídem para el postest.', tipo: 'entero', unidad: '% de aciertos', rango: '0 a 100', calculo: 'Ídem sobre el postest.' },
       { variable: 'tiempo_pretest', descripcion: 'Tiempo empleado en el pretest.', tipo: 'entero', unidad: 'segundos', rango: '≥ 0', calculo: 'Cronometrado por el sistema durante el examen.' },
@@ -60,7 +56,7 @@ export class InvestigadorReproducibilidadService {
       { variable: 'consultas_ia', descripcion: 'Consultas al tutor PREXI.', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Total de registros de ConsultaIa del estudiante.' },
       { variable: 'pistas_usadas', descripcion: 'Consultas del tipo "pista".', tipo: 'entero', unidad: 'pistas', rango: '≥ 0', calculo: 'Subconjunto de consultas_ia con tipo = pista.' },
       { variable: 'retos_entregados', descripcion: 'Retos del docente entregados.', tipo: 'entero', unidad: 'retos', rango: '≥ 0', calculo: 'RetoUsuario con estado distinto de sin_entregar.' },
-      { variable: 'intentos_totales', descripcion: 'Intentos de ejercicio registrados.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Todos los intentos, correctos e incorrectos. Es la medida de DOSIS de intervención.' },
+      { variable: 'intentos_totales', descripcion: 'Intentos de ejercicio registrados.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Todos los intentos, correctos e incorrectos.' },
       { variable: 'tasa_acierto', descripcion: 'Porcentaje de intentos correctos.', tipo: 'entero', unidad: '%', rango: '0 a 100', calculo: 'intentos correctos / intentos_totales × 100.' },
       { variable: 'pistas_por_ejercicio', descripcion: 'Pistas promedio por intento.', tipo: 'decimal', unidad: 'pistas/intento', rango: '≥ 0', calculo: 'Media de pistasUsadas sobre todos los intentos.' },
       { variable: 'sin_pistas_pct', descripcion: 'Porcentaje de intentos resueltos sin pistas.', tipo: 'entero', unidad: '%', rango: '0 a 100', calculo: 'Intentos con 0 pistas / intentos_totales × 100.' },
@@ -69,8 +65,8 @@ export class InvestigadorReproducibilidadService {
       { variable: 'tiempo_medio_delta', descripcion: 'Cambio en el tiempo medio por intento entre mitades.', tipo: 'entero', unidad: 'segundos', rango: 'negativo = más rápido', calculo: 'Ídem sobre tiempoSeg de intentos con tiempo > 0.' },
       { variable: 'subidas_nivel_intentos', descripcion: 'Mini-diagnósticos de subida de nivel rendidos.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Registros de IntentoSubidaNivel.' },
       { variable: 'subidas_nivel_aprobadas', descripcion: 'Subidas de nivel superadas.', tipo: 'entero', unidad: 'intentos', rango: '≥ 0', calculo: 'Subconjunto aprobado de lo anterior.' },
-      // ── DOSIS DE LA INTERVENCIÓN ──
-      { variable: 'dias_activos', descripcion: 'Días distintos con actividad en la plataforma. Medida principal de DOSIS.', tipo: 'entero', unidad: 'días', rango: '≥ 0', calculo: `Fechas únicas (calendario local) con al menos un evento, uniendo intentos, consultas al tutor, entregas de retos y código guardado.` },
+      // ── USO DE LA PLATAFORMA ──
+      { variable: 'dias_activos', descripcion: 'Días distintos con actividad en la plataforma.', tipo: 'entero', unidad: 'días', rango: '≥ 0', calculo: `Fechas únicas (calendario local) con al menos un evento, uniendo intentos, consultas al tutor, entregas de retos y código guardado.` },
       { variable: 'primer_dia', descripcion: 'Fecha del primer evento registrado.', tipo: 'fecha', unidad: 'AAAA-MM-DD', rango: '—', calculo: 'Mínimo de las fechas de sus eventos.' },
       { variable: 'ultimo_dia', descripcion: 'Fecha del último evento registrado.', tipo: 'fecha', unidad: 'AAAA-MM-DD', rango: '—', calculo: 'Máximo de las fechas de sus eventos.' },
       { variable: 'periodo_dias', descripcion: 'Duración de la participación.', tipo: 'entero', unidad: 'días', rango: '≥ 1', calculo: 'Días calendario entre el primer y el último evento, INCLUSIVE (quien entró un solo día tiene 1, no 0).' },
@@ -78,11 +74,8 @@ export class InvestigadorReproducibilidadService {
       { variable: 'minutos_estimados', descripcion: 'Tiempo estimado en plataforma. NO es una medición directa.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: NOTA_TIEMPO_ESTIMADO },
       { variable: 'minutos_por_sesion', descripcion: 'Duración media estimada de una sesión.', tipo: 'entero', unidad: 'minutos', rango: '≥ 0', calculo: 'minutos_estimados ÷ sesiones.' },
       { variable: 'regularidad', descripcion: 'Constancia de uso: distingue el trabajo sostenido del atracón concentrado.', tipo: 'decimal', unidad: 'proporción', rango: '0 a 1', calculo: 'dias_activos ÷ periodo_dias. Cerca de 1 = usó el sistema casi todos los días de su periodo; cerca de 0 = concentró la actividad en pocos días. Null si no hay actividad.' },
-      // ── MOTIVACIÓN ACADÉMICA (MSLQ) y COMPETITIVIDAD ──
-      { variable: 'motivacion_pre', descripcion: 'Motivación académica ANTES de la intervención (MSLQ, sección de motivación).', tipo: 'decimal', unidad: 'puntos de la escala', rango: '1 a 7', calculo: 'Media de los ítems del MSLQ con los inversos recodificados (8 − valor). NULL si el estudiante no respondió la encuesta completa: es un dato faltante, nunca un cero.' },
-      { variable: 'motivacion_post', descripcion: 'Motivación académica DESPUÉS de la intervención.', tipo: 'decimal', unidad: 'puntos de la escala', rango: '1 a 7', calculo: 'Ídem, aplicado junto al postest.' },
-      { variable: 'motivacion_delta', descripcion: 'Cambio en la motivación académica.', tipo: 'decimal', unidad: 'puntos de la escala', rango: '−6 a 6', calculo: 'motivacion_post − motivacion_pre. Null si falta alguno de los dos momentos.' },
-      { variable: 'consultas_ranking', descripcion: 'Veces que el estudiante consultó el ranking. Indicador conductual de competitividad.', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Registros de ConsultaRanking del estudiante. Se registra cada apertura de la pantalla de ranking, de forma asíncrona para no afectar su experiencia.' },
+      // ── GAMIFICACIÓN ──
+      { variable: 'consultas_ranking', descripcion: 'Veces que el estudiante consultó el ranking (uso de la gamificación).', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Registros de ConsultaRanking del estudiante. Se registra cada apertura de la pantalla de ranking, de forma asíncrona para no afectar su experiencia.' },
     ];
   }
 
@@ -97,86 +90,83 @@ export class InvestigadorReproducibilidadService {
   }
 
   /**
-   * FICHA METODOLÓGICA del estudio. Diseño, población, instrumentos, variables
-   * e hipótesis. Se muestra y se exporta para que conste en el documento sin
+   * FICHA METODOLÓGICA del estudio (diseño no experimental transversal):
+   * diseño, población, instrumentos, variables e hipótesis. Se muestra y se exporta para que conste en el documento sin
    * tener que redactarla aparte (y sin que se desincronice de lo que el sistema
    * realmente hace).
    */
   async fichaMetodologica() {
     const dataset = await this.exportacion.construirDataset();
-    const instituciones = [...new Set(dataset.map((f) => f.institucion))];
     const paralelos = [...new Set(dataset.map((f) => f.paralelo))];
 
     return {
       diseno: {
-        tipo: 'Cuasi-experimental con grupo de control no equivalente',
-        esquema: 'Pretest – intervención – postest, con grupo control y grupo experimental',
-        por_que_cuasi:
-          'Los grupos son cursos ya constituidos (paralelos), no se asignaron los estudiantes al azar. ' +
-          'Por eso es cuasi-experimental y no experimental puro, y por eso la equivalencia inicial debe ' +
-          'demostrarse estadísticamente en vez de presumirse de la aleatorización.',
+        tipo: 'No experimental, transversal',
+        esquema: 'M: X → (O₁, O₂, O₃): un único grupo, una única medición al final del período de uso',
+        por_que:
+          'No se manipulan variables ni se comparan grupos. Se observa el sistema en condiciones reales ' +
+          'de uso y, en un único momento, se evalúa si funciona bien: precisión del motor adaptativo ' +
+          '(O₁), usabilidad percibida (O₂) y calidad del producto de software (O₃).',
       },
       poblacion: {
-        descripcion: 'Estudiantes de Programación I (PRG-111) que usan PREXI.',
-        instituciones,
+        descripcion:
+          'Estudiantes de primer semestre de Programación I, Carrera de Ingeniería de Sistemas, ' +
+          'Universidad Pública de El Alto (UPEA).',
         paralelos,
         n_registrados: dataset.length,
-        n_control: dataset.filter((f) => f.grupo === 'control').length,
-        n_experimental: dataset.filter((f) => f.grupo === 'experimental').length,
-        n_casos_completos: dataset.filter((f) => f.pretest_total !== null && f.postest_total !== null).length,
+        n_con_actividad: dataset.filter((f) => f.intentos_totales > 0).length,
       },
       muestreo: {
-        tipo: 'No probabilístico por conveniencia (grupos intactos)',
+        tipo: 'No probabilístico por conveniencia (censo del paralelo participante)',
         implicacion:
-          'Limita la generalización de los resultados más allá de la población estudiada. Es una ' +
-          'limitación a declarar, no un defecto ocultable.',
+          'Los resultados describen el comportamiento del sistema en el grupo estudiado y no admiten ' +
+          'generalización estadística a la población completa. Es una limitación a declarar.',
       },
       instrumentos: [
         {
-          nombre: 'Pretest / Postest de Programación I',
-          tipo: 'Prueba objetiva de ítems dicotómicos (acierto/error)',
-          areas: 'Variables, condicionales, bucles, funciones y estructuras de datos',
-          fiabilidad: 'Se reporta KR-20 calculado sobre las respuestas reales (ver pantalla de Fiabilidad).',
-          calibracion:
-            'Cada ítem tiene una dificultad b en la escala logit del modelo de Rasch, estimada ' +
-            'inicialmente a partir del nivel y las estrellas asignadas por el docente.',
+          nombre: 'Registro automatizado del motor adaptativo',
+          tipo: 'Logs del sistema (una fila por decisión del motor)',
+          mide: 'Precisión del ajuste de dificultad y latencia de reajuste',
+          responde: 'El propio sistema (sin autorreporte)',
         },
         {
-          nombre: 'Registro automático de actividad',
-          tipo: 'Bitácora del sistema',
-          areas: 'Intentos, tiempos, pistas, consultas al tutor, retos y XP',
-          fiabilidad: 'Registro censal, sin autoinforme: no depende de la memoria ni de la sinceridad del participante.',
-          calibracion: '—',
+          nombre: 'Escala de Usabilidad del Sistema (SUS, Brooke, 1996)',
+          tipo: 'Cuestionario de 10 ítems, Likert 1–5, puntaje 0–100',
+          mide: 'Usabilidad percibida',
+          responde: 'Estudiantes usuarios, una sola vez al final del período de uso',
+        },
+        {
+          nombre: 'Cuestionario estructurado ISO/IEC 25010',
+          tipo: 'Ítems Likert 1–5 agrupados por característica de calidad',
+          mide: 'Calidad del producto de software',
+          responde: 'Docentes del área y evaluadores con formación en ingeniería de software',
         },
       ],
       variables: {
-        independiente: 'Uso de PREXI (plataforma adaptativa con tutor IA y gamificación) — grupo experimental vs. control',
+        independiente:
+          'Sistema Adaptativo Inteligente con gamificación y ranking (se describe, no se manipula): ' +
+          'adaptabilidad (% de personalización), gamificación (retos completados y cambios de posición ' +
+          'en el ranking) y retroalimentación (tiempo de respuesta ante cada actividad resuelta).',
         dependientes: [
-          'Puntaje del postest (0–100)',
-          'Ganancia bruta (postest − pretest)',
-          'Ganancia normalizada de Hake ⟨g⟩',
-          'Habilidad estimada por IRT (θ) y su ganancia Δθ',
+          'Precisión del motor adaptativo: % de asignaciones dentro del rango objetivo (IC 95 %) y latencia de reajuste',
+          'Usabilidad percibida: puntaje medio SUS (0–100)',
+          'Calidad del producto de software: valoración media por característica ISO/IEC 25010, ' +
+            '% de subcaracterísticas en nivel aceptable y criterios de aceptación satisfechos',
         ],
-        intervinientes: 'Nivel inicial, institución, paralelo, dosis de uso del sistema',
       },
       hipotesis: {
-        nula:
-          'H₀: no existe diferencia estadísticamente significativa en el aprendizaje de Programación I ' +
-          'entre los estudiantes que usan PREXI y los que no.',
-        alterna:
-          'H₁: los estudiantes que usan PREXI obtienen un aprendizaje significativamente mayor que ' +
-          'quienes no lo usan.',
-        nivel_significancia: ALFA,
-        criterio_decision: `Se rechaza H₀ si p < ${ALFA}. Todo contraste se acompaña del tamaño del efecto y del intervalo de confianza del 95 %.`,
-        potencia:
-          `Los contrastes solo se consideran interpretables con al menos ${MIN_INTERPRETABLE} casos por grupo. ` +
-          'Por debajo de ese umbral, un resultado no significativo no distingue entre "no hay efecto" y ' +
-          '"no hay datos para detectarlo".',
+        investigacion:
+          'El Sistema Adaptativo Inteligente con gamificación PREXI alcanza niveles satisfactorios de ' +
+          'precisión en el motor adaptativo, de usabilidad percibida y de calidad del producto de software.',
+        criterio_decision:
+          'La hipótesis se acepta solo si los tres criterios de aceptación (precisión, usabilidad y ' +
+          'calidad) se satisfacen de forma conjunta. Cada indicador se acompaña de su intervalo de ' +
+          'confianza del 95 % por bootstrap de percentil.',
       },
       tratamiento_datos: {
-        faltantes: 'Análisis de casos completos. No se imputan valores.',
-        anonimizacion: 'El dataset no contiene nombre, correo ni cédula. Cada estudiante aparece como id_anonimo.',
-        supuestos: 'Normalidad por Shapiro-Wilk y homogeneidad de varianzas por Levene, verificados antes de cada prueba paramétrica.',
+        faltantes: 'No se imputan valores: un dato ausente viaja como ausente hasta el análisis.',
+        anonimizacion: 'El dataset no contiene nombre, correo, CI ni RU. Cada estudiante aparece como id_anonimo.',
+        analisis: 'Los datasets exportados se analizan fuera del sistema con Python, Pandas y SciPy.',
       },
     };
   }
@@ -203,9 +193,7 @@ export class InvestigadorReproducibilidadService {
     return {
       fecha_corte: new Date().toISOString(),
       n_participantes: dataset.length,
-      n_control: dataset.filter((f) => f.grupo === 'control').length,
-      n_experimental: dataset.filter((f) => f.grupo === 'experimental').length,
-      n_casos_completos: dataset.filter((f) => f.pretest_total !== null && f.postest_total !== null).length,
+      n_con_actividad: dataset.filter((f) => f.intentos_totales > 0).length,
       ultima_actividad_registrada: ultimaActividad?.fecha ?? null,
       ultima_evaluacion_registrada: ultimaEvaluacion?.fecha ?? null,
       hash_sha256: hash,

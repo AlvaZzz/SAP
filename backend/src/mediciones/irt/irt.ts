@@ -232,12 +232,6 @@ export function estimarTheta(respuestas: RespuestaIrt[], opts: OpcionesEstimacio
   return theta;
 }
 
-/** Ganancia de habilidad Δθ = θ_final − θ_inicial (evidencia cuantitativa IRT del progreso). */
-export function gananciaTheta(thetaInicial: number | null, thetaFinal: number | null): number | null {
-  if (thetaInicial == null || thetaFinal == null) return null;
-  return Math.round((thetaFinal - thetaInicial) * 1000) / 1000;
-}
-
 /** Redondeo a 3 decimales para persistir/exportar θ de forma legible. */
 export function redondearTheta(theta: number): number {
   return Math.round(theta * 1000) / 1000;

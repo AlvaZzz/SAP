@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  ESTADÍSTICA INFERENCIAL — el aparato de contraste de hipótesis de la tesis
+ *  ESTADÍSTICA — descriptivos, supuestos y contraste entre dos series
  * ═══════════════════════════════════════════════════════════════════════════
  *
  *  Funciones PURAS (sin Prisma ni Nest) para que sean testeables una a una.
@@ -9,13 +9,14 @@
  *  calculado es peor que no tenerlo.
  *
  *  Qué hay aquí y para qué sirve en la tesis:
- *   · t independiente (Student/Welch) → ¿difieren control y experimental?
- *   · t pareada                       → ¿mejoró cada grupo de pre a post?
+ *   · t independiente (Student/Welch) → ¿difieren dos series? (p. ej. niveles)
  *   · d de Cohen / g de Hedges        → ¿cuán grande es la diferencia?
  *   · Shapiro-Wilk / Levene           → ¿se pueden usar esas pruebas?
- *   · Mann-Whitney / Wilcoxon         → alternativas si los supuestos fallan
- *   · Pearson / Spearman              → ¿se asocia el uso con la ganancia?
- *   · g de Hake                       → ganancia normalizada (estándar educativo)
+ *   · Mann-Whitney                    → alternativa si los supuestos fallan
+ *   · Pearson / Spearman              → asociación entre dos variables
+ *
+ *  El estudio es no experimental transversal: aquí NO hay pruebas pareadas
+ *  pre→post ni ganancia normalizada. El IC por bootstrap vive en bootstrap.ts.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -96,7 +97,7 @@ export function descriptivos(xs: number[]): Descriptivos {
 // ── Prueba t de muestras INDEPENDIENTES ─────────────────────────────────────
 
 /**
- * PRUEBA t DE MUESTRAS INDEPENDIENTES (control vs. experimental).
+ * PRUEBA t DE MUESTRAS INDEPENDIENTES (dos series independientes).
  *
  *  · `welch = false` → t de Student, asume varianzas iguales:
  *        s_p² = [(n₁−1)s₁² + (n₂−1)s₂²] / (n₁+n₂−2)
@@ -145,42 +146,6 @@ export function tIndependiente(a: number[], b: number[], welch = false): Resulta
   return { estadistico: t, gl, p, ic95: [dif - tc * ee, dif + tc * ee], diferencia: dif };
 }
 
-// ── Prueba t de muestras PAREADAS ───────────────────────────────────────────
-
-/**
- * PRUEBA t DE MUESTRAS PAREADAS (pretest vs. postest del MISMO estudiante).
- *
- *  Opera sobre las diferencias d_i = post_i − pre_i:
- *      t = d̄ / (s_d/√n) ,  gl = n−1
- *
- *  Es más potente que la independiente porque cada estudiante es su propio
- *  control: elimina la variabilidad entre personas.
- */
-export function tPareada(post: number[], pre: number[]): ResultadoContraste {
-  if (post.length !== pre.length) {
-    throw new Error('t pareada: las dos series deben tener el mismo tamaño');
-  }
-  const d = post.map((v, i) => v - pre[i]);
-  const n = d.length;
-  if (n < 2) return { estadistico: NaN, gl: null, p: NaN, ic95: null, diferencia: null };
-
-  const md = media(d);
-  const sd = desviacion(d);
-  const ee = sd / Math.sqrt(n);
-  const gl = n - 1;
-  if (ee === 0) return { estadistico: NaN, gl, p: NaN, ic95: null, diferencia: md };
-
-  const t = md / ee;
-  const tc = tCritico(gl, 0.95);
-  return {
-    estadistico: t,
-    gl,
-    p: pValorT(t, gl),
-    ic95: [md - tc * ee, md + tc * ee],
-    diferencia: md,
-  };
-}
-
 // ── Tamaño del efecto ───────────────────────────────────────────────────────
 
 /**
@@ -208,21 +173,6 @@ export function tamanoEfecto(a: number[], b: number[]): TamanoEfecto {
     abs < 0.2 ? 'insignificante' : abs < 0.5 ? 'pequeño' : abs < 0.8 ? 'mediano' : 'grande';
 
   return { d, g, magnitud };
-}
-
-/** d de Cohen para medidas repetidas (pre/post), sobre la SD de las diferencias. */
-export function tamanoEfectoPareado(post: number[], pre: number[]): TamanoEfecto {
-  const d0 = post.map((v, i) => v - pre[i]);
-  const sd = desviacion(d0);
-  const d = sd === 0 ? NaN : media(d0) / sd;
-  const gl = d0.length - 1;
-  const J = 1 - 3 / (4 * gl - 1);
-  const abs = Math.abs(d);
-  return {
-    d,
-    g: d * J,
-    magnitud: abs < 0.2 ? 'insignificante' : abs < 0.5 ? 'pequeño' : abs < 0.8 ? 'mediano' : 'grande',
-  };
 }
 
 // ── Supuesto 1: NORMALIDAD (Shapiro-Wilk) ───────────────────────────────────
@@ -464,67 +414,6 @@ export function mannWhitney(a: number[], b: number[]): ResultadoContraste & { ex
   return { estadistico: U1, gl: null, p: Math.min(1, p), ic95: null, diferencia: dif, exacto: false };
 }
 
-/**
- * PRUEBA DE WILCOXON DE RANGOS CON SIGNO (alternativa no paramétrica a la t
- * pareada). Opera sobre las diferencias pre→post de cada estudiante.
- *
- *  Los pares con diferencia CERO se descartan (criterio de Wilcoxon), lo que
- *  reduce el n efectivo — se devuelve en `nEfectivo` para poder reportarlo.
- */
-export function wilcoxon(
-  post: number[], pre: number[],
-): ResultadoContraste & { exacto: boolean; nEfectivo: number } {
-  const d = post.map((v, i) => v - pre[i]).filter((v) => v !== 0);
-  const n = d.length;
-  if (n < 1) {
-    return { estadistico: NaN, gl: null, p: NaN, ic95: null, diferencia: null, exacto: false, nEfectivo: 0 };
-  }
-
-  const abs = d.map(Math.abs);
-  const r = rangos(abs);
-  let wMas = 0;
-  let wMenos = 0;
-  d.forEach((v, i) => { if (v > 0) wMas += r[i]; else wMenos += r[i]; });
-  const W = Math.min(wMas, wMenos);
-  const dif = mediana(d);
-
-  const usarExacto = !hayEmpates(abs) && n <= 25;
-
-  if (usarExacto) {
-    // Distribución exacta: cada rango puede ir con signo + o −, 2^n patrones.
-    const maxW = (n * (n + 1)) / 2;
-    let f = new Array<number>(maxW + 1).fill(0);
-    f[0] = 1;
-    for (let i = 1; i <= n; i++) {
-      const nuevo = new Array<number>(maxW + 1).fill(0);
-      for (let w = 0; w <= maxW; w++) {
-        if (f[w] === 0) continue;
-        nuevo[w] += f[w];            // rango i con signo negativo
-        if (w + i <= maxW) nuevo[w + i] += f[w]; // con signo positivo
-      }
-      f = nuevo;
-    }
-    const total = 2 ** n;
-    let acum = 0;
-    for (let w = 0; w <= W; w++) acum += f[w];
-    return {
-      estadistico: W, gl: null, p: Math.min(1, (2 * acum) / total),
-      ic95: null, diferencia: dif, exacto: true, nEfectivo: n,
-    };
-  }
-
-  const mu = (n * (n + 1)) / 4;
-  const sigma = Math.sqrt((n * (n + 1) * (2 * n + 1)) / 24);
-  if (sigma === 0) {
-    return { estadistico: W, gl: null, p: NaN, ic95: null, diferencia: dif, exacto: false, nEfectivo: n };
-  }
-  const z = (W - mu) / sigma;
-  return {
-    estadistico: W, gl: null, p: Math.min(1, 2 * (1 - normalCdf(Math.abs(z)))),
-    ic95: null, diferencia: dif, exacto: false, nEfectivo: n,
-  };
-}
-
 // ── Correlación ─────────────────────────────────────────────────────────────
 
 export interface Correlacion {
@@ -581,29 +470,4 @@ export function spearman(x: number[], y: number[]): Correlacion {
     return { r: NaN, p: NaN, n: x.length, magnitud: 'nula' };
   }
   return pearson(rangos(x), rangos(y));
-}
-
-// ── Ganancia normalizada de Hake ────────────────────────────────────────────
-
-/**
- * GANANCIA NORMALIZADA DE HAKE  ⟨g⟩ = (post − pre) / (100 − pre).
- *
- *  Estándar en investigación educativa. Responde a la objeción de que quien
- *  parte de 80 tiene menos margen de mejora que quien parte de 30: expresa lo
- *  aprendido como FRACCIÓN de lo que quedaba por aprender.
- *
- *  Interpretación de Hake (1998): ⟨g⟩ ≥ 0.7 alta · 0.3–0.7 media · < 0.3 baja.
- *
- *  Devuelve null cuando pre = 100 (no había margen: la división es indefinida),
- *  en vez de un infinito que contaminaría los promedios.
- */
-export function hake(pre: number, post: number): number | null {
-  if (pre >= 100) return null;
-  return (post - pre) / (100 - pre);
-}
-
-export function clasificarHake(g: number): 'alta' | 'media' | 'baja' {
-  if (g >= 0.7) return 'alta';
-  if (g >= 0.3) return 'media';
-  return 'baja';
 }

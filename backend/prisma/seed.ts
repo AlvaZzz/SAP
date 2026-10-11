@@ -50,7 +50,6 @@ async function main() {
     prisma.evaluacion.deleteMany(),
     prisma.pasoRuta.deleteMany(),
     prisma.intento.deleteMany(),
-    prisma.perfilAdaptativo.deleteMany(),
     prisma.progresoTema.deleteMany(),
     prisma.progresoNivel.deleteMany(),
     prisma.unidadCompletada.deleteMany(),
@@ -80,22 +79,22 @@ async function main() {
 
   // ── Usuarios demo ──
   const hash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
-  // [nombre, email, cédula, rol, grupo, institución] — grupo/institución alimentan al investigador.
-  const usuariosDef: Array<[string, string, string, 'estudiante' | 'docente' | 'admin' | 'investigador', 'control' | 'experimental', string | null]> = [
-    ['Juan Mamani', 'juan@upea.edu.bo', '8001001', 'estudiante', 'control', 'UPEA'],
-    ['Ana Quispe', 'ana@upea.edu.bo', '8001002', 'estudiante', 'experimental', 'UPEA'],
-    ['Carlos Mamani', 'carlos@upea.edu.bo', '8001003', 'estudiante', 'control', 'EMI'],
-    ['Maria Vera', 'maria@upea.edu.bo', '8001004', 'estudiante', 'experimental', 'EMI'],
-    ['Docente Demo', 'docente@upea.edu.bo', '8002001', 'docente', 'control', null],
-    ['Admin PREXI', 'admin@upea.edu.bo', '8003001', 'admin', 'control', null],
-    ['Investigador Demo', 'investigador@upea.edu.bo', '8004001', 'investigador', 'control', null],
+  // [nombre, email, cédula, rol, institución]. La población del estudio es UPEA.
+  const usuariosDef: Array<[string, string, string, 'estudiante' | 'docente' | 'admin' | 'investigador', string | null]> = [
+    ['Juan Mamani', 'juan@upea.edu.bo', '8001001', 'estudiante', 'UPEA'],
+    ['Ana Quispe', 'ana@upea.edu.bo', '8001002', 'estudiante', 'UPEA'],
+    ['Carlos Mamani', 'carlos@upea.edu.bo', '8001003', 'estudiante', 'UPEA'],
+    ['Maria Vera', 'maria@upea.edu.bo', '8001004', 'estudiante', 'UPEA'],
+    ['Docente Demo', 'docente@upea.edu.bo', '8002001', 'docente', null],
+    ['Admin PREXI', 'admin@upea.edu.bo', '8003001', 'admin', null],
+    ['Investigador Demo', 'investigador@upea.edu.bo', '8004001', 'investigador', null],
   ];
   const uid: Record<string, number> = {};
-  for (const [nombre, email, cedula, rol, grupo, institucion] of usuariosDef) {
+  for (const [nombre, email, cedula, rol, institucion] of usuariosDef) {
     const u = await prisma.usuario.create({
       data: {
         nombre, email, cedula, rol, carrera: 'Ingeniería de Sistemas',
-        passwordHash: hash, introduccionCompletada: true, repasoPostestCompletado: true, pretestCompletado: true, grupo, institucion,
+        passwordHash: hash, introduccionCompletada: true, repasoPostestCompletado: true, pretestCompletado: true, institucion,
       },
     });
     uid[email] = u.id;
@@ -556,7 +555,7 @@ async function main() {
     await prisma.historialTheta.create({ data: { usuarioId, theta: thetaGlobal, origen: 'pretest', n: allResp.length } });
   }
 
-  // [email, habilidad_pre (0-1), pre_seg, post_aciertos/20, post_seg] — ganancia post positiva.
+  // [email, habilidad_pre (0-1), pre_seg, post_aciertos/20, post_seg].
   const evalDef: Array<[string, number, number, number, number]> = [
     ['juan@upea.edu.bo', 0.4, 900, 16, 780],
     ['ana@upea.edu.bo', 0.7, 850, 17, 720],

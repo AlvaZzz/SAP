@@ -6,11 +6,9 @@ const MS_DIA = 86_400_000;
 /**
  * ESTUDIANTES EN RIESGO (rol docente).
  *
- * POR QUÉ IMPORTA MÁS DE LO QUE PARECE
- * Cada estudiante que abandona es un caso perdido para la muestra, y con una
- * muestra pequeña la mortalidad experimental es la amenaza número uno a la
- * validez del estudio. Detectar a tiempo a quien se está descolgando no es solo
- * buena docencia: es proteger el dato.
+ * POR QUÉ IMPORTA
+ * Detectar a tiempo a quien se está descolgando permite intervenir antes de que
+ * abandone la asignatura.
  *
  * A diferencia del estado global que ya calcula `DocenteEstudiantesService`
  * (una única etiqueta por estudiante), aquí se listan TODOS los motivos que
@@ -18,9 +16,6 @@ const MS_DIA = 86_400_000;
  * QUÉ está en riesgo alguien para poder hacer algo distinto en cada caso: no se
  * atiende igual a quien lleva tres semanas sin entrar que a quien entra todos
  * los días y falla todo.
- *
- * SEPARACIÓN: como todo este rol, no expone ni permite inferir el grupo del
- * estudio. Ver la nota en `docente-estudiantes.service.ts`.
  */
 @Injectable()
 export class DocenteRiesgoService {
@@ -143,9 +138,8 @@ export class DocenteRiesgoService {
         'motivos que concurren, porque cada uno pide una acción distinta: a quien lleva semanas sin ' +
         'entrar hay que buscarlo; a quien entra a diario y falla todo hay que explicarle.',
       por_que_importa:
-        'Cada abandono evitado es un caso que se conserva en la muestra. Con muestras pequeñas la ' +
-        'mortalidad experimental es la principal amenaza a la validez del estudio, y si además el ' +
-        'abandono se concentra en un grupo, sesga la comparación.',
+        'Cada estudiante que se recupera a tiempo es uno que sigue aprendiendo. Mientras antes se ' +
+        'detecte la señal, más fácil es corregirla.',
     };
   }
 }

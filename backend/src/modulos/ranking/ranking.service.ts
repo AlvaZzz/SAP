@@ -28,11 +28,8 @@ export interface FilaRanking {
  * SIN MIGRACIÓN: el XP del periodo y la posición anterior se DERIVAN de `Intento`,
  * que ya guarda `xpOtorgado` y `fecha`. No hizo falta añadir tablas ni columnas.
  *
- * INVESTIGACIÓN: este servicio no lee ni devuelve `grupo` (control/experimental)
- * en ninguna rama. El ámbito "paralelo" filtra por el paralelo DEL PROPIO usuario y
- * jamás expone el paralelo de nadie: como los grupos se asignan por paralelo
- * completo, etiquetarlos permitiría agrupar y deducir el diseño del estudio
- * (efecto Hawthorne).
+ * PRIVACIDAD: el ámbito "paralelo" filtra por el paralelo DEL PROPIO usuario y
+ * jamás expone el paralelo de nadie.
  */
 @Injectable()
 export class RankingService {
@@ -79,7 +76,7 @@ export class RankingService {
     // "Mi paralelo" (que sería sencillamente mentir sobre lo que se está viendo).
     const paraleloDisponible = !!yo?.paralelo?.trim();
 
-    // Universo elegible. NUNCA se filtra ni se selecciona por `grupo`.
+    // Universo elegible.
     const estudiantes = await this.prisma.usuario.findMany({
       where: {
         rol: 'estudiante',

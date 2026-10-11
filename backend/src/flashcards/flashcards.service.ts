@@ -5,13 +5,10 @@ import { PrismaService } from '../common/prisma/prisma.service';
 /**
  * FLASHCARDS — funcionalidad de APOYO (repaso libre / memorización activa).
  *
- * FRONTERA CON LA INVESTIGACIÓN (cuasi-experimento con grupo control): las
- * flashcards NO puntúan, NO cronometran y NO afectan al θ (IRT) ni a ninguna
+ * FRONTERA CON LA MEDICIÓN: las flashcards NO puntúan, NO cronometran y NO afectan al θ (IRT) ni a ninguna
  * métrica de medición (pretest/postest/nivel). Este módulo es de SOLO LECTURA:
  * deriva las tarjetas del banco de ejercicios ya existente (única fuente de
  * verdad; no se duplica contenido) y no escribe ningún registro de desempeño.
- * Su disponibilidad debe mantenerse coherente con el diseño experimental (mismo
- * tratamiento para quienes correspondan).
  */
 
 /** Forma pública de una flashcard (coincide con el tipo del cliente). */

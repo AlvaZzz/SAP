@@ -3,7 +3,7 @@
  *
  * Las usan la vista de progreso del estudiante (hábitos: autonomía y eficiencia)
  * y la exportación del investigador (mismas variables, para poder cruzar hábitos
- * con la ganancia pretest→postest). Viven en common/ porque el cálculo debe ser
+ * con el uso del sistema). Viven en common/ porque el cálculo debe ser
  * IDÉNTICO en ambos sitios: si divergen, el dato que ve el estudiante y el que
  * analiza la tesis dejarían de significar lo mismo.
  *

@@ -8,23 +8,25 @@ import { ActualizarDatos, AvisoMuestra, Explicacion } from '@/components/investi
 
 interface PorCat { variables: number | null; condicionales: number | null; bucles: number | null; funciones: number | null; estructuras: number | null }
 interface Fila {
-  id_anonimo: string; grupo: 'control' | 'experimental'; institucion: string;
-  pretest_total: number | null; postest_total: number | null; ganancia: number | null;
+  id_anonimo: string; paralelo: string; nivel_inicial: string | null;
+  pretest_total: number | null; postest_total: number | null;
   pre: PorCat; post: PorCat; tiempo_pretest: number | null; tiempo_postest: number | null;
   ejercicios_resueltos: number; tiempo_promedio_ejercicio: number; xp_total: number; racha: number;
   consultas_ia: number; pistas_usadas: number; retos_entregados: number;
 }
 
 const COLUMNAS = [
-  'id_anonimo', 'grupo', 'institucion', 'pretest_total', 'postest_total', 'ganancia',
+  'id_anonimo', 'institucion', 'paralelo', 'nivel_inicial', 'theta_inicial', 'theta_final',
+  'pretest_total (diagnóstico)', 'postest_total (evaluación final)',
   'pretest/postest por categoría (Variables, Condicionales, Bucles, Funciones, Estructuras)',
   'tiempo_pretest', 'tiempo_postest', 'ejercicios_resueltos', 'tiempo_promedio_ejercicio',
   'xp_total', 'racha', 'consultas_ia', 'pistas_usadas', 'retos_entregados',
+  'días activos, sesiones, minutos estimados y regularidad de uso', 'consultas_ranking',
 ];
 
 interface Metadatos {
-  fecha_corte: string; n_participantes: number; n_control: number; n_experimental: number;
-  n_casos_completos: number; hash_sha256: string; bytes_csv: number;
+  fecha_corte: string; n_participantes: number; n_con_actividad: number;
+  hash_sha256: string; bytes_csv: number;
   ultima_actividad_registrada: string | null; como_verificar: string;
 }
 interface Variable {
@@ -79,8 +81,8 @@ export default function ExportacionPage() {
             {[
               ['Fecha del corte', new Date(meta.fecha_corte).toLocaleString('es-BO')],
               ['Participantes', String(meta.n_participantes)],
-              ['Control / Experimental', `${meta.n_control} / ${meta.n_experimental}`],
-              ['Casos completos', String(meta.n_casos_completos)],
+              ['Con actividad', String(meta.n_con_actividad)],
+              ['Última actividad', meta.ultima_actividad_registrada ? new Date(meta.ultima_actividad_registrada).toLocaleDateString('es-BO') : '—'],
             ].map(([l, v]) => (
               <div key={l} className="rounded-lg bg-subtle px-2 py-1.5 text-center">
                 <p className="text-[10px] uppercase tracking-wide text-muted">{l}</p>
@@ -203,18 +205,10 @@ export default function ExportacionPage() {
               rowKey={(f) => f.id_anonimo}
               cols={[
                 { header: 'ID', cell: (f) => <span className="font-mono text-xs font-semibold text-fg">{f.id_anonimo}</span> },
-                { header: 'Grupo', cell: (f) => <Badge tone={f.grupo === 'experimental' ? 'green' : 'slate'}>{f.grupo}</Badge> },
-                { header: 'Institución', cell: (f) => <span className="text-muted">{f.institucion}</span> },
-                { header: 'Pretest', cell: (f) => <span className="text-muted">{f.pretest_total ?? '—'}</span> },
-                { header: 'Postest', cell: (f) => <span className="text-muted">{f.postest_total ?? '—'}</span> },
-                {
-                  header: 'Ganancia',
-                  cell: (f) => (
-                    <span className={`font-semibold ${f.ganancia != null && f.ganancia > 0 ? 'text-prexi-green' : f.ganancia != null && f.ganancia < 0 ? 'text-prexi-red' : 'text-muted'}`}>
-                      {f.ganancia != null ? `${f.ganancia > 0 ? '+' : ''}${f.ganancia}` : '—'}
-                    </span>
-                  ),
-                },
+                { header: 'Paralelo', cell: (f) => <span className="text-muted">{f.paralelo}</span> },
+                { header: 'Nivel inicial', cell: (f) => <span className="text-muted">{f.nivel_inicial ?? '—'}</span> },
+                { header: 'Diagnóstico', cell: (f) => <span className="text-muted">{f.pretest_total ?? '—'}</span> },
+                { header: 'Eval. final', cell: (f) => <span className="text-muted">{f.postest_total ?? '—'}</span> },
                 { header: 'Ejerc.', cell: (f) => <span className="text-muted">{f.ejercicios_resueltos}</span> },
                 { header: 'XP', cell: (f) => <span className="text-muted">{f.xp_total}</span> },
                 { header: 'IA', cell: (f) => <span className="text-muted">{f.consultas_ia}</span> },
@@ -225,15 +219,12 @@ export default function ExportacionPage() {
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-mono text-sm font-semibold text-fg">{f.id_anonimo}</span>
-                    <Badge tone={f.grupo === 'experimental' ? 'green' : 'slate'}>{f.grupo}</Badge>
+                    <Badge tone="slate">Paralelo {f.paralelo}</Badge>
                   </div>
-                  <p className="text-xs text-muted">{f.institucion}</p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Pretest</p><p className="text-sm font-semibold text-fg">{f.pretest_total ?? '—'}</p></div>
-                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Postest</p><p className="text-sm font-semibold text-fg">{f.postest_total ?? '—'}</p></div>
-                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Ganancia</p>
-                      <p className={`text-sm font-semibold ${f.ganancia != null && f.ganancia > 0 ? 'text-prexi-green' : f.ganancia != null && f.ganancia < 0 ? 'text-prexi-red' : 'text-muted'}`}>{f.ganancia != null ? `${f.ganancia > 0 ? '+' : ''}${f.ganancia}` : '—'}</p>
-                    </div>
+                  <p className="text-xs text-muted">Nivel inicial: {f.nivel_inicial ?? '—'}</p>
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Diagnóstico</p><p className="text-sm font-semibold text-fg">{f.pretest_total ?? '—'}</p></div>
+                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Eval. final</p><p className="text-sm font-semibold text-fg">{f.postest_total ?? '—'}</p></div>
                   </div>
                   <p className="text-xs text-muted">{f.ejercicios_resueltos} ejerc. · {f.xp_total} XP · {f.consultas_ia} IA · {f.pistas_usadas} pistas · {f.retos_entregados} retos</p>
                 </div>

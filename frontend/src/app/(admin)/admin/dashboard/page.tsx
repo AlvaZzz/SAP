@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
-import { Users, UserCheck, Code, FlaskConical, Settings, ClipboardList, ArrowRight } from '@/components/icons';
+import { Users, UserCheck, Code, FlaskConical, Settings, ClipboardList } from '@/components/icons';
 
 interface Dashboard {
   stats: { total_usuarios: number; estudiantes_activos: number; ejercicios: number; docentes: number; admins: number; investigadores: number };
   distribucion_roles: { rol: string; total: number }[];
-  estudio: { control: number; experimental: number };
+  estudio: { estudiantes: number; activos: number };
   registros_por_semana: { semana: string; nuevos: number }[];
   actividad_reciente: { id: number; actor: string; accion: string; detalle: string; fecha: string }[];
 }
@@ -18,7 +18,6 @@ interface Dashboard {
 const ROL_LABEL: Record<string, string> = { estudiante: 'Estudiantes', docente: 'Docentes', investigador: 'Investigadores', admin: 'Admins' };
 const ACCESOS = [
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
-  { href: '/admin/grupos', label: 'Grupos', icon: FlaskConical },
   { href: '/admin/sistema', label: 'Sistema', icon: Settings },
   { href: '/admin/auditoria', label: 'Auditoría', icon: ClipboardList },
 ];
@@ -26,7 +25,7 @@ const ACCESOS = [
 function accionLabel(a: string): string {
   return ({
     usuario_crear: 'Creó usuario', usuario_editar: 'Editó usuario', usuario_estado: 'Cambió estado',
-    rol_cambiar: 'Cambió rol', grupo_cambiar: 'Cambió grupo', config_cambiar: 'Cambió config', password_reset: 'Reseteó contraseña',
+    rol_cambiar: 'Cambió rol', config_cambiar: 'Cambió config', password_reset: 'Reseteó contraseña',
   } as Record<string, string>)[a] ?? a;
 }
 
@@ -41,7 +40,7 @@ export default function AdminDashboardPage() {
 
   const maxRol = d ? Math.max(1, ...d.distribucion_roles.map((r) => r.total)) : 1;
   const maxReg = d ? Math.max(1, ...d.registros_por_semana.map((r) => r.nuevos)) : 1;
-  const totalEstudio = d ? d.estudio.control + d.estudio.experimental : 0;
+  const totalEstudio = d ? d.estudio.estudiantes : 0;
   const hora = (f: string) => new Date(f).toLocaleString('es-BO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   return (
@@ -83,14 +82,12 @@ export default function AdminDashboardPage() {
         {/* Estado del estudio (enlaza al investigador) */}
         <Card>
           <div className="mb-4 flex items-center gap-2"><FlaskConical className="h-5 w-5 text-prexi-blue-deep" /><SectionTitle>Estado del estudio</SectionTitle></div>
-          {cargando ? <Skeleton className="h-28" /> : totalEstudio === 0 ? <p className="py-6 text-center text-sm text-muted">Sin estudiantes asignados a grupos.</p> : (
+          {cargando ? <Skeleton className="h-28" /> : totalEstudio === 0 ? <p className="py-6 text-center text-sm text-muted">Aún no hay estudiantes registrados.</p> : (
             <>
-              <div className="mb-3 flex overflow-hidden rounded-xl">
-                <div className="bg-prexi-blue py-3 text-center text-accent-on transition-all" style={{ width: `${(d!.estudio.control / totalEstudio) * 100}%` }}><p className="text-lg font-extrabold">{d!.estudio.control}</p></div>
-                <div className="bg-prexi-green py-3 text-center text-white transition-all" style={{ width: `${(d!.estudio.experimental / totalEstudio) * 100}%` }}><p className="text-lg font-extrabold">{d!.estudio.experimental}</p></div>
+              <div className="mb-3 grid grid-cols-2 gap-3 text-center">
+                <div className="rounded-xl bg-subtle py-3"><p className="text-lg font-extrabold text-fg">{d!.estudio.estudiantes}</p><p className="text-xs text-muted">Estudiantes</p></div>
+                <div className="rounded-xl bg-subtle py-3"><p className="text-lg font-extrabold text-fg">{d!.estudio.activos}</p><p className="text-xs text-muted">Cuentas activas</p></div>
               </div>
-              <div className="flex justify-between text-xs text-muted"><span>Control</span><span>Experimental</span></div>
-              <Link href="/admin/grupos" className="mt-4 flex items-center justify-center gap-1.5 rounded-xl bg-subtle py-2 text-sm font-semibold text-prexi-blue-deep transition hover:bg-prexi-blue/10">Gestionar grupos <ArrowRight className="h-4 w-4" /></Link>
               <p className="mt-2 text-center text-[11px] text-muted">El detalle y la exportación los ve el rol investigador.</p>
             </>
           )}

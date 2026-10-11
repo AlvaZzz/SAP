@@ -31,14 +31,14 @@ const GRUPOS: GrupoModulos[] = [
       {
         titulo: 'Estudiantes en riesgo',
         resumen: 'Inactividad prolongada, acierto en caída, sin pretest o estancados en un nivel, con los criterios a la vista.',
-        porQue: 'Reduce la mortalidad experimental, que es la amenaza número uno a la validez de un estudio con muestra pequeña.',
+        porQue: 'Detectar a tiempo a quien se está descolgando permite intervenir antes de que abandone.',
         href: '/docente/riesgo',
         icon: AlertTriangle,
       },
       {
         titulo: 'Revisiones pendientes',
         resumen: 'Cola de entregas por revisar, con el tiempo que lleva esperando cada una.',
-        porQue: 'La retroalimentación oportuna es parte del tratamiento: si un grupo esperó dos semanas, la intervención no fue uniforme.',
+        porQue: 'La retroalimentación oportuna sostiene el ritmo: una entrega que espera dos semanas deja de enseñar.',
         href: '/docente/revisiones',
         icon: ClipboardList,
       },
@@ -81,14 +81,8 @@ export default function IndiceDocentePage() {
   return (
     <IndiceModulos
       titulo="Panel docente"
-      subtitulo="Los módulos para conducir el curso y documentar que la intervención se aplicó como estaba diseñada."
+      subtitulo="Los módulos para conducir el curso y hacer seguimiento a tus estudiantes."
       grupos={GRUPOS}
-      nota={
-        'Este rol NO muestra a qué grupo del estudio (control o experimental) pertenece cada ' +
-        'estudiante, y es deliberado: si lo supieras podrías tratarlos distinto sin proponértelo, y esa ' +
-        'diferencia dejaría de ser atribuible a la intervención. Hay una prueba automática que impide ' +
-        'que ese dato reaparezca en cualquier pantalla de este rol.'
-      }
     />
   );
 }

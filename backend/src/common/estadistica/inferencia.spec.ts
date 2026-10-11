@@ -15,23 +15,18 @@
  *      A = [12, 15, 18, 20, 22, 25, 28, 30, 33, 35]
  *      B = [10, 14, 16, 19, 21, 23, 24, 27, 29, 31]
  *      PRE  = [45, 52, 38, 60, 55, 49, 41, 58]
- *      POST = [62, 70, 55, 78, 68, 66, 59, 75]
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 import {
-  descriptivos, hake, clasificarHake, levene, mannWhitney, pearson, rangos,
-  shapiroWilk, spearman, tIndependiente, tPareada, tamanoEfecto, wilcoxon,
+  descriptivos, levene, mannWhitney, pearson, rangos,
+  shapiroWilk, spearman, tIndependiente, tamanoEfecto,
 } from './inferencia';
 import { pValorT, pValorF, normalCdf, normalInv, tCritico } from './distribuciones';
 
 const A = [12, 15, 18, 20, 22, 25, 28, 30, 33, 35];
 const B = [10, 14, 16, 19, 21, 23, 24, 27, 29, 31];
 const PRE = [45, 52, 38, 60, 55, 49, 41, 58];
-const POST = [62, 70, 55, 78, 68, 66, 59, 75];
-// Variante sin empates en |post − pre|, necesaria para la Wilcoxon exacta.
-const PRE2 = [45, 52, 38, 60, 55, 49, 41, 58];
-const POST2 = [50, 60, 49, 74, 72, 68, 63, 82];
 const X = [5, 8, 12, 15, 18, 22, 25, 30];
 const Y = [10, 14, 13, 20, 24, 25, 31, 35];
 const SESGADO = [1, 1, 2, 2, 3, 3, 4, 50, 60, 80];
@@ -132,28 +127,6 @@ describe('prueba t de muestras independientes', () => {
     const r = tIndependiente([5], [3, 4, 5], false);
     expect(Number.isNaN(r.estadistico)).toBe(true);
     expect(r.ic95).toBeNull();
-  });
-});
-
-describe('prueba t de muestras pareadas', () => {
-  it('coincide con scipy.stats.ttest_rel(POST, PRE)', () => {
-    // scipy: statistic=29.066605403260873, pvalue=1.4684716658450866e-08, df=7
-    const r = tPareada(POST, PRE);
-    expect(r.estadistico).toBeCloseTo(29.066605403260873, 6);
-    expect(r.p).toBeCloseTo(1.4684716658450866e-8, 12);
-    expect(r.gl).toBe(7);
-  });
-
-  it('el IC95 de la diferencia media coincide con scipy', () => {
-    // scipy: low=15.502186295336998, high=18.247813704663002
-    const r = tPareada(POST, PRE);
-    expect(r.ic95![0]).toBeCloseTo(15.502186295336998, 6);
-    expect(r.ic95![1]).toBeCloseTo(18.247813704663002, 6);
-    expect(r.diferencia).toBeCloseTo(16.875, 10);
-  });
-
-  it('rechaza series de distinto tamaño en vez de emparejar mal', () => {
-    expect(() => tPareada([1, 2, 3], [1, 2])).toThrow();
   });
 });
 
@@ -262,29 +235,6 @@ describe('alternativas no paramétricas', () => {
     expect(Number.isFinite(r.p)).toBe(true);
   });
 
-  it('Wilcoxon exacta coincide con scipy (method="exact")', () => {
-    // POST2/PRE2 se eligen SIN empates en |d| — diferencias [5,8,11,14,17,19,22,24] —
-    // porque con empates la distribución exacta deja de ser válida y el sistema
-    // (correctamente) cae a la aproximación normal.
-    // scipy: wilcoxon(POST2, PRE2, method='exact') → W=0.0, p=0.0078125
-    const r = wilcoxon(POST2, PRE2);
-    expect(r.estadistico).toBe(0);
-    expect(r.exacto).toBe(true);
-    expect(r.p).toBeCloseTo(0.0078125, 10);
-    expect(r.nEfectivo).toBe(8);
-  });
-
-  it('con empates en |d| NO usa la exacta (sería inválida) y lo declara', () => {
-    // POST/PRE sí tiene empates: diferencias [17,18,17,18,13,17,18,17].
-    const r = wilcoxon(POST, PRE);
-    expect(r.exacto).toBe(false);
-    expect(Number.isFinite(r.p)).toBe(true);
-  });
-
-  it('Wilcoxon descarta los pares sin cambio y lo refleja en nEfectivo', () => {
-    const r = wilcoxon([10, 12, 14], [10, 11, 12]);
-    expect(r.nEfectivo).toBe(2); // el primer par no cambió
-  });
 });
 
 describe('correlación', () => {
@@ -312,26 +262,3 @@ describe('correlación', () => {
   });
 });
 
-describe('ganancia normalizada de Hake', () => {
-  it('expresa lo aprendido como fracción de lo que faltaba por aprender', () => {
-    // (60-40)/(100-40) = 0.3333…
-    expect(hake(40, 60)!).toBeCloseTo(1 / 3, 12);
-    // Quien parte más alto necesita menos puntos para el mismo <g>:
-    // (90-80)/(100-80) = 0.5
-    expect(hake(80, 90)!).toBeCloseTo(0.5, 12);
-  });
-
-  it('un retroceso da ganancia negativa', () => {
-    expect(hake(50, 40)!).toBeCloseTo(-0.2, 12);
-  });
-
-  it('con pretest de 100 devuelve null (no había margen de mejora)', () => {
-    expect(hake(100, 100)).toBeNull();
-  });
-
-  it('clasifica según los cortes de Hake (1998)', () => {
-    expect(clasificarHake(0.75)).toBe('alta');
-    expect(clasificarHake(0.5)).toBe('media');
-    expect(clasificarHake(0.1)).toBe('baja');
-  });
-});

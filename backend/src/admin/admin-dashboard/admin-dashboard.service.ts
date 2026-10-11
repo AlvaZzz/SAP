@@ -24,16 +24,13 @@ export class AdminDashboardService {
     const [porRol, ejercicios, estudiantes, activosRows, auditoria] = await Promise.all([
       this.usuarios.conteos(),
       this.prisma.ejercicio.count(),
-      this.prisma.usuario.findMany({ where: { rol: 'estudiante' }, select: { grupo: true, activo: true } }),
+      this.prisma.usuario.findMany({ where: { rol: 'estudiante' }, select: { activo: true } }),
       this.prisma.intento.findMany({ where: { fecha: { gte: hace7 } }, distinct: ['usuarioId'], select: { usuarioId: true } }),
       this.auditoria.listar({ limit: 8 }),
     ]);
 
     const totalUsuarios = Object.values(porRol).reduce((a, b) => a + b, 0);
-    const estudio = {
-      control: estudiantes.filter((e) => e.grupo === 'control').length,
-      experimental: estudiantes.filter((e) => e.grupo === 'experimental').length,
-    };
+    const estudio = { estudiantes: estudiantes.length, activos: estudiantes.filter((e) => e.activo).length };
 
     // Nuevos registros por semana (últimas 6 semanas).
     const desde6 = new Date(hoy.getTime() - 6 * MS_SEMANA);

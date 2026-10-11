@@ -2,11 +2,9 @@ import { Controller, Get, Header, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 import { InvestigadorFiabilidadService } from './investigador-fiabilidad.service';
-import { InvestigadorInferencialService } from './investigador-inferencial.service';
 import { InvestigadorValidezService } from './investigador-validez.service';
 import { InvestigadorReproducibilidadService } from './investigador-reproducibilidad.service';
 import { InvestigadorClasificacionService } from './investigador-clasificacion.service';
-import { InvestigadorMotivacionService } from './investigador-motivacion.service';
 
 /**
  * Análisis del estudio (rol investigador). TODO es de SOLO LECTURA: no existe
@@ -18,19 +16,10 @@ import { InvestigadorMotivacionService } from './investigador-motivacion.service
 export class InvestigadorAnalisisController {
   constructor(
     private readonly fiabilidad: InvestigadorFiabilidadService,
-    private readonly inferencial: InvestigadorInferencialService,
     private readonly validez: InvestigadorValidezService,
     private readonly reproducibilidad: InvestigadorReproducibilidadService,
     private readonly clasificacion: InvestigadorClasificacionService,
-    private readonly motivacion: InvestigadorMotivacionService,
   ) {}
-
-  /** Motivación académica (MSLQ): fiabilidad de la escala y contrastes. */
-  // TODO: REVISAR_ANTES_DE_ELIMINAR — depende de la encuesta MSLQ, que todavía no tiene pantalla en el frontend. Mantener hasta decidir si la encuesta se aplica.
-  @Get('motivacion')
-  getMotivacion() {
-    return this.motivacion.resumen();
-  }
 
   /** Validación empírica de la clasificación por niveles (umbrales θ). */
   @Get('clasificacion')
@@ -44,25 +33,7 @@ export class InvestigadorAnalisisController {
     return this.fiabilidad.resumen();
   }
 
-  /** Equivalencia inicial de los grupos (línea base). */
-  @Get('equivalencia')
-  getEquivalencia() {
-    return this.inferencial.equivalencia();
-  }
-
-  /** Contrastes centrales de la tesis. */
-  @Get('inferencial')
-  getInferencial() {
-    return this.inferencial.resultados();
-  }
-
-  /** Relación entre uso del sistema y ganancia (correlaciones). */
-  @Get('relacion-uso')
-  getRelacionUso() {
-    return this.inferencial.relacionUso();
-  }
-
-  /** Validez interna: flujo CONSORT, abandono, faltantes y dosis. */
+  /** Flujo de participantes, datos faltantes y uso real del sistema. */
   @Get('validez')
   getValidez() {
     return this.validez.resumen();

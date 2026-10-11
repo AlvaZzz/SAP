@@ -209,7 +209,7 @@ export default function RegistroPage() {
                   <input type="checkbox" checked={acepta}
                     onChange={(e) => { setAcepta(e.target.checked); setTocado((t) => ({ ...t, terminos: true })); }}
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-line accent-prexi-blue focus:ring-prexi-blue" />
-                  <span>Acepto los <span className="font-semibold text-prexi-blue-deep">Términos de uso</span> y la <span className="font-semibold text-prexi-blue-deep">Política de privacidad</span> de PREXI.</span>
+                  <span>Acepto los <span className="font-semibold text-prexi-blue-deep">Términos de uso</span> y la <span className="font-semibold text-prexi-blue-deep">Política de privacidad</span> de PREXI, y doy mi consentimiento informado para que mis registros de uso y mis respuestas a los cuestionarios de evaluación del sistema se analicen de forma anónima con fines académicos. Puedo retirarme cuando quiera, sin consecuencia en mi nota.</span>
                 </label>
                 {tocado.terminos && !acepta && <span className="mt-1 block text-xs font-medium text-red-500">Debes aceptar los términos para crear tu cuenta.</span>}
               </div>

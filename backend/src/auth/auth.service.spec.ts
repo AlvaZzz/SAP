@@ -2,7 +2,6 @@ import { BadRequestException, HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
-import { AdminGruposService } from '../admin/admin-grupos/admin-grupos.service';
 import { crearPrismaMock, PrismaMock } from '../test-utils/prisma.mock';
 
 describe('AuthService (registro, login y bloqueo de cuenta)', () => {
@@ -21,7 +20,7 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
   describe('register', () => {
     const dto = { nombre: 'Ana Pérez', email: 'ana@gmail.com', password: 'secreta123', cedula: '1234567', carrera: 'Sistemas', paralelo: 'A' };
 
-    it('crea al estudiante con contraseña hasheada (bcrypt) y grupo por defecto', async () => {
+    it('crea al estudiante con contraseña hasheada (bcrypt)', async () => {
       prisma.usuario.findUnique.mockResolvedValue(null);
       prisma.usuario.create.mockImplementation(async (args: { data: { passwordHash: string } }) => {
         // La contraseña NUNCA se guarda en texto plano.
@@ -33,44 +32,6 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
       const r = await service.register(dto as never);
       expect(r.token).toBeTruthy();
       expect(jwt.verify(r.token)).toMatchObject({ sub: 1, rol: 'estudiante' });
-    });
-
-    /*
-     * GRUPO HEREDADO DEL PARALELO. El esquema pone `experimental` por defecto,
-     * así que todo el que se registraba caía ahí. Con el diseño por
-     * conglomerados (un paralelo entero a cada grupo), un estudiante de un
-     * paralelo de CONTROL entraba clasificado como experimental y se quedaba
-     * así hasta que alguien lo notara: el diseño se contaminaba en silencio.
-     */
-    it('hereda el grupo de sus compañeros de paralelo', async () => {
-      prisma.usuario.findUnique.mockResolvedValue(null);
-      prisma.usuario.findFirst.mockResolvedValue({ grupo: 'control' });
-      let creado: { grupo?: string } = {};
-      prisma.usuario.create.mockImplementation(async (args: { data: { grupo?: string } }) => {
-        creado = args.data;
-        return { id: 1, nombre: dto.nombre, email: dto.email, rol: 'estudiante' };
-      });
-
-      await service.register(dto as never);
-      expect(creado.grupo).toBe('control');
-      // Busca compañeros del MISMO paralelo, normalizado a mayúsculas.
-      expect(prisma.usuario.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expect.objectContaining({ rol: 'estudiante', paralelo: 'A' }) }),
-      );
-    });
-
-    it('si el paralelo aún no tiene a nadie, deja el grupo por defecto del esquema', async () => {
-      prisma.usuario.findUnique.mockResolvedValue(null);
-      prisma.usuario.findFirst.mockResolvedValue(null); // paralelo vacío
-      let creado: { grupo?: string } = {};
-      prisma.usuario.create.mockImplementation(async (args: { data: { grupo?: string } }) => {
-        creado = args.data;
-        return { id: 1, nombre: dto.nombre, email: dto.email, rol: 'estudiante' };
-      });
-
-      await service.register(dto as never);
-      // No se inventa un grupo: sin nadie de quien heredar, manda el default.
-      expect(creado.grupo).toBeUndefined();
     });
 
     it('rechaza correo duplicado con mensaje claro', async () => {
@@ -348,35 +309,3 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
   });
 });
 
-describe('AdminGruposService (asignación de grupo control/experimental)', () => {
-  // Se prueba aquí para mantener juntas las pruebas de investigación.
-  let prisma: PrismaMock;
-  let service: InstanceType<typeof AdminGruposService>;
-  const auditoria = { registrar: jest.fn() };
-
-  beforeEach(() => {
-    prisma = crearPrismaMock();
-    auditoria.registrar.mockReset();
-    service = new AdminGruposService(prisma as never, auditoria as never);
-  });
-
-  it('asigna solo a usuarios con rol estudiante (ignora docentes/admins en la lista)', async () => {
-    prisma.configuracionSistema.findUnique.mockResolvedValue({ gruposBloqueados: false });
-    prisma.usuario.findMany.mockResolvedValue([{ id: 1 }, { id: 3 }]); // el 2 no era estudiante
-    const r = await service.asignar(99, { ids: [1, 2, 3], grupo: 'control' });
-    expect(r.actualizados).toBe(2);
-    expect(prisma.usuario.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: { in: [1, 3] } }, data: expect.objectContaining({ grupo: 'control' }) }),
-    );
-    expect(auditoria.registrar).toHaveBeenCalled(); // trazabilidad del estudio
-  });
-
-  it('con grupos bloqueados rechaza el cambio salvo que se fuerce', async () => {
-    prisma.configuracionSistema.findUnique.mockResolvedValue({ gruposBloqueados: true });
-    await expect(service.asignar(99, { ids: [1], grupo: 'experimental' })).rejects.toThrow(/bloqueados/);
-
-    prisma.usuario.findMany.mockResolvedValue([{ id: 1 }]);
-    const r = await service.asignar(99, { ids: [1], grupo: 'experimental', forzar: true });
-    expect(r.actualizados).toBe(1);
-  });
-});

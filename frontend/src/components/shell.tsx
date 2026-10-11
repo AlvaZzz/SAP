@@ -79,9 +79,8 @@ const NAV_ESTUDIANTE: NavGrupo[] = [
 ];
 
 /**
- * Navegación del rol DOCENTE. Los grupos separan lo que documenta la fidelidad
- * de la intervención (Seguimiento e Informes) de las herramientas de autoría
- * que se usan a diario (Contenido), sin sacar nada del menú.
+ * Navegación del rol DOCENTE. Los grupos separan el seguimiento del curso
+ * (Seguimiento e Informes) de las herramientas de autoría (Contenido).
  */
 const NAV_DOCENTE: NavGrupo[] = [
   {
@@ -116,9 +115,8 @@ const NAV_DOCENTE: NavGrupo[] = [
 ];
 
 /**
- * Navegación del rol INVESTIGADOR. El ORDEN sigue siendo el de un capítulo de
- * resultados de tesis —recorrerla de arriba abajo es recorrer el capítulo—; lo
- * que comunica esa secuencia ahora son los encabezados de sección, no un número.
+ * Navegación del rol INVESTIGADOR (diseño no experimental transversal): el
+ * estudio, los instrumentos y la entrega de datos.
  */
 const NAV_INVESTIGADOR: NavGrupo[] = [
   {
@@ -126,21 +124,13 @@ const NAV_INVESTIGADOR: NavGrupo[] = [
     items: [
       { href: '/investigador/indice', label: 'Índice', icon: LayoutDashboard },
       { href: '/investigador/panel', label: 'Diseño y muestra', icon: ClipboardList },
-      { href: '/investigador/validez', label: 'Flujo de participantes', icon: ShieldCheck },
+      { href: '/investigador/validez', label: 'Participantes y uso', icon: Users },
     ],
   },
   {
-    titulo: 'Validez',
+    titulo: 'Instrumentos',
     items: [
-      { href: '/investigador/fiabilidad', label: 'Fiabilidad del instrumento', icon: FlaskConical },
-      { href: '/investigador/equivalencia', label: 'Equivalencia inicial', icon: Users },
-    ],
-  },
-  {
-    titulo: 'Resultados',
-    items: [
-      { href: '/investigador/resultados', label: 'Resultados principales', icon: BarChart3 },
-      { href: '/investigador/datos', label: 'Dosis-respuesta', icon: Activity },
+      { href: '/investigador/fiabilidad', label: 'Fiabilidad del diagnóstico', icon: FlaskConical },
       { href: '/investigador/clasificacion', label: 'Mecanismo adaptativo', icon: Layers },
     ],
   },
@@ -158,7 +148,6 @@ const NAV_ADMIN: NavGrupo[] = [
     items: [
       { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
-      { href: '/admin/grupos', label: 'Grupos de investigación', icon: FlaskConical },
     ],
   },
   {

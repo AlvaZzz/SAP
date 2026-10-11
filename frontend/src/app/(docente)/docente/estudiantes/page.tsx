@@ -156,10 +156,6 @@ function DetalleEstudiante({ id, onClose }: { id: number; onClose: () => void })
           {/* Cabecera */}
           <div className="flex flex-wrap items-center gap-3">
             <EstadoBadge estado={d.estudiante.estado} />
-            {/* Aquí NO se muestra el grupo del estudio: el docente debe
-                permanecer ciego a la asignación control/experimental para no
-                tratar distinto a los dos grupos. Ver la nota en
-                docente-estudiantes.service.ts. */}
             <span className="text-sm text-muted">{d.estudiante.email}</span>
           </div>
 
@@ -212,7 +208,7 @@ function DetalleEstudiante({ id, onClose }: { id: number; onClose: () => void })
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between rounded-lg bg-subtle px-3 py-2"><span className="text-muted">Pretest</span><span className="font-bold text-fg">{d.pretest ? `${d.pretest.puntaje}/100` : '—'}</span></div>
                 <div className="flex justify-between rounded-lg bg-subtle px-3 py-2"><span className="text-muted">Postest</span><span className="font-bold text-fg">{d.postest ? `${d.postest.puntaje}/100` : '—'}</span></div>
-                <div className="flex justify-between rounded-lg bg-prexi-blue/10 px-3 py-2"><span className="text-prexi-blue-deep">Ganancia</span><span className="font-bold text-prexi-blue-deep">{d.ganancia != null ? `${d.ganancia > 0 ? '+' : ''}${d.ganancia}` : '—'}</span></div>
+                <div className="flex justify-between rounded-lg bg-prexi-blue/10 px-3 py-2"><span className="text-prexi-blue-deep">Avance</span><span className="font-bold text-prexi-blue-deep">{d.avance != null ? `${d.avance > 0 ? '+' : ''}${d.avance}` : '—'}</span></div>
               </div>
             </div>
           </div>

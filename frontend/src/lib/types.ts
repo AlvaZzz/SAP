@@ -9,7 +9,6 @@ export interface Usuario {
   introduccionCompletada: boolean;
   pretestCompletado: boolean;
   nivelInicial: number;
-  grupo?: 'control' | 'experimental';
   paralelo?: string | null;
   semestre?: number;
   // Preferencias de audio (persistidas por usuario en el backend).
@@ -341,7 +340,7 @@ export interface EstudianteFila {
 export interface EstudianteDetalle {
   estudiante: {
     id: number; nombre: string; email: string; carrera: string | null;
-    grupo: 'control' | 'experimental'; estado: EstadoEstudiante;
+    estado: EstadoEstudiante;
     xp: number; racha_dias: number; ejercicios_completados: number;
     total_intentos: number; tasa_acierto: number; ultima_sesion: string | null;
   };
@@ -352,7 +351,7 @@ export interface EstudianteDetalle {
   patrones_error: { clave: string; descripcion: string; frecuencia: number }[];
   pretest: { puntaje: number; tiempo_seg: number; por_categoria: unknown; fecha: string } | null;
   postest: { puntaje: number; tiempo_seg: number; por_categoria: unknown; fecha: string } | null;
-  ganancia: number | null;
+  avance: number | null;
   nota: string;
 }
 

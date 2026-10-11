@@ -4,11 +4,9 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *
  *  POR QUÉ EXISTE ESTE MÓDULO
- *  Sin medir cuánto usó realmente cada estudiante el sistema, la hipótesis es
- *  indefendible ante la pregunta más obvia de un tribunal: "¿y si el grupo
- *  experimental simplemente no usó la plataforma?". La dosis es además lo que
- *  permite mostrar una relación DOSIS-RESPUESTA (más uso → más aprendizaje),
- *  que es la evidencia causal más fuerte disponible sin aleatorización estricta.
+ *  El estudio evalúa el sistema "al final del período de uso". Para describir ese
+ *  período hay que medir cuánto usó realmente cada estudiante la plataforma:
+ *  los indicadores del motor adaptativo solo se sostienen sobre uso real.
  *
  *  QUÉ SE MIDE Y QUÉ NO
  *  Todo se deriva de eventos REALMENTE registrados (intentos, consultas al

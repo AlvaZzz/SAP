@@ -80,7 +80,7 @@ export const TOURS: Tour[] = [
     clave: 'progreso',
     ruta: en('/progreso'),
     pasos: [
-      { titulo: '① Progreso de aprendizaje', texto: 'Este banner compara tu PRETEST y tu POSTEST, y muestra la GANANCIA: cuántos puntos mejoraste entre ambas evaluaciones.', selector: '[data-tour="progreso-banner"]' },
+      { titulo: '① Progreso de aprendizaje', texto: 'Este banner compara tu PRETEST y tu POSTEST, y muestra tu AVANCE: cuántos puntos mejoraste entre ambas evaluaciones.', selector: '[data-tour="progreso-banner"]' },
       { titulo: '② Dominio por unidad', texto: 'Elige una unidad y verás tu nivel actual y el dominio de cada tema, comparado con el promedio del grupo. Abajo te decimos qué tema conviene reforzar.', selector: '[data-tour="progreso-dominio"]' },
       { titulo: 'Cómo estudias', texto: 'Tus hábitos: constancia (tu racha), autonomía (si cada vez necesitas menos pistas) y eficiencia (cómo evoluciona tu acierto). No son una nota: describen cómo trabajas.', selector: '[data-tour="progreso-habitos"]' },
     ],
@@ -106,7 +106,7 @@ export const TOURS: Tour[] = [
     ruta: en('/postest'),
     pasos: [
       { titulo: 'Evaluación final', texto: 'Este es el POSTEST: 20 preguntas similares a las del pretest, para medir cuánto aprendiste. Solo se rinde una vez, así que tómate tu tiempo.' },
-      { titulo: 'Autoguardado', texto: 'Cada respuesta se guarda automáticamente. Al finalizar verás tu puntaje y tu GANANCIA respecto al pretest en la sección "Progreso".' },
+      { titulo: 'Autoguardado', texto: 'Cada respuesta se guarda automáticamente. Al finalizar verás tu puntaje y tu AVANCE respecto al pretest en la sección "Progreso".' },
     ],
   },
 
@@ -174,29 +174,15 @@ export const TOURS: Tour[] = [
     clave: 'investigador-panel',
     ruta: en('/investigador/panel'),
     pasos: [
-      { titulo: 'Panel del estudio', texto: 'Vista general del cuasi-experimento: tamaño de los grupos control y experimental, evaluaciones completadas y estado de la recolección.' },
+      { titulo: 'Panel del estudio', texto: 'Vista general del estudio (no experimental, transversal): muestra, paralelos, período de uso y ficha metodológica.' },
       { titulo: 'Solo lectura', texto: 'Tu rol es de observación: puedes ver y exportar datos, pero no modificar usuarios ni contenidos (eso protege la integridad del estudio).' },
-    ],
-  },
-  {
-    clave: 'investigador-resultados',
-    ruta: en('/investigador/resultados'),
-    pasos: [
-      { titulo: 'Resultados comparativos', texto: 'Comparación de puntajes pretest/postest y ganancia por grupo (control vs experimental), la base de tu prueba t.' },
-    ],
-  },
-  {
-    clave: 'investigador-datos',
-    ruta: en('/investigador/datos'),
-    pasos: [
-      { titulo: 'Datos complementarios', texto: 'Variables secundarias del estudio: uso del tutor IA, tiempo de práctica, intentos y actividad por estudiante (anonimizados).' },
     ],
   },
   {
     clave: 'investigador-exportacion',
     ruta: en('/investigador/exportacion'),
     pasos: [
-      { titulo: 'Exportación del dataset', texto: 'Descarga el dataset canónico del estudio en CSV, anonimizado y listo para el análisis estadístico (prueba t en SPSS/R/Python).' },
+      { titulo: 'Exportación del dataset', texto: 'Descarga el dataset canónico del estudio en CSV, anonimizado y listo para el análisis en Python (Pandas y SciPy).' },
       { titulo: 'Un solo dataset', texto: 'Todos los roles exportan desde esta misma fuente: lo que analices aquí coincide con lo que ven docente y admin.' },
     ],
   },
@@ -207,7 +193,7 @@ export const TOURS: Tour[] = [
     ruta: en('/admin/dashboard'),
     pasos: [
       { titulo: 'Panel de administración', texto: 'Estado global del sistema: usuarios por rol, actividad reciente y salud de la configuración.' },
-      { titulo: 'Máximo privilegio', texto: 'Como admin puedes ver todas las áreas y gestionar usuarios, grupos de investigación, configuración y auditoría.', selector: 'nav' },
+      { titulo: 'Máximo privilegio', texto: 'Como admin puedes ver todas las áreas y gestionar usuarios, configuración y auditoría.', selector: 'nav' },
     ],
   },
   {
@@ -216,14 +202,6 @@ export const TOURS: Tour[] = [
     pasos: [
       { titulo: 'Gestión de usuarios', texto: 'Crea usuarios de cualquier rol, edítalos, resetea contraseñas y activa/desactiva cuentas.' },
       { titulo: 'Desactivar, no borrar', texto: 'Las cuentas se desactivan (soft-disable) en lugar de borrarse: así se conservan los datos del estudio.' },
-    ],
-  },
-  {
-    clave: 'admin-grupos',
-    ruta: en('/admin/grupos'),
-    pasos: [
-      { titulo: 'Grupos de investigación', texto: 'Asigna cada estudiante al grupo CONTROL o EXPERIMENTAL. Esta asignación alimenta las comparativas del investigador.' },
-      { titulo: 'Bloqueo de grupos', texto: 'Cuando la recolección de datos inicia, bloquea los grupos desde la configuración: los cambios accidentales contaminarían el diseño.' },
     ],
   },
   {
@@ -238,7 +216,7 @@ export const TOURS: Tour[] = [
     clave: 'admin-auditoria',
     ruta: en('/admin/auditoria'),
     pasos: [
-      { titulo: 'Auditoría', texto: 'Registro inmutable de acciones sensibles: quién creó/editó usuarios, cambió grupos, roles o configuración, y cuándo. Da trazabilidad y seriedad al estudio.' },
+      { titulo: 'Auditoría', texto: 'Registro inmutable de acciones sensibles: quién creó/editó usuarios, cambió roles o configuración, y cuándo.' },
     ],
   },
 ];
