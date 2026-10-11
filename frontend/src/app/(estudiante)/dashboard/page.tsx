@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { TarjetaEvaluarPrexi } from '@/components/cuestionario-instrumento';
 import { useAuth } from '@/providers/auth-provider';
 import { CountUp } from '@/components/count-up';
 import { Card, StatGrid, SectionTitle, Skeleton, Badge } from '@/components/ui';
@@ -68,6 +69,9 @@ export default function DashboardPage() {
     <div className="animate-fade-up">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
       <p className="mb-5 mt-1 text-[15px] text-muted">Este es tu avance en Programación I. El verde significa que avanzaste; el ámbar, que vas en camino.</p>
+
+      {/* Evaluación del sistema (SUS): solo aparece con la fase habilitada */}
+      <TarjetaEvaluarPrexi href="/evaluar-prexi" />
 
       {/* Postest desbloqueable — tarjeta destacada */}
       {postest?.disponible && !postest.completado && (

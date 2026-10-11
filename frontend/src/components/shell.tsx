@@ -110,6 +110,7 @@ const NAV_DOCENTE: NavGrupo[] = [
     items: [
       { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
       { href: '/docente/postest', label: 'Evaluación final', icon: GraduationCap },
+      { href: '/docente/evaluar-prexi', label: 'Evaluar PREXI', icon: ClipboardList },
     ],
   },
 ];

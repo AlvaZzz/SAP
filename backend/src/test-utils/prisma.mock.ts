@@ -61,6 +61,7 @@ export function crearPrismaMock() {
     historialTheta: delegate(),
     logAdaptacion: delegate(),
     historialRanking: delegate(),
+    respuestaInstrumento: delegate(),
     diagnosticoTema: delegate(),
     repasoUnidad: delegate(),
     examenUnidad: delegate(),

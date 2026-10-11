@@ -7,6 +7,7 @@ import { NivelDificultad, NIVEL_COLOR } from '@/lib/types';
 import { useAuth } from '@/providers/auth-provider';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
 import { EstadoBadge } from '@/components/docente/estado-badge';
+import { TarjetaEvaluarPrexi } from '@/components/cuestionario-instrumento';
 import { Users, UserCheck, CheckCircle, AlertTriangle, Star, Code, Target, FileText, BarChart3, ClipboardList } from '@/components/icons';
 
 interface Dashboard {
@@ -45,6 +46,9 @@ export default function DocenteDashboardPage() {
         Panel del docente
       </h1>
       <p className="mb-7 mt-1 text-[15px] text-muted">Resumen del grupo, {usuario?.nombre.split(' ')[0]}.</p>
+
+      {/* Cuestionario de calidad (ISO/IEC 25010): solo con la fase habilitada */}
+      <TarjetaEvaluarPrexi href="/docente/evaluar-prexi" />
 
       {/* Stat cards */}
       <StatGrid className="mb-6">

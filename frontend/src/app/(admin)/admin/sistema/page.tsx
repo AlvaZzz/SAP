@@ -10,7 +10,8 @@ interface Config {
   xpPorEjercicio: number; xpBonusRacha: number; xpPorLogro: number; umbralPorcentaje: number; penalizacionPista: number;
   subirNivelPreguntas: number; subirNivelUmbral: number; subirNivelEsperaHoras: number; xpFactorIntermedio: number; xpFactorAvanzado: number;
   iaActiva: boolean; maxPistasIa: number; rateLimitIaHora: number; modoRetroalimentacion: string; modeloIa: string;
-  postestDesdeNivel: number; encuestaMotivacionActiva: boolean; rangoObjetivoMin: number; rangoObjetivoMax: number; riesgoDiasInactivo: number; riesgoTasaAciertoMin: number; riesgoMinIntentos: number;
+  postestDesdeNivel: number; encuestaMotivacionActiva: boolean; rangoObjetivoMin: number; rangoObjetivoMax: number;
+  faseEvaluacionActiva: boolean; criterioPrecisionMin: number; criterioSusMin: number; nivelAceptableCalidad: number; riesgoDiasInactivo: number; riesgoTasaAciertoMin: number; riesgoMinIntentos: number;
 }
 type Tab = 'general' | 'gamificacion' | 'ia' | 'investigacion';
 const TABS: { id: Tab; label: string; icon: typeof Cpu }[] = [
@@ -104,6 +105,10 @@ export default function AdminSistemaPage() {
         {tab === 'investigacion' && (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Postest se desbloquea desde el nivel" hint="Nivel que debe completarse para habilitar el postest."><Input type="number" value={cfg.postestDesdeNivel} onChange={(e) => set('postestDesdeNivel', +e.target.value)} /></Field>
+            <div className="sm:col-span-2"><Toggle label="Fase de evaluación del sistema" hint="Al activarla, los estudiantes ven el cuestionario SUS y los docentes el de calidad ISO/IEC 25010. Cada persona responde una sola vez." value={cfg.faseEvaluacionActiva} onChange={(v) => set('faseEvaluacionActiva', v)} /></div>
+            <Field label="Criterio de precisión (%)" hint="El límite inferior del IC 95 % de asignaciones en rango objetivo debe alcanzar este valor."><Input type="number" value={cfg.criterioPrecisionMin} onChange={(e) => set('criterioPrecisionMin', +e.target.value)} /></Field>
+            <Field label="Criterio de usabilidad (SUS)" hint="Puntaje medio SUS mínimo. 69 es el inicio del rango bueno."><Input type="number" value={cfg.criterioSusMin} onChange={(e) => set('criterioSusMin', +e.target.value)} /></Field>
+            <Field label="Calidad: nivel aceptable (1 a 5)" hint="Media Likert mínima para que una característica ISO/IEC 25010 se considere aceptable."><Input type="number" step="0.1" value={cfg.nivelAceptableCalidad} onChange={(e) => set('nivelAceptableCalidad', +e.target.value)} /></Field>
             <Field label="Motor adaptativo: rango objetivo mínimo (%)" hint="Probabilidad de acierto esperada mínima para que una asignación cuente como dentro del rango."><Input type="number" value={cfg.rangoObjetivoMin} onChange={(e) => set('rangoObjetivoMin', +e.target.value)} /></Field>
             <Field label="Motor adaptativo: rango objetivo máximo (%)" hint="Por encima de este valor el ejercicio se considera demasiado fácil."><Input type="number" value={cfg.rangoObjetivoMax} onChange={(e) => set('rangoObjetivoMax', +e.target.value)} /></Field>
             <div className="sm:col-span-2"><Toggle label="Encuesta de motivación (MSLQ)" hint="No forma parte de la investigación. Déjala apagada salvo que quieras usarla como función del sistema." value={cfg.encuestaMotivacionActiva} onChange={(v) => set('encuestaMotivacionActiva', v)} /></div>

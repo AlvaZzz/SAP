@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsBoolean, IsOptional, Min, Max, MaxLength, IsIn } from 'class-validator';
+import { IsString, IsInt, IsBoolean, IsNumber, IsOptional, Min, Max, MaxLength, IsIn } from 'class-validator';
 
 /** Actualización parcial de la configuración central del sistema (todos los tabs). */
 export class ActualizarConfigDto {
@@ -34,6 +34,11 @@ export class ActualizarConfigDto {
   // Rango objetivo del motor adaptativo (% de probabilidad de acierto esperada).
   @IsOptional() @IsInt() @Min(0) @Max(100) rangoObjetivoMin?: number;
   @IsOptional() @IsInt() @Min(0) @Max(100) rangoObjetivoMax?: number;
+  // Fase de evaluación (SUS / ISO 25010) y criterios de aceptación de la hipótesis.
+  @IsOptional() @IsBoolean() faseEvaluacionActiva?: boolean;
+  @IsOptional() @IsInt() @Min(0) @Max(100) criterioPrecisionMin?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(100) criterioSusMin?: number;
+  @IsOptional() @IsNumber() @Min(1) @Max(5) nivelAceptableCalidad?: number;
   @IsOptional() @IsInt() @Min(1) @Max(60) riesgoDiasInactivo?: number;
   @IsOptional() @IsInt() @Min(0) @Max(100) riesgoTasaAciertoMin?: number;
   @IsOptional() @IsInt() @Min(1) @Max(50) riesgoMinIntentos?: number;

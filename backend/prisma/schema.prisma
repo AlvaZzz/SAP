@@ -177,6 +177,7 @@ model Usuario {
   examenesUnidad      ExamenUnidad[]
   logsAdaptacion      LogAdaptacion[]
   historialRanking    HistorialRanking[]
+  respuestasInstrumento RespuestaInstrumento[]
 
   @@map("usuarios")
 }
@@ -1081,6 +1082,16 @@ model ConfiguracionSistema {
   // Una asignación está "en rango" si rangoObjetivoMin ≤ P ≤ rangoObjetivoMax.
   rangoObjetivoMin Int @default(50) @map("rango_objetivo_min")
   rangoObjetivoMax Int @default(85) @map("rango_objetivo_max")
+  // FASE DE EVALUACIÓN: al activarla, a cada usuario le aparece el cuestionario
+  // que le corresponde (SUS a estudiantes, ISO/IEC 25010 a docentes/evaluadores).
+  faseEvaluacionActiva Boolean @default(false) @map("fase_evaluacion_activa")
+  // CRITERIOS DE ACEPTACIÓN de la hipótesis (los tres deben cumplirse a la vez):
+  //  · precisión: el LÍMITE INFERIOR del IC 95 % del % en rango objetivo ≥ este valor.
+  //  · usabilidad: puntaje medio SUS ≥ este valor (69 = inicio del rango "bueno").
+  //  · calidad: TODAS las características ISO/IEC 25010 con media ≥ nivel aceptable.
+  criterioPrecisionMin   Int   @default(70) @map("criterio_precision_min")
+  criterioSusMin         Int   @default(69) @map("criterio_sus_min")
+  nivelAceptableCalidad  Float @default(4) @map("nivel_aceptable_calidad")
 
   // Detección de estudiantes "en riesgo" (configurable, centralizado aquí).
   riesgoDiasInactivo   Int @default(7) @map("riesgo_dias_inactivo") // días sin actividad
@@ -1175,4 +1186,31 @@ model HistorialRanking {
 
   @@index([usuarioId, fecha])
   @@map("historial_ranking")
+}
+
+// ── RESPUESTAS A LOS INSTRUMENTOS DE VALORACIÓN (SUS e ISO/IEC 25010) ──
+//  Una fila por persona × ítem. Se guarda el valor Likert 1–5 TAL COMO SE
+//  MARCÓ; la transformación (p. ej. la polaridad alterna del SUS) se aplica al
+//  puntuar, para que el dato crudo quede siempre auditable.
+//
+//  La clave primaria incluye la `version` del instrumento: garantiza UNA sola
+//  aplicación por usuario y versión, y evita mezclar aplicaciones si los ítems
+//  cambian.
+//
+//   · SUS      → lo responden los ESTUDIANTES (usabilidad percibida).
+//   · ISO25010 → lo responden DOCENTES del área y evaluadores con formación en
+//                ingeniería de software (calidad del producto).
+model RespuestaInstrumento {
+  usuarioId   Int      @map("usuario_id")
+  instrumento String // SUS | ISO25010
+  itemId      String   @map("item_id")
+  valor       Int // 1-5 (Likert), sin transformar
+  version     String
+  fecha       DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, instrumento, itemId, version])
+  @@index([instrumento, version])
+  @@map("respuestas_instrumento")
 }
