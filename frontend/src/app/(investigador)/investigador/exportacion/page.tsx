@@ -24,13 +24,20 @@ const COLUMNAS = [
   'días activos, sesiones, minutos estimados y regularidad de uso', 'consultas_ranking',
 ];
 
+const DATASETS = [
+  { archivo: 'log_adaptacion.csv', href: '/api/investigador/validacion/log-adaptacion.csv', detalle: 'Una fila por decisión del motor: θ, dificultad, rango objetivo y latencia.' },
+  { archivo: 'sus.csv', href: '/api/investigador/validacion/sus.csv', detalle: 'Una fila por estudiante: los 10 ítems crudos y el puntaje SUS.' },
+  { archivo: 'iso25010.csv', href: '/api/investigador/validacion/iso25010.csv', detalle: 'Una fila por evaluador: ítems crudos y media por característica.' },
+  { archivo: 'uso_gamificacion.csv', href: '/api/investigador/validacion/uso-gamificacion.csv', detalle: 'Una fila por estudiante: personalización, retos, ranking y tiempos.' },
+];
+
 interface Metadatos {
   fecha_corte: string; n_participantes: number; n_con_actividad: number;
   hash_sha256: string; bytes_csv: number;
   ultima_actividad_registrada: string | null; como_verificar: string;
 }
 interface Variable {
-  variable: string; descripcion: string; tipo: string; unidad: string; rango: string; calculo: string;
+  dataset: string; variable: string; descripcion: string; tipo: string; unidad: string; rango: string; calculo: string;
 }
 interface Etica {
   consentimiento: {
@@ -69,7 +76,7 @@ export default function ExportacionPage() {
         action={
           <div className="flex flex-wrap items-center gap-3">
             <ActualizarDatos calculadoEn={calculadoEn} onActualizado={cargar} />
-            <a href="/api/investigador/exportacion/export.csv" className="btn-primary"><Download className="h-4 w-4" /> Exportar CSV</a>
+            <a href="/api/investigador/exportacion/export.csv" className="btn-primary"><Download className="h-4 w-4" /> Dataset principal (CSV)</a>
           </div>
         } />
 
@@ -97,6 +104,22 @@ export default function ExportacionPage() {
           <Explicacion>{meta.como_verificar}</Explicacion>
         </Card>
       )}
+
+      {/* Un dataset por instrumento: los que alimentan los indicadores de la tesis */}
+      <Card className="mb-6">
+        <SectionTitle className="mb-1">Datasets por instrumento</SectionTitle>
+        <p className="mb-3 text-sm text-muted">
+          Un CSV anonimizado por instrumento, listo para analizar en Python (Pandas y SciPy). Sin nombre, CI ni RU.
+        </p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {DATASETS.map((ds) => (
+            <a key={ds.href} href={ds.href} className="flex items-start gap-3 rounded-xl border border-line bg-card p-3 transition hover:bg-subtle">
+              <Download className="mt-0.5 h-4 w-4 shrink-0 text-prexi-blue-deep" />
+              <span><span className="block font-mono text-sm font-semibold text-fg">{ds.archivo}</span><span className="block text-xs text-muted">{ds.detalle}</span></span>
+            </a>
+          ))}
+        </div>
+      </Card>
 
       {/* Descargas complementarias (desglose fino del progreso) */}
       <div className="mb-6 flex flex-wrap gap-2">
@@ -164,8 +187,9 @@ export default function ExportacionPage() {
         {codebook === null ? <Skeleton className="h-40" /> : (
           <ResponsiveTable
             rows={codebook}
-            rowKey={(v) => v.variable}
+            rowKey={(v) => `${v.dataset}:${v.variable}`}
             cols={[
+              { header: 'Dataset', cell: (v) => <span className="font-mono text-xs text-muted">{v.dataset}</span> },
               { header: 'Variable', cell: (v) => <span className="font-mono text-xs font-semibold text-fg">{v.variable}</span> },
               { header: 'Descripción', cell: (v) => <span className="text-muted">{v.descripcion}</span> },
               { header: 'Tipo', cell: (v) => <span className="text-muted">{v.tipo}</span> },
@@ -174,7 +198,7 @@ export default function ExportacionPage() {
             ]}
             card={(v) => (
               <div className="space-y-1">
-                <p className="font-mono text-sm font-semibold text-fg">{v.variable}</p>
+                <p className="font-mono text-sm font-semibold text-fg">{v.variable} <span className="font-normal text-muted">· {v.dataset}</span></p>
                 <p className="text-xs text-muted">{v.descripcion}</p>
                 <p className="text-[11px] text-muted">{v.tipo} · {v.unidad} · {v.rango}</p>
                 <p className="text-[11px] italic text-muted">{v.calculo}</p>

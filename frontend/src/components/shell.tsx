@@ -129,6 +129,12 @@ const NAV_INVESTIGADOR: NavGrupo[] = [
     ],
   },
   {
+    titulo: 'Resultados',
+    items: [
+      { href: '/investigador/validacion', label: 'Validación del sistema', icon: BarChart3 },
+    ],
+  },
+  {
     titulo: 'Instrumentos',
     items: [
       { href: '/investigador/fiabilidad', label: 'Fiabilidad del diagnóstico', icon: FlaskConical },

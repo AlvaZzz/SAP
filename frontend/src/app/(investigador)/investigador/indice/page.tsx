@@ -7,7 +7,7 @@
  */
 
 import { IndiceModulos, GrupoModulos } from '@/components/indice-modulos';
-import { Users, FlaskConical, Layers, Download, ClipboardList } from '@/components/icons';
+import { Users, FlaskConical, Layers, Download, ClipboardList, BarChart3 } from '@/components/icons';
 
 const GRUPOS: GrupoModulos[] = [
   {
@@ -26,6 +26,18 @@ const GRUPOS: GrupoModulos[] = [
         porQue: 'Cada indicador se sostiene sobre los estudiantes que de verdad usaron el sistema: conviene decir cuántos son.',
         href: '/investigador/validez',
         icon: Users,
+      },
+    ],
+  },
+  {
+    titulo: 'Resultados',
+    modulos: [
+      {
+        titulo: 'Validación del sistema',
+        resumen: 'Precisión del motor adaptativo con IC 95 % por bootstrap, latencia de reajuste, puntaje SUS, calidad ISO/IEC 25010 y la tabla de criterios de aceptación.',
+        porQue: 'Son los tres indicadores de la hipótesis: se acepta solo si los tres criterios se cumplen a la vez.',
+        href: '/investigador/validacion',
+        icon: BarChart3,
       },
     ],
   },

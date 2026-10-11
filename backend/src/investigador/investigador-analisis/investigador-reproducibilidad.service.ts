@@ -6,6 +6,8 @@ import { UMBRAL_SESION_MIN, NOTA_TIEMPO_ESTIMADO } from '../../common/estadistic
 
 /** Una entrada del diccionario de variables (codebook). */
 export interface VariableCodebook {
+  /** CSV al que pertenece: estudio | log_adaptacion | sus | iso25010 | uso_gamificacion. */
+  dataset: string;
   variable: string;
   descripcion: string;
   tipo: 'texto' | 'entero' | 'decimal' | 'categórica' | 'fecha';
@@ -36,7 +38,7 @@ export class InvestigadorReproducibilidadService {
    * evita decenas de preguntas en la defensa.
    */
   codebook(): VariableCodebook[] {
-    return [
+    const estudio: Omit<VariableCodebook, 'dataset'>[] = [
       { variable: 'id_anonimo', descripcion: 'Identificador anónimo del estudiante. Sustituye a nombre, correo y cédula.', tipo: 'texto', unidad: '—', rango: 'E-001 … E-nnn', calculo: 'Correlativo asignado por orden de id interno. No permite reidentificar.' },
       { variable: 'institucion', descripcion: 'Institución del estudiante.', tipo: 'categórica', unidad: '—', rango: 'texto libre', calculo: 'Declarada en el registro.' },
       { variable: 'paralelo', descripcion: 'Paralelo o curso.', tipo: 'categórica', unidad: '—', rango: 'texto libre', calculo: 'Declarado en el registro.' },
@@ -77,14 +79,78 @@ export class InvestigadorReproducibilidadService {
       // ── GAMIFICACIÓN ──
       { variable: 'consultas_ranking', descripcion: 'Veces que el estudiante consultó el ranking (uso de la gamificación).', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Registros de ConsultaRanking del estudiante. Se registra cada apertura de la pantalla de ranking, de forma asíncrona para no afectar su experiencia.' },
     ];
+    return [...estudio.map((v) => ({ dataset: 'estudio', ...v })), ...this.codebookInstrumentos()];
+  }
+
+  /**
+   * Variables de los datasets por INSTRUMENTO (uno por CSV): son los que
+   * alimentan directamente los indicadores de la tesis.
+   */
+  private codebookInstrumentos(): VariableCodebook[] {
+    type Fila = Omit<VariableCodebook, 'dataset'>;
+    const id = { tipo: 'texto' as const, unidad: '—', rango: 'E-001 … E-nnn', calculo: 'Mismo correlativo que el dataset principal. No permite reidentificar.' };
+    const paralelo: Fila = { variable: 'paralelo', descripcion: 'Paralelo del estudiante.', tipo: 'categórica', unidad: '—', rango: 'texto libre', calculo: 'Declarado en el registro.' };
+    const en = (dataset: string, filas: Fila[]): VariableCodebook[] => filas.map((v) => ({ dataset, ...v }));
+
+    return [
+      // ── log_adaptacion: una fila por decisión del motor adaptativo ──
+      ...en('log_adaptacion', [
+        { variable: 'id_anonimo', descripcion: 'Identificador anónimo del estudiante.', ...id },
+        paralelo,
+        { variable: 'tema', descripcion: 'Tema del temario al que pertenece el ejercicio asignado.', tipo: 'texto', unidad: '—', rango: 'p. ej. 1.5.2', calculo: 'Etiqueta jerárquica del tema. Vacío si el ejercicio no cuelga de un tema.' },
+        { variable: 'ejercicio_id', descripcion: 'Ejercicio asignado por el motor.', tipo: 'entero', unidad: '—', rango: '≥ 1', calculo: 'Identificador interno del ejercicio.' },
+        { variable: 'theta_antes', descripcion: 'Habilidad estimada del estudiante ANTES de responder: con ella se evalúa la asignación.', tipo: 'decimal', unidad: 'logits', rango: '−4 a +4', calculo: 'θ vigente (Rasch, máxima verosimilitud); si aún no practicó, la del diagnóstico inicial.' },
+        { variable: 'theta_despues', descripcion: 'Habilidad re-estimada DESPUÉS de la respuesta.', tipo: 'decimal', unidad: 'logits', rango: '−4 a +4', calculo: 'Re-estimación con todas las respuestas de práctica, incluida esta.' },
+        { variable: 'dificultad_b', descripcion: 'Dificultad del ejercicio asignado.', tipo: 'decimal', unidad: 'logits', rango: '−3 a +3', calculo: 'Parámetro b del modelo de Rasch del ítem.' },
+        { variable: 'prob_acierto', descripcion: 'Probabilidad de acierto esperada de la asignación.', tipo: 'decimal', unidad: 'proporción', rango: '0 a 1', calculo: 'P = 1 / (1 + e^-(theta_antes − dificultad_b)).' },
+        { variable: 'nivel_antes', descripcion: 'Nivel adaptativo del estudiante en el tema al asignarse el ejercicio.', tipo: 'categórica', unidad: '—', rango: 'basico | intermedio | avanzado', calculo: 'Nivel servido por la ruta adaptativa.' },
+        { variable: 'nivel_despues', descripcion: 'Nivel adaptativo del estudiante en el tema tras la respuesta.', tipo: 'categórica', unidad: '—', rango: 'basico | intermedio | avanzado', calculo: 'ProgresoTema.nivelActual después de responder.' },
+        { variable: 'en_rango_objetivo', descripcion: 'INDICADOR DE PRECISIÓN: ¿la asignación cayó dentro del rango objetivo?', tipo: 'entero', unidad: '0/1', rango: '0 | 1 | vacío', calculo: 'rango_min ≤ prob_acierto ≤ rango_max (por defecto 0,50–0,85). Vacío si no había θ previa: se excluye del denominador.' },
+        { variable: 'personalizado', descripcion: '¿El ejercicio se seleccionó según el nivel y la θ del estudiante?', tipo: 'entero', unidad: '0/1', rango: '0 | 1', calculo: '1 si salió de la ruta adaptativa de un tema; 0 si se sirvió en orden fijo.' },
+        { variable: 'correcto', descripcion: '¿El estudiante acertó?', tipo: 'entero', unidad: '0/1', rango: '0 | 1', calculo: 'Corrección hecha en el backend.' },
+        { variable: 'latencia_ms', descripcion: 'LATENCIA DE REAJUSTE: tiempo que tarda el sistema en adaptar la dificultad tras una respuesta.', tipo: 'entero', unidad: 'milisegundos', rango: '≥ 0', calculo: 'Desde que llega la respuesta al servidor hasta que la habilidad queda re-estimada. Medido en el backend. Dividir entre 1000 para segundos.' },
+        { variable: 'tiempo_respuesta_ms', descripcion: 'Tiempo de respuesta del sistema ante la actividad resuelta (retroalimentación).', tipo: 'entero', unidad: 'milisegundos', rango: '≥ 0', calculo: 'Desde que llega la respuesta hasta que la retroalimentación está lista para enviarse. Medido en el backend.' },
+        { variable: 'fecha', descripcion: 'Momento de la decisión.', tipo: 'fecha', unidad: 'ISO 8601 (UTC)', rango: '—', calculo: 'Marca temporal del servidor.' },
+      ]),
+      // ── sus: una fila por estudiante ──
+      ...en('sus', [
+        { variable: 'id_anonimo', descripcion: 'Identificador anónimo del estudiante.', ...id },
+        paralelo,
+        { variable: 'S01 … S10', descripcion: 'Respuesta CRUDA a cada ítem del SUS, sin transformar.', tipo: 'entero', unidad: 'Likert', rango: '1 a 5', calculo: '1 = totalmente en desacuerdo, 5 = totalmente de acuerdo. Impares positivos, pares negativos.' },
+        { variable: 'puntaje_sus', descripcion: 'INDICADOR DE USABILIDAD: puntaje de la escala SUS.', tipo: 'decimal', unidad: 'puntos (no es %)', rango: '0 a 100', calculo: 'Brooke (1996): impares (r − 1), pares (5 − r); suma × 2,5.' },
+        { variable: 'version', descripcion: 'Versión del instrumento aplicada.', tipo: 'texto', unidad: '—', rango: '—', calculo: 'No se mezclan aplicaciones de versiones distintas.' },
+      ]),
+      // ── iso25010: una fila por evaluador ──
+      ...en('iso25010', [
+        { variable: 'id_evaluador', descripcion: 'Identificador anónimo del docente o evaluador.', tipo: 'texto', unidad: '—', rango: 'D-001 … D-nnn', calculo: 'Correlativo por orden de id interno.' },
+        { variable: '<ítem>', descripcion: 'Respuesta cruda a cada ítem del cuestionario (una columna por ítem: AF1, AF2, ED1…).', tipo: 'entero', unidad: 'Likert', rango: '1 a 5', calculo: 'Todos los ítems en sentido positivo (5 = mejor calidad).' },
+        { variable: 'media_<característica>', descripcion: 'INDICADOR DE CALIDAD: valoración media del evaluador en una característica ISO/IEC 25010.', tipo: 'decimal', unidad: 'Likert', rango: '1 a 5', calculo: 'Media de los ítems de la característica. La media del estudio es la media de esta columna.' },
+        { variable: 'version', descripcion: 'Versión del instrumento aplicada.', tipo: 'texto', unidad: '—', rango: '—', calculo: 'Mientras diga "borrador", los ítems no están validados por expertos.' },
+      ]),
+      // ── uso_gamificacion: una fila por estudiante ──
+      ...en('uso_gamificacion', [
+        { variable: 'id_anonimo', descripcion: 'Identificador anónimo del estudiante.', ...id },
+        paralelo,
+        { variable: 'ejercicios_servidos', descripcion: 'Ejercicios de práctica asignados y respondidos.', tipo: 'entero', unidad: 'ejercicios', rango: '≥ 0', calculo: 'Filas de log_adaptacion del estudiante.' },
+        { variable: 'ejercicios_personalizados', descripcion: 'Ejercicios seleccionados según su nivel y θ.', tipo: 'entero', unidad: 'ejercicios', rango: '≥ 0', calculo: 'Filas con personalizado = 1.' },
+        { variable: 'pct_personalizacion', descripcion: 'ADAPTABILIDAD: nivel de personalización del contenido.', tipo: 'decimal', unidad: '%', rango: '0 a 100', calculo: 'ejercicios_personalizados ÷ ejercicios_servidos × 100. Vacío sin ejercicios.' },
+        { variable: 'retos_completados', descripcion: 'GAMIFICACIÓN: retos completados.', tipo: 'entero', unidad: 'retos', rango: '≥ 0', calculo: 'RetoUsuario con resuelto = verdadero (aprobado).' },
+        { variable: 'cambios_posicion_ranking', descripcion: 'GAMIFICACIÓN: cambios de posición en el ranking.', tipo: 'entero', unidad: 'cambios', rango: '≥ 0', calculo: 'Filas de HistorialRanking con posición anterior (la primera entrada al ranking no cuenta).' },
+        { variable: 'consultas_ranking', descripcion: 'Veces que abrió la pantalla del ranking.', tipo: 'entero', unidad: 'consultas', rango: '≥ 0', calculo: 'Registros de ConsultaRanking.' },
+        { variable: 'latencia_media_ms', descripcion: 'Latencia de reajuste media del estudiante.', tipo: 'entero', unidad: 'milisegundos', rango: '≥ 0', calculo: 'Media de latencia_ms de sus decisiones.' },
+        { variable: 'tiempo_retroalimentacion_medio_ms', descripcion: 'RETROALIMENTACIÓN: tiempo medio de respuesta del sistema.', tipo: 'entero', unidad: 'milisegundos', rango: '≥ 0', calculo: 'Media de tiempo_respuesta_ms de sus decisiones.' },
+        { variable: 'xp_total', descripcion: 'Experiencia acumulada.', tipo: 'entero', unidad: 'XP', rango: '≥ 0', calculo: 'Ranking.xpTotal.' },
+        { variable: 'racha_dias', descripcion: 'Racha de días consecutivos de actividad.', tipo: 'entero', unidad: 'días', rango: '≥ 0', calculo: 'Ranking.rachaDias.' },
+      ]),
+    ];
   }
 
   /** CSV del codebook, para anexar directamente a la tesis. */
   codebookCsv(): string {
-    const cols = ['variable', 'descripcion', 'tipo', 'unidad', 'rango', 'calculo'];
+    const cols = ['dataset', 'variable', 'descripcion', 'tipo', 'unidad', 'rango', 'calculo'];
     const esc = (s: string) => (/[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
     const filas = this.codebook().map((v) =>
-      [v.variable, v.descripcion, v.tipo, v.unidad, v.rango, v.calculo].map(esc).join(','),
+      [v.dataset, v.variable, v.descripcion, v.tipo, v.unidad, v.rango, v.calculo].map(esc).join(','),
     );
     return [cols.join(','), ...filas].join('\n');
   }

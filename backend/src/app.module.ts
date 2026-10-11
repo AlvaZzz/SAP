@@ -33,6 +33,7 @@ import { DocentePostestModule } from './docente/docente-postest/docente-postest.
 import { InvestigadorPanelModule } from './investigador/investigador-panel/investigador-panel.module';
 import { InvestigadorExportacionModule } from './investigador/investigador-exportacion/investigador-exportacion.module';
 import { InvestigadorAnalisisModule } from './investigador/investigador-analisis/investigador-analisis.module';
+import { InvestigadorValidacionModule } from './investigador/investigador-validacion/investigador-validacion.module';
 import { EncuestaModule } from './mediciones/encuesta/encuesta.module';
 import { InstrumentosModule } from './mediciones/instrumentos/instrumentos.module';
 import { AdminAuditoriaModule } from './admin/admin-auditoria/admin-auditoria.module';
@@ -80,6 +81,7 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     InvestigadorPanelModule,
     InvestigadorExportacionModule,
     InvestigadorAnalisisModule,
+    InvestigadorValidacionModule,
     EncuestaModule,
     InstrumentosModule,
     AdminAuditoriaModule,
