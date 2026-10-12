@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { TIPOS_FLASHCARD, derivarFlashcard } from './derivar';
 
 /**
  * FLASHCARDS — funcionalidad de APOYO (repaso libre / memorización activa).
@@ -24,11 +25,6 @@ export interface Flashcard {
   nivel?: NivelDificultad;
 }
 
-type OpcionJson = { id: string; texto: string };
-
-// Tipos de ejercicio que sí producen una buena flashcard (pregunta → respuesta).
-// `ordenar_lineas` se excluye: su "respuesta" es un orden, no un concepto memorizable.
-const TIPOS_FLASHCARD = ['opcion_multiple', 'predecir_salida', 'completar_codigo'] as const;
 
 const TEMA_SELECT = { id: true, unidadId: true, padreId: true, numero: true, titulo: true } satisfies Prisma.TemaSelect;
 
@@ -41,17 +37,9 @@ export class FlashcardsService {
     const tema = ej.tema;
     if (!tema) return null;
 
-    let reverso = '';
-    if (ej.tipo === 'opcion_multiple' || ej.tipo === 'predecir_salida') {
-      const ops = Array.isArray(ej.opciones) ? (ej.opciones as unknown as OpcionJson[]) : [];
-      const correcta = ops.find((o) => (o?.id ?? '').trim().toUpperCase() === ej.respuestaCorrecta.trim().toUpperCase());
-      reverso = correcta?.texto ?? ej.respuestaCorrecta;
-    } else if (ej.tipo === 'completar_codigo') {
-      // La respuesta puede traer variantes equivalentes separadas por "|": toma la primera.
-      reverso = ej.respuestaCorrecta.split('|')[0].trim();
-    } else {
-      return null;
-    }
+    const derivada = derivarFlashcard(ej);
+    if (!derivada) return null;
+    const reverso = derivada.reverso;
 
     const esSubtema = tema.padreId != null;
     return {
@@ -65,6 +53,39 @@ export class FlashcardsService {
       codigo: ej.codigoPython ?? undefined,
       nivel: ej.nivelDificultad,
     };
+  }
+
+  /**
+   * Tarjetas de un conjunto de temas. Si el docente preparó flashcards para un
+   * tema, se sirven ESAS; si no, las que se derivan de sus ejercicios.
+   */
+  private async cartasDeTemas(temaIds: number[]): Promise<Flashcard[]> {
+    const [propias, ejs] = await Promise.all([
+      this.prisma.flashcard.findMany({
+        where: { temaId: { in: temaIds }, activo: true },
+        include: { tema: { select: TEMA_SELECT } },
+        orderBy: [{ nivelDificultad: 'asc' }, { id: 'asc' }],
+      }),
+      this.ejerciciosDeTemas(temaIds),
+    ]);
+    const conPropias = new Set(propias.map((p) => p.temaId));
+    const delDocente: Flashcard[] = propias.map((p) => {
+      const esSubtema = p.tema.padreId != null;
+      return {
+        id: `fc-${p.id}`,
+        unidadId: String(p.tema.unidadId),
+        temaId: String(esSubtema ? p.tema.padreId : p.tema.id),
+        subtemaId: esSubtema ? String(p.tema.id) : undefined,
+        frente: p.frente, reverso: p.reverso,
+        explicacion: p.explicacion ?? undefined, codigo: p.codigoPython ?? undefined,
+        nivel: p.nivelDificultad,
+      };
+    });
+    const derivadas = ejs
+      .filter((e) => e.temaId != null && !conPropias.has(e.temaId))
+      .map((e) => this.aFlashcard(e))
+      .filter((f): f is Flashcard => f !== null);
+    return [...delDocente, ...derivadas];
   }
 
   private async ejerciciosDeTemas(temaIds: number[]) {
@@ -120,9 +141,8 @@ export class FlashcardsService {
       this.prisma.tema.findMany({ where: { padreId: temaId, publicado: true }, select: { id: true } }),
     ]);
     const temaIds = [temaId, ...subtemas.map((s) => s.id)];
-    const [ejs, niveles] = await Promise.all([this.ejerciciosDeTemas(temaIds), this.nivelesDelUsuario(usuarioId, temaIds)]);
+    const [cards, niveles] = await Promise.all([this.cartasDeTemas(temaIds), this.nivelesDelUsuario(usuarioId, temaIds)]);
     const tema = temaRow ? { id: temaRow.id, numero: temaRow.numero, titulo: temaRow.titulo, unidadId: temaRow.unidadId, unidadNumero: temaRow.unidad.numero } : null;
-    const cards = ejs.map((e) => this.aFlashcard(e)).filter((f): f is Flashcard => f !== null);
     return { tema, flashcards: this.filtrarPorNivel(cards, niveles), nivel_defecto: niveles.get(temaId) ?? 'basico' };
   }
 
@@ -139,8 +159,7 @@ export class FlashcardsService {
       this.prisma.tema.findMany({ where: { unidadId, publicado: true }, select: { id: true } }),
     ]);
     const temaIds = temas.map((t) => t.id);
-    const [ejs, niveles] = await Promise.all([this.ejerciciosDeTemas(temaIds), this.nivelesDelUsuario(usuarioId, temaIds)]);
-    const cards = ejs.map((e) => this.aFlashcard(e)).filter((f): f is Flashcard => f !== null);
+    const [cards, niveles] = await Promise.all([this.cartasDeTemas(temaIds), this.nivelesDelUsuario(usuarioId, temaIds)]);
     return { unidad, flashcards: this.filtrarPorNivel(cards, niveles), nivel_defecto: null };
   }
 
@@ -163,19 +182,16 @@ export class FlashcardsService {
     const debilidad = new Map<number, number>(temas.map((t) => [t.id, peso[t.progreso[0]?.nivelActual ?? 'basico']]));
 
     const temaIds = temas.map((t) => t.id);
-    const [ejs, niveles] = await Promise.all([this.ejerciciosDeTemas(temaIds), this.nivelesDelUsuario(usuarioId, temaIds)]);
+    const [cards, niveles] = await Promise.all([this.cartasDeTemas(temaIds), this.nivelesDelUsuario(usuarioId, temaIds)]);
     // Misma regla estricta que el resto de mazos: solo tarjetas del nivel del estudiante.
-    const cards = this.filtrarPorNivel(
-      ejs.map((e) => this.aFlashcard(e)).filter((f): f is Flashcard => f !== null),
-      niveles,
-    );
+    const delNivel = this.filtrarPorNivel(cards, niveles);
 
     // Ordena por debilidad del tema (o subtema) al que pertenece la tarjeta.
     const debilidadDe = (f: Flashcard) => Math.min(
       debilidad.get(Number(f.subtemaId ?? f.temaId)) ?? 0,
       debilidad.get(Number(f.temaId)) ?? 0,
     );
-    cards.sort((a, b) => debilidadDe(a) - debilidadDe(b));
-    return { unidad, flashcards: cards.slice(0, Math.max(1, limite)) };
+    delNivel.sort((a, b) => debilidadDe(a) - debilidadDe(b));
+    return { unidad, flashcards: delNivel.slice(0, Math.max(1, limite)) };
   }
 }

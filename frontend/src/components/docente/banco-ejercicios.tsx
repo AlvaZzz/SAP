@@ -5,26 +5,24 @@ import { api, ApiError } from '@/lib/api';
 import { DocenteEjercicio, DocenteDocumento, PreguntaIa, TipoEjercicio, NivelDificultad, NIVEL_LABEL } from '@/lib/types';
 import { Badge, Skeleton, Field, Input, Textarea, Select } from '@/components/ui';
 import { NIVELES } from '@/components/nivel-badge';
-import { Plus, Edit, Trash2, Sparkles, CheckCircle, X, Upload, Eye, EyeOff, Bot, Code, BookOpen } from '@/components/icons';
+import { Plus, Edit, Trash2, Sparkles, CheckCircle, X, Upload, Eye, EyeOff, Bot } from '@/components/icons';
 import { EjercicioForm, DestinoEjercicio, TIPOS_EJERCICIO } from './ejercicio-form';
 
 const META = 10;
-const TIPOS_FLASHCARD: TipoEjercicio[] = ['opcion_multiple', 'predecir_salida', 'completar_codigo'];
 const etiquetaTipo = (t: TipoEjercicio) => TIPOS_EJERCICIO.find((x) => x.value === t)?.label ?? t;
 
-type Pestana = 'ejercicios' | 'flashcards' | 'ia';
-
 /**
- * Todo el contenido de UN tema (o del examen de una unidad) en un solo lugar:
- * sus ejercicios por nivel, las flashcards que salen de ellos y el generador
- * de PREXI, que ya sabe para qué tema trabaja.
+ * Banco de ejercicios de UN destino —un tema o el examen de una unidad—.
+ * Arriba, las dos formas de sumar contenido (escribirlo o pedírselo a PREXI);
+ * abajo, lo que ya hay. En un tema se ve un nivel a la vez.
  */
-export function ContenidoPanel({ destino, onCambio }: { destino: DestinoEjercicio; onCambio: () => void }) {
+export function BancoEjercicios({ destino, onCambio }: { destino: DestinoEjercicio; onCambio: () => void }) {
   const esExamen = destino.tipo === 'examen';
-  const [pestana, setPestana] = useState<Pestana>('ejercicios');
+  const [nivel, setNivel] = useState<NivelDificultad>('basico');
   const [ejercicios, setEjercicios] = useState<DocenteEjercicio[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [form, setForm] = useState<{ abierto: boolean; ejercicio: DocenteEjercicio | null; nivel: NivelDificultad }>({ abierto: false, ejercicio: null, nivel: 'basico' });
+  const [conPrexi, setConPrexi] = useState(false);
+  const [form, setForm] = useState<{ abierto: boolean; ejercicio: DocenteEjercicio | null }>({ abierto: false, ejercicio: null });
 
   const consulta = destino.tipo === 'examen' ? `banco=examen&unidad=${destino.unidadId}` : `banco=practica&tema=${destino.temaId}`;
   const cargar = useCallback(async () => {
@@ -33,7 +31,7 @@ export function ContenidoPanel({ destino, onCambio }: { destino: DestinoEjercici
       setEjercicios(r.ejercicios ?? []);
     } catch { /* se queda con lo que había */ } finally { setCargando(false); }
   }, [consulta]);
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { setCargando(true); setConPrexi(false); cargar(); }, [cargar]);
 
   const refrescar = useCallback(async () => { await cargar(); onCambio(); }, [cargar, onCambio]);
 
@@ -43,100 +41,86 @@ export function ContenidoPanel({ destino, onCambio }: { destino: DestinoEjercici
     await api.del(`/docente/ejercicios/${e.id}`).catch(() => undefined); await refrescar();
   }
 
-  const flashcards = useMemo(() => ejercicios.filter((e) => e.activo && TIPOS_FLASHCARD.includes(e.tipo)), [ejercicios]);
   const nombreTema = useMemo(() => new Map(destino.tipo === 'examen' ? destino.temas.map((t) => [t.id, t.etiqueta]) : []), [destino]);
-
-  const pestanas: [Pestana, string][] = esExamen
-    ? [['ejercicios', `Preguntas (${ejercicios.filter((e) => e.activo).length}/${META})`], ['ia', 'Generar con PREXI']]
-    : [['ejercicios', `Ejercicios (${ejercicios.length})`], ['flashcards', `Flashcards (${flashcards.length})`], ['ia', 'Generar con PREXI']];
-
-  const fila = (e: DocenteEjercicio) => (
-    <div key={e.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
-      <div className="min-w-[180px] flex-1">
-        <p className={`line-clamp-2 text-sm ${e.activo ? 'text-fg' : 'text-muted line-through'}`}>{e.enunciado}</p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
-          {etiquetaTipo(e.tipo)}
-          {esExamen && (e.temas_integrados.length >= 2
-            ? e.temas_integrados.map((id) => <Badge key={id} tone="blue">{nombreTema.get(id) ?? `Tema ${id}`}</Badge>)
-            : <Badge tone="amber">No combina temas: edítala</Badge>)}
-        </p>
-      </div>
-      <div className="flex items-center">
-        <button onClick={() => alternar(e)} title={e.activo ? 'Ocultar a los estudiantes' : 'Mostrar a los estudiantes'} aria-label={e.activo ? 'Ocultar' : 'Mostrar'} className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-blue-deep">{e.activo ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}</button>
-        <button onClick={() => setForm({ abierto: true, ejercicio: e, nivel: e.nivel_dificultad })} title="Editar" aria-label="Editar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-blue-deep"><Edit className="h-4 w-4" /></button>
-        <button onClick={() => eliminar(e)} title="Eliminar" aria-label="Eliminar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
-      </div>
-    </div>
-  );
+  const activosDe = (n: NivelDificultad) => ejercicios.filter((e) => e.nivel_dificultad === n && e.activo).length;
+  const visibles = esExamen ? ejercicios : ejercicios.filter((e) => e.nivel_dificultad === nivel);
+  // En el examen solo cuentan las preguntas que combinan 2 o más temas.
+  const activosVisibles = visibles.filter((e) => e.activo && (!esExamen || e.temas_integrados.length >= 2)).length;
+  const faltan = META - activosVisibles;
+  const sustantivo = esExamen ? 'pregunta' : 'ejercicio';
 
   return (
-    <div className="border-t border-line bg-subtle/30 p-3 sm:p-4">
-      <div className="mb-3 flex flex-wrap gap-1 rounded-xl border border-line bg-card p-1" role="tablist">
-        {pestanas.map(([p, label]) => (
-          <button key={p} role="tab" aria-selected={pestana === p} onClick={() => setPestana(p)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${pestana === p ? 'bg-prexi-blue text-white' : 'text-muted hover:text-fg'}`}>
-            {p === 'ia' ? <Sparkles className="h-3.5 w-3.5" /> : p === 'flashcards' ? <BookOpen className="h-3.5 w-3.5" /> : <Code className="h-3.5 w-3.5" />}
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {pestana === 'ejercicios' && (cargando ? <Skeleton className="h-24" /> : esExamen ? (
-        <div className="rounded-xl border border-line bg-card">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
-            <p className="text-sm text-muted">El examen toma <b className="text-fg">{META} preguntas</b> de nivel intermedio; cada una combina 2 o 3 temas de la unidad.</p>
-            <button onClick={() => setForm({ abierto: true, ejercicio: null, nivel: 'intermedio' })} className="btn-ghost !px-2.5 !py-1 text-xs"><Plus className="h-3.5 w-3.5" /> Agregar pregunta</button>
-          </div>
-          {ejercicios.length === 0
-            ? <p className="px-3 py-4 text-sm text-muted">Aún no hay preguntas. Agrégalas a mano o genera las {META} con PREXI.</p>
-            : <div className="divide-y divide-line">{ejercicios.map(fila)}</div>}
-        </div>
-      ) : (
-        <div className="space-y-3">
+    <div className="space-y-4">
+      {!esExamen && (
+        <div className="grid grid-cols-3 gap-2" role="tablist" aria-label="Nivel">
           {NIVELES.map((n) => {
-            const delNivel = ejercicios.filter((e) => e.nivel_dificultad === n);
-            const activos = delNivel.filter((e) => e.activo).length;
+            const cuenta = activosDe(n);
+            const listo = cuenta >= META;
             return (
-              <div key={n} className="rounded-xl border border-line bg-card">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-fg">{NIVEL_LABEL[n]}</span>
-                    <Badge tone={activos >= META ? 'green' : 'amber'}>{activos}/{META}</Badge>
-                    {activos < META && <span className="text-xs text-muted">faltan {META - activos}</span>}
-                  </div>
-                  <button onClick={() => setForm({ abierto: true, ejercicio: null, nivel: n })} className="btn-ghost !px-2.5 !py-1 text-xs"><Plus className="h-3.5 w-3.5" /> Agregar</button>
-                </div>
-                {delNivel.length === 0
-                  ? <p className="px-3 py-3 text-sm text-muted">Sin ejercicios en este nivel.</p>
-                  : <div className="divide-y divide-line">{delNivel.map(fila)}</div>}
-              </div>
+              <button key={n} role="tab" aria-selected={nivel === n} onClick={() => { setNivel(n); setConPrexi(false); }}
+                className={`rounded-xl border px-3 py-2.5 text-left transition ${nivel === n ? 'border-prexi-blue bg-prexi-blue/10' : 'border-line bg-card hover:bg-subtle'}`}>
+                <span className="block text-sm font-bold text-fg">{NIVEL_LABEL[n]}</span>
+                <span className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${listo ? 'text-prexi-green' : 'text-prexi-amber'}`}>
+                  {listo && <CheckCircle className="h-3.5 w-3.5" />}{cuenta} de {META}
+                </span>
+              </button>
             );
           })}
         </div>
-      ))}
-
-      {pestana === 'flashcards' && (
-        <div>
-          <p className="mb-3 text-sm text-muted">Las flashcards <b className="text-fg">se arman solas</b> con los ejercicios activos de este tema: la pregunta va al frente y la respuesta correcta al reverso. Cada estudiante ve las de su nivel. Para cambiar una tarjeta, edita su ejercicio.</p>
-          {flashcards.length === 0 ? <p className="rounded-xl bg-card px-3 py-4 text-sm text-muted">Todavía no hay tarjetas: crea ejercicios de opción múltiple, predecir salida o completar código.</p> : (
-            <div className="grid gap-2 sm:grid-cols-2">
-              {flashcards.map((e) => (
-                <div key={e.id} className="rounded-xl border border-line bg-card p-3">
-                  <div className="mb-1 flex items-center justify-between gap-2"><span className="text-[11px] font-bold uppercase tracking-wide text-muted">Frente</span><Badge tone="slate">{NIVEL_LABEL[e.nivel_dificultad]}</Badge></div>
-                  <p className="line-clamp-3 text-sm text-fg">{e.enunciado}</p>
-                  <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-muted">Reverso</p>
-                  <p className="text-sm font-semibold text-prexi-green">{respuestaLegible(e)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       )}
 
-      {pestana === 'ia' && <GeneradorIa destino={destino} onAprobada={refrescar} />}
+      <div className="rounded-2xl border border-line bg-card p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-display text-lg font-bold text-fg">
+              {esExamen ? 'Preguntas del examen' : `Ejercicios de nivel ${NIVEL_LABEL[nivel]}`}
+            </p>
+            <p className="text-sm text-muted">
+              {activosVisibles >= META
+                ? `Listo: ya hay ${activosVisibles}. Puedes agregar más si quieres.`
+                : `Llevas ${activosVisibles} de ${META}${esExamen ? ' que combinan temas' : ''}. ${faltan === 1 ? 'Te falta 1' : `Te faltan ${faltan}`}.`}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setForm({ abierto: true, ejercicio: null })} className="btn-ghost"><Plus className="h-4 w-4" /> Escribir {esExamen ? 'una pregunta' : 'un ejercicio'}</button>
+            <button onClick={() => setConPrexi((v) => !v)} className="btn-primary" aria-expanded={conPrexi}><Sparkles className="h-4 w-4" /> {conPrexi ? 'Cerrar PREXI' : `Pedir ${META} a PREXI`}</button>
+          </div>
+        </div>
+
+        {conPrexi && <div className="mt-4 border-t border-line pt-4"><GeneradorIa key={esExamen ? 'examen' : nivel} destino={destino} nivelInicial={nivel} onAprobada={refrescar} /></div>}
+      </div>
+
+      {cargando ? <Skeleton className="h-24" /> : visibles.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted">
+          Todavía no hay {sustantivo}s aquí. Usa los botones de arriba para escribir el primero o pedirle {META} a PREXI.
+        </p>
+      ) : (
+        <ol className="space-y-2">
+          {visibles.map((e, i) => (
+            <li key={e.id} className="flex flex-wrap items-start gap-3 rounded-xl border border-line bg-card p-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-subtle text-xs font-bold text-muted">{i + 1}</span>
+              <div className="min-w-[180px] flex-1">
+                <p className={`line-clamp-2 text-sm ${e.activo ? 'text-fg' : 'text-muted line-through'}`}>{e.enunciado}</p>
+                <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                  {etiquetaTipo(e.tipo)}
+                  {!e.activo && <Badge tone="slate">Oculto</Badge>}
+                  {esExamen && (e.temas_integrados.length >= 2
+                    ? e.temas_integrados.map((id) => <Badge key={id} tone="blue">{nombreTema.get(id) ?? `Tema ${id}`}</Badge>)
+                    : <Badge tone="amber">Es de un solo tema: edítala y marca 2 o 3</Badge>)}
+                </p>
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => setForm({ abierto: true, ejercicio: e })} className="btn-ghost !px-2.5 !py-1 text-xs"><Edit className="h-3.5 w-3.5" /> Editar</button>
+                <button onClick={() => alternar(e)} title={e.activo ? 'Ocultar a los estudiantes' : 'Mostrar a los estudiantes'} aria-label={e.activo ? 'Ocultar' : 'Mostrar'} className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-blue-deep">{e.activo ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}</button>
+                <button onClick={() => eliminar(e)} title="Eliminar" aria-label="Eliminar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
 
       <EjercicioForm open={form.abierto} onClose={() => setForm((f) => ({ ...f, abierto: false }))} onGuardado={refrescar}
-        destino={destino} ejercicio={form.ejercicio} nivelInicial={form.nivel} />
+        destino={destino} ejercicio={form.ejercicio} nivelInicial={nivel} />
     </div>
   );
 }
@@ -151,10 +135,10 @@ function respuestaLegible(e: { tipo: TipoEjercicio; opciones: { id: string; text
 type Material = 'ninguno' | 'texto' | 'pdf';
 
 /** Generador de PREXI ya contextualizado: propone, el docente revisa y aprueba. */
-function GeneradorIa({ destino, onAprobada }: { destino: DestinoEjercicio; onAprobada: () => void }) {
+function GeneradorIa({ destino, nivelInicial = 'basico', onAprobada }: { destino: DestinoEjercicio; nivelInicial?: NivelDificultad; onAprobada: () => void }) {
   const esExamen = destino.tipo === 'examen';
   const [tipo, setTipo] = useState<TipoEjercicio>('opcion_multiple');
-  const [nivel, setNivel] = useState<NivelDificultad>('basico');
+  const [nivel, setNivel] = useState<NivelDificultad>(nivelInicial);
   const [material, setMaterial] = useState<Material>('ninguno');
   const [texto, setTexto] = useState('');
   const [documentos, setDocumentos] = useState<DocenteDocumento[]>([]);

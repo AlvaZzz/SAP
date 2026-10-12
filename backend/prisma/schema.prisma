@@ -355,6 +355,7 @@ model Tema {
   ejercicios          Ejercicio[]
   documentos          Documento[]
   retos               Reto[]
+  flashcards          Flashcard[]
   progreso            ProgresoTema[]
   preguntasGeneradas  PreguntaGenerada[]
   intentosSubidaNivel IntentoSubidaNivel[]
@@ -551,6 +552,7 @@ model Ejercicio {
   pasosRuta         PasoRuta[]
   retosDerivados    Reto[]             @relation("RetosDerivados")
   logsAdaptacion    LogAdaptacion[]
+  flashcards        Flashcard[]
 
   @@index([nivelId])
   @@index([temaId])
@@ -1312,4 +1314,26 @@ model HabilitacionExamen {
   @@id([usuarioId, unidadId])
   @@index([unidadId])
   @@map("habilitaciones_examen")
+}
+
+// Flashcard del docente: la escribe a mano o la genera a partir de un ejercicio
+// del tema (`ejercicioId`). Si un tema no tiene ninguna, el estudiante recibe las
+// que se derivan solas de sus ejercicios. Es repaso libre: no puntúa.
+model Flashcard {
+  id              Int             @id @default(autoincrement())
+  temaId          Int             @map("tema_id")
+  ejercicioId     Int?            @map("ejercicio_id")
+  frente          String
+  reverso         String
+  explicacion     String?
+  codigoPython    String?         @map("codigo_python")
+  nivelDificultad NivelDificultad @default(basico) @map("nivel_dificultad")
+  activo          Boolean         @default(true)
+  creadoEn        DateTime        @default(now()) @map("creado_en")
+
+  tema      Tema       @relation(fields: [temaId], references: [id], onDelete: Cascade)
+  ejercicio Ejercicio? @relation(fields: [ejercicioId], references: [id], onDelete: SetNull)
+
+  @@index([temaId, nivelDificultad])
+  @@map("flashcards")
 }

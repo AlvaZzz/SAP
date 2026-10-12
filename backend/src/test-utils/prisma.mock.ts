@@ -50,6 +50,7 @@ export function crearPrismaMock() {
     progresoTema: delegate(),
     unidadCompletada: delegate(),
     preguntaGenerada: delegate(),
+    flashcard: delegate(),
     rango: delegate(),
     desempenoUnidad: delegate(),
     respuestaEncuesta: delegate(),

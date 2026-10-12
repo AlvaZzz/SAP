@@ -48,13 +48,16 @@ No existe una "evaluación final" aparte: la evaluación de cierre es el examen 
 
 ## Qué carga el docente
 
-Todo se hace en **Unidades**:
+Todo se hace en **Unidades**, con un asistente de cuatro pasos por unidad (unidad y temas →
+ejercicios → flashcards → examen y publicación):
 
 - Crear unidades, temas y subtemas.
 - En cada tema, completar 10 ejercicios por nivel. Un tema no se puede publicar hasta
   tenerlos; el sistema dice cuántos faltan y de qué nivel.
-- Las flashcards no se cargan: salen de los ejercicios activos y cada estudiante ve las de
-  su nivel en ese tema.
+- Las flashcards se preparan por tema (meta: 10): «Generar desde mis ejercicios» crea una
+  por cada ejercicio —PREXI redacta el frente; el reverso es siempre la respuesta correcta
+  del ejercicio— y también se escriben a mano. Si un tema no tiene ninguna, el estudiante
+  recibe las que se derivan solas de sus ejercicios. Cada estudiante ve las de su nivel.
 - *Generar con PREXI* propone 10 preguntas del tipo y nivel elegidos (con un PDF, un texto
   pegado o solo el tema). Nada se publica sin que el docente lo apruebe.
 - *Examen de la unidad*: 10 preguntas que combinan temas, escritas a mano o generadas.

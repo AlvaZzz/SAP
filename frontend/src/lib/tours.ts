@@ -116,10 +116,11 @@ export const TOURS: Tour[] = [
     clave: 'docente-unidades',
     ruta: en('/docente/unidades'),
     pasos: [
-      { titulo: 'Todo el contenido, en un lugar', texto: 'Cada unidad muestra sus temas y subtemas. Toca un tema para abrirlo: ahí están sus ejercicios, sus flashcards y el generador de PREXI.' },
-      { titulo: '10 ejercicios por nivel', texto: 'Cada tema necesita 10 ejercicios en Básico, Intermedio y Avanzado. Los contadores de colores te dicen cuántos llevas y cuántos faltan para poder publicarlo.' },
-      { titulo: 'PREXI te ayuda a escribir', texto: 'En «Generar con PREXI» eliges el tipo y el nivel, y recibes 10 preguntas. Nada se publica solo: las apruebas, editas o descartas una por una.' },
-      { titulo: 'El examen de la unidad', texto: 'Al final de cada unidad armas su examen: 10 preguntas de nivel intermedio, cada una combinando 2 o 3 temas. El estudiante lo aprueba con 80 sobre 100.' },
+      { titulo: 'Tus unidades', texto: 'Cada tarjeta es una unidad de tu materia y muestra cuatro pasos. El botón azul te lleva directo al paso que falta.' },
+      { titulo: 'Paso 1: unidad y temas', texto: 'Le pones nombre a la unidad y agregas sus temas y subtemas, en el orden en que se enseñan.' },
+      { titulo: 'Paso 2: ejercicios', texto: 'Eliges un tema y un nivel, y cargas 10 ejercicios. Puedes escribirlos o pedirle 10 a PREXI: tú apruebas, editas o descartas cada uno.' },
+      { titulo: 'Paso 3: flashcards', texto: 'Con un botón, PREXI convierte tus ejercicios en tarjetas de repaso. También puedes escribirlas a mano.' },
+      { titulo: 'Paso 4: examen', texto: 'Armas las 10 preguntas del examen, cada una combinando 2 o 3 temas, y publicas los temas que ya están completos.' },
     ],
   },
   {

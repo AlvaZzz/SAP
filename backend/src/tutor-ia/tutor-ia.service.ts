@@ -647,6 +647,42 @@ Responde SOLO un JSON array (sin markdown, sin texto extra) con esta forma exact
     return this.parsearPreguntas(texto_respuesta, tipo);
   }
 
+  // ── 6b) Flashcards a partir de los ejercicios que el docente ya cargó ──
+  //  PREXI solo REDACTA: convierte cada pregunta en una tarjeta breve de
+  //  concepto. La respuesta correcta la fija el ejercicio, no la IA.
+  async generarFlashcards(
+    tema: string,
+    items: { id: number; pregunta: string; codigo: string | null; respuesta: string; explicacion: string | null }[],
+  ): Promise<Map<number, { frente: string; reverso: string; explicacion: string }>> {
+    const system = `Eres PREXI, asistente del DOCENTE (Python, primer semestre, UPEA).
+Convierte cada ejercicio del tema "${tema}" en una flashcard de repaso en español:
+- "frente": la pregunta reescrita de forma breve y directa (máx. 160 caracteres), sin opciones.
+- "reverso": la respuesta correcta que se te da, sin cambiar su contenido (máx. 160 caracteres).
+- "explicacion": una frase que ayude a recordarla.
+No inventes datos ni cambies la respuesta. Conserva el "id" de cada ejercicio.
+Responde SOLO un JSON array, sin markdown: [{"id":1,"frente":"...","reverso":"...","explicacion":"..."}]`;
+    const mensaje = items.map((i) =>
+      `ID ${i.id}\nPREGUNTA: ${sanitizar(i.pregunta, 500)}${i.codigo ? `\nCÓDIGO:\n${sanitizar(i.codigo, 600)}` : ''}\nRESPUESTA CORRECTA: ${sanitizar(i.respuesta, 300)}${i.explicacion ? `\nEXPLICACIÓN: ${sanitizar(i.explicacion, 300)}` : ''}`,
+    ).join('\n\n');
+    const texto = await this.generar(system, mensaje, Math.max(1024, items.length * 160));
+    const limpio = texto.trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    const out = new Map<number, { frente: string; reverso: string; explicacion: string }>();
+    let data: unknown;
+    try { data = JSON.parse(limpio); } catch { return out; }
+    if (!Array.isArray(data)) return out;
+    const validos = new Set(items.map((i) => i.id));
+    for (const item of data) {
+      if (!item || typeof item !== 'object') continue;
+      const p = item as Record<string, unknown>;
+      const id = Number(p.id);
+      const frente = typeof p.frente === 'string' ? p.frente.trim() : '';
+      const reverso = typeof p.reverso === 'string' ? p.reverso.trim() : '';
+      if (!validos.has(id) || frente.length < 3 || !reverso) continue;
+      out.set(id, { frente, reverso, explicacion: typeof p.explicacion === 'string' ? p.explicacion.trim() : '' });
+    }
+    return out;
+  }
+
   // ── 7) Ayuda al DOCENTE a reconocer las columnas de su lista de estudiantes ──
   //  Solo recibe los ENCABEZADOS y la FORMA de unas celdas ya enmascaradas por
   //  quien llama (letras → "A", dígitos → "9"): ningún dato personal llega a

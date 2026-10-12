@@ -77,7 +77,7 @@ export class DocenteUnidadesService {
     // salen, borradores de PREXI sin revisar y preguntas del examen por unidad.
     const [nivelRaw, flashRaw, borrRaw, examen] = await Promise.all([
       this.prisma.ejercicio.groupBy({ by: ['temaId', 'nivelDificultad'], where: { banco: 'practica', activo: true, temaId: { not: null } }, _count: { _all: true } }),
-      this.prisma.ejercicio.groupBy({ by: ['temaId'], where: { banco: 'practica', activo: true, temaId: { not: null }, tipo: { in: ['opcion_multiple', 'predecir_salida', 'completar_codigo'] } }, _count: { _all: true } }),
+      this.prisma.flashcard.groupBy({ by: ['temaId'], where: { activo: true }, _count: { _all: true } }),
       this.prisma.preguntaGenerada.groupBy({ by: ['temaId', 'banco'], where: { estado: 'borrador', ...(autorId ? { autorId } : {}) }, _count: { _all: true } }),
       this.prisma.ejercicio.findMany({ where: { banco: 'examen', activo: true, temaId: { not: null } }, select: { temasIntegrados: true, tema: { select: { unidadId: true } } } }),
     ]);
