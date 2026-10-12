@@ -127,8 +127,9 @@ export const TOURS: Tour[] = [
     clave: 'docente-retos',
     ruta: en('/docente/retos'),
     pasos: [
-      { titulo: 'Retos para tus estudiantes', texto: 'Crea desafíos de programación con enunciado, código inicial, ejemplo de entrada/salida, XP y fecha límite opcional.' },
-      { titulo: 'Publicación', texto: 'Un reto publicado aparece de inmediato a los estudiantes. Puedes despublicarlo en cualquier momento sin perder las entregas.' },
+      { titulo: 'Dos tipos de reto', texto: '«Encuentra el bug»: das un código con un error y el sistema califica solo. «Escribe tu código»: planteas un problema y tú revisas la entrega.' },
+      { titulo: 'Ordenados por tema', texto: 'Dentro de cada tipo, los retos aparecen por unidad y tema, igual que los encuentra el estudiante.' },
+      { titulo: 'Tres pasos para crear uno', texto: '«Nuevo reto» te pregunta el tipo, el tema y el nivel; luego el contenido; y al final los puntos y si lo publicas.' },
     ],
   },
   {

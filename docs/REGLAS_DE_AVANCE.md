@@ -69,3 +69,17 @@ unos 7 de nivel básico y 3 de intermedio y de avanzado, y las preguntas de exam
 existentes son de un solo tema. El sistema funciona con lo que hay (toma las preguntas
 disponibles), pero el estándar de 10 por nivel y de preguntas integradoras depende de que
 el docente complete el contenido. La pantalla Unidades muestra el faltante tema por tema.
+
+## Retos
+
+Los retos son práctica extra en el editor de código y tienen dos tipos:
+
+| Tipo | Qué entrega el docente | Cómo se califica |
+|---|---|---|
+| **Encuentra el bug** | Un código con un error y la salida correcta (ambos obligatorios) | Solo: se compara la salida del estudiante con la correcta |
+| **Escribe tu código** | Un problema; el ejemplo y el código de partida son opcionales | El docente, en *Revisiones de retos* |
+
+Cada reto pertenece a un tema y a un nivel: lo ven los estudiantes que están en ese nivel
+en ese tema. El docente los crea con un asistente de tres pasos (tipo y tema → contenido →
+publicación) y los ve agrupados por tipo, unidad y tema. Un interruptor único muestra u
+oculta todo el módulo.

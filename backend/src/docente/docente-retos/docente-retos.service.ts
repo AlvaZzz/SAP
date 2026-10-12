@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CrearRetoDto, EditarRetoDto } from './dto/reto.dto';
+import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
 
 /**
  * Gestión de retos (rol docente). Cada docente solo administra SUS retos:
@@ -17,6 +18,17 @@ export class DocenteRetosService {
     if (!temaId) return;
     const tema = await this.prisma.tema.findUnique({ where: { id: temaId } });
     if (!tema) throw new BadRequestException('El tema seleccionado no existe');
+  }
+
+  /**
+   * Un reto de "encuentra el bug" se corrige solo, comparando la salida del
+   * estudiante con la esperada: sin código con el error o sin esa salida no hay
+   * nada que corregir ni contra qué comparar.
+   */
+  private validarBug(r: { esBugHunt?: boolean | null; codigoInicial?: string | null; ejemploSalida?: string | null }) {
+    if (!r.esBugHunt) return;
+    if (!r.codigoInicial?.trim()) throw new BadRequestException('Un reto de «Encuentra el bug» necesita el código con el error.');
+    if (!r.ejemploSalida?.trim()) throw new BadRequestException('Un reto de «Encuentra el bug» necesita la salida correcta: con ella se corrige solo.');
   }
 
   async listar(autorId: number) {
@@ -40,7 +52,7 @@ export class DocenteRetosService {
       id: r.id, titulo: r.titulo, categoria: r.categoria,
       nivel: r.nivel?.numero ?? null, nivel_titulo: r.nivel?.titulo ?? null,
       temaId: r.temaId, tema_titulo: r.tema ? `${r.tema.numero} ${r.tema.titulo}` : null,
-      estrellas: r.estrellas, tipo: r.tipo, enunciado: r.enunciado, codigoInicial: r.codigoInicial,
+      estrellas: r.estrellas, nivel_dificultad: r.nivelDificultad, tipo: r.tipo, enunciado: r.enunciado, codigoInicial: r.codigoInicial,
       ejemploEntrada: r.ejemploEntrada, ejemploSalida: r.ejemploSalida,
       xp: r.xp, fechaLimite: r.fechaLimite, activo: r.activo, esBugHunt: r.esBugHunt,
       resueltos: r._count.resueltos, pendientes: pendMap.get(r.id) ?? 0, creadoEn: r.creadoEn,
@@ -57,6 +69,7 @@ export class DocenteRetosService {
 
   async crear(autorId: number, dto: CrearRetoDto) {
     await this.validarTema(dto.temaId);
+    this.validarBug(dto);
     const r = await this.prisma.reto.create({
       data: {
         titulo: dto.titulo,
@@ -65,6 +78,9 @@ export class DocenteRetosService {
         nivelId: null,
         temaId: dto.temaId ?? null,
         estrellas: dto.estrellas,
+        // El nivel decide a QUÉ estudiantes se les muestra el reto (los que están
+        // en ese nivel en el tema): sin esto todo reto quedaba como básico.
+        nivelDificultad: nivelDesdeEstrellas(dto.estrellas),
         tipo: dto.tipo ?? 'completar_codigo',
         enunciado: dto.enunciado,
         codigoInicial: dto.codigoInicial ?? null,
@@ -81,15 +97,20 @@ export class DocenteRetosService {
   }
 
   async editar(id: number, autorId: number, dto: EditarRetoDto) {
-    await this.propio(id, autorId);
+    const actual = await this.propio(id, autorId);
     await this.validarTema(dto.temaId ?? undefined);
+    this.validarBug({
+      esBugHunt: dto.esBugHunt ?? actual.esBugHunt,
+      codigoInicial: dto.codigoInicial ?? actual.codigoInicial,
+      ejemploSalida: dto.ejemploSalida ?? actual.ejemploSalida,
+    });
     await this.prisma.reto.update({
       where: { id },
       data: {
         ...(dto.titulo !== undefined ? { titulo: dto.titulo } : {}),
         ...(dto.categoria !== undefined ? { categoria: dto.categoria } : {}),
         ...(dto.temaId !== undefined ? { temaId: dto.temaId } : {}),
-        ...(dto.estrellas !== undefined ? { estrellas: dto.estrellas } : {}),
+        ...(dto.estrellas !== undefined ? { estrellas: dto.estrellas, nivelDificultad: nivelDesdeEstrellas(dto.estrellas) } : {}),
         ...(dto.tipo !== undefined ? { tipo: dto.tipo } : {}),
         ...(dto.enunciado !== undefined ? { enunciado: dto.enunciado } : {}),
         ...(dto.codigoInicial !== undefined ? { codigoInicial: dto.codigoInicial } : {}),

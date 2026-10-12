@@ -1,199 +1,177 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { api, ApiError } from '@/lib/api';
-import { DocenteReto, NivelDificultad, NIVEL_LABEL, OpcionTema } from '@/lib/types';
-import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, Select, EmptyState } from '@/components/ui';
-import { SelectorTema } from '@/components/docente/selector-tema';
-import { NivelBadge, nivelDesdeEstrellas, estrellasDesdeNivel, NIVELES } from '@/components/nivel-badge';
-import { Plus, Edit, Trash2, Power, Target, ClipboardList, Clock, Lock, CheckCircle } from '@/components/icons';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { DocenteReto, OpcionTema, NIVEL_LABEL } from '@/lib/types';
+import { PageHeader, Card, Badge, Skeleton } from '@/components/ui';
+import { Plus, Edit, Trash2, Eye, EyeOff, ClipboardList, CheckCircle, Lock } from '@/components/icons';
+import { TIPOS_RETO, TipoReto, tipoDe } from '@/components/docente/retos/tipos';
 
-interface RetosConfig { intermedio: boolean; avanzado: boolean }
+interface Grupo { clave: string; titulo: string; unidadId: number | null; temas: { id: number | null; nombre: string; retos: DocenteReto[] }[] }
 
-interface FormState {
-  titulo: string; categoria: string; temaId: number | null; estrellas: number; enunciado: string;
-  codigoInicial: string; ejemploEntrada: string; ejemploSalida: string; xp: number; fechaLimite: string; activo: boolean; esBugHunt: boolean;
-}
-const VACIO: FormState = {
-  titulo: '', categoria: '', temaId: null, estrellas: 3, enunciado: '',
-  codigoInicial: '', ejemploEntrada: '', ejemploSalida: '', xp: 60, fechaLimite: '', activo: true, esBugHunt: false,
-};
-
+/**
+ * Retos del docente, separados en sus dos tipos —«Encuentra el bug» y «Escribe
+ * tu código»— y, dentro de cada uno, ordenados por unidad y tema. Crear o
+ * editar un reto abre el asistente de tres pasos.
+ */
 export default function DocenteRetosPage() {
-  const [items, setItems] = useState<DocenteReto[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [modal, setModal] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<FormState>(VACIO);
-  const [errores, setErrores] = useState<Record<string, string>>({});
-  const [guardando, setGuardando] = useState(false);
-  const [apiError, setApiError] = useState('');
-
-  const [config, setConfig] = useState<RetosConfig | null>(null);
+  const router = useRouter();
+  const tipo: TipoReto = useSearchParams().get('tipo') === 'codigo' ? 'codigo' : 'bug';
+  const [retos, setRetos] = useState<DocenteReto[] | null>(null);
   const [temas, setTemas] = useState<OpcionTema[]>([]);
+  const [activo, setActivo] = useState<boolean | null>(null);
 
-  async function cargar() {
-    setCargando(true);
-    try { const r = await api.get<{ retos: DocenteReto[] }>('/docente/retos'); setItems(r.retos); }
-    catch { /* noop */ } finally { setCargando(false); }
+  const cargar = useCallback(async () => {
+    const r = await api.get<{ retos: DocenteReto[] }>('/docente/retos').catch(() => null);
+    setRetos(r?.retos ?? []);
+  }, []);
+  useEffect(() => {
+    cargar();
+    api.get<{ temas: OpcionTema[] }>('/docente/unidades/temas/opciones').then((r) => setTemas(r.temas)).catch(() => undefined);
+    api.get<{ habilitado: boolean }>('/docente/retos/config').then((c) => setActivo(c.habilitado)).catch(() => undefined);
+  }, [cargar]);
+
+  async function alternarModulo() {
+    if (activo === null) return;
+    const nuevo = !activo;
+    setActivo(nuevo);
+    try { await api.put('/docente/retos/config', { habilitado: nuevo }); } catch { setActivo(!nuevo); }
   }
-  useEffect(() => { cargar(); }, []);
-  useEffect(() => { api.get<RetosConfig>('/docente/retos/config').then(setConfig).catch(() => undefined); }, []);
-  useEffect(() => { api.get<{ temas: OpcionTema[] }>('/docente/unidades/temas/opciones').then((r) => setTemas(r.temas)).catch(() => undefined); }, []);
-
-  async function alternarNivel(nivel: 'intermedio' | 'avanzado') {
-    if (!config) return;
-    const nuevo = { ...config, [nivel]: !config[nivel] };
-    setConfig(nuevo); // optimista
-    try { await api.put('/docente/retos/config', { [nivel]: nuevo[nivel] }); }
-    catch { setConfig(config); } // revierte si falla
-  }
-
-  function abrirCrear() { setEditId(null); setForm(VACIO); setErrores({}); setApiError(''); setModal(true); }
-  function abrirEditar(r: DocenteReto) {
-    setEditId(r.id); setErrores({}); setApiError('');
-    setForm({
-      titulo: r.titulo, categoria: r.categoria, temaId: r.temaId ?? null, estrellas: r.estrellas,
-      enunciado: r.enunciado, codigoInicial: r.codigoInicial ?? '', ejemploEntrada: r.ejemploEntrada ?? '',
-      ejemploSalida: r.ejemploSalida ?? '', xp: r.xp, fechaLimite: r.fechaLimite ? r.fechaLimite.slice(0, 10) : '', activo: r.activo, esBugHunt: r.esBugHunt,
-    });
-    setModal(true);
-  }
-
-  function validar(): boolean {
-    const e: Record<string, string> = {};
-    if (form.titulo.trim().length < 3) e.titulo = 'Mínimo 3 caracteres.';
-    if (form.categoria.trim().length < 2) e.categoria = 'Indica una categoría.';
-    if (form.enunciado.trim().length < 3) e.enunciado = 'Escribe el enunciado.';
-    if (form.xp < 5 || form.xp > 500) e.xp = 'XP entre 5 y 500.';
-    setErrores(e);
-    return Object.keys(e).length === 0;
-  }
-
-  async function guardar() {
-    if (!validar()) return;
-    setGuardando(true); setApiError('');
-    const payload = {
-      titulo: form.titulo.trim(), categoria: form.categoria.trim(),
-      // `null` (no `undefined`) para poder DESASIGNAR el tema al editar.
-      temaId: editId ? form.temaId : (form.temaId ?? undefined),
-      estrellas: form.estrellas,
-      enunciado: form.enunciado.trim(), codigoInicial: form.codigoInicial.trim() || undefined,
-      ejemploEntrada: form.ejemploEntrada.trim() || undefined, ejemploSalida: form.ejemploSalida.trim() || undefined,
-      xp: form.xp, fechaLimite: form.fechaLimite ? new Date(form.fechaLimite + 'T23:59:59').toISOString() : undefined,
-      activo: form.activo, esBugHunt: form.esBugHunt,
-    };
-    try {
-      if (editId) await api.put(`/docente/retos/${editId}`, payload);
-      else await api.post('/docente/retos', payload);
-      setModal(false); await cargar();
-    } catch (err) { setApiError(err instanceof ApiError ? err.message : 'No se pudo guardar'); }
-    finally { setGuardando(false); }
-  }
-
   async function alternar(r: DocenteReto) { await api.patch(`/docente/retos/${r.id}/activo`).catch(() => undefined); await cargar(); }
   async function eliminar(r: DocenteReto) {
-    if (!confirm(`¿Eliminar el reto "${r.titulo}"?`)) return;
+    if (!confirm(`¿Eliminar el reto «${r.titulo}»? También se borran sus entregas.`)) return;
     await api.del(`/docente/retos/${r.id}`).catch(() => undefined); await cargar();
   }
 
-  const fecha = (f: string) => new Date(f).toLocaleDateString('es-BO', { day: 'numeric', month: 'short', year: 'numeric' });
+  const cuenta = useMemo(() => ({
+    bug: (retos ?? []).filter((r) => r.esBugHunt).length,
+    codigo: (retos ?? []).filter((r) => !r.esBugHunt).length,
+  }), [retos]);
+
+  // Unidad → tema → retos del tipo elegido. Las unidades sin retos también
+  // aparecen, para poder agregarles el primero.
+  const grupos = useMemo<Grupo[]>(() => {
+    const delTipo = (retos ?? []).filter((r) => tipoDe(r) === tipo);
+    const porTema = new Map<number, OpcionTema>(temas.map((t) => [t.id, t]));
+    const unidades = new Map<number, Grupo>();
+    for (const t of temas) {
+      if (!unidades.has(t.unidad_id)) unidades.set(t.unidad_id, { clave: `u${t.unidad_id}`, titulo: `Unidad ${t.unidad_numero}: ${t.unidad_titulo}`, unidadId: t.unidad_id, temas: [] });
+    }
+    const sinTema: DocenteReto[] = [];
+    for (const r of delTipo) {
+      const t = r.temaId != null ? porTema.get(r.temaId) : undefined;
+      if (!t) { sinTema.push(r); continue; }
+      const g = unidades.get(t.unidad_id)!;
+      let fila = g.temas.find((x) => x.id === t.id);
+      if (!fila) { fila = { id: t.id, nombre: `${t.numero} ${t.titulo}`, retos: [] }; g.temas.push(fila); }
+      fila.retos.push(r);
+    }
+    const orden = new Map(temas.map((t, i) => [t.id, i]));
+    const lista = [...unidades.values()];
+    lista.forEach((g) => g.temas.sort((a, b) => (orden.get(a.id ?? -1) ?? 0) - (orden.get(b.id ?? -1) ?? 0)));
+    if (sinTema.length) lista.push({ clave: 'sin', titulo: 'Sin tema asignado', unidadId: null, temas: [{ id: null, nombre: 'Edítalos para ubicarlos en un tema', retos: sinTema }] });
+    return lista;
+  }, [retos, temas, tipo]);
+
+  const info = TIPOS_RETO[tipo];
+  const nuevo = (temaId?: number | null) => `/docente/retos/nuevo?tipo=${tipo}${temaId ? `&tema=${temaId}` : ''}`;
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Gestión de retos" subtitle="Retos extra que el estudiante resuelve en el editor de código. Las entregas se califican en Revisiones."
-        action={<button onClick={abrirCrear} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo reto</button>} />
+      <PageHeader title="Retos" subtitle="Desafíos de programación para que tus estudiantes practiquen en el editor de código."
+        action={<Link href={nuevo()} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo reto</Link>} />
 
-      {/* Habilitación de retos por nivel (Básico nunca accede) */}
-      <Card className="mb-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-prexi-blue/10 text-prexi-blue-deep"><Lock className="h-5 w-5" /></div>
-            <div>
-              <p className="font-semibold text-fg">Habilitar retos para</p>
-              <p className="mt-0.5 max-w-md text-sm text-muted">El editor de código libre no se ofrece a estudiantes <b className="text-fg">Básicos</b> (aún consolidan fundamentos). Elige qué niveles pueden acceder.</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {(['intermedio', 'avanzado'] as const).map((n) => {
-              const on = config?.[n] ?? false;
-              const label = n === 'intermedio' ? 'Intermedio' : 'Avanzado';
-              return (
-                <button key={n} onClick={() => alternarNivel(n)} disabled={!config}
-                  className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition disabled:opacity-50 ${on ? 'border-prexi-green bg-emerald-500/10 text-prexi-green' : 'border-line bg-card text-muted hover:border-prexi-blue/40'}`}>
-                  {on ? <CheckCircle className="h-4 w-4" /> : <Lock className="h-4 w-4" />} {label}
-                </button>
-              );
-            })}
+      {/* Interruptor del módulo */}
+      <Card className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${activo ? 'bg-prexi-green/15 text-prexi-green' : 'bg-subtle text-muted'}`}>{activo ? <CheckCircle className="h-5 w-5" /> : <Lock className="h-5 w-5" />}</div>
+          <div>
+            <p className="font-semibold text-fg">{activo ? 'Los estudiantes pueden ver los retos' : 'Los retos están ocultos para los estudiantes'}</p>
+            <p className="mt-0.5 max-w-xl text-sm text-muted">Cada estudiante ve los retos publicados de su nivel en cada tema. Con esto apagado no ve ninguno.</p>
           </div>
         </div>
+        <button onClick={alternarModulo} disabled={activo === null} role="switch" aria-checked={!!activo} className={activo ? 'btn-ghost' : 'btn-primary'}>
+          {activo ? 'Ocultar todos los retos' : 'Mostrar los retos'}
+        </button>
       </Card>
 
-      {cargando ? <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
-        : items.length === 0 ? <EmptyState icon={<Target className="h-7 w-7" />} title="Aún no hay retos" hint="Crea un reto para que aparezca en la Zona de Práctica del estudiante." />
-          : (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {items.map((r) => (
-                <Card key={r.id} className="flex flex-col">
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-prexi-blue/10 text-prexi-blue-deep"><Target className="h-5 w-5" /></div>
-                    <div className="flex flex-col items-end gap-1">
-                      {r.activo ? <Badge tone="green">Publicado</Badge> : <Badge tone="slate">Borrador</Badge>}
-                      {r.pendientes > 0 && <Badge tone="amber"><ClipboardList className="h-3 w-3" /> {r.pendientes} por revisar</Badge>}
-                    </div>
-                  </div>
-                  <p className="font-display font-bold text-fg">{r.titulo}</p>
-                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-prexi-blue-deep">{r.categoria}</span>
-                    <NivelBadge estrellas={r.estrellas} size="sm" />
-                    {r.tema_titulo && <Badge tone="green">{r.tema_titulo}</Badge>}
-                  </div>
-                  <p className="mb-3 line-clamp-2 flex-1 text-sm text-muted">{r.enunciado}</p>
-                  <div className="mb-1 flex items-center justify-between text-xs text-muted">
-                    <span>{r.xp} XP · {r.resueltos} aprobados</span>
-                    <span>{fecha(r.creadoEn)}</span>
-                  </div>
-                  {r.fechaLimite && <p className="mb-3 flex items-center gap-1 text-xs text-prexi-amber"><Clock className="h-3 w-3" /> Límite: {fecha(r.fechaLimite)}</p>}
-                  <div className="mt-auto flex gap-2 border-t border-line pt-3">
-                    <button onClick={() => alternar(r)} className="btn-ghost flex-1 !py-2 text-sm"><Power className="h-4 w-4" /> {r.activo ? 'Despublicar' : 'Publicar'}</button>
-                    <button onClick={() => abrirEditar(r)} className="grid h-9 w-9 place-items-center rounded-xl border border-line text-muted transition hover:bg-subtle hover:text-prexi-blue-deep"><Edit className="h-4 w-4" /></button>
-                    <button onClick={() => eliminar(r)} className="grid h-9 w-9 place-items-center rounded-xl border border-line text-muted transition hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+      {/* Los dos tipos de reto */}
+      <div className="mb-6 grid gap-3 sm:grid-cols-2" role="tablist" aria-label="Tipo de reto">
+        {(Object.keys(TIPOS_RETO) as TipoReto[]).map((t) => {
+          const d = TIPOS_RETO[t];
+          const sel = t === tipo;
+          return (
+            <button key={t} role="tab" aria-selected={sel} onClick={() => router.replace(`/docente/retos?tipo=${t}`)}
+              className={`flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition ${sel ? 'bg-card shadow-soft' : 'border-line bg-card opacity-70 hover:opacity-100'}`}
+              style={sel ? { borderColor: d.color } : undefined}>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl" style={{ color: d.color, backgroundColor: `${d.color}1F` }}><d.Icono className="h-5 w-5" /></span>
+              <span className="min-w-0">
+                <span className="flex items-center gap-2 font-display text-lg font-bold text-fg">{d.nombre} <Badge tone="slate">{cuenta[t]}</Badge></span>
+                <span className="mt-0.5 block text-sm text-muted">{d.resumen}</span>
+                <span className="mt-1 block text-xs font-medium text-muted">{d.calificacion}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-      <Modal open={modal} onClose={() => setModal(false)} size="lg" title={editId ? 'Editar reto' : 'Nuevo reto'}
-        footer={<>
-          <button onClick={() => setModal(false)} className="btn-ghost">Cancelar</button>
-          <button onClick={guardar} disabled={guardando} className="btn-primary">{guardando ? 'Guardando…' : 'Guardar'}</button>
-        </>}>
-        {apiError && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2"><Field label="Título" error={errores.titulo}><Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ej: FizzBuzz" /></Field></div>
-          <Field label="Categoría" error={errores.categoria}><Input value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} placeholder="Bucles, Cadenas…" /></Field>
-          <Field label="Nivel de dificultad"><Select value={nivelDesdeEstrellas(form.estrellas)} onChange={(e) => setForm({ ...form, estrellas: estrellasDesdeNivel(e.target.value as NivelDificultad) })}>{NIVELES.map((n) => <option key={n} value={n}>{NIVEL_LABEL[n]}</option>)}</Select></Field>
-          <Field label="XP máximo" error={errores.xp}><Input type="number" min={5} max={25} value={form.xp} onChange={(e) => setForm({ ...form, xp: Number(e.target.value) })} /></Field>
-          {/* Ubicación académica: agrupa el reto en la vista del estudiante por Unidad → Tema → Subtema. */}
-          <div className="sm:col-span-2"><SelectorTema temas={temas} valor={form.temaId} onChange={(temaId) => setForm({ ...form, temaId })} hint="Ubica el reto en el temario: tus estudiantes lo verán junto al tema que estudian." /></div>
-          <div className="sm:col-span-2"><Field label="Enunciado / descripción del problema" error={errores.enunciado}><Textarea value={form.enunciado} onChange={(e) => setForm({ ...form, enunciado: e.target.value })} placeholder="Describe el reto de programación." /></Field></div>
-          <Field label="Ejemplo de entrada (opcional)"><Textarea value={form.ejemploEntrada} onChange={(e) => setForm({ ...form, ejemploEntrada: e.target.value })} className="font-mono text-sm" placeholder="n = 5" /></Field>
-          <Field label="Salida esperada (opcional)"><Textarea value={form.ejemploSalida} onChange={(e) => setForm({ ...form, ejemploSalida: e.target.value })} className="font-mono text-sm" placeholder="15" /></Field>
-          <div className="sm:col-span-2"><Field label="Código base (opcional)" hint="Se precarga en el editor del estudiante."><Textarea value={form.codigoInicial} onChange={(e) => setForm({ ...form, codigoInicial: e.target.value })} className="font-mono text-sm" placeholder={'def solucion():\n    pass'} /></Field></div>
-          <Field label="Fecha límite (opcional)"><Input type="date" value={form.fechaLimite} onChange={(e) => setForm({ ...form, fechaLimite: e.target.value })} /></Field>
-          <label className="flex items-center gap-2 self-end pb-2.5">
-            <input type="checkbox" checked={form.activo} onChange={(e) => setForm({ ...form, activo: e.target.checked })} className="h-4 w-4 accent-prexi-blue" />
-            <span className="text-sm font-medium text-fg">Publicado (visible para estudiantes)</span>
-          </label>
-          <div className="sm:col-span-2">
-            <label className="flex items-start gap-2 rounded-xl border border-line bg-subtle/40 p-3">
-              <input type="checkbox" checked={form.esBugHunt} onChange={(e) => setForm({ ...form, esBugHunt: e.target.checked })} className="mt-0.5 h-4 w-4 accent-prexi-blue" />
-              <span className="text-sm text-fg"><b>Misión de depuración (bug‑hunt)</b> — el código base trae un bug; se <b>auto‑valida</b> comparando con la <b>salida esperada</b> (obligatoria) y otorga el emblema, sin revisión manual.</span>
-            </label>
-          </div>
+      {retos === null ? <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-28" />)}</div> : (
+        <div className="space-y-4">
+          {grupos.length === 0 && (
+            <Card><p className="text-sm text-muted">Primero crea una unidad con sus temas en <Link href="/docente/unidades" className="font-semibold text-prexi-blue-deep hover:underline">Unidades</Link>: los retos se organizan por tema.</p></Card>
+          )}
+          {grupos.map((g) => (
+            <Card key={g.clave}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-bold text-fg">{g.titulo}</h2>
+                {g.unidadId !== null && (
+                  <Link href={`/docente/retos/nuevo?tipo=${tipo}&unidad=${g.unidadId}`} className="btn-ghost text-sm"><Plus className="h-4 w-4" /> Agregar reto en esta unidad</Link>
+                )}
+              </div>
+              {g.temas.length === 0 ? (
+                <p className="mt-2 text-sm text-muted">Esta unidad aún no tiene retos de «{info.nombre}».</p>
+              ) : (
+                <div className="mt-3 space-y-4">
+                  {g.temas.map((t) => (
+                    <section key={t.id ?? 'sin'}>
+                      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="text-sm font-bold text-fg">{t.nombre} <span className="font-normal text-muted">· {t.retos.length} {t.retos.length === 1 ? 'reto' : 'retos'}</span></h3>
+                        {t.id !== null && <Link href={nuevo(t.id)} className="text-xs font-semibold text-prexi-blue-deep hover:underline">+ Agregar en este tema</Link>}
+                      </div>
+                      <ul className="space-y-2">
+                        {t.retos.map((r) => (
+                          <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-line px-3 py-2.5">
+                            <div className="min-w-[200px] flex-1">
+                              <p className="text-sm font-semibold text-fg">{r.titulo}</p>
+                              <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                                <Badge tone="slate">{NIVEL_LABEL[r.nivel_dificultad]}</Badge>
+                                {r.activo ? <Badge tone="green">Publicado</Badge> : <Badge tone="slate">Borrador</Badge>}
+                                <span>{r.resueltos} {r.resueltos === 1 ? 'estudiante lo resolvió' : 'estudiantes lo resolvieron'}</span>
+                              </p>
+                            </div>
+                            {r.pendientes > 0 && (
+                              <Link href="/docente/revisiones" className="inline-flex items-center gap-1 rounded-full bg-prexi-amber/15 px-2.5 py-1 text-xs font-bold text-prexi-amber hover:underline">
+                                <ClipboardList className="h-3.5 w-3.5" /> {r.pendientes} por revisar
+                              </Link>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <Link href={`/docente/retos/${r.id}`} className="btn-ghost !px-2.5 !py-1 text-xs"><Edit className="h-3.5 w-3.5" /> Editar</Link>
+                              <button onClick={() => alternar(r)} className="btn-ghost !px-2.5 !py-1 text-xs">{r.activo ? <><EyeOff className="h-3.5 w-3.5" /> Despublicar</> : <><Eye className="h-3.5 w-3.5" /> Publicar</>}</button>
+                              <button onClick={() => eliminar(r)} title="Eliminar" aria-label={`Eliminar ${r.titulo}`} className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+                </div>
+              )}
+            </Card>
+          ))}
         </div>
-      </Modal>
+      )}
     </div>
   );
 }

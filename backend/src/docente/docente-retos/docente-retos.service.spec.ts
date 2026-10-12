@@ -54,4 +54,33 @@ describe('DocenteRetosService (asociación de tema)', () => {
     const arg = prisma.reto.update.mock.calls[0][0];
     expect(arg.data).not.toHaveProperty('temaId');
   });
+  describe('nivel y retos de «Encuentra el bug»', () => {
+    it('el nivel del reto sale de la dificultad elegida (decide a quién se le muestra)', async () => {
+      await service.crear(7, { ...(baseCrear as object), estrellas: 4 } as never);
+      expect(prisma.reto.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ nivelDificultad: 'avanzado' }) }),
+      );
+    });
+
+    it('un bug sin código con el error es rechazado', async () => {
+      await expect(service.crear(7, { ...(baseCrear as object), esBugHunt: true, ejemploSalida: '15' } as never))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('un bug sin salida correcta es rechazado: no habría contra qué corregir', async () => {
+      await expect(service.crear(7, { ...(baseCrear as object), esBugHunt: true, codigoInicial: 'print(1)' } as never))
+        .rejects.toThrow(BadRequestException);
+      expect(prisma.reto.create).not.toHaveBeenCalled();
+    });
+
+    it('un bug completo se guarda', async () => {
+      await service.crear(7, { ...(baseCrear as object), esBugHunt: true, codigoInicial: 'print(1)', ejemploSalida: '2' } as never);
+      expect(prisma.reto.create).toHaveBeenCalled();
+    });
+
+    it('convertir un reto existente en bug exige que ya tenga código y salida', async () => {
+      prisma.reto.findUnique.mockResolvedValue({ id: 1, autorId: 7, esBugHunt: false, codigoInicial: null, ejemploSalida: null });
+      await expect(service.editar(1, 7, { esBugHunt: true } as never)).rejects.toThrow(BadRequestException);
+    });
+  });
 });

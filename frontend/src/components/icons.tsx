@@ -89,6 +89,7 @@ import {
   Terminal,
   ChevronsLeft,
   ChevronsRight,
+  Bug,
 } from 'lucide-react';
 
 // Alias hacia los nombres históricos usados en el código.
@@ -97,6 +98,7 @@ const CheckCircle = CheckCircle2;
 const Edit = Pencil;
 
 export {
+  Bug,
   LayoutDashboard,
   Volume2,
   VolumeX,

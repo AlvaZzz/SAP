@@ -95,6 +95,8 @@ export class EditarRetoDto {
   @IsOptional() @IsInt() @Min(5) @Max(XP_MAX_ITEM)
   xp?: number;
 
+  // Cadena vacía = quitar la fecha límite.
+  @ValidateIf((_, v) => v !== '')
   @IsOptional() @IsDateString()
   fechaLimite?: string;
 

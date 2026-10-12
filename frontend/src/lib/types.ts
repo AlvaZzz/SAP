@@ -309,6 +309,7 @@ export interface DocenteReto {
   temaId: number | null;
   tema_titulo: string | null;
   estrellas: number;
+  nivel_dificultad: NivelDificultad;
   tipo: TipoEjercicio;
   enunciado: string;
   codigoInicial: string | null;
