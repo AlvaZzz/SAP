@@ -116,6 +116,12 @@ export interface TemaDocente {
   id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number;
   umbral: number; publicado: boolean; ejercicios_activos: number; ejercicios_minimos: number;
   puede_publicarse: boolean;
+  /** Ejercicios de práctica activos en cada nivel (la meta es 10 por nivel). */
+  por_nivel: Record<NivelDificultad, number>;
+  /** Qué falta para publicar, ya redactado ("3 de nivel avanzado"). */
+  faltan: string[];
+  flashcards: number;
+  borradores_ia: number;
   en_diagnostico: boolean; items_diagnostico: number; puede_diagnosticar: boolean;
   subtemas: TemaDocente[];
 }
@@ -124,6 +130,8 @@ export interface UnidadDocente {
   dashObjetivos: string | null; dashAnalogias: string | null;
   xp: number; orden: number;
   imagen_url: string | null;
+  /** Banco del examen de la unidad: 10 preguntas que combinan 2 o 3 temas. */
+  examen: { preguntas: number; integradoras: number; minimo: number; borradores_ia: number };
   temas: TemaDocente[];
 }
 /**
@@ -267,6 +275,9 @@ export interface DocenteEjercicio {
   tema_numero: string | null;
   tema_titulo: string | null;
   estrellas: number;
+  nivel_dificultad: NivelDificultad;
+  /** Temas que combina (solo preguntas de examen). */
+  temas_integrados: number[];
   tipo: TipoEjercicio;
   enunciado: string;
   codigoPython: string | null;
@@ -285,6 +296,8 @@ export interface PreguntaIa {
   tipo: TipoEjercicio; categoria: string; enunciado: string; codigoPython: string | null;
   opciones: Opcion[]; respuestaCorrecta: string; explicacionIa: string | null;
   estado: 'borrador' | 'aprobada' | 'rechazada'; fecha: string;
+  banco: 'practica' | 'examen'; nivel: NivelDificultad;
+  temas_integrados: { id: number; nombre: string }[];
 }
 
 export interface DocenteReto {

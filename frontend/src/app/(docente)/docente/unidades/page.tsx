@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '@/lib/api';
-import { UnidadDocente, TemaDocente } from '@/lib/types';
+import { UnidadDocente, TemaDocente, NIVEL_LABEL } from '@/lib/types';
+import { NIVELES } from '@/components/nivel-badge';
+import { ContenidoPanel } from '@/components/docente/contenido-panel';
 import { PageHeader, Card, Badge, Skeleton, Modal, Field, Input, Textarea, EmptyState } from '@/components/ui';
 import { ImageUpload } from '@/components/image-upload';
 import { Markdown } from '@/components/markdown';
-import { Plus, Edit, Trash2, Layers, CheckCircle, Lock, AlertTriangle, ClipboardList, Eye } from '@/components/icons';
+import { Plus, Edit, Trash2, Layers, ClipboardList, Eye, ChevronDown, ChevronUp, GraduationCap, Sparkles } from '@/components/icons';
 
 interface FormUnidad { numero: number; titulo: string; descripcion: string; introduccion: string; repaso: string; dashObjetivos: string; dashAnalogias: string; xp: number }
 const VACIO_UNIDAD: FormUnidad = { numero: 1, titulo: '', descripcion: '', introduccion: '', repaso: '', dashObjetivos: '', dashAnalogias: '', xp: 0 };
@@ -33,13 +35,18 @@ export default function DocenteUnidadesPage() {
   const [formTema, setFormTema] = useState<FormTema | null>(null);
   const [erroresT, setErroresT] = useState<Record<string, string>>({});
   const [guardando, setGuardando] = useState(false);
+  // Panel de contenido abierto: un tema ("t12") o el examen de una unidad ("u3").
+  const [abierto, setAbierto] = useState<string | null>(null);
+  const alternarPanel = (clave: string) => setAbierto((a) => (a === clave ? null : clave));
 
-  async function cargar() {
-    setCargando(true);
+  // `silencioso`: refresca los contadores sin desmontar el panel abierto.
+  async function cargar(silencioso = false) {
+    if (!silencioso) setCargando(true);
     try { const r = await api.get<{ unidades: UnidadDocente[] }>('/docente/unidades'); setUnidades(r.unidades); }
     catch { /* noop */ } finally { setCargando(false); }
   }
   useEffect(() => { cargar(); }, []);
+  const refrescar = useCallback(() => { cargar(true); }, []);
 
   function abrirCrearUnidad() {
     const siguiente = unidades.length ? Math.max(...unidades.map((u) => u.numero)) + 1 : 1;
@@ -77,13 +84,13 @@ export default function DocenteUnidadesPage() {
           await api.del(`/docente/unidades/${unidadId}/imagen`);
         }
       }
-      setModalUnidad(false); await cargar();
+      setModalUnidad(false); await cargar(true);
     } catch (err) { setError(err instanceof ApiError ? err.message : 'No se pudo guardar la unidad'); }
     finally { setGuardando(false); }
   }
   async function eliminarUnidad(u: UnidadDocente) {
     if (!confirm(`¿Eliminar la unidad "${u.titulo}"? Debe no tener temas.`)) return;
-    try { await api.del(`/docente/unidades/${u.id}`); await cargar(); }
+    try { await api.del(`/docente/unidades/${u.id}`); await cargar(true); }
     catch (err) { alert(err instanceof ApiError ? err.message : 'No se pudo eliminar'); }
   }
 
@@ -112,28 +119,35 @@ export default function DocenteUnidadesPage() {
       // El padre (padreId) solo aplica al CREAR; al editar no se reasigna (y el DTO de edición no lo acepta).
       if (editTemaId) await api.put(`/docente/unidades/temas/${editTemaId}`, base);
       else await api.post(`/docente/unidades/${formTema.unidadId}/temas`, { ...base, padreId: formTema.padreId ?? undefined });
-      setModalTema(false); await cargar();
+      setModalTema(false); await cargar(true);
     } catch (err) { setError(err instanceof ApiError ? err.message : 'No se pudo guardar el tema'); }
     finally { setGuardando(false); }
   }
   async function eliminarTema(t: TemaDocente) {
     if (!confirm(`¿Eliminar "${t.numero} ${t.titulo}"? Debe no tener subtemas.`)) return;
-    try { await api.del(`/docente/unidades/temas/${t.id}`); await cargar(); }
+    try { await api.del(`/docente/unidades/temas/${t.id}`); await cargar(true); }
     catch (err) { alert(err instanceof ApiError ? err.message : 'No se pudo eliminar'); }
   }
   async function alternarPublicado(t: TemaDocente) {
-    try { await api.put(`/docente/unidades/temas/${t.id}`, { publicado: !t.publicado }); await cargar(); }
+    try { await api.put(`/docente/unidades/temas/${t.id}`, { publicado: !t.publicado }); await cargar(true); }
     catch (err) { alert(err instanceof ApiError ? err.message : 'No se pudo actualizar'); }
   }
   async function alternarDiagnostico(t: TemaDocente) {
-    try { await api.put(`/docente/unidades/temas/${t.id}`, { enDiagnostico: !t.en_diagnostico }); await cargar(); }
+    try { await api.put(`/docente/unidades/temas/${t.id}`, { enDiagnostico: !t.en_diagnostico }); await cargar(true); }
     catch (err) { alert(err instanceof ApiError ? err.message : 'No se pudo actualizar'); }
   }
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Unidades y temas" subtitle="Estructura académica: Unidad → Tema → Subtema. Cada tema necesita mínimo 10 ejercicios para publicarse."
+      <PageHeader title="Unidades" subtitle="Todo el contenido en un solo lugar: abre un tema para ver sus ejercicios, sus flashcards y generar preguntas con PREXI."
         action={<button onClick={abrirCrearUnidad} className="btn-primary"><Plus className="h-4 w-4" /> Nueva unidad</button>} />
+
+      <ol className="mb-5 grid gap-2 rounded-2xl border border-line bg-card p-4 text-sm text-muted sm:grid-cols-4">
+        {['Crea la unidad y sus temas o subtemas.', 'Abre cada tema y completa 10 ejercicios por nivel (a mano o con PREXI).', 'Publica el tema: recién entonces lo ven los estudiantes.', 'Arma el examen de la unidad: 10 preguntas que combinan temas.'].map((paso, i) => (
+          <li key={paso} className="flex items-start gap-2"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-prexi-blue/15 text-xs font-bold text-prexi-blue-deep">{i + 1}</span><span>{paso}</span></li>
+        ))}
+      </ol>
+
 
       {cargando ? <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-32" />)}</div>
         : unidades.length === 0 ? <EmptyState icon={<Layers className="h-7 w-7" />} title="Aún no hay unidades" hint="Crea tu primera unidad para empezar a organizar el contenido." />
@@ -170,7 +184,7 @@ export default function DocenteUnidadesPage() {
                       avisos.push(`${u.temas.length - publicados} de ${u.temas.length} temas siguen en borrador`);
                     }
                     if (u.numero > 1) {
-                      avisos.push(`se desbloquea al aprobar el examen de la Unidad ${u.numero - 1} con nivel Intermedio`);
+                      avisos.push(`se desbloquea al aprobar el examen de la Unidad ${u.numero - 1} con 80 o más`);
                     }
                     if (avisos.length === 0) return null;
                     return (
@@ -187,14 +201,18 @@ export default function DocenteUnidadesPage() {
                     <div className="space-y-2">
                       {u.temas.map((t) => (
                         <div key={t.id} className="rounded-xl border border-line">
-                          <FilaTema tema={t} onEditar={() => abrirEditarTema(u.id, t)} onEliminar={() => eliminarTema(t)}
+                          <FilaTema tema={t} abierto={abierto === `t${t.id}`} onAbrir={() => alternarPanel(`t${t.id}`)} onEditar={() => abrirEditarTema(u.id, t)} onEliminar={() => eliminarTema(t)}
                             onPublicar={() => alternarPublicado(t)} onDiagnostico={() => alternarDiagnostico(t)} onSubtema={() => abrirCrearTema(u.id, t.id)} />
+                          {abierto === `t${t.id}` && <ContenidoPanel destino={{ tipo: 'tema', temaId: t.id, etiqueta: `${t.numero} ${t.titulo}` }} onCambio={refrescar} />}
                           {t.subtemas.length > 0 && (
                             <div className="space-y-2 border-t border-line bg-subtle/40 p-2 pl-6">
                               {t.subtemas.map((s) => (
-                                <FilaTema key={s.id} tema={s} esSubtema
-                                  onEditar={() => abrirEditarTema(u.id, s, t.id)} onEliminar={() => eliminarTema(s)}
-                                  onPublicar={() => alternarPublicado(s)} onDiagnostico={() => alternarDiagnostico(s)} />
+                                <div key={s.id} className="overflow-hidden rounded-lg border border-line bg-card">
+                                  <FilaTema tema={s} esSubtema abierto={abierto === `t${s.id}`} onAbrir={() => alternarPanel(`t${s.id}`)}
+                                    onEditar={() => abrirEditarTema(u.id, s, t.id)} onEliminar={() => eliminarTema(s)}
+                                    onPublicar={() => alternarPublicado(s)} onDiagnostico={() => alternarDiagnostico(s)} />
+                                  {abierto === `t${s.id}` && <ContenidoPanel destino={{ tipo: 'tema', temaId: s.id, etiqueta: `${s.numero} ${s.titulo}` }} onCambio={refrescar} />}
+                                </div>
                               ))}
                             </div>
                           )}
@@ -202,6 +220,8 @@ export default function DocenteUnidadesPage() {
                       ))}
                     </div>
                   )}
+
+                  {u.temas.length > 0 && <FilaExamen unidad={u} abierto={abierto === `u${u.id}`} onAbrir={() => alternarPanel(`u${u.id}`)} onCambio={refrescar} />}
                 </Card>
               ))}
             </div>
@@ -231,7 +251,7 @@ export default function DocenteUnidadesPage() {
           <Field label="Introducción didáctica (opcional)" hint="La verá el estudiante antes del diagnóstico, en la pestaña de esta unidad. Admite Markdown: ## títulos, **negrita**, `código`, listas con «-» y bloques ```.">
             <EditorMarkdown value={formUnidad.introduccion} onChange={(v) => setFormUnidad({ ...formUnidad, introduccion: v })} placeholder={'## Objetivos de la unidad\n...\n\n## Conceptos clave\n- ...'} />
           </Field>
-          <Field label="Repaso de cierre (opcional)" hint="Lo verá el estudiante antes de la EVALUACIÓN FINAL (postest), como repaso de la unidad. Mismo formato Markdown.">
+          <Field label="Repaso de cierre (opcional)" hint="Lo verá el estudiante antes del examen de la unidad, como repaso. Mismo formato Markdown.">
             <EditorMarkdown value={formUnidad.repaso} onChange={(v) => setFormUnidad({ ...formUnidad, repaso: v })} placeholder={'## Lo esencial que ya dominas\n...\n\n## Conceptos clave a recordar\n- ...'} />
           </Field>
           <Field label="Dashboard · Objetivos (opcional)" hint="Zona ① del Preview de Unidad. Una casilla por objetivo con «- [ ] …». El mapa conceptual y los ejemplos se generan/siembran aparte.">
@@ -267,9 +287,6 @@ export default function DocenteUnidadesPage() {
             <Field label="Repaso del tema (opcional)" hint="Lo verá el estudiante antes del EXAMEN DE FIN DE UNIDAD, en la pestaña de este tema. Admite Markdown.">
               <EditorMarkdown value={formTema.repaso} onChange={(v) => setFormTema({ ...formTema, repaso: v })} placeholder={'**Concepto clave.** Recuerda que…'} />
             </Field>
-            <Field label="Ejercicios correctos para desbloquear el siguiente" error={erroresT.umbral}>
-              <Input type="number" min={1} value={formTema.umbral} onChange={(e) => setFormTema({ ...formTema, umbral: Number(e.target.value) })} />
-            </Field>
           </div>
         )}
       </Modal>
@@ -293,38 +310,73 @@ function EditorMarkdown({ value, onChange, placeholder }: { value: string; onCha
   );
 }
 
-function FilaTema({ tema, esSubtema, onEditar, onEliminar, onPublicar, onDiagnostico, onSubtema }: {
-  tema: TemaDocente; esSubtema?: boolean; onEditar: () => void; onEliminar: () => void; onPublicar: () => void; onDiagnostico: () => void; onSubtema?: () => void;
+function FilaTema({ tema, esSubtema, abierto, onAbrir, onEditar, onEliminar, onPublicar, onDiagnostico, onSubtema }: {
+  tema: TemaDocente; esSubtema?: boolean; abierto: boolean; onAbrir: () => void;
+  onEditar: () => void; onEliminar: () => void; onPublicar: () => void; onDiagnostico: () => void; onSubtema?: () => void;
 }) {
   return (
-    <div className={`flex flex-wrap items-center justify-between gap-3 p-3 ${esSubtema ? 'rounded-lg bg-card' : ''}`}>
-      <div className="min-w-0">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-3">
+      <button type="button" onClick={onAbrir} aria-expanded={abierto} className="min-w-0 flex-1 text-left">
         <div className="flex flex-wrap items-center gap-2">
+          {abierto ? <ChevronUp className="h-4 w-4 shrink-0 text-muted" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted" />}
           <span className="text-sm font-semibold text-fg">{tema.numero} {tema.titulo}</span>
           {tema.publicado ? <Badge tone="green">Publicado</Badge> : <Badge tone="slate">Borrador</Badge>}
           {tema.en_diagnostico && <Badge tone="blue">En diagnóstico</Badge>}
+          {tema.borradores_ia > 0 && <Badge tone="amber">{tema.borradores_ia} de PREXI por revisar</Badge>}
         </div>
-        <p className="mt-0.5 text-xs text-muted">
-          {tema.ejercicios_activos}/{tema.ejercicios_minimos} ejercicios mínimos
-          {!tema.puede_publicarse && <span className="ml-1.5 inline-flex items-center gap-1 text-prexi-amber"><AlertTriangle className="h-3 w-3" /> faltan {Math.max(0, tema.ejercicios_minimos - tema.ejercicios_activos)}</span>}
-          <span className="ml-1.5 inline-flex items-center gap-1"><ClipboardList className="h-3 w-3" /> {tema.items_diagnostico} de diagnóstico</span>
-        </p>
-      </div>
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pl-6 text-xs text-muted">
+          {NIVELES.map((n) => {
+            const cuenta = tema.por_nivel[n];
+            const listo = cuenta >= tema.ejercicios_minimos;
+            return (
+              <span key={n} className={`rounded-full px-2 py-0.5 font-semibold ${listo ? 'bg-prexi-green/10 text-prexi-green' : 'bg-prexi-amber/10 text-prexi-amber'}`}>
+                {NIVEL_LABEL[n]} {cuenta}/{tema.ejercicios_minimos}
+              </span>
+            );
+          })}
+          <span>· {tema.flashcards} flashcards</span>
+        </div>
+      </button>
       <div className="flex shrink-0 items-center gap-1">
         {!esSubtema && onSubtema && <button onClick={onSubtema} className="btn-ghost !px-2.5 !py-1 text-xs"><Plus className="h-3 w-3" /> Subtema</button>}
+        <button onClick={onPublicar} disabled={!tema.publicado && !tema.puede_publicarse}
+          title={tema.publicado ? 'Dejar de mostrarlo a los estudiantes' : tema.puede_publicarse ? 'Publicarlo para los estudiantes' : `Para publicar faltan: ${tema.faltan.join(', ')}`}
+          className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${tema.publicado ? 'text-muted hover:bg-subtle' : 'bg-prexi-green/15 text-prexi-green hover:bg-prexi-green/25'}`}>
+          {tema.publicado ? 'Despublicar' : 'Publicar'}
+        </button>
         <button onClick={onDiagnostico} disabled={!tema.en_diagnostico && !tema.puede_diagnosticar}
-          title={tema.en_diagnostico ? 'Quitar del diagnóstico' : tema.puede_diagnosticar ? 'Incluir en el diagnóstico inicial' : 'Necesita al menos 3 preguntas de diagnóstico'}
+          title={tema.en_diagnostico ? 'Quitar del diagnóstico inicial' : tema.puede_diagnosticar ? 'Incluir en el diagnóstico inicial' : 'Necesita al menos 3 preguntas de diagnóstico'}
+          aria-label="Diagnóstico inicial"
           className={`grid h-8 w-8 place-items-center rounded-lg transition hover:bg-subtle disabled:cursor-not-allowed disabled:opacity-30 ${tema.en_diagnostico ? 'text-prexi-blue-deep' : 'text-muted hover:text-prexi-blue-deep'}`}>
           <ClipboardList className="h-4 w-4" />
         </button>
-        <button onClick={onPublicar} disabled={!tema.publicado && !tema.puede_publicarse}
-          title={tema.publicado ? 'Despublicar' : tema.puede_publicarse ? 'Publicar' : `Necesita ${tema.ejercicios_minimos} ejercicios`}
-          className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-green disabled:cursor-not-allowed disabled:opacity-30">
-          {tema.publicado ? <Lock className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
-        </button>
-        <button onClick={onEditar} title="Editar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-blue-deep"><Edit className="h-4 w-4" /></button>
-        <button onClick={onEliminar} title="Eliminar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
+        <button onClick={onEditar} title="Editar" aria-label="Editar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-blue-deep"><Edit className="h-4 w-4" /></button>
+        <button onClick={onEliminar} title="Eliminar" aria-label="Eliminar" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-prexi-red"><Trash2 className="h-4 w-4" /></button>
       </div>
+      {!tema.publicado && tema.faltan.length > 0 && (
+        <p className="w-full pl-6 text-xs text-muted">Para publicarlo faltan: <b className="text-fg">{tema.faltan.join(', ')}</b>.</p>
+      )}
+    </div>
+  );
+}
+
+/** Examen de la unidad: 10 preguntas de nivel intermedio que combinan 2 o 3 temas. */
+function FilaExamen({ unidad, abierto, onAbrir, onCambio }: { unidad: UnidadDocente; abierto: boolean; onAbrir: () => void; onCambio: () => void }) {
+  const ex = unidad.examen;
+  const listo = ex.integradoras >= ex.minimo;
+  const temas = unidad.temas.flatMap((t) => [t, ...t.subtemas]).map((t) => ({ id: t.id, etiqueta: `${t.numero} ${t.titulo}` }));
+  return (
+    <div className="mt-3 overflow-hidden rounded-xl border border-prexi-blue/30 bg-prexi-blue/5">
+      <button type="button" onClick={onAbrir} aria-expanded={abierto} className="flex w-full flex-wrap items-center gap-2 p-3 text-left">
+        {abierto ? <ChevronUp className="h-4 w-4 shrink-0 text-muted" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted" />}
+        <GraduationCap className="h-4 w-4 shrink-0 text-prexi-blue-deep" />
+        <span className="text-sm font-semibold text-fg">Examen de la unidad</span>
+        <Badge tone={listo ? 'green' : 'amber'}>{ex.integradoras}/{ex.minimo} preguntas que combinan temas</Badge>
+        {ex.preguntas > ex.integradoras && <Badge tone="slate">{ex.preguntas - ex.integradoras} de un solo tema</Badge>}
+        {ex.borradores_ia > 0 && <Badge tone="amber">{ex.borradores_ia} de PREXI por revisar</Badge>}
+        {!listo && <span className="flex items-center gap-1 text-xs text-muted"><Sparkles className="h-3 w-3" /> Ábrelo para generarlas con PREXI</span>}
+      </button>
+      {abierto && <ContenidoPanel destino={{ tipo: 'examen', unidadId: unidad.id, etiqueta: `Examen de la Unidad ${unidad.numero}`, temas }} onCambio={onCambio} />}
     </div>
   );
 }

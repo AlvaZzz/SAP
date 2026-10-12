@@ -2,21 +2,36 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException }
 import { promises as fs } from 'fs';
 import { join, basename } from 'path';
 import { randomUUID } from 'crypto';
+import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { PREGUNTAS_POR_EVALUACION } from '../../common/niveles/reglas-evaluacion';
 import {
   UPLOAD_IMG_DIR, MAX_IMG_BYTES, detectarFormatoImagen, ArchivoSubido,
 } from '../../common/config/upload.config';
 import { CrearUnidadDto, EditarUnidadDto, CrearTemaDto, EditarTemaDto } from './dto/unidad.dto';
 
-/** Mínimo de ejercicios ACTIVOS que debe tener un tema para poder publicarse. */
-export const MIN_EJERCICIOS_TEMA = 10;
+/** Ejercicios ACTIVOS que un tema necesita EN CADA NIVEL (básico, intermedio, avanzado) para publicarse. */
+export const MIN_EJERCICIOS_TEMA = PREGUNTAS_POR_EVALUACION;
+
+const NIVELES: NivelDificultad[] = ['basico', 'intermedio', 'avanzado'];
+const NOMBRE_NIVEL: Record<NivelDificultad, string> = { basico: 'básico', intermedio: 'intermedio', avanzado: 'avanzado' };
+type PorNivel = Record<NivelDificultad, number>;
+const sinEjercicios = (): PorNivel => ({ basico: 0, intermedio: 0, avanzado: 0 });
+
+/** Qué le falta a un tema para llegar a 10 ejercicios por nivel, en palabras. */
+export function faltantesPorNivel(n: PorNivel): string[] {
+  return NIVELES.filter((k) => n[k] < MIN_EJERCICIOS_TEMA).map((k) => `${MIN_EJERCICIOS_TEMA - n[k]} de nivel ${NOMBRE_NIVEL[k]}`);
+}
 
 /** Mínimo de ítems del banco de diagnóstico para que un tema pueda entrar al pretest. */
 export const MIN_ITEMS_DIAGNOSTICO = 3;
 
+interface Extra { niveles: Map<number, PorNivel>; flash: Map<number, number>; borradores: Map<number, number> }
+
 interface TemaVista {
   id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number;
   umbral: number; publicado: boolean; ejercicios_activos: number; ejercicios_minimos: number;
+  por_nivel: PorNivel; faltan: string[]; flashcards: number; borradores_ia: number;
   puede_publicarse: boolean; en_diagnostico: boolean; items_diagnostico: number;
   puede_diagnosticar: boolean; subtemas: TemaVista[];
 }
@@ -31,7 +46,7 @@ export class DocenteUnidadesService {
   constructor(private readonly prisma: PrismaService) {}
 
   // ── Unidades ──
-  async listarUnidades() {
+  async listarUnidades(autorId?: number) {
     const unidades = await this.prisma.unidad.findMany({
       orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
       include: {
@@ -58,15 +73,47 @@ export class DocenteUnidadesService {
     const diag = new Map<number, number>();
     for (const d of diagRaw) if (d.temaId != null) diag.set(d.temaId, d._count._all);
 
-    return unidades.map((u) => ({
+    // Ejercicios de práctica activos por tema y nivel, tarjetas que de ellos
+    // salen, borradores de PREXI sin revisar y preguntas del examen por unidad.
+    const [nivelRaw, flashRaw, borrRaw, examen] = await Promise.all([
+      this.prisma.ejercicio.groupBy({ by: ['temaId', 'nivelDificultad'], where: { banco: 'practica', activo: true, temaId: { not: null } }, _count: { _all: true } }),
+      this.prisma.ejercicio.groupBy({ by: ['temaId'], where: { banco: 'practica', activo: true, temaId: { not: null }, tipo: { in: ['opcion_multiple', 'predecir_salida', 'completar_codigo'] } }, _count: { _all: true } }),
+      this.prisma.preguntaGenerada.groupBy({ by: ['temaId', 'banco'], where: { estado: 'borrador', ...(autorId ? { autorId } : {}) }, _count: { _all: true } }),
+      this.prisma.ejercicio.findMany({ where: { banco: 'examen', activo: true, temaId: { not: null } }, select: { temasIntegrados: true, tema: { select: { unidadId: true } } } }),
+    ]);
+    const extra: Extra = { niveles: new Map(), flash: new Map(), borradores: new Map() };
+    for (const r of nivelRaw) {
+      if (r.temaId == null) continue;
+      const n = extra.niveles.get(r.temaId) ?? sinEjercicios();
+      n[r.nivelDificultad] = r._count._all;
+      extra.niveles.set(r.temaId, n);
+    }
+    for (const r of flashRaw) if (r.temaId != null) extra.flash.set(r.temaId, r._count._all);
+    const borradoresExamen = new Map<number, number>();
+    for (const r of borrRaw) {
+      if (r.banco === 'examen') borradoresExamen.set(r.temaId, (borradoresExamen.get(r.temaId) ?? 0) + r._count._all);
+      else extra.borradores.set(r.temaId, (extra.borradores.get(r.temaId) ?? 0) + r._count._all);
+    }
+
+    return unidades.map((u) => {
+      const deLaUnidad = examen.filter((e) => e.tema?.unidadId === u.id);
+      const temaIds = u.temas.flatMap((t) => [t.id, ...t.subtemas.map((s) => s.id)]);
+      return {
+      examen: {
+        preguntas: deLaUnidad.length,
+        integradoras: deLaUnidad.filter((e) => e.temasIntegrados.length >= 2).length,
+        minimo: PREGUNTAS_POR_EVALUACION,
+        borradores_ia: temaIds.reduce((s, id) => s + (borradoresExamen.get(id) ?? 0), 0),
+      },
       id: u.id, numero: u.numero, titulo: u.titulo, descripcion: u.descripcion,
       introduccion: u.introduccion, repaso: u.repaso,
       dashObjetivos: u.dashObjetivos, dashAnalogias: u.dashAnalogias,
       xp: u.xp, orden: u.orden,
       // URL de stream (no la ruta física); null si la unidad no tiene portada.
       imagen_url: u.imagenUrl ? `/api/unidades/${u.id}/portada` : null,
-      temas: u.temas.map((t) => this.vistaTema(t, diag)),
-    }));
+      temas: u.temas.map((t) => this.vistaTema(t, diag, extra)),
+      };
+    });
   }
 
   // ── Imagen de portada de la unidad ──
@@ -118,18 +165,24 @@ export class DocenteUnidadesService {
     id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number;
     umbral: number; publicado: boolean; enDiagnostico: boolean; _count: { ejercicios: number };
     subtemas?: { id: number; numero: string; titulo: string; descripcion: string | null; repaso: string | null; orden: number; umbral: number; publicado: boolean; enDiagnostico: boolean; _count: { ejercicios: number } }[];
-  }, diag: Map<number, number>): TemaVista {
+  }, diag: Map<number, number>, extra: Extra): TemaVista {
     const items = diag.get(t.id) ?? 0;
+    const porNivel = extra.niveles.get(t.id) ?? sinEjercicios();
+    const faltan = faltantesPorNivel(porNivel);
     return {
       id: t.id, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion, repaso: t.repaso, orden: t.orden,
       umbral: t.umbral, publicado: t.publicado,
       ejercicios_activos: t._count.ejercicios,
       ejercicios_minimos: MIN_EJERCICIOS_TEMA,
-      puede_publicarse: t._count.ejercicios >= MIN_EJERCICIOS_TEMA,
+      por_nivel: porNivel,
+      faltan,
+      flashcards: extra.flash.get(t.id) ?? 0,
+      borradores_ia: extra.borradores.get(t.id) ?? 0,
+      puede_publicarse: faltan.length === 0,
       en_diagnostico: t.enDiagnostico,
       items_diagnostico: items,
       puede_diagnosticar: items >= MIN_ITEMS_DIAGNOSTICO,
-      subtemas: t.subtemas?.map((s) => this.vistaTema({ ...s, subtemas: undefined }, diag)) ?? [],
+      subtemas: t.subtemas?.map((s) => this.vistaTema({ ...s, subtemas: undefined }, diag, extra)) ?? [],
     };
   }
 
@@ -185,9 +238,12 @@ export class DocenteUnidadesService {
   async editarTema(id: number, dto: EditarTemaDto) {
     const t = await this.temaConHijos(id);
     if (dto.publicado === true && !t.publicado) {
-      const activos = await this.prisma.ejercicio.count({ where: { temaId: id, activo: true } });
-      if (activos < MIN_EJERCICIOS_TEMA) {
-        throw new BadRequestException(`Este tema tiene ${activos}/${MIN_EJERCICIOS_TEMA} ejercicios mínimos. Agrega más para publicarlo.`);
+      const filas = await this.prisma.ejercicio.groupBy({ by: ['nivelDificultad'], where: { temaId: id, activo: true, banco: 'practica' }, _count: { _all: true } });
+      const porNivel = sinEjercicios();
+      for (const f of filas) porNivel[f.nivelDificultad] = f._count._all;
+      const faltan = faltantesPorNivel(porNivel);
+      if (faltan.length > 0) {
+        throw new BadRequestException(`Para publicar «${t.titulo}» cada nivel necesita ${MIN_EJERCICIOS_TEMA} ejercicios activos. Faltan: ${faltan.join(', ')}. Puedes crearlos a mano o generarlos con PREXI.`);
       }
     }
     // Para entrar al diagnóstico, el tema debe tener un banco de diagnóstico suficiente.

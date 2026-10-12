@@ -17,6 +17,17 @@ export interface PreguntaPropuesta {
   opciones: { id: string; texto: string }[];
   respuestaCorrecta: string;
   explicacionIa: string;
+  /** Números de tema ("1.2") que la pregunta integra. Solo en preguntas de examen. */
+  temas?: string[];
+}
+
+/** Contexto con el que el docente pide preguntas a PREXI. */
+export interface ContextoGeneracion {
+  nivel?: 'basico' | 'intermedio' | 'avanzado';
+  /** Tema al que irán las preguntas (práctica). */
+  tema?: string;
+  /** Temas de la unidad a COMBINAR (examen): cada pregunta integra 2 o 3. */
+  integrar?: { numero: string; titulo: string }[];
 }
 
 /**
@@ -596,8 +607,23 @@ CÍÑETE AL MATERIAL DEL MÓDULO que se te entrega abajo: no introduzcas funcion
   // ── 6) Generación asistida de preguntas desde un PDF (SIEMPRE borrador) ──
   //  El docente pide N preguntas de un tipo a partir del texto extraído del
   //  PDF. PREXI propone; NUNCA se publican solas (ver DocentePreguntasIaService).
-  async generarPreguntas(texto: string, cantidad: number, tipo: TipoEjercicio): Promise<PreguntaPropuesta[]> {
-    const material = texto.slice(0, 12_000);
+  async generarPreguntas(texto: string | null, cantidad: number, tipo: TipoEjercicio, ctx: ContextoGeneracion = {}): Promise<PreguntaPropuesta[]> {
+    const material = (texto ?? '').slice(0, 12_000);
+    const NIVEL: Record<string, string> = {
+      basico: 'BÁSICO: reconocer y recordar un concepto, un solo paso.',
+      intermedio: 'INTERMEDIO: aplicar el concepto en un caso nuevo, dos o tres pasos de razonamiento.',
+      avanzado: 'AVANZADO: analizar o depurar código, combinar ideas y prever casos límite.',
+    };
+    const nivel = NIVEL[ctx.nivel ?? 'basico'];
+    const integrar = ctx.integrar ?? [];
+    const alcance = integrar.length >= 2
+      ? `Son preguntas del EXAMEN DE LA UNIDAD. CADA pregunta debe COMBINAR 2 o 3 de estos temas a la vez (no uno solo) y repartirlos de forma pareja entre las preguntas:
+${integrar.map((t) => `- ${t.numero} ${t.titulo}`).join('\n')}
+En cada pregunta agrega el campo "temas" con los números de los temas que combina, ej. "temas": ["${integrar[0].numero}", "${integrar[1].numero}"].`
+      : ctx.tema ? `Todas las preguntas son del tema: ${ctx.tema}.` : '';
+    const fuente = material.trim()
+      ? 'Sé fiel al contenido y a la sintaxis del material que se te entrega (no inventes temas que no aparezcan).'
+      : 'No hay material adjunto: usa el contenido estándar de un primer curso de programación con Python.';
     const formato = {
       opcion_multiple: `"opciones": [{"id":"A","texto":"..."}, {"id":"B","texto":"..."}, {"id":"C","texto":"..."}, {"id":"D","texto":"..."}], "respuestaCorrecta": "A"`,
       predecir_salida: `"opciones": [{"id":"A","texto":"..."}, {"id":"B","texto":"..."}, {"id":"C","texto":"..."}, {"id":"D","texto":"..."}], "respuestaCorrecta": "A" (una opción es la salida real del código en "codigoPython")`,
@@ -605,15 +631,19 @@ CÍÑETE AL MATERIAL DEL MÓDULO que se te entrega abajo: no introduzcas funcion
       ordenar_lineas: `"opciones": [{"id":"A","texto":"línea de código 1"}, {"id":"B","texto":"línea de código 2"}, ...] EN ORDEN ALEATORIO, "respuestaCorrecta": "<ids en el orden CORRECTO separados por coma, ej. C,A,D,B>"`,
     }[tipo];
 
-    const system = `Eres PREXI, asistente del DOCENTE. A partir del material de clase (Python,
-primer semestre, UPEA) que se te entrega, propone ${cantidad} preguntas de tipo
-"${tipo}" en español, fieles al contenido y a la sintaxis del material (no
-inventes temas que no aparezcan). Nivel principiante.
+    const system = `Eres PREXI, asistente del DOCENTE (Python, primer semestre, UPEA).
+Propón ${cantidad} preguntas de tipo "${tipo}" en español, todas DISTINTAS entre sí.
+${fuente}
+Dificultad ${nivel}
+${alcance}
 Formato EXACTO por cada pregunta: ${formato}
 Responde SOLO un JSON array (sin markdown, sin texto extra) con esta forma exacta:
 [{"categoria":"...", "enunciado":"...", "codigoPython": "..." o null, ${formato}, "explicacionIa":"..."}]`;
 
-    const texto_respuesta = await this.generar(system, `MATERIAL:\n"""\n${material}\n"""`, TutorIaService.MAX_OUTPUT.preguntas);
+    const mensaje = material.trim() ? `MATERIAL:\n"""\n${material}\n"""` : 'Genera las preguntas ahora.';
+    // 10 preguntas con código no caben en el tope habitual: se amplía en proporción.
+    const tope = Math.max(TutorIaService.MAX_OUTPUT.preguntas, cantidad * 420);
+    const texto_respuesta = await this.generar(system, mensaje, tope);
     return this.parsearPreguntas(texto_respuesta, tipo);
   }
 
@@ -680,6 +710,7 @@ Usa null si el campo no existe. No repitas un índice. Responde SOLO un objeto J
         opciones,
         respuestaCorrecta,
         explicacionIa: typeof p.explicacionIa === 'string' ? p.explicacionIa.trim() : '',
+        temas: Array.isArray(p.temas) ? p.temas.map((t) => String(t).trim()).filter(Boolean) : undefined,
       });
     }
     if (validas.length === 0) {

@@ -21,13 +21,14 @@ export class DocenteEjerciciosService {
     return b && BANCOS_DOCENTE.includes(b) ? b : 'practica';
   }
 
-  async listar(filtros: { nivel?: number; categoria?: string; dificultad?: number; temaId?: number; banco?: Banco }) {
+  async listar(filtros: { nivel?: number; categoria?: string; dificultad?: number; temaId?: number; unidadId?: number; banco?: Banco }) {
     const where: Prisma.EjercicioWhereInput = {
       banco: this.banco(filtros.banco),
       ...(filtros.nivel ? { nivel: { numero: filtros.nivel } } : {}),
       ...(filtros.categoria ? { categoria: filtros.categoria } : {}),
       ...(filtros.dificultad ? { estrellas: filtros.dificultad } : {}),
       ...(filtros.temaId ? { temaId: filtros.temaId } : {}),
+      ...(filtros.unidadId ? { tema: { unidadId: filtros.unidadId } } : {}),
     };
     const ejercicios = await this.prisma.ejercicio.findMany({
       where,
@@ -85,6 +86,7 @@ export class DocenteEjerciciosService {
         explicacionIa: dto.explicacionIa ?? null,
         activo: dto.activo ?? true,
         banco: this.banco(dto.banco),
+        temasIntegrados: dto.temasIntegrados ?? [],
       },
       include: { nivel: { select: { numero: true, titulo: true } }, tema: { select: { numero: true, titulo: true } }, _count: { select: { intentos: true } } },
     });
@@ -113,6 +115,7 @@ export class DocenteEjerciciosService {
       ...(dto.xp !== undefined ? { xp: dto.xp } : {}),
       ...(dto.explicacionIa !== undefined ? { explicacionIa: dto.explicacionIa } : {}),
       ...(dto.activo !== undefined ? { activo: dto.activo } : {}),
+      ...(dto.temasIntegrados !== undefined ? { temasIntegrados: dto.temasIntegrados } : {}),
     };
     const e = await this.prisma.ejercicio.update({
       where: { id },
@@ -147,6 +150,8 @@ export class DocenteEjerciciosService {
       tema_numero: e.tema?.numero ?? null,
       tema_titulo: e.tema?.titulo ?? null,
       estrellas: e.estrellas,
+      nivel_dificultad: e.nivelDificultad,
+      temas_integrados: e.temasIntegrados,
       tipo: e.tipo,
       enunciado: e.enunciado,
       codigoPython: e.codigoPython,

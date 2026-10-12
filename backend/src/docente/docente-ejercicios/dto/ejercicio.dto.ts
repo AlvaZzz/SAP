@@ -1,6 +1,6 @@
 import {
   IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength,
-  IsEnum, IsBoolean, IsArray, ValidateNested, ArrayMinSize, ValidateIf,
+  IsEnum, IsBoolean, IsArray, ValidateNested, ArrayMinSize, ArrayMaxSize, ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TipoEjercicio, Banco } from '@prisma/client';
@@ -84,6 +84,10 @@ export class CrearEjercicioDto {
   @IsOptional() @IsString()
   explicacionIa?: string;
 
+  // Solo preguntas de examen: los 2 o 3 temas de la unidad que la pregunta combina.
+  @IsOptional() @IsArray() @ArrayMaxSize(3) @IsInt({ each: true })
+  temasIntegrados?: number[];
+
   @IsOptional() @IsBoolean()
   activo?: boolean;
 }
@@ -128,6 +132,10 @@ export class EditarEjercicioDto {
 
   @IsOptional() @IsString()
   explicacionIa?: string;
+
+  // Solo preguntas de examen: los 2 o 3 temas de la unidad que la pregunta combina.
+  @IsOptional() @IsArray() @ArrayMaxSize(3) @IsInt({ each: true })
+  temasIntegrados?: number[];
 
   @IsOptional() @IsBoolean()
   activo?: boolean;

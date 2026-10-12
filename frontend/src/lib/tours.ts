@@ -109,15 +109,17 @@ export const TOURS: Tour[] = [
     pasos: [
       { titulo: 'Tus paralelos', texto: 'Aquí ves una tarjeta por cada paralelo a tu cargo. Entra a uno para ver cuántos estudiantes hay en nivel Básico, Intermedio y Avanzado.' },
       { titulo: 'Cada número tiene nombres', texto: 'Toca un nivel y se abre la lista de esos estudiantes, con su CI y su RU. Al tocar un estudiante ves su ficha completa.' },
-      { titulo: 'Tus herramientas', texto: 'Desde el menú registras estudiantes, haces su seguimiento, armas el contenido y habilitas la evaluación final.', selector: 'nav' },
+      { titulo: 'Tus herramientas', texto: 'Desde el menú registras estudiantes, haces su seguimiento, armas el contenido y habilitas los exámenes de unidad.', selector: 'nav' },
     ],
   },
   {
-    clave: 'docente-ejercicios',
-    ruta: en('/docente/ejercicios'),
+    clave: 'docente-unidades',
+    ruta: en('/docente/unidades'),
     pasos: [
-      { titulo: 'Banco de ejercicios', texto: 'Crea y edita los ejercicios de práctica y de los bancos pretest/postest. Cada ejercicio tiene tipo, nivel, opciones y respuesta correcta.' },
-      { titulo: 'Activar y desactivar', texto: 'Puedes desactivar un ejercicio sin borrarlo: los estudiantes dejan de verlo pero sus datos históricos se conservan (importante para el estudio).' },
+      { titulo: 'Todo el contenido, en un lugar', texto: 'Cada unidad muestra sus temas y subtemas. Toca un tema para abrirlo: ahí están sus ejercicios, sus flashcards y el generador de PREXI.' },
+      { titulo: '10 ejercicios por nivel', texto: 'Cada tema necesita 10 ejercicios en Básico, Intermedio y Avanzado. Los contadores de colores te dicen cuántos llevas y cuántos faltan para poder publicarlo.' },
+      { titulo: 'PREXI te ayuda a escribir', texto: 'En «Generar con PREXI» eliges el tipo y el nivel, y recibes 10 preguntas. Nada se publica solo: las apruebas, editas o descartas una por una.' },
+      { titulo: 'El examen de la unidad', texto: 'Al final de cada unidad armas su examen: 10 preguntas de nivel intermedio, cada una combinando 2 o 3 temas. El estudiante lo aprueba con 80 sobre 100.' },
     ],
   },
   {

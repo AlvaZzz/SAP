@@ -8,6 +8,7 @@ import { CrearUnidadDto, EditarUnidadDto, CrearTemaDto, EditarTemaDto } from './
 import { MAX_IMG_BYTES, ArchivoSubido } from '../../common/config/upload.config';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
+import { CurrentUser } from '../../common/auth/current-user.decorator';
 
 /** Rutas /docente/unidades — SOLO docente/admin (guard de rol server-side). */
 @Controller('docente/unidades')
@@ -17,8 +18,8 @@ export class DocenteUnidadesController {
   constructor(private readonly service: DocenteUnidadesService) {}
 
   @Get()
-  async listar() {
-    return { unidades: await this.service.listarUnidades() };
+  async listar(@CurrentUser('sub') autorId: number) {
+    return { unidades: await this.service.listarUnidades(autorId) };
   }
 
   @Get('temas/opciones')

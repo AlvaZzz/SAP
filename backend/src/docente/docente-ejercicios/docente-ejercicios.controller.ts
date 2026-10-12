@@ -39,8 +39,10 @@ export class DocenteEjerciciosController {
     @Query('dificultad') dificultad?: string,
     @Query('tema') tema?: string,
     @Query('banco') banco?: string,
+    @Query('unidad') unidad?: string,
   ) {
     const ejercicios = await this.service.listar({
+      unidadId: unidad ? Number(unidad) : undefined,
       nivel: nivel ? Number(nivel) : undefined,
       categoria: categoria || undefined,
       dificultad: dificultad ? Number(dificultad) : undefined,

@@ -91,12 +91,9 @@ const NAV_DOCENTE: NavGrupo[] = [
   {
     titulo: 'Contenido',
     items: [
-      { href: '/docente/unidades', label: 'Unidades y temas', icon: Layers },
-      { href: '/docente/ejercicios', label: 'Ejercicios', icon: Code },
-      { href: '/docente/preguntas-ia', label: 'Preguntas IA', icon: Bot },
+      { href: '/docente/unidades', label: 'Unidades', icon: Layers },
       { href: '/docente/retos', label: 'Retos', icon: Target },
       { href: '/docente/documentos', label: 'Documentos', icon: FileText },
-      { href: '/docente/cobertura', label: 'Cobertura del banco', icon: ShieldCheck },
     ],
   },
   {

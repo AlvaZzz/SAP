@@ -194,7 +194,7 @@ function AccionesDoc({ d, onEditar, onEliminar, grandes = false }: {
   return (
     <div className={`flex items-center gap-1 ${grandes ? '' : 'justify-end'}`}>
       {d.temaId && d.tiene_texto && (
-        <Link href={`/docente/preguntas-ia?documento=${d.id}&tema=${d.temaId}`} title="Generar preguntas con el tutor PREXI" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Bot className="h-4 w-4" /></Link>
+        <Link href="/docente/unidades" title="Generar preguntas con el tutor PREXI" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Bot className="h-4 w-4" /></Link>
       )}
       <a href={`/api/documentos/${d.id}/archivo`} target="_blank" rel="noreferrer" title="Ver PDF" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Download className="h-4 w-4" /></a>
       <button onClick={() => onEditar(d)} title="Editar" className={`grid ${s} place-items-center rounded-lg text-muted transition hover:bg-card hover:text-prexi-blue-deep ${grandes ? 'border border-line' : ''}`}><Edit className="h-4 w-4" /></button>

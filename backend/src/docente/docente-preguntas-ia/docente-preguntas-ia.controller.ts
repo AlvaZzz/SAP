@@ -19,9 +19,10 @@ export class DocentePreguntasIaController {
   async listar(
     @CurrentUser('sub') autorId: number,
     @Query('tema') tema?: string,
+    @Query('unidad') unidad?: string,
     @Query('estado') estado?: 'borrador' | 'aprobada' | 'rechazada',
   ) {
-    return { preguntas: await this.service.listar(autorId, tema ? Number(tema) : undefined, estado) };
+    return { preguntas: await this.service.listar(autorId, { temaId: tema ? Number(tema) : undefined, unidadId: unidad ? Number(unidad) : undefined, estado }) };
   }
 
   // TODO: REVISAR_ANTES_DE_ELIMINAR — el panel de Pendientes calcula su propio conteo; esta ruta quedó sin consumidor.
