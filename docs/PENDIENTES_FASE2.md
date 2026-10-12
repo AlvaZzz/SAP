@@ -59,3 +59,28 @@ tocaron porque quedaban fuera de ese alcance.
 15. **`next build` dentro del contenedor de desarrollo** falla al escribir en el volumen
     `web_next` que usa `next dev`. No afecta a producción (Vercel); para compilar en
     local hay que hacerlo en una copia fuera de ese volumen.
+
+## Pendientes del rol docente y del rol estudiante (11 de octubre de 2026)
+
+16. **Banco de ejercicios por debajo del estándar.** La regla es 10 ejercicios por nivel
+    en cada tema; el banco sembrado tiene en promedio 7 de nivel básico y 3 de
+    intermedio y de avanzado. Los temas ya publicados siguen publicados, pero un tema
+    nuevo no se puede publicar hasta completarlos. Falta cargar el contenido (a mano o
+    con PREXI) desde la pantalla Unidades.
+17. **Preguntas de examen que combinan temas.** Las preguntas de examen sembradas son de
+    un solo tema. El examen las usa mientras no haya 10 integradoras; hay que generarlas
+    o escribirlas en "Examen de la unidad".
+18. **Generador de PREXI sin probar contra Gemini en local.** El entorno de desarrollo no
+    tiene `GEMINI_API_KEY`: la lógica está cubierta con pruebas unitarias (PREXI simulado)
+    y la pantalla muestra el aviso de IA no configurada. Falta una prueba real con la
+    clave de producción, sobre todo para confirmar que 10 preguntas con código caben en
+    la respuesta y que PREXI declara bien los temas que combina.
+19. **Backend de la evaluación final (postest) dormido.** Se retiraron sus pantallas y el
+    control del docente, pero siguen el módulo `mediciones/postest`, `PostestControl`, el
+    banco `postest`, el campo `postestDesdeNivel` de Administración → Sistema y el
+    endpoint `docente/reportes/pretest-postest`. No los usa ninguna pantalla.
+20. **`CLASIFICACION_NIVELES.md`, secciones 4 y 6.** Argumentan contra clasificar por
+    porcentaje y a favor de un umbral del 70 %; con la regla de 80/100 hay que
+    reescribirlas antes de citarlas en la tesis.
+21. **Campo "umbral" del tema.** Sigue en la base de datos (ejercicios para completar el
+    tema); se quitó del formulario del docente y vale 10 por defecto.

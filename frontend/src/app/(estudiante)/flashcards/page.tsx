@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { UnidadEstudiante, colorUnidad } from '@/lib/types';
+import { UnidadEstudiante, colorUnidad, NIVEL_COLOR, NIVEL_LABEL } from '@/lib/types';
 import { Card, Skeleton, EmptyState } from '@/components/ui';
 import { Sparkles, Lock, ArrowRight, Layers } from '@/components/icons';
 
@@ -23,9 +23,9 @@ export default function FlashcardsSelectorPage() {
     <div className="animate-fade-up">
       <div className="mb-1 flex items-center gap-2">
         <Sparkles className="h-6 w-6 text-prexi-blue-deep" />
-        <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">Repaso con flashcards</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">Flashcards</h1>
       </div>
-      <p className="mb-6 text-[15px] text-muted">Memorización activa por tema. Es repaso libre: <b className="text-fg">no puntúa</b> ni cambia tu nivel.</p>
+      <p className="mb-6 text-[15px] text-muted">Tarjetas para repasar antes de un tema o de un examen. Cada mazo viene <b className="text-fg">a tu nivel actual</b> en ese tema y cambia cuando subes. Es repaso libre: no puntúa.</p>
 
       {unidades === null ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-40" />)}</div>
@@ -65,6 +65,7 @@ export default function FlashcardsSelectorPage() {
                             <span className="sm:hidden">{t.numero}</span><span className="hidden sm:inline">{t.tipo} {t.numero}</span>
                           </span>
                           <span className="min-w-0 flex-1 text-sm font-medium leading-snug text-fg group-hover:text-prexi-blue-deep line-clamp-2 sm:truncate">{t.titulo}</span>
+                          <span className="hidden shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold lg:inline" style={{ color: NIVEL_COLOR[t.nivel_actual], backgroundColor: `${NIVEL_COLOR[t.nivel_actual]}22` }}>{NIVEL_LABEL[t.nivel_actual]}</span>
                           <ArrowRight className="h-4 w-4 shrink-0 text-muted transition group-hover:translate-x-0.5 group-hover:text-prexi-blue-deep" />
                         </Link>
                       ))}

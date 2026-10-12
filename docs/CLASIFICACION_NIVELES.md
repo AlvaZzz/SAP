@@ -6,6 +6,14 @@
 >
 > Última revisión de los umbrales: **7 de agosto de 2026** (valores originales, sin
 > modificaciones). Todo cambio futuro debe registrarse en la sección 8.
+>
+> **Alcance desde el 11 de octubre de 2026.** Los umbrales θ = ±0.5 se usan para
+> **ubicar el nivel inicial** de cada tema a partir del diagnóstico. La **subida** de
+> nivel dentro de un tema ya no depende de θ: se decide con una evaluación de 10
+> preguntas que se aprueba con 80 sobre 100 ([REGLAS_DE_AVANCE.md](REGLAS_DE_AVANCE.md)).
+> θ se sigue calculando como dato complementario. Las secciones 4 y 6, que argumentan
+> contra clasificar por porcentaje y a favor del umbral del 70 %, describen el criterio
+> anterior y deben revisarse antes de citarlas en la tesis.
 
 ---
 
@@ -277,6 +285,7 @@ que destruiría la evidencia recolectada.
 | Fecha | Cambio | Evidencia que lo motivó |
 |---|---|---|
 | 2026-08-07 | Valores originales θ = ±0.5. Documentación de la justificación; sin modificación de los valores. | — |
+| 2026-10-11 | Los umbrales θ quedan solo para la ubicación inicial. La subida de nivel pasa a nota ≥ 80/100 en 10 preguntas. | Requerimiento del rol docente (PROMPT_MAESTRO_ROL_DOCENTE.md): una sola escala (10 preguntas, 100 puntos, 80 para aprobar) en ejercicios y exámenes. |
 
 ---
 

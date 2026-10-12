@@ -142,11 +142,9 @@ export default function ProgresoPage() {
   );
 }
 
-/* ══════════ ① PROGRESO DE APRENDIZAJE (pretest → postest) ══════════ */
+/* ══════════ ① PROGRESO DE APRENDIZAJE ══════════ */
 
 function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | null }) {
-  const hayPost = d.postest_total != null;
-  const mejoras = d.comparativa.filter((c) => (c.mejora ?? 0) > 0);
 
   return (
     <section className="card border-0 bg-gradient-to-r from-prexi-navy-deep to-prexi-navy text-white" data-tour="progreso-banner">
@@ -154,37 +152,17 @@ function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | nul
         <div className="min-w-0">
           <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide">① Progreso de aprendizaje</span>
           <h1 className="mt-2 font-display text-2xl font-extrabold">Tu crecimiento en el curso</h1>
-          <p className="text-sm text-blue-100/80">Comparación entre tu evaluación inicial y la final.</p>
+          <p className="text-sm text-blue-100/80">Tu punto de partida y cómo avanzas unidad por unidad.</p>
         </div>
 
-        {/* Pretest → Postest → Δ */}
         <div className="flex flex-wrap items-center gap-5">
-          <Marcador etiqueta="Pretest" valor={d.pretest_total ?? '—'} />
-          <span aria-hidden className="text-2xl text-blue-200/50">→</span>
-          <Marcador etiqueta="Postest" valor={hayPost ? d.postest_total! : '—'} />
-          {hayPost ? (
-            <div className="rounded-2xl bg-prexi-green px-5 py-3 text-center">
-              <div className="flex items-center justify-center gap-1.5">
-                <TrendingUp className="h-5 w-5" />
-                <p className="font-display text-2xl font-extrabold">{d.avance != null && d.avance >= 0 ? '+' : ''}{d.avance}</p>
-              </div>
-              <p className="text-[11px] text-green-50">puntos de mejora</p>
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-white/10 px-5 py-3 text-center text-xs text-blue-100/80">
-              Postest disponible<br />al avanzar el curso
-            </div>
-          )}
+          <Marcador etiqueta="Diagnóstico inicial" valor={d.pretest_total ?? '—'} />
         </div>
       </div>
 
       {/* Qué significa */}
       <p className="mt-4 border-t border-white/10 pt-3 text-sm text-blue-100/85">
-        {hayPost && d.avance != null
-          ? d.avance > 0
-            ? <>Subiste <b className="text-white">{d.avance} puntos</b> desde tu diagnóstico inicial{mejoras.length > 0 && <> — creciste sobre todo en <b className="text-white">{mejoras.map((m) => m.categoria).join(', ')}</b></>}.</>
-            : <>Tu puntaje final quedó parejo al inicial. Revisa abajo qué temas conviene reforzar.</>
-          : <>Aquí verás cuánto creciste cuando rindas la evaluación final. Mientras tanto, tu avance real se refleja en el dominio por unidad.</>}
+        El diagnóstico solo sirve para darte el nivel adecuado cuando llegues a cada tema. Tu avance real está abajo: el dominio por unidad y la nota de cada examen de unidad (se aprueba con 80 sobre 100).
       </p>
 
       {/* Rango (identidad de gamificación, compacto) */}

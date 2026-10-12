@@ -183,8 +183,10 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
             {tema.descripcion && <p className="mt-0.5 max-w-2xl text-sm text-muted">{tema.descripcion}</p>}
             {tema.desbloqueado && (
               <Link href={`/flashcards/tema/${tema.id}?volver=/ejercicios/unidad/${unidadId}`}
-                className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-prexi-blue-deep hover:underline">
-                <Sparkles className="h-3.5 w-3.5" /> Repasar con flashcards
+                className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition hover:-translate-y-0.5 hover:shadow-md"
+                style={{ color: nivelColor, borderColor: `${nivelColor}66`, backgroundColor: `${nivelColor}14` }}>
+                <Sparkles className="h-3.5 w-3.5" /> Flashcards de nivel {tema.nivel_actual_label}
+                <span className="font-medium opacity-80">· repasa antes de practicar</span>
               </Link>
             )}
           </div>

@@ -31,7 +31,7 @@ export function FlashcardCard({ card, color, flipped, onFlip }: {
   // Cross-fade accesible (sin 3D) cuando se reduce el movimiento.
   if (reduce) {
     return (
-      <div {...commonBtn} className="relative min-h-[20rem] w-full cursor-pointer rounded-2xl border border-line bg-card shadow-lift outline-none focus-visible:ring-2 focus-visible:ring-prexi-blue" style={{ borderTop: `4px solid ${color}` }}>
+      <div {...commonBtn} className="relative min-h-[20rem] w-full cursor-pointer overflow-hidden rounded-2xl border border-line bg-card shadow-lift outline-none focus-visible:ring-2 focus-visible:ring-prexi-blue" style={flipped ? caraReverso() : caraFrente(color)}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={flipped ? 'r' : 'f'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="p-6">
             {flipped ? <Reverso card={card} color={color} /> : <Frente card={card} color={color} />}
@@ -50,16 +50,29 @@ export function FlashcardCard({ card, color, flipped, onFlip }: {
         style={{ minHeight: '20rem' }}
       >
         {/* Frente */}
-        <div aria-hidden={flipped} className="absolute inset-0 rounded-2xl border border-line bg-card p-6 shadow-lift [backface-visibility:hidden]" style={{ borderTop: `4px solid ${color}` }}>
+        <div aria-hidden={flipped} className="absolute inset-0 overflow-hidden rounded-2xl border border-line bg-card p-6 shadow-lift [backface-visibility:hidden]" style={caraFrente(color)}>
+          <Marca texto="?" color={color} />
           <Frente card={card} color={color} />
         </div>
         {/* Reverso (girado 180°) */}
-        <div aria-hidden={!flipped} className="absolute inset-0 rounded-2xl border border-line bg-card p-6 shadow-lift [backface-visibility:hidden] [transform:rotateY(180deg)]" style={{ borderTop: `4px solid ${color}` }}>
+        <div aria-hidden={!flipped} className="absolute inset-0 overflow-hidden rounded-2xl border border-line bg-card p-6 shadow-lift [backface-visibility:hidden] [transform:rotateY(180deg)]" style={caraReverso()}>
+          <Marca texto="OK" color={VERDE} />
           <Reverso card={card} color={color} />
         </div>
       </motion.div>
     </div>
   );
+}
+
+const VERDE = '#10B981';
+
+/** Frente con el color de la unidad y reverso en verde: se distingue de un vistazo qué cara es. */
+const caraFrente = (color: string): React.CSSProperties => ({ borderTop: `5px solid ${color}`, backgroundImage: `linear-gradient(155deg, ${color}2E 0%, ${color}0D 38%, transparent 70%)` });
+const caraReverso = (): React.CSSProperties => ({ borderTop: `5px solid ${VERDE}`, backgroundImage: `linear-gradient(155deg, ${VERDE}2E 0%, ${VERDE}0D 38%, transparent 70%)` });
+
+/** Signo grande de fondo, puramente decorativo. */
+function Marca({ texto, color }: { texto: string; color: string }) {
+  return <span aria-hidden className="pointer-events-none absolute -bottom-8 -right-1 select-none font-display text-[9rem] font-black leading-none" style={{ color, opacity: 0.09 }}>{texto}</span>;
 }
 
 function NivelChip({ card, color }: { card: Flashcard; color: string }) {
@@ -74,7 +87,7 @@ function NivelChip({ card, color }: { card: Flashcard; color: string }) {
 
 function Frente({ card, color }: { card: Flashcard; color: string }) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color }}>Pregunta</span>
         <NivelChip card={card} color={color} />
@@ -94,7 +107,7 @@ function Frente({ card, color }: { card: Flashcard; color: string }) {
 
 function Reverso({ card, color }: { card: Flashcard; color: string }) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase tracking-wide text-prexi-green">Respuesta</span>
         <NivelChip card={card} color={color} />

@@ -51,7 +51,7 @@ const NAV_ESTUDIANTE: NavGrupo[] = [
       // El editor de código vive dentro de un reto (ya no hay "Práctica" suelta).
       { href: '/retos', label: 'Retos', icon: Target },
       // Repaso libre con flashcards (apoyo; no puntúa ni afecta al θ).
-      { href: '/flashcards', label: 'Repaso', icon: Sparkles },
+      { href: '/flashcards', label: 'Flashcards', icon: Sparkles },
     ],
   },
   {

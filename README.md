@@ -103,8 +103,17 @@ grupos, al final del período de uso se evalúa **si el sistema funciona bien**.
 El rol investigador los muestra en **Validación del sistema** (`/investigador/validacion`),
 junto a la tabla de criterios de aceptación, y exporta un CSV anonimizado por instrumento
 (`log_adaptacion`, `sus`, `iso25010`, `uso_gamificacion`) para analizar con Python, Pandas y
-SciPy. El pretest es el **diagnóstico inicial** y el postest la **evaluación final del curso**:
-no se comparan entre sí. Detalle y fórmulas en [docs/DISENO_INVESTIGACION.md](docs/DISENO_INVESTIGACION.md).
+SciPy. El pretest es solo el **diagnóstico inicial** (ubica el nivel de partida); la
+evaluación de cierre es el **examen de cada unidad**. Detalle y fórmulas en
+[docs/DISENO_INVESTIGACION.md](docs/DISENO_INVESTIGACION.md).
+
+### Reglas de avance
+
+Toda evaluación tiene 10 preguntas, vale 100 puntos y se aprueba con 80. Cada tema necesita
+10 ejercicios por nivel; cada unidad cierra con un examen cuyas preguntas combinan 2 o 3
+temas, y la unidad siguiente solo se abre al aprobarlo. El docente arma todo el contenido
+desde una sola pantalla (**Unidades**) y registra a sus estudiantes subiendo su lista de
+Excel. Ver [docs/REGLAS_DE_AVANCE.md](docs/REGLAS_DE_AVANCE.md).
 
 ## Mapa de la reescritura
 

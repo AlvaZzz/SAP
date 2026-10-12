@@ -164,10 +164,8 @@ export default function FichaEstudiantePage() {
           <p className="mt-1 text-xs text-muted">{f.ejercicios.intentos} intentos · {f.ejercicios.tasa_acierto ?? 0} % de acierto</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">Evaluación final</p>
-          {f.examenes.evaluacion_final
-            ? <div className="mt-1"><PromedioChip promedio={f.examenes.evaluacion_final.nota} grande /></div>
-            : <p className="mt-1 font-display text-lg font-bold text-muted">No rendida</p>}
+          <p className="text-xs uppercase tracking-wide text-muted">Exámenes de unidad</p>
+          <p className="mt-1 font-display text-2xl font-bold text-fg">{new Set(f.examenes.de_unidad.filter((x) => x.aprobado).map((x) => x.unidad)).size}<span className="text-sm font-normal text-muted"> aprobados</span></p>
           <p className="mt-1 text-xs text-muted">Diagnóstico inicial: {f.examenes.diagnostico ? `${f.examenes.diagnostico.nota}/100` : 'no rendido'}</p>
         </Card>
       </div>

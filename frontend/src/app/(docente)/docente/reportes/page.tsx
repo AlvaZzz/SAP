@@ -5,24 +5,18 @@ import { api } from '@/lib/api';
 import { PageHeader, Card, Skeleton, Badge, EmptyState, ResponsiveTable } from '@/components/ui';
 import { BarChart3, TrendingUp, Activity, Download, Users } from '@/components/icons';
 
-type Tab = 'prepost' | 'progreso' | 'actividad';
+type Tab = 'progreso' | 'actividad';
 
-interface PrePost {
-  por_categoria: { categoria: string; pretest: number | null; postest: number | null }[];
-  tabla: { id: number; nombre: string; pretest: number | null; postest: number | null; avance: number | null; categoria_mas_debil: string | null }[];
-  resumen: { estudiantes_con_pretest: number; estudiantes_con_postest: number; promedio_pretest: number | null; promedio_postest: number | null; avance_promedio: number | null };
-}
 interface Progreso { total_estudiantes: number; niveles: { numero: number; titulo: string; estudiantes: number; tiempo_promedio_seg: number }[] }
 interface ActividadSemanal { dias: { dia: string; intentos: number; aciertos: number; estudiantes_activos: number }[] }
 
 const TABS: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
-  { id: 'prepost', label: 'Pretest vs Postest', icon: BarChart3 },
   { id: 'progreso', label: 'Progreso por nivel', icon: TrendingUp },
   { id: 'actividad', label: 'Actividad semanal', icon: Activity },
 ];
 
 export default function DocenteReportesPage() {
-  const [tab, setTab] = useState<Tab>('prepost');
+  const [tab, setTab] = useState<Tab>('progreso');
 
   return (
     <div className="animate-fade-up">
@@ -37,83 +31,8 @@ export default function DocenteReportesPage() {
         ))}
       </div>
 
-      {tab === 'prepost' && <TabPrePost />}
       {tab === 'progreso' && <TabProgreso />}
       {tab === 'actividad' && <TabActividad />}
-    </div>
-  );
-}
-
-function TabPrePost() {
-  const [d, setD] = useState<PrePost | null>(null);
-  const [cargando, setCargando] = useState(true);
-  useEffect(() => { api.get<PrePost>('/docente/reportes/pretest-postest').then(setD).catch(() => undefined).finally(() => setCargando(false)); }, []);
-
-  if (cargando) return <div className="space-y-4"><Skeleton className="h-72" /><Skeleton className="h-64" /></div>;
-  if (!d || d.tabla.length === 0) return <EmptyState icon={<BarChart3 className="h-7 w-7" />} title="Sin datos de pretest/postest" hint="Cuando los estudiantes rindan las evaluaciones, verás la comparativa aquí." />;
-
-  const max = 100;
-  return (
-    <div className="space-y-6">
-      {/* Resumen */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          { label: 'Con pretest', value: d.resumen.estudiantes_con_pretest },
-          { label: 'Con postest', value: d.resumen.estudiantes_con_postest },
-          { label: 'Prom. pretest', value: d.resumen.promedio_pretest ?? '—' },
-          { label: 'Avance prom.', value: d.resumen.avance_promedio != null ? `${d.resumen.avance_promedio > 0 ? '+' : ''}${d.resumen.avance_promedio}` : '—' },
-        ].map((s) => (
-          <Card key={s.label} className="text-center !p-4"><p className="font-display text-2xl font-extrabold text-fg">{s.value}</p><p className="text-[11px] uppercase tracking-wide text-muted">{s.label}</p></Card>
-        ))}
-      </div>
-
-      {/* Gráfico de barras agrupadas por categoría */}
-      <Card>
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="font-display text-lg font-bold text-fg">Promedio por categoría</h3>
-          <div className="flex items-center gap-4 text-xs text-muted">
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-prexi-blue" /> Pretest</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-prexi-green" /> Postest</span>
-          </div>
-        </div>
-        <div className="space-y-4">
-          {d.por_categoria.map((c) => (
-            <div key={c.categoria}>
-              <p className="mb-1.5 text-sm font-medium text-fg">{c.categoria}</p>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="h-4 flex-1 overflow-hidden rounded bg-subtle"><div className="h-full rounded bg-prexi-blue transition-all duration-700" style={{ width: `${((c.pretest ?? 0) / max) * 100}%` }} /></div>
-                  <span className="w-10 shrink-0 text-right text-xs text-muted">{c.pretest ?? '—'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-4 flex-1 overflow-hidden rounded bg-subtle"><div className="h-full rounded bg-prexi-green transition-all duration-700" style={{ width: `${((c.postest ?? 0) / max) * 100}%` }} /></div>
-                  <span className="w-10 shrink-0 text-right text-xs text-muted">{c.postest ?? '—'}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Tabla por estudiante (tarjetas en móvil) */}
-      <ResponsiveTable
-        rows={d.tabla}
-        rowKey={(r) => r.id}
-        cols={[
-          { header: 'Estudiante', cell: (r) => <span className="font-medium text-fg">{r.nombre}</span> },
-          { header: 'Pretest', cell: (r) => <span className="text-muted">{r.pretest ?? '—'}</span> },
-          { header: 'Postest', cell: (r) => <span className="text-muted">{r.postest ?? '—'}</span> },
-          {
-            header: 'Avance',
-            cell: (r) => (
-              <span className={`font-semibold ${r.avance != null && r.avance > 0 ? 'text-prexi-green' : r.avance != null && r.avance < 0 ? 'text-prexi-red' : 'text-muted'}`}>
-                {r.avance != null ? `${r.avance > 0 ? '+' : ''}${r.avance}` : '—'}
-              </span>
-            ),
-          },
-          { header: 'Categoría más débil', cell: (r) => <span className="text-muted">{r.categoria_mas_debil ?? '—'}</span> },
-        ]}
-      />
     </div>
   );
 }

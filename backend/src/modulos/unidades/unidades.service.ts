@@ -79,7 +79,7 @@ export class UnidadesService {
     const conExamen = new Set(examenItems.map((e) => e.tema?.unidadId).filter((x): x is number => x != null));
 
     // Gate secuencial: la unidad k+1 se desbloquea si el EXAMEN DE FIN DE UNIDAD de
-    // la unidad k está APROBADO (θ ≥ Intermedio). La primera siempre está abierta.
+    // la unidad k está APROBADO (nota ≥ 80 sobre 100). La primera siempre está abierta.
     let anteriorDesbloqueaSiguiente = true;
 
     const umbralPct = cfg?.umbralPorcentaje ?? 80;
