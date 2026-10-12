@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Banco, NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ordenPersonal, barajarAlAzar } from '../common/orden/orden-personal';
 import { corregirGraduado } from './correccion';
 import { PREGUNTAS_POR_EVALUACION, UMBRAL_APROBACION, notaSobre100 } from '../common/niveles/reglas-evaluacion';
 import {
@@ -168,13 +169,18 @@ export class AdaptatividadService {
       })).map((r) => r.ejercicioId),
     );
 
-    const pendientes = ejercicios.filter((e) => !resueltos.has(e.id));
-    const hechos = ejercicios.filter((e) => resueltos.has(e.id));
+    // ORDEN PERSONAL: mismo banco para todos los del nivel, pero cada estudiante
+    // lo recorre en su propio orden (estable entre visitas). Ver common/orden.
+    const propios = ordenPersonal(ejercicios, usuarioId, opts.temaId ?? 0, opts.nivel ?? 0);
+    const pendientes = propios.filter((e) => !resueltos.has(e.id));
+    const hechos = propios.filter((e) => resueltos.has(e.id));
 
     // SELECCIÓN ADAPTATIVA (IRT): ordena los pendientes por MÁXIMA INFORMACIÓN
     // respecto a la habilidad estimada θ del estudiante. En el modelo de Rasch la
     // información I(θ)=P(1−P) es máxima cuando la dificultad b del ítem ≈ θ, así
     // que se presentan primero los ejercicios cuyo b está más cerca de θ.
+    // El orden es estable: entre ejercicios de igual información (lo habitual
+    // dentro de un nivel) manda el orden personal del estudiante.
     const theta = await this.thetaActual(usuarioId);
     const pendientesOrdenados =
       theta == null
@@ -380,7 +386,7 @@ export class AdaptatividadService {
     }
 
     // Selección aleatoria de hasta N preguntas del nivel objetivo.
-    const barajado = [...disponibles].sort(() => Math.random() - 0.5).slice(0, cfg.preguntas);
+    const barajado = barajarAlAzar(disponibles).slice(0, cfg.preguntas);
     return {
       tema: { id: tema.id, numero: tema.numero, titulo: tema.titulo },
       nivel_actual: actual, nivel_actual_label: ETIQUETA_NIVEL[actual],

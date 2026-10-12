@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { ordenPersonalPorGrupo } from '../../common/orden/orden-personal';
 import { ETIQUETA_NIVEL } from '../../common/niveles/nivel-dificultad';
 import { estimarTheta, nivelDesdeTheta, redondearTheta, RespuestaIrt } from '../irt/irt';
 
@@ -147,7 +148,8 @@ export class PretestService {
         tema: { select: { numero: true, titulo: true, unidad: { select: { numero: true } } } },
       },
     });
-    return filas.map((f) => ({
+    // Dentro de cada tema, cada estudiante ve las preguntas en su propio orden.
+    return ordenPersonalPorGrupo(filas, (f) => f.temaId, usuarioId).map((f) => ({
       ...f.ejercicio,
       tema: f.tema ? { numero: f.tema.numero, titulo: f.tema.titulo, unidad: f.tema.unidad.numero } : null,
       opcion_guardada: f.opcionDada || null,
@@ -307,7 +309,8 @@ export class PretestService {
         tema: { select: { numero: true, titulo: true } },
       },
     });
-    return filas.map((f, i) => ({
+    // Mismo orden personal con el que rindió, para que la numeración coincida.
+    return ordenPersonalPorGrupo(filas, (f) => f.temaId, usuarioId).map((f, i) => ({
       numero: i + 1,
       tema: f.tema ? `${f.tema.numero} ${f.tema.titulo}` : f.ejercicio.categoria,
       categoria: f.ejercicio.categoria,

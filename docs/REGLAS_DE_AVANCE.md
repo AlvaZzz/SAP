@@ -102,3 +102,16 @@ Hay dos caminos y ambos terminan igual: el estudiante inicia sesión con su RU.
 
 El sistema no maneja un cupo numérico por paralelo: al revisar las solicitudes el docente
 ve cuántos inscritos tiene cada uno y decide.
+
+## Orden de las preguntas
+
+Para que no sirva copiar "la 3 es la B", dos estudiantes del mismo nivel no reciben las
+preguntas en el mismo orden (`backend/src/common/orden/orden-personal.ts`):
+
+- **Práctica de un tema** y **diagnóstico inicial**: cada estudiante tiene su propio orden,
+  que sale de su id y es estable; al recargar o volver otro día encuentra lo mismo. En el
+  diagnóstico se baraja dentro de cada tema.
+- **Evaluación para subir de nivel** y **examen de unidad**: el orden (y, si el banco tiene
+  más de 10, la selección) cambia en cada intento.
+
+Las opciones de respuesta de cada pregunta conservan su orden (A, B, C, D).

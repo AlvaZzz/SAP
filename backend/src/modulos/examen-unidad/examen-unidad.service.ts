@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { barajarAlAzar } from '../../common/orden/orden-personal';
 import { ETIQUETA_NIVEL, nivelAlMenos, nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
 import { PREGUNTAS_POR_EVALUACION, UMBRAL_APROBACION, aprueba, notaSobre100 } from '../../common/niveles/reglas-evaluacion';
 import { temaCompleto } from '../../common/niveles/desbloqueo';
@@ -244,12 +245,13 @@ export class ExamenUnidadService {
     // hasta 10 si el banco aún es corto. Dentro de cada grupo, al azar.
     const prioridad = (e: { temasIntegrados: number[]; nivelDificultad: NivelDificultad }) =>
       (e.temasIntegrados.length >= 2 ? 0 : 2) + (e.nivelDificultad === 'intermedio' ? 0 : 1);
-    const barajado = [...disponibles]
+    const seleccion = [...disponibles]
       .map((e) => ({ e, azar: Math.random() }))
       .sort((a, b) => prioridad(a.e) - prioridad(b.e) || a.azar - b.azar)
       .slice(0, cfg.preguntas)
-      .map(({ e }) => e)
-      .sort(() => Math.random() - 0.5);
+      .map(({ e }) => e);
+    // Cada intento sale en un orden distinto para cada estudiante.
+    const barajado = barajarAlAzar(seleccion);
     return {
       unidad: { id: unidad.id, numero: unidad.numero, titulo: unidad.titulo },
       total: barajado.length,
