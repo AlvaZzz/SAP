@@ -6,7 +6,9 @@ import { ETIQUETA_NIVEL, NIVELES } from '../../common/niveles/nivel-dificultad';
 import { estudiantesDelDocente } from '../docente-registro/docente-registro.service';
 import {
   MotivoRiesgo, UMBRAL_APROBACION, UMBRAL_CERCA, Umbrales, motivosDeRiesgo, nivelGlobal, promedioGeneral, situacionPromedio,
+  TemaRuta, posicionEnRuta, temasQueCuestan,
 } from './resumen-academico';
+import { requeridosTema } from '../../common/niveles/desbloqueo';
 
 export type EstadoEstudiante = 'sin_ingresar' | 'en_riesgo' | 'inactivo' | 'en_progreso';
 
@@ -40,6 +42,10 @@ export interface FilaCurso {
   evaluacion_final: number | null;
   estado: EstadoEstudiante;
   motivos_riesgo: MotivoRiesgo[];
+  /** Temas completados sobre el total publicado. */
+  avance: { completos: number; total: number };
+  /** Primer tema que aún no termina; null si ya terminó todos. */
+  tema_actual: { id: number; etiqueta: string } | null;
 }
 
 /**
@@ -84,7 +90,7 @@ export class DocenteEstudiantesService {
           paralelo: true, nivelInicialAdaptativo: true, pretestCompletado: true,
           ranking: { select: { xpTotal: true, ultimaActividad: true } },
           paraleloRef: { select: { id: true, nombre: true, materia: { select: { nombre: true, gestion: true } }, docente: { select: { nombre: true } } } },
-          progresoTemas: { select: { nivelActual: true, actualizadoEn: true } },
+          progresoTemas: { select: { temaId: true, ejerciciosCompletados: true, nivelActual: true, actualizadoEn: true } },
           evaluaciones: { select: { tipo: true, puntajeTotal: true } },
           examenesUnidad: { select: { unidadId: true, puntaje: true } },
           intentosSubidaNivel: { select: { temaId: true, hacia: true, puntaje: true } },
@@ -106,8 +112,12 @@ export class DocenteEstudiantesService {
     const mResueltos = new Map<number, number>();
     for (const d of distintos) mResueltos.set(d.usuarioId, (mResueltos.get(d.usuarioId) ?? 0) + 1);
 
+    const { ruta, umbralPct } = await this.rutaDelCurso();
+    const requeridos = (umbral: number) => requeridosTema(umbral, umbralPct);
+
     const ahora = Date.now();
     const estudiantes = usuarios.map((u): FilaCurso => {
+      const posicion = posicionEnRuta(ruta, new Map(u.progresoTemas.map((p) => [p.temaId, p.ejerciciosCompletados])), requeridos);
       const intentos = mTotal.get(u.id)?.n ?? 0;
       const ok = mCorrectos.get(u.id) ?? 0;
       const tasa = intentos > 0 ? Math.round((ok / intentos) * 100) : null;
@@ -149,15 +159,72 @@ export class DocenteEstudiantesService {
         tiene_diagnostico: tieneDiagnostico,
         evaluacion_final: u.evaluaciones.find((e) => e.tipo === 'post')?.puntajeTotal ?? null,
         estado, motivos_riesgo: motivos,
+        avance: { completos: posicion.completos, total: posicion.total },
+        tema_actual: posicion.tema_actual,
       };
     });
 
     return { estudiantes, umbrales: { ...umb, aprobacion: UMBRAL_APROBACION, cerca: UMBRAL_CERCA } };
   }
 
+  /**
+   * Temas publicados en el ORDEN en que se estudian: por unidad y, dentro de
+   * ella, cada tema seguido de sus subtemas.
+   */
+  private async rutaDelCurso(): Promise<{ ruta: TemaRuta[]; umbralPct: number }> {
+    const [unidades, cfg] = await Promise.all([
+      this.prisma.unidad.findMany({
+        orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+        select: {
+          temas: {
+            where: { padreId: null, publicado: true },
+            orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+            select: {
+              id: true, numero: true, titulo: true, umbral: true,
+              subtemas: { where: { publicado: true }, orderBy: [{ orden: 'asc' }, { numero: 'asc' }], select: { id: true, numero: true, titulo: true, umbral: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.configuracionSistema.findUnique({ where: { id: 1 }, select: { umbralPorcentaje: true } }),
+    ]);
+    const aRuta = (t: { id: number; numero: string; titulo: string; umbral: number }): TemaRuta => ({ id: t.id, etiqueta: `${t.numero} ${t.titulo}`, umbral: t.umbral });
+    return {
+      ruta: unidades.flatMap((u) => u.temas.flatMap((t) => [aRuta(t), ...t.subtemas.map(aRuta)])),
+      umbralPct: cfg?.umbralPorcentaje ?? 80,
+    };
+  }
+
+  /** Temas en los que el curso acierta menos (intentos de práctica de estos estudiantes). */
+  private async temasDificiles(ids: number[]) {
+    if (ids.length === 0) return [];
+    const [todos, buenos] = await Promise.all([
+      this.prisma.intento.groupBy({ by: ['ejercicioId'], where: { usuarioId: { in: ids } }, _count: { _all: true } }),
+      this.prisma.intento.groupBy({ by: ['ejercicioId'], where: { usuarioId: { in: ids }, correcto: true }, _count: { _all: true } }),
+    ]);
+    const ejercicios = await this.prisma.ejercicio.findMany({
+      where: { id: { in: todos.map((t) => t.ejercicioId) }, banco: 'practica', temaId: { not: null } },
+      select: { id: true, temaId: true, tema: { select: { numero: true, titulo: true } } },
+    });
+    const temaDe = new Map(ejercicios.map((e) => [e.id, e.temaId as number]));
+    const etiquetas = new Map(ejercicios.map((e) => [e.temaId as number, `${e.tema?.numero ?? ''} ${e.tema?.titulo ?? ''}`.trim()]));
+    const porTema = new Map<number, { temaId: number; intentos: number; aciertos: number }>();
+    const sumar = (ejercicioId: number, campo: 'intentos' | 'aciertos', n: number) => {
+      const temaId = temaDe.get(ejercicioId);
+      if (temaId == null) return;
+      const fila = porTema.get(temaId) ?? { temaId, intentos: 0, aciertos: 0 };
+      fila[campo] += n;
+      porTema.set(temaId, fila);
+    };
+    for (const t of todos) sumar(t.ejercicioId, 'intentos', t._count._all);
+    for (const b of buenos) sumar(b.ejercicioId, 'aciertos', b._count._all);
+    return temasQueCuestan([...porTema.values()], etiquetas);
+  }
+
   /** Lista de seguimiento + los paralelos disponibles para filtrar. */
   async listar(docenteId: number, rol: string) {
     const { estudiantes, umbrales } = await this.curso(docenteId, rol);
+    const temas_dificiles = await this.temasDificiles(estudiantes.filter((e) => e.activo).map((e) => e.id));
     const paralelos = new Map<string, { id: number | null; nombre: string; materia: string | null; total: number }>();
     for (const e of estudiantes) {
       const k = `${e.paralelo.id ?? 'x'}:${e.paralelo.nombre}`;
@@ -167,6 +234,7 @@ export class DocenteEstudiantesService {
     }
     return {
       estudiantes,
+      temas_dificiles,
       paralelos: [...paralelos.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)),
       umbrales,
       resumen: {

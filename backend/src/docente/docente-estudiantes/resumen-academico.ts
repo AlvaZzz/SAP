@@ -72,3 +72,48 @@ export function motivosDeRiesgo(
   }
   return motivos;
 }
+
+// ── Dónde va cada estudiante y qué temas le cuestan al curso ──
+
+export interface TemaRuta { id: number; etiqueta: string; umbral: number }
+export interface Posicion { completos: number; total: number; tema_actual: { id: number; etiqueta: string } | null }
+
+/**
+ * Posición del estudiante en la ruta del curso: cuántos temas completó y cuál
+ * es el PRIMERO que aún no termina (ese es "donde va"). `ruta` llega en el
+ * orden en que se estudia; un tema está completo con la misma regla que ve el
+ * estudiante (`requeridos` ejercicios resueltos).
+ */
+export function posicionEnRuta(
+  ruta: TemaRuta[],
+  completados: Map<number, number>,
+  requeridos: (umbral: number) => number,
+): Posicion {
+  let completos = 0;
+  let actual: Posicion['tema_actual'] = null;
+  for (const t of ruta) {
+    if ((completados.get(t.id) ?? 0) >= requeridos(t.umbral)) completos += 1;
+    else if (!actual) actual = { id: t.id, etiqueta: t.etiqueta };
+  }
+  return { completos, total: ruta.length, tema_actual: actual };
+}
+
+export interface TemaDificil { tema_id: number; tema: string; intentos: number; tasa_acierto: number }
+
+/**
+ * Temas con MENOR porcentaje de acierto del curso, de peor a mejor. Solo entran
+ * los que tienen suficientes intentos: con dos o tres respuestas el porcentaje
+ * no dice nada.
+ */
+export function temasQueCuestan(
+  filas: { temaId: number; intentos: number; aciertos: number }[],
+  etiquetas: Map<number, string>,
+  minIntentos = 10,
+  tope = 5,
+): TemaDificil[] {
+  return filas
+    .filter((f) => f.intentos >= minIntentos && etiquetas.has(f.temaId))
+    .map((f) => ({ tema_id: f.temaId, tema: etiquetas.get(f.temaId)!, intentos: f.intentos, tasa_acierto: Math.round((f.aciertos / f.intentos) * 100) }))
+    .sort((a, b) => a.tasa_acierto - b.tasa_acierto || b.intentos - a.intentos)
+    .slice(0, tope);
+}

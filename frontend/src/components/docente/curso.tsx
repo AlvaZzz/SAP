@@ -27,6 +27,8 @@ export interface FilaCurso {
   tasa_acierto: number | null; intentos: number; ejercicios_resueltos: number; xp: number;
   ultima_sesion: string | null; tiene_diagnostico: boolean; evaluacion_final: number | null;
   estado: EstadoCurso; motivos_riesgo: Motivo[];
+  avance: { completos: number; total: number };
+  tema_actual: { id: number; etiqueta: string } | null;
 }
 
 /** Estudiante en una lista nominal (lo mínimo para identificarlo). */
