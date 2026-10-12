@@ -247,8 +247,10 @@ export class PretestService {
         });
         await tx.progresoTema.upsert({
           where: { usuarioId_temaId: { usuarioId, temaId: n.temaId } },
-          create: { usuarioId, temaId: n.temaId, nivelActual: n.nivel, desbloqueado: true },
-          update: { nivelActual: n.nivel, desbloqueado: true },
+          // El diagnóstico SOLO fija el nivel con el que arrancará en el tema cuando
+          // le toque. No abre temas ni unidades: eso se gana avanzando en orden.
+          create: { usuarioId, temaId: n.temaId, nivelActual: n.nivel, desbloqueado: false },
+          update: { nivelActual: n.nivel },
         });
       }
 

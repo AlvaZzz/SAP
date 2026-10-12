@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NivelDificultad, TipoEjercicio } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { desbloqueoSecuencial } from '../common/niveles/desbloqueo';
 import { ETIQUETA_NIVEL, siguienteNivel } from '../common/niveles/nivel-dificultad';
 
 const TIPO_LABEL: Record<TipoEjercicio, string> = {
@@ -22,6 +23,9 @@ function tituloDescriptivo(e: { titulo: string; tipo: TipoEjercicio; categoria: 
   const pareceCodigo = /=|:$|^(def|for|while|if|print|import|return)\b|\bprint\(/.test(t);
   return pareceCodigo ? `${TIPO_LABEL[e.tipo]}: ${e.categoria}` : e.titulo;
 }
+
+// % del umbral del tema que lo da por completo (mismo valor por defecto que ConfiguracionSistema).
+const UMBRAL_PCT_TEMA = 80;
 
 @Injectable()
 export class GamificacionService {
@@ -142,17 +146,21 @@ export class GamificacionService {
     const candidatos: Cand[] = [];
     let anteriorAprobada = true;
     const conTemas = unidades.filter((u) => u.temas.length > 0);
-    conTemas.forEach((u, iu) => {
+    const avance = (xs: { umbral: number; progreso: { ejerciciosCompletados: number }[] }[]) =>
+      xs.map((x) => ({ completados: x.progreso[0]?.ejerciciosCompletados ?? 0, umbral: x.umbral }));
+    conTemas.forEach((u) => {
       const desbloqueada = anteriorAprobada;
       anteriorAprobada = aprobadas.has(u.id);
       if (!desbloqueada) return;
+      const abiertos = desbloqueoSecuencial(avance(u.temas), UMBRAL_PCT_TEMA);
       u.temas.forEach((t, it) => {
         const pr = t.progreso[0];
-        const desb = pr?.desbloqueado ?? (iu === 0 && it === 0);
+        const desb = abiertos[it];
+        const subAbiertos = desbloqueoSecuencial(avance(t.subtemas), UMBRAL_PCT_TEMA, desb);
         if (desb) candidatos.push({ temaId: t.id, unidadNumero: u.numero, temaNumero: t.numero, temaTitulo: t.titulo, nivelActual: pr?.nivelActual ?? nivelInicial, umbral: t.umbral });
         t.subtemas.forEach((s, is) => {
           const prs = s.progreso[0];
-          const desbS = desb && (prs?.desbloqueado ?? is === 0);
+          const desbS = subAbiertos[is];
           if (desbS) candidatos.push({ temaId: s.id, unidadNumero: u.numero, temaNumero: s.numero, temaTitulo: s.titulo, nivelActual: prs?.nivelActual ?? nivelInicial, umbral: s.umbral });
         });
       });

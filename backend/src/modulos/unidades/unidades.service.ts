@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ETIQUETA_NIVEL, siguienteNivel, nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
+import { desbloqueoSecuencial } from '../../common/niveles/desbloqueo';
 
 /** Nodo del mapa conceptual del Dashboard de Destino (tema o subtema). */
 interface NodoMapa {
@@ -66,8 +67,8 @@ export class UnidadesService {
     const resueltosIds = new Set(resueltos.map((r) => r.ejercicioId));
     const minimos: Record<NivelDificultad, number> = {
       basico: cfg?.minPracticaBasico ?? 10,
-      intermedio: cfg?.minPracticaIntermedio ?? 7,
-      avanzado: cfg?.minPracticaAvanzado ?? 5,
+      intermedio: cfg?.minPracticaIntermedio ?? 10,
+      avanzado: cfg?.minPracticaAvanzado ?? 10,
     };
 
     const nivelInicial: NivelDificultad = usuario?.nivelInicialAdaptativo ?? 'basico';
@@ -81,19 +82,26 @@ export class UnidadesService {
     // la unidad k está APROBADO (θ ≥ Intermedio). La primera siempre está abierta.
     let anteriorDesbloqueaSiguiente = true;
 
-    return conTemas.map((u, iu) => {
+    const umbralPct = cfg?.umbralPorcentaje ?? 80;
+    const avance = (xs: { umbral: number; progreso: { ejerciciosCompletados: number }[] }[]) =>
+      xs.map((x) => ({ completados: x.progreso[0]?.ejerciciosCompletados ?? 0, umbral: x.umbral }));
+
+    return conTemas.map((u) => {
       const desbloqueada = anteriorDesbloqueaSiguiente;
       const examenAprobado = aprobadas.has(u.id);
+      // Desbloqueo CALCULADO desde el avance real (ver common/niveles/desbloqueo).
+      const temasAbiertos = desbloqueoSecuencial(avance(u.temas), umbralPct, desbloqueada);
 
       const temas = u.temas.map((t, it) => {
         const pr = t.progreso[0];
-        const desbloqueado = desbloqueada && (pr?.desbloqueado ?? (iu === 0 && it === 0));
+        const desbloqueado = temasAbiertos[it];
+        const subAbiertos = desbloqueoSecuencial(avance(t.subtemas), umbralPct, desbloqueado);
         const nivelActual: NivelDificultad = pr?.nivelActual ?? nivelInicial;
         return {
           ...this.mapTema(t, nivelActual, desbloqueado, resueltosIds, minimos),
           subtemas: t.subtemas.map((s, is) => {
             const prs = s.progreso[0];
-            const desbSub = desbloqueado && (prs?.desbloqueado ?? (is === 0));
+            const desbSub = subAbiertos[is];
             const nivelSub: NivelDificultad = prs?.nivelActual ?? nivelInicial;
             return this.mapTema(s, nivelSub, desbSub, resueltosIds, minimos);
           }),

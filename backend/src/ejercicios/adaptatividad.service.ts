@@ -1,7 +1,8 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Banco, NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { corregir } from './correccion';
+import { corregirGraduado } from './correccion';
+import { PREGUNTAS_POR_EVALUACION, UMBRAL_APROBACION, notaSobre100 } from '../common/niveles/reglas-evaluacion';
 import {
   ORDEN_NIVEL,
   ETIQUETA_NIVEL,
@@ -286,13 +287,13 @@ export class AdaptatividadService {
   private async config() {
     const cfg = await this.prisma.configuracionSistema.findUnique({ where: { id: 1 } });
     return {
-      preguntas: cfg?.subirNivelPreguntas ?? 5,
-      umbral: cfg?.subirNivelUmbral ?? 80,
+      preguntas: cfg?.subirNivelPreguntas ?? PREGUNTAS_POR_EVALUACION,
+      umbral: cfg?.subirNivelUmbral ?? UMBRAL_APROBACION,
       esperaHoras: cfg?.subirNivelEsperaHoras ?? 0,
       minimos: {
         basico: cfg?.minPracticaBasico ?? 10,
-        intermedio: cfg?.minPracticaIntermedio ?? 7,
-        avanzado: cfg?.minPracticaAvanzado ?? 5,
+        intermedio: cfg?.minPracticaIntermedio ?? 10,
+        avanzado: cfg?.minPracticaAvanzado ?? 10,
       } as Record<NivelDificultad, number>,
     };
   }
@@ -449,14 +450,19 @@ export class AdaptatividadService {
     if (ejercicios.length === 0) throw new BadRequestException('Las preguntas no corresponden al mini-diagnóstico.');
 
     let correctos = 0;
+    const puntajes: number[] = [];
     const respuestasIrt: RespuestaIrt[] = [];
     for (const ej of ejercicios) {
       const dada = respuestas.find((r) => r.ejercicioId === ej.id)?.respuesta ?? '';
-      const ok = corregir(ej.tipo, dada, ej.respuestaCorrecta);
+      // Evaluación: una respuesta parcial cuenta su fracción y no se complementa.
+      const res = corregirGraduado(ej.tipo, dada, ej.respuestaCorrecta);
+      const ok = res.estado === 'correcta';
+      puntajes.push(res.puntaje);
       if (ok) correctos++;
       if (typeof ej.dificultadB === 'number') respuestasIrt.push({ b: ej.dificultadB, correcto: ok });
     }
-    const puntaje = Math.round((correctos / ejercicios.length) * 100);
+    // Nota sobre 100. Se sube de nivel con 80 o más.
+    const puntaje = notaSobre100(puntajes);
     const aprobado = puntaje >= cfg.umbral;
 
     await this.prisma.intentoSubidaNivel.create({

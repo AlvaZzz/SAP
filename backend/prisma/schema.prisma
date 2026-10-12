@@ -44,6 +44,13 @@ enum NivelDificultad {
 
 // Estado de una pregunta propuesta por PREXI desde un PDF: nunca se publica
 // sola, siempre pasa por revisión humana del docente.
+// Resultado GRADUADO de una respuesta (ver ejercicios/correccion.ts).
+enum EstadoRespuesta {
+  correcta
+  parcial
+  incorrecta
+}
+
 enum EstadoPreguntaIa {
   borrador
   aprobada
@@ -190,6 +197,8 @@ model Usuario {
   respuestasEncuesta  RespuestaEncuesta[]
   consultasRanking    ConsultaRanking[]
   examenesUnidad      ExamenUnidad[]
+  habilitacionesExamen HabilitacionExamen[] @relation("HabilitacionEstudiante")
+  habilitacionesDadas  HabilitacionExamen[] @relation("HabilitacionDocente")
   logsAdaptacion      LogAdaptacion[]
   historialRanking    HistorialRanking[]
   respuestasInstrumento RespuestaInstrumento[]
@@ -308,6 +317,7 @@ model Unidad {
   desempenos  DesempenoUnidad[]
   repasos     RepasoUnidad[]
   examenes    ExamenUnidad[]
+  habilitaciones HabilitacionExamen[]
 
   @@unique([institucion, numero])
   @@map("unidades")
@@ -461,6 +471,11 @@ model PreguntaGenerada {
   respuestaCorrecta String           @map("respuesta_correcta")
   explicacionIa     String?          @map("explicacion_ia")
   estado            EstadoPreguntaIa @default(borrador)
+  // A qué banco y nivel irá al aprobarse. `examen` = pregunta integradora del
+  // examen de la unidad (combina los temas de `temasIntegrados`).
+  banco             Banco            @default(practica)
+  nivelDificultad   NivelDificultad  @default(basico) @map("nivel_dificultad")
+  temasIntegrados   Int[]            @default([]) @map("temas_integrados")
   ejercicioId       Int?             @map("ejercicio_id") // seteado al aprobar
   creadoEn          DateTime         @default(now()) @map("creado_en")
 
@@ -521,6 +536,9 @@ model Ejercicio {
   banco             Banco           @default(practica)
   // El docente puede activar/desactivar un ejercicio. El estudiante solo ve los activos.
   activo            Boolean         @default(true)
+  // Temas que INTEGRA la pregunta (ids de Tema). Las preguntas del examen de
+  // unidad combinan 2 o 3 temas o subtemas; en práctica queda vacío.
+  temasIntegrados   Int[]           @default([]) @map("temas_integrados")
   // TRAZABILIDAD al material oficial del docente (tesis): de qué parte de SU
   // documento salió este ítem. Forma: { unidad, tema, subtema?, paginaPDF, citaBreve }.
   fuenteDoc         Json?           @map("fuente_doc")
@@ -548,6 +566,10 @@ model Intento {
   ejercicioId   Int      @map("ejercicio_id")
   respuestaDada String   @map("respuesta_dada")
   correcto      Boolean
+  // Resultado graduado. `correcto` se conserva como derivado (estado = correcta)
+  // para no romper las estadísticas existentes.
+  estado        EstadoRespuesta @default(incorrecta)
+  puntaje       Float    @default(0) // fracción de la pregunta obtenida (0..1)
   tiempoSeg     Int      @default(0) @map("tiempo_seg")
   pistasUsadas  Int      @default(0) @map("pistas_usadas")
   xpOtorgado    Int      @default(0) @map("xp_otorgado")
@@ -727,6 +749,9 @@ model ExamenUnidad {
   aprobado  Boolean         @default(false) // nivel ≥ Intermedio
   aciertos  Int             @default(0)
   total     Int             @default(0)
+  // Detalle por pregunta: [{ ejercicioId, titulo, tema, estado, puntaje }].
+  // Lo ve el docente en la ficha del estudiante.
+  detalle   Json?
   fecha     DateTime        @default(now())
 
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -1052,7 +1077,7 @@ model ConfiguracionSistema {
   penalizacionPista Int @default(5) @map("penalizacion_pista")
 
   // Adaptatividad por niveles (Básico/Intermedio/Avanzado).
-  subirNivelPreguntas   Int @default(5) @map("subir_nivel_preguntas") // nº de ítems del mini-diagnóstico
+  subirNivelPreguntas   Int @default(10) @map("subir_nivel_preguntas") // nº de ítems del mini-diagnóstico
   subirNivelUmbral      Int @default(80) @map("subir_nivel_umbral") // % para aprobar y subir de nivel
   subirNivelEsperaHoras Int @default(0) @map("subir_nivel_espera_horas") // cooldown entre intentos (0 = sin espera)
   // PRÁCTICA MÍNIMA por nivel antes de habilitar el mini-diagnóstico de subida
@@ -1062,10 +1087,10 @@ model ConfiguracionSistema {
   // 10 de 15 en Básico, 7 de 10 en Intermedio y los 5 de 5 en Avanzado.
   // Son configurables a propósito: el docente ajusta la exigencia sin tocar código.
   minPracticaBasico     Int @default(10) @map("min_practica_basico")
-  minPracticaIntermedio Int @default(7) @map("min_practica_intermedio")
-  minPracticaAvanzado   Int @default(5) @map("min_practica_avanzado")
+  minPracticaIntermedio Int @default(10) @map("min_practica_intermedio")
+  minPracticaAvanzado   Int @default(10) @map("min_practica_avanzado")
   // Examen de FIN DE UNIDAD (gate de avance a la siguiente unidad).
-  examenUnidadPreguntas   Int @default(8) @map("examen_unidad_preguntas") // nº de ítems del examen
+  examenUnidadPreguntas   Int @default(10) @map("examen_unidad_preguntas") // nº de ítems del examen
   examenUnidadEsperaHoras Int @default(0) @map("examen_unidad_espera_horas") // cooldown entre reintentos
   // XP: estar en un nivel más alto otorga MÁS XP (porcentaje sobre el XP base;
   // básico = 100%). Incentivo a esforzarse (hipótesis de la tesis).
@@ -1266,4 +1291,25 @@ model Paralelo {
   @@unique([materiaId, nombre])
   @@index([docenteId])
   @@map("paralelos")
+}
+
+// ── HABILITACIÓN MANUAL del examen de fin de unidad ─────────
+//  El examen de la unidad se habilita SOLO cuando el estudiante completó todos
+//  los temas y subtemas con nivel Intermedio o superior. Si no llegó, su docente
+//  puede habilitarlo a mano (por ejemplo, a quien quedó cerca). Queda registrado
+//  quién lo habilitó, cuándo y con qué promedio iba el estudiante.
+model HabilitacionExamen {
+  usuarioId Int      @map("usuario_id")
+  unidadId  Int      @map("unidad_id")
+  docenteId Int?     @map("docente_id")
+  promedio  Int? // promedio general del estudiante al momento de habilitarlo
+  fecha     DateTime @default(now())
+
+  usuario Usuario  @relation("HabilitacionEstudiante", fields: [usuarioId], references: [id], onDelete: Cascade)
+  unidad  Unidad   @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+  docente Usuario? @relation("HabilitacionDocente", fields: [docenteId], references: [id], onDelete: SetNull)
+
+  @@id([usuarioId, unidadId])
+  @@index([unidadId])
+  @@map("habilitaciones_examen")
 }

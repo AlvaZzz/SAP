@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ExamenUnidadService } from './examen-unidad.service';
 import { crearPrismaMock, PrismaMock } from '../../test-utils/prisma.mock';
 
-describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
+describe('ExamenUnidadService (gate por tema, nota sobre 100 y habilitación del docente)', () => {
   let prisma: PrismaMock;
   let service: ExamenUnidadService;
 
@@ -54,8 +54,8 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
     prisma.repasoUnidad.findUnique.mockResolvedValue({ usuarioId: 7, unidadId: 1 });
     prisma.examenUnidad.findFirst.mockResolvedValue(null); // no aprobado aún
     prisma.ejercicio.findMany.mockResolvedValue([
-      { id: 100, titulo: 'P1', tipo: 'opcion_multiple', enunciado: 'e', opciones: [] },
-      { id: 101, titulo: 'P2', tipo: 'opcion_multiple', enunciado: 'e', opciones: [] },
+      { id: 100, titulo: 'P1', tipo: 'opcion_multiple', enunciado: 'e', opciones: [], temasIntegrados: [10, 11], nivelDificultad: 'intermedio' },
+      { id: 101, titulo: 'P2', tipo: 'opcion_multiple', enunciado: 'e', opciones: [], temasIntegrados: [], nivelDificultad: 'basico' },
     ]);
     const r = await service.iniciar(7, 1);
     expect(r.total).toBe(2);
@@ -69,7 +69,7 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
     await expect(service.iniciar(7, 1)).rejects.toThrow('Aún no hay preguntas');
   });
 
-  it('evaluar APRUEBA (θ ≥ Intermedio) cuando acierta ítems de dificultad media/alta', async () => {
+  it('evaluar APRUEBA con nota de 80 o más sobre 100', async () => {
     prisma.examenUnidad.findFirst.mockResolvedValue(null); // sin aprobado previo ni cooldown
     prisma.ejercicio.findMany.mockResolvedValue([
       { id: 100, tipo: 'opcion_multiple', respuestaCorrecta: 'A', dificultadB: 0.5, temaId: 10, tema: { numero: '1.1', titulo: 'T1' } },
@@ -92,6 +92,24 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
     expect(prisma.historialTheta.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ origen: 'examen_unidad' }) }),
     );
+  });
+
+  it('una respuesta PARCIAL cuenta su fracción en la nota y queda en el detalle', async () => {
+    prisma.examenUnidad.findFirst.mockResolvedValue(null);
+    prisma.ejercicio.findMany.mockResolvedValue([
+      { id: 100, titulo: 'P1', tipo: 'opcion_multiple', respuestaCorrecta: 'A', dificultadB: 0, temaId: 10, tema: { numero: '1.1', titulo: 'T1' } },
+      { id: 101, titulo: 'P2', tipo: 'ordenar_lineas', respuestaCorrecta: 'B,A,D,C', dificultadB: 0, temaId: 10, tema: { numero: '1.1', titulo: 'T1' } },
+    ]);
+    // P1 correcta (1) + P2 con 2 de 4 líneas en su lugar (0,5) → 1,5 de 2 = 75.
+    const r = await service.evaluar(7, 1, [
+      { ejercicioId: 100, respuesta: 'A' },
+      { ejercicioId: 101, respuesta: 'B,A,C,D' },
+    ]);
+    expect(r.puntaje).toBe(75);
+    expect(r.parciales).toBe(1);
+    expect(r.aprobado).toBe(false); // 75 < 80
+    const guardado = prisma.examenUnidad.create.mock.calls[0][0].data;
+    expect(guardado.detalle.map((d: { estado: string }) => d.estado)).toEqual(['correcta', 'parcial']);
   });
 
   it('evaluar NO aprueba y retroalimenta los temas flojos cuando falla', async () => {
@@ -142,7 +160,7 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
       prisma.repasoUnidad.findUnique.mockResolvedValue({ usuarioId: 7, unidadId: 1 });
       prisma.examenUnidad.findFirst.mockResolvedValue(null);
       prisma.ejercicio.findMany.mockResolvedValue([
-        { id: 100, titulo: 'P1', tipo: 'opcion_multiple', enunciado: 'e', opciones: [] },
+        { id: 100, titulo: 'P1', tipo: 'opcion_multiple', enunciado: 'e', opciones: [], temasIntegrados: [], nivelDificultad: 'intermedio' },
       ]);
       prisma.ejercicio.count.mockResolvedValue(1);
     });
@@ -158,7 +176,7 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
       expect(error.message).toContain('1.2 Tema 2');
     });
 
-    it('con temas completos pero en Básico → rechazado, y dice qué nivel le falta', async () => {
+    it('con temas completos pero en Básico → rechazado, y dice en qué temas le falta nivel', async () => {
       temasConProgreso([
         { completados: 10, umbral: 10, nivel: 'basico' },
         { completados: 10, umbral: 10, nivel: 'basico' },
@@ -166,7 +184,8 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
       const error = await service.iniciar(7, 1).catch((e) => e);
       expect(error).toBeInstanceOf(ForbiddenException);
       expect(error.message).toContain('al menos nivel Intermedio');
-      expect(error.message).toContain('Básico (0%)');
+      expect(error.message).toContain('1.1 Tema 1, 1.2 Tema 2');
+      expect(error.message).toContain('pide a tu docente');
     });
 
     it('con ambas condiciones → permitido', async () => {
@@ -177,13 +196,20 @@ describe('ExamenUnidadService (gate de repaso, IRT y aprobación)', () => {
       await expect(service.iniciar(7, 1)).resolves.toMatchObject({ total: 1 });
     });
 
-    it('un tema nunca tocado cuenta como Básico, no como ausente', async () => {
+    it('basta UN tema por debajo de Intermedio para bloquear (no vale el promedio)', async () => {
       prisma.tema.findMany.mockResolvedValue([
         { id: 10, numero: '1.1', titulo: 'Tema 1', umbral: 10, progreso: [{ ejerciciosCompletados: 10, nivelActual: 'avanzado' }] },
         { id: 11, numero: '1.2', titulo: 'Tema 2', umbral: 0, progreso: [] },
       ] as never);
-      // Tema 2 tiene umbral 0 (se considera completo) pero sin progreso → Básico.
-      // Promedio: (1 + 0) / 2 = 50% → Intermedio, justo en el límite: pasa.
+      // El promedio daría Intermedio, pero el tema 1.2 nunca se tocó: sigue en Básico.
+      const error = await service.iniciar(7, 1).catch((e) => e);
+      expect(error).toBeInstanceOf(ForbiddenException);
+      expect(error.message).toContain('1.2 Tema 2');
+    });
+
+    it('la habilitación del docente salta los requisitos', async () => {
+      temasConProgreso([{ completados: 2, umbral: 10, nivel: 'basico' }]);
+      prisma.habilitacionExamen.findUnique.mockResolvedValue({ usuarioId: 7, unidadId: 1, docente: { nombre: 'Docente' } });
       await expect(service.iniciar(7, 1)).resolves.toMatchObject({ total: 1 });
     });
 

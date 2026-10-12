@@ -3,10 +3,11 @@ import { NivelDificultad, Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AdaptatividadService } from './adaptatividad.service';
 import { ResponderDto } from './dto/responder.dto';
-import { corregir } from './correccion';
+import { corregirGraduado } from './correccion';
 import { EmblemasService } from '../gamificacion/emblemas.service';
 import { RangosService } from '../gamificacion/rangos.service';
-import { factorXpNivel, nivelAlMenos, nivelDominioAgregado } from '../common/niveles/nivel-dificultad';
+import { factorXpNivel } from '../common/niveles/nivel-dificultad';
+import { desbloqueoSecuencial } from '../common/niveles/desbloqueo';
 import { estimarTheta, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
 import { msDesde } from '../mediciones/motor/motor';
 import type { DecisionMotor } from './log-adaptacion.service';
@@ -86,72 +87,52 @@ export class EjerciciosService {
   }
 
   /**
-   * ¿El estudiante puede resolver ejercicios de este tema/subtema? Si ya existe
-   * una fila de progreso, manda su `desbloqueado`. Si no existe aún (nunca lo
-   * tocó), se considera desbloqueado SOLO si es el primer tema de la primera
-   * unidad, o el primer subtema de un tema ya desbloqueado (mismo criterio por
-   * defecto que usa la vista del estudiante en UnidadesService).
+   * ¿El estudiante puede resolver ejercicios de este tema/subtema?
+   *
+   * Se CALCULA desde su avance real (ver common/niveles/desbloqueo): el primer
+   * tema de la unidad está abierto y cada siguiente se abre al completar el
+   * anterior; un subtema exige además que su tema padre esté abierto. La marca
+   * guardada `ProgresoTema.desbloqueado` NO se usa: el diagnóstico inicial la
+   * ponía en verdadero para temas de cualquier unidad.
    */
-  private async temaDesbloqueado(tx: Prisma.TransactionClient, usuarioId: number, temaId: number): Promise<boolean> {
-    const pr = await tx.progresoTema.findUnique({ where: { usuarioId_temaId: { usuarioId, temaId } } });
-    if (pr) return pr.desbloqueado;
-
+  private async temaDesbloqueado(tx: Prisma.TransactionClient, usuarioId: number, temaId: number, umbralPct = 80): Promise<boolean> {
     const tema = await tx.tema.findUnique({ where: { id: temaId } });
     if (!tema) return false;
 
-    if (tema.padreId) {
-      const hermanos = await tx.tema.findMany({
-        where: { unidadId: tema.unidadId, padreId: tema.padreId, publicado: true },
-        orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
-        select: { id: true },
-      });
-      const esPrimero = hermanos[0]?.id === tema.id;
-      return esPrimero && (await this.temaDesbloqueado(tx, usuarioId, tema.padreId));
-    }
-
-    const primeraUnidad = await tx.unidad.findFirst({ orderBy: [{ orden: 'asc' }, { numero: 'asc' }], select: { id: true } });
-    if (primeraUnidad?.id !== tema.unidadId) return false;
     const hermanos = await tx.tema.findMany({
-      where: { unidadId: tema.unidadId, padreId: null, publicado: true },
+      where: { unidadId: tema.unidadId, padreId: tema.padreId, publicado: true },
       orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
-      select: { id: true },
+      select: { id: true, umbral: true, progreso: { where: { usuarioId }, select: { ejerciciosCompletados: true } } },
     });
-    return hermanos[0]?.id === tema.id;
+    const padreAbierto = tema.padreId ? await this.temaDesbloqueado(tx, usuarioId, tema.padreId, umbralPct) : true;
+    const abiertos = desbloqueoSecuencial(
+      hermanos.map((h) => ({ completados: h.progreso[0]?.ejerciciosCompletados ?? 0, umbral: h.umbral })),
+      umbralPct,
+      padreAbierto,
+    );
+    const idx = hermanos.findIndex((h) => h.id === tema.id);
+    return idx >= 0 && abiertos[idx];
   }
 
   /**
-   * ¿La unidad de este tema está desbloqueada? La primera unidad (menor orden)
-   * siempre lo está; cualquier otra exige que la unidad inmediatamente anterior
-   * alcance dominio agregado ≥ Intermedio. Espejo del gate de UnidadesService.
+   * ¿La unidad de este tema está desbloqueada? La primera siempre lo está;
+   * cualquier otra exige haber APROBADO el examen de la unidad anterior (ver
+   * unidadSuperada). Tener buen diagnóstico no abre unidades.
    */
   private async unidadDesbloqueada(tx: Prisma.TransactionClient, usuarioId: number, unidadId: number): Promise<boolean> {
-    const unidad = await tx.unidad.findUnique({ where: { id: unidadId }, select: { orden: true, numero: true, institucion: true } });
+    const unidad = await tx.unidad.findUnique({ where: { id: unidadId }, select: { institucion: true } });
     if (!unidad) return false;
-    // Unidad anterior en el mismo plan/institución por (orden, numero).
-    const previas = await tx.unidad.findMany({
-      where: { institucion: unidad.institucion },
+    const secuencia = await tx.unidad.findMany({
+      where: { institucion: unidad.institucion, temas: { some: { publicado: true, padreId: null } } },
       orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
-      select: { id: true, orden: true, numero: true },
+      select: { id: true },
     });
-    const idx = previas.findIndex((u) => u.id === unidadId);
-    if (idx <= 0) return true; // primera unidad (o no encontrada en la secuencia)
-    const anterior = previas[idx - 1];
-    // Dominio de la unidad anterior calculado EN VIVO desde el NIVEL por tema
-    // (misma lógica que la vista de unidad → gate y UI coherentes; no depende de
-    // un DesempenoUnidad persistido que pudiera estar desactualizado).
-    const nivelDominio = await this.nivelDominioUnidad(tx, usuarioId, anterior.id);
-    return nivelAlMenos(nivelDominio, 'intermedio');
-  }
-
-  /** Dominio (nivel) de una unidad = promedio del nivel del estudiante en sus temas publicados. */
-  private async nivelDominioUnidad(tx: Prisma.TransactionClient, usuarioId: number, unidadId: number): Promise<NivelDificultad> {
-    const [usuario, temas] = await Promise.all([
-      tx.usuario.findUnique({ where: { id: usuarioId }, select: { nivelInicialAdaptativo: true } }),
-      tx.tema.findMany({ where: { unidadId, publicado: true }, select: { progreso: { where: { usuarioId }, select: { nivelActual: true } } } }),
-    ]);
-    const nivelInicial: NivelDificultad = usuario?.nivelInicialAdaptativo ?? 'basico';
-    const niveles = temas.map((t) => t.progreso[0]?.nivelActual ?? nivelInicial);
-    return nivelDominioAgregado(niveles).nivelDominio;
+    const idx = secuencia.findIndex((u) => u.id === unidadId);
+    if (idx <= 0) return true; // primera unidad (o fuera de la secuencia publicada)
+    const aprobado = await tx.examenUnidad.findFirst({
+      where: { usuarioId, unidadId: secuencia[idx - 1].id, aprobado: true }, select: { id: true },
+    });
+    return !!aprobado;
   }
 
   /**
@@ -288,7 +269,8 @@ export class EjerciciosService {
       }
 
       // Seguridad: igual candado para la jerarquía académica (tema/subtema).
-      if (ej.temaId && !(await this.temaDesbloqueado(tx, usuarioId, ej.temaId))) {
+      const cfgGate = await tx.configuracionSistema.findUnique({ where: { id: 1 }, select: { umbralPorcentaje: true } });
+      if (ej.temaId && !(await this.temaDesbloqueado(tx, usuarioId, ej.temaId, cfgGate?.umbralPorcentaje ?? 80))) {
         throw new ForbiddenException('Este tema aún está bloqueado. Completa el tema anterior primero.');
       }
 
@@ -313,7 +295,11 @@ export class EjerciciosService {
       const thetaAntes = uAntes?.thetaActual ?? uAntes?.thetaInicial ?? null;
       let thetaDespues: number | null = thetaAntes;
 
-      const correcto = corregir(ej.tipo, dto.respuestaDada, ej.respuestaCorrecta);
+      // Corrección GRADUADA. Solo una respuesta totalmente correcta resuelve el
+      // ejercicio (XP y avance); una parcial se devuelve con lo que falta para que
+      // el estudiante la complemente y vuelva a enviar.
+      const correccion = corregirGraduado(ej.tipo, dto.respuestaDada, ej.respuestaCorrecta);
+      const correcto = correccion.estado === 'correcta';
 
       const cfg = await tx.configuracionSistema.findUnique({ where: { id: 1 } });
 
@@ -402,6 +388,7 @@ export class EjerciciosService {
       await tx.intento.create({
         data: {
           usuarioId, ejercicioId: ej.id, respuestaDada: dto.respuestaDada, correcto,
+          estado: correccion.estado, puntaje: correccion.puntaje,
           tiempoSeg: dto.tiempoSeg ?? 0, pistasUsadas, xpOtorgado,
         },
       });
@@ -470,8 +457,16 @@ export class EjerciciosService {
 
       return {
         correcto,
-        respuesta_correcta: ej.respuestaCorrecta,
-        explicacion_base: ej.explicacionIa,
+        // Resultado graduado: correcta | parcial | incorrecta.
+        estado: correccion.estado,
+        puntaje: correccion.puntaje,
+        faltantes: correccion.faltantes,
+        retroalimentacion: correccion.retroalimentacion,
+        puede_complementar: correccion.estado === 'parcial',
+        // Con una respuesta PARCIAL no se revela la solución: el estudiante debe
+        // poder completarla por sí mismo.
+        respuesta_correcta: correccion.estado === 'parcial' ? null : ej.respuestaCorrecta,
+        explicacion_base: correccion.estado === 'parcial' ? null : ej.explicacionIa,
         xp: { xpOtorgado, multiplicador, rachaDias },
         nivel: { nivelCompletado, nivelDesbloqueadoNumero },
         // `logros_nuevos` (claves) se mantiene por compatibilidad; `emblemas_nuevos`

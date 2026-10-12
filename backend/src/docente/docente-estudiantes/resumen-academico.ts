@@ -7,10 +7,11 @@ import { nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
  * el docente vea SIEMPRE el mismo nivel y el mismo promedio en todas partes.
  */
 
-/** Nota mínima (sobre 100) para aprobar una evaluación y subir de nivel. */
-export const UMBRAL_APROBACION = 80;
-/** Desde aquí un estudiante está "cerca del umbral": el docente puede evaluarlo caso por caso. */
-export const UMBRAL_CERCA = 70;
+// Las reglas (umbral 80, promedio, situación) viven en common/niveles/reglas-evaluacion.
+export {
+  UMBRAL_APROBACION, UMBRAL_CERCA, promedioGeneral, situacionPromedio,
+} from '../../common/niveles/reglas-evaluacion';
+export type { NotaExamen, NotaSubida, SituacionPromedio } from '../../common/niveles/reglas-evaluacion';
 
 /**
  * NIVEL ACTUAL del estudiante (uno solo, para listas y conteos).
@@ -25,37 +26,6 @@ export function nivelGlobal(
 ): NivelDificultad {
   if (nivelesPorTema.length === 0) return nivelInicial ?? 'basico';
   return nivelDominioAgregado(nivelesPorTema).nivelDominio;
-}
-
-export interface NotaExamen { unidadId: number; puntaje: number }
-export interface NotaSubida { temaId: number; hacia: NivelDificultad; puntaje: number }
-
-/**
- * PROMEDIO GENERAL sobre 100.
- *
- * Media de las notas de sus evaluaciones, contando el MEJOR intento de cada una:
- *   · examen de fin de unidad → mejor nota por unidad;
- *   · evaluación de subida de nivel → mejor nota por tema y nivel.
- * Devuelve null si aún no rindió ninguna: "sin evaluaciones" no es un cero.
- */
-export function promedioGeneral(examenes: NotaExamen[], subidas: NotaSubida[]): number | null {
-  const mejores = new Map<string, number>();
-  const anotar = (clave: string, puntaje: number) => mejores.set(clave, Math.max(mejores.get(clave) ?? 0, puntaje));
-  for (const e of examenes) anotar(`u${e.unidadId}`, e.puntaje);
-  for (const s of subidas) anotar(`t${s.temaId}:${s.hacia}`, s.puntaje);
-  if (mejores.size === 0) return null;
-  const notas = [...mejores.values()];
-  return Math.round(notas.reduce((a, b) => a + b, 0) / notas.length);
-}
-
-export type SituacionPromedio = 'aprobado' | 'cerca' | 'bajo' | 'sin_evaluaciones';
-
-/** Dónde está el promedio respecto del umbral de 80. */
-export function situacionPromedio(promedio: number | null): SituacionPromedio {
-  if (promedio === null) return 'sin_evaluaciones';
-  if (promedio >= UMBRAL_APROBACION) return 'aprobado';
-  if (promedio >= UMBRAL_CERCA) return 'cerca';
-  return 'bajo';
 }
 
 export interface Umbrales { diasInactivo: number; tasaAciertoMin: number; minIntentos: number; diasEstancado: number }
