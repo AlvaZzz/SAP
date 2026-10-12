@@ -81,5 +81,7 @@ Los retos son práctica extra en el editor de código y tienen dos tipos:
 
 Cada reto pertenece a un tema y a un nivel: lo ven los estudiantes que están en ese nivel
 en ese tema. El docente los crea con un asistente de tres pasos (tipo y tema → contenido →
-publicación) y los ve agrupados por tipo, unidad y tema. Un interruptor único muestra u
+publicación) y los ve agrupados por tipo, unidad y tema. En el paso del contenido puede
+pedirle a PREXI tres ideas para ese tema, tipo y nivel; elegir una solo rellena el
+formulario, y la salida correcta de un bug debe comprobarla el docente. Un interruptor único muestra u
 oculta todo el módulo.

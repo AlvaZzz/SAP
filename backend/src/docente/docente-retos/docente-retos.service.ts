@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { CrearRetoDto, EditarRetoDto } from './dto/reto.dto';
+import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
+import { CrearRetoDto, EditarRetoDto, SugerirRetosDto } from './dto/reto.dto';
 import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
+
+/** Cuántas propuestas trae PREXI cada vez que el docente le pide ayuda. */
+export const RETOS_POR_PEDIDO = 3;
 
 /**
  * Gestión de retos (rol docente). Cada docente solo administra SUS retos:
@@ -10,7 +14,30 @@ import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
  */
 @Injectable()
 export class DocenteRetosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tutorIa: TutorIaService,
+  ) {}
+
+  /**
+   * PREXI propone retos para un tema o subtema, ubicándolo en su unidad. Solo
+   * devuelve propuestas: el docente elige una, la corrige y la guarda él.
+   */
+  async sugerir(dto: SugerirRetosDto) {
+    const tema = await this.prisma.tema.findUnique({
+      where: { id: dto.temaId },
+      include: { unidad: { select: { numero: true, titulo: true } }, padre: { select: { numero: true, titulo: true } } },
+    });
+    if (!tema) throw new BadRequestException('El tema seleccionado no existe');
+    const propuestas = await this.tutorIa.proponerRetos({
+      tipo: dto.tipo, nivel: dto.nivel, cantidad: RETOS_POR_PEDIDO,
+      unidad: `Unidad ${tema.unidad.numero}: ${tema.unidad.titulo}`,
+      tema: `${tema.numero} ${tema.titulo}`,
+      temaPadre: tema.padre ? `${tema.padre.numero} ${tema.padre.titulo}` : null,
+      descripcion: tema.descripcion, indicacion: dto.indicacion,
+    });
+    return { propuestas };
+  }
 
   /** El tema (o subtema) asociado debe existir: de él cuelga la unidad con la que
    *  se agrupa el reto en la vista del estudiante. */

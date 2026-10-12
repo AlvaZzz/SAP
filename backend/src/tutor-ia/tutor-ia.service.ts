@@ -21,6 +21,13 @@ export interface PreguntaPropuesta {
   temas?: string[];
 }
 
+/** Reto que PREXI propone al docente (nada se guarda hasta que él lo decide). */
+export interface RetoPropuesto {
+  titulo: string; enunciado: string; codigoInicial: string; ejemploEntrada: string; ejemploSalida: string;
+  /** Solo para el docente: solución de referencia y, en un bug, dónde está el error. */
+  codigoCorregido: string; dondeEstaElBug: string;
+}
+
 /** Contexto con el que el docente pide preguntas a PREXI. */
 export interface ContextoGeneracion {
   nivel?: 'basico' | 'intermedio' | 'avanzado';
@@ -681,6 +688,61 @@ Responde SOLO un JSON array, sin markdown: [{"id":1,"frente":"...","reverso":"..
       out.set(id, { frente, reverso, explicacion: typeof p.explicacion === 'string' ? p.explicacion.trim() : '' });
     }
     return out;
+  }
+
+  // ── 6c) Propuestas de RETOS para el docente ──
+  //  PREXI propone; el docente elige una, la revisa y recién entonces la guarda.
+  //  En «bug» devuelve además el código corregido y dónde está el error, para
+  //  que el docente pueda comprobar la salida antes de publicar.
+  async proponerRetos(ctx: {
+    tipo: 'bug' | 'codigo'; nivel: 'basico' | 'intermedio' | 'avanzado';
+    unidad: string; tema: string; temaPadre?: string | null; descripcion?: string | null;
+    indicacion?: string | null; cantidad: number;
+  }): Promise<RetoPropuesto[]> {
+    const NIVEL: Record<string, string> = {
+      basico: 'BÁSICO: un solo concepto, programa de 3 a 6 líneas.',
+      intermedio: 'INTERMEDIO: combina dos ideas del tema, programa de 6 a 12 líneas.',
+      avanzado: 'AVANZADO: exige analizar casos límite, programa de 10 a 18 líneas.',
+    };
+    const forma = ctx.tipo === 'bug'
+      ? `Cada reto es de DEPURACIÓN: "codigoInicial" es un programa Python con EXACTAMENTE UN error de lógica o de sintaxis propio del tema (no lo señales con comentarios); "codigoCorregido" es el mismo programa ya arreglado; "ejemploSalida" es EXACTAMENTE lo que imprime el programa corregido; "dondeEstaElBug" explica el error en una frase. El programa no debe pedir datos con input(): usa valores fijos, para que la salida sea siempre la misma.`
+      : `Cada reto pide ESCRIBIR un programa desde cero: "codigoInicial" va vacío ("") o trae solo un comentario guía; "ejemploEntrada" son los datos de prueba; "ejemploSalida" es lo que debe mostrar con ellos; "codigoCorregido" es una solución de referencia para el docente; "dondeEstaElBug" va vacío ("").`;
+    const system = `Eres PREXI, asistente del DOCENTE (Python, primer semestre, UPEA).
+Propón ${ctx.cantidad} retos de programación DISTINTOS entre sí, en español, para:
+- Unidad: ${ctx.unidad}
+- Tema: ${ctx.temaPadre ? `${ctx.temaPadre} › subtema ${ctx.tema}` : ctx.tema}${ctx.descripcion ? `\n- Contenido del tema: ${sanitizar(ctx.descripcion, 400)}` : ''}
+Dificultad ${NIVEL[ctx.nivel]}
+Usa SOLO contenidos de ese tema y de los anteriores de la unidad. Contextos cotidianos para un estudiante boliviano.
+${forma}
+"enunciado" explica al estudiante qué debe lograr, sin revelar la solución.
+Responde SOLO un JSON array, sin markdown:
+[{"titulo":"...","enunciado":"...","codigoInicial":"...","ejemploEntrada":"...","ejemploSalida":"...","codigoCorregido":"...","dondeEstaElBug":"..."}]`;
+    const mensaje = ctx.indicacion?.trim() ? `Indicación del docente: ${sanitizar(ctx.indicacion, 400)}` : 'Genera los retos ahora.';
+    const texto = await this.generar(system, mensaje, Math.max(1500, ctx.cantidad * 700));
+    const limpio = texto.trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    let data: unknown;
+    try { data = JSON.parse(limpio); } catch {
+      throw new HttpException('PREXI no pudo armar retos válidos. Intenta de nuevo.', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const validos: RetoPropuesto[] = [];
+    for (const item of Array.isArray(data) ? data : []) {
+      if (!item || typeof item !== 'object') continue;
+      const p = item as Record<string, unknown>;
+      const r: RetoPropuesto = {
+        titulo: str(p.titulo).slice(0, 160), enunciado: str(p.enunciado), codigoInicial: typeof p.codigoInicial === 'string' ? p.codigoInicial.replace(/\s+$/, '') : '',
+        ejemploEntrada: str(p.ejemploEntrada).slice(0, 500), ejemploSalida: str(p.ejemploSalida).slice(0, 500),
+        codigoCorregido: typeof p.codigoCorregido === 'string' ? p.codigoCorregido.replace(/\s+$/, '') : '', dondeEstaElBug: str(p.dondeEstaElBug),
+      };
+      if (r.titulo.length < 3 || r.enunciado.length < 3) continue;
+      // Un bug sin código o sin salida no se puede calificar solo: se descarta.
+      if (ctx.tipo === 'bug' && (!r.codigoInicial.trim() || !r.ejemploSalida)) continue;
+      validos.push(r);
+    }
+    if (validos.length === 0) {
+      throw new HttpException('PREXI no generó retos utilizables. Intenta de nuevo o cambia la indicación.', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    return validos;
   }
 
   // ── 7) Ayuda al DOCENTE a reconocer las columnas de su lista de estudiantes ──

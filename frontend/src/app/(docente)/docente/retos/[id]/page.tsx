@@ -10,6 +10,7 @@ import { SelectorTema } from '@/components/docente/selector-tema';
 import { NIVELES, estrellasDesdeNivel } from '@/components/nivel-badge';
 import { Check, ChevronLeft, ArrowRight, AlertTriangle, Target, Save } from '@/components/icons';
 import { TIPOS_RETO, TipoReto, tipoDe } from '@/components/docente/retos/tipos';
+import { AyudaPrexi } from '@/components/docente/retos/ayuda-prexi';
 
 const PASOS = ['Tipo y tema', 'El reto', 'Publicación'];
 const XP_POR_NIVEL: Record<NivelDificultad, number> = { basico: 10, intermedio: 15, avanzado: 20 };
@@ -204,6 +205,12 @@ export default function RetoAsistentePage() {
 
       {/* ── Paso 2 ── */}
       {paso === 1 && (
+        <>
+        {f.temaId !== null && (
+          <AyudaPrexi tipo={f.tipo} temaId={f.temaId} temaNombre={tema ? `${tema.numero} ${tema.titulo}` : 'el tema'} nivel={f.nivel}
+            hayContenido={!!(f.titulo.trim() || f.enunciado.trim() || f.codigoInicial.trim())}
+            onUsar={(p) => set({ titulo: p.titulo, enunciado: p.enunciado, codigoInicial: p.codigoInicial, ejemploEntrada: p.ejemploEntrada, ejemploSalida: p.ejemploSalida })} />
+        )}
         <Card>
           <div className="mb-4 flex items-start gap-3 rounded-xl p-3" style={{ backgroundColor: `${info.color}12` }}>
             <info.Icono className="mt-0.5 h-5 w-5 shrink-0" style={{ color: info.color }} />
@@ -246,6 +253,7 @@ export default function RetoAsistentePage() {
             )}
           </div>
         </Card>
+        </>
       )}
 
       {/* ── Paso 3 ── */}

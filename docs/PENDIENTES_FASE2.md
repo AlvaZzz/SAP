@@ -74,7 +74,9 @@ tocaron porque quedaban fuera de ese alcance.
     tiene `GEMINI_API_KEY`: la lógica está cubierta con pruebas unitarias (PREXI simulado)
     y la pantalla muestra el aviso de IA no configurada. Falta una prueba real con la
     clave de producción, sobre todo para confirmar que 10 preguntas con código caben en
-    la respuesta y que PREXI declara bien los temas que combina.
+    la respuesta y que PREXI declara bien los temas que combina. Lo mismo vale para la
+    redacción de flashcards y para las propuestas de retos: en un reto de bug hay que
+    comprobar que la "salida correcta" que propone PREXI sea la real.
 19. **Backend de la evaluación final (postest) dormido.** Se retiraron sus pantallas y el
     control del docente, pero siguen el módulo `mediciones/postest`, `PostestControl`, el
     banco `postest`, el campo `postestDesdeNivel` de Administración → Sistema y el

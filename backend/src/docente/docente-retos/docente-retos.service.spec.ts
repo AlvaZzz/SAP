@@ -5,10 +5,12 @@ import { crearPrismaMock, PrismaMock } from '../../test-utils/prisma.mock';
 describe('DocenteRetosService (asociación de tema)', () => {
   let prisma: PrismaMock;
   let service: DocenteRetosService;
+  let proponerRetos: jest.Mock;
 
   beforeEach(() => {
     prisma = crearPrismaMock();
-    service = new DocenteRetosService(prisma as never);
+    proponerRetos = jest.fn();
+    service = new DocenteRetosService(prisma as never, { proponerRetos } as never);
     prisma.nivel.findUnique.mockResolvedValue(null);
     prisma.reto.create.mockResolvedValue({ id: 1 });
     prisma.reto.update.mockResolvedValue({ id: 1 });
@@ -82,5 +84,34 @@ describe('DocenteRetosService (asociación de tema)', () => {
       prisma.reto.findUnique.mockResolvedValue({ id: 1, autorId: 7, esBugHunt: false, codigoInicial: null, ejemploSalida: null });
       await expect(service.editar(1, 7, { esBugHunt: true } as never)).rejects.toThrow(BadRequestException);
     });
+  });
+});
+
+describe('DocenteRetosService · propuestas de PREXI', () => {
+  it('ubica el subtema en su tema y su unidad, y no guarda nada', async () => {
+    const prisma = crearPrismaMock();
+    const proponerRetos = jest.fn().mockResolvedValue([{ titulo: 'Reto' }]);
+    const service = new DocenteRetosService(prisma as never, { proponerRetos } as never);
+    prisma.tema.findUnique.mockResolvedValue({
+      id: 9, numero: '1.5.2', titulo: 'Operadores', descripcion: 'Aritméticos y lógicos',
+      unidad: { numero: 1, titulo: 'Fundamentos' }, padre: { numero: '1.5', titulo: 'Tipos de datos' },
+    });
+    const r = await service.sugerir({ tipo: 'bug', temaId: 9, nivel: 'intermedio', indicacion: 'con notas' });
+    expect(proponerRetos).toHaveBeenCalledWith({
+      tipo: 'bug', nivel: 'intermedio', cantidad: 3,
+      unidad: 'Unidad 1: Fundamentos', tema: '1.5.2 Operadores', temaPadre: '1.5 Tipos de datos',
+      descripcion: 'Aritméticos y lógicos', indicacion: 'con notas',
+    });
+    expect(r.propuestas).toHaveLength(1);
+    expect(prisma.reto.create).not.toHaveBeenCalled();
+  });
+
+  it('rechaza un tema que no existe sin llamar a la IA', async () => {
+    const prisma = crearPrismaMock();
+    const proponerRetos = jest.fn();
+    const service = new DocenteRetosService(prisma as never, { proponerRetos } as never);
+    prisma.tema.findUnique.mockResolvedValue(null);
+    await expect(service.sugerir({ tipo: 'codigo', temaId: 404, nivel: 'basico' })).rejects.toThrow(BadRequestException);
+    expect(proponerRetos).not.toHaveBeenCalled();
   });
 });

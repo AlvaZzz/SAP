@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { IsOptional, IsBoolean } from 'class-validator';
 import { DocenteRetosService } from './docente-retos.service';
-import { CrearRetoDto, EditarRetoDto } from './dto/reto.dto';
+import { CrearRetoDto, EditarRetoDto, SugerirRetosDto } from './dto/reto.dto';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { RolesGuard, Roles } from '../../common/auth/roles.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
@@ -36,6 +36,12 @@ export class DocenteRetosController {
   @Put('config')
   async actualizarConfig(@Body() dto: ConfigRetosDto) {
     return this.service.actualizarConfiguracion(dto);
+  }
+
+  /** Propuestas de PREXI para un tema. No guarda nada. */
+  @Post('sugerir')
+  async sugerir(@Body() dto: SugerirRetosDto) {
+    return this.service.sugerir(dto);
   }
 
   @Post()

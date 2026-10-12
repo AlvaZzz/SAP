@@ -1,7 +1,7 @@
 import {
-  IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength, IsEnum, IsBoolean, IsDateString, ValidateIf,
+  IsInt, IsString, Min, Max, IsOptional, MinLength, MaxLength, IsEnum, IsBoolean, IsDateString, ValidateIf, IsIn,
 } from 'class-validator';
-import { TipoEjercicio } from '@prisma/client';
+import { TipoEjercicio, NivelDificultad } from '@prisma/client';
 import { XP_MAX_ITEM } from '../../../common/xp/tope';
 
 /**
@@ -58,6 +58,22 @@ export class CrearRetoDto {
   // Misión de depuración: auto‑valida por comparación de salida (requiere ejemploSalida).
   @IsOptional() @IsBoolean()
   esBugHunt?: boolean;
+}
+
+/** Pide a PREXI propuestas de reto para un tema, un tipo y un nivel. */
+export class SugerirRetosDto {
+  @IsIn(['bug', 'codigo'])
+  tipo!: 'bug' | 'codigo';
+
+  @IsInt() @Min(1)
+  temaId!: number;
+
+  @IsEnum(NivelDificultad)
+  nivel!: NivelDificultad;
+
+  // Pista opcional del docente: "que use notas de un curso", "con listas"…
+  @IsOptional() @IsString() @MaxLength(400)
+  indicacion?: string;
 }
 
 export class EditarRetoDto {
