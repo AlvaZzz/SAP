@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { IsInt, IsString, Min, MinLength, IsOptional } from 'class-validator';
 import { PretestService } from './pretest.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -31,7 +31,9 @@ export class PretestController {
     const est = await this.pretest.estado(usuarioId);
     if (est.completado) throw new BadRequestException('Ya completaste el diagnóstico');
     // Gate: el diagnóstico solo se habilita tras revisar la introducción.
-    const u = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { introduccionCompletada: true } });
+    const u = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { introduccionCompletada: true, estadoInscripcion: true } });
+    // Gate: quien se registró solo espera a que su docente lo acepte en el curso.
+    if (u && u.estadoInscripcion !== 'aprobada') throw new ForbiddenException('Tu docente todavía no aceptó tu inscripción al curso');
     if (!u?.introduccionCompletada) throw new BadRequestException('Revisa la introducción antes de comenzar el diagnóstico');
     const preguntas = await this.pretest.preguntas(usuarioId);
     return { preguntas, total: preguntas.length };

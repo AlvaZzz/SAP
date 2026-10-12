@@ -11,6 +11,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
+import { AvisoSolicitudes } from '@/components/docente/aviso-solicitudes';
 import { NivelDificultad } from '@/lib/types';
 import { Badge, Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import { FilaCurso, NivelChip, PromedioChip } from '@/components/docente/curso';
@@ -157,6 +158,8 @@ function Contenido() {
             {d.paralelos.map((p) => <option key={`${p.id}-${p.nombre}`} value={p.nombre}>{p.id === null ? p.nombre : `Paralelo ${p.nombre}`} ({p.total})</option>)}
           </select>
         } />
+
+      <AvisoSolicitudes />
 
       {/* 1 · Qué hacer ahora */}
       <section className="mb-6">

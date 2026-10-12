@@ -150,6 +150,12 @@ model Usuario {
   // y forzado de cambio de contraseña tras un reseteo.
   activo             Boolean @default(true)
   mustChangePassword Boolean @default(false) @map("must_change_password")
+  // Inscripción al curso. `aprobada` = registrado por el docente o ya aceptado.
+  // `pendiente` = se registró solo y espera que el docente del paralelo lo acepte:
+  // hasta entonces no puede rendir el diagnóstico. `rechazada` = no fue aceptado.
+  estadoInscripcion     EstadoInscripcion @default(aprobada) @map("estado_inscripcion")
+  inscripcionMotivo     String?           @map("inscripcion_motivo")
+  inscripcionSolicitada DateTime?         @map("inscripcion_solicitada")
 
   // Seguridad de acceso.
   failedLoginCount Int       @default(0) @map("failed_login_count")
@@ -1336,4 +1342,10 @@ model Flashcard {
 
   @@index([temaId, nivelDificultad])
   @@map("flashcards")
+}
+
+enum EstadoInscripcion {
+  aprobada
+  pendiente
+  rechazada
 }

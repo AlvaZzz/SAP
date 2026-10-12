@@ -45,6 +45,7 @@ export default function PretestPage() {
 
   useEffect(() => {
     if (usuario && usuario.rol !== 'estudiante') { router.replace('/dashboard'); return; }
+    if (usuario && usuario.estadoInscripcion && usuario.estadoInscripcion !== 'aprobada') { router.replace('/inscripcion'); return; }
     api.get<{ completado: boolean }>('/pretest/estado').then(async (e) => {
       if (e.completado) { router.replace('/pretest/resultado'); return; }
       // Gate: el diagnóstico solo se habilita tras revisar la introducción.

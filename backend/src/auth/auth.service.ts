@@ -50,6 +50,8 @@ export class CuentaBloqueadaException extends HttpException {
 const SELECT_PUBLICO = {
   id: true, nombre: true, email: true, rol: true, carrera: true,
   introduccionCompletada: true, pretestCompletado: true, nivelInicial: true, mustChangePassword: true,
+  // Solicitud de inscripción: mientras no sea `aprobada` no puede rendir el diagnóstico.
+  estadoInscripcion: true, inscripcionMotivo: true,
   paralelo: true, semestre: true, ru: true, nombres: true,
   // Curso del estudiante: materia, paralelo y docente a cargo (lo ve en su panel).
   paraleloRef: {
@@ -77,26 +79,69 @@ export class AuthService {
     return this.jwt.sign(payload);
   }
 
+  /**
+   * Cursos a los que un estudiante puede pedir inscribirse: cada paralelo con
+   * su materia y su docente. Es público (lo usa el formulario de registro).
+   */
+  async cursosDisponibles() {
+    const paralelos = await this.prisma.paralelo.findMany({
+      orderBy: [{ materia: { gestion: 'desc' } }, { materia: { nombre: 'asc' } }, { nombre: 'asc' }],
+      select: {
+        id: true, nombre: true,
+        materia: { select: { nombre: true, sigla: true, gestion: true } },
+        docente: { select: { nombre: true } },
+      },
+    });
+    return paralelos.map((p) => ({
+      id: p.id, paralelo: p.nombre, materia: p.materia.nombre, sigla: p.materia.sigla, gestion: p.materia.gestion,
+      docente: p.docente?.nombre ?? null,
+    }));
+  }
+
+  /**
+   * Registro por cuenta propia. Con `paraleloId` (el formulario actual) la
+   * cuenta nace como SOLICITUD: el docente de ese paralelo debe aceptarla antes
+   * de que el estudiante pueda rendir el diagnóstico. Así nadie entra a un
+   * curso que no es el suyo o que ya no tiene cupo.
+   */
   async register(dto: RegisterDto) {
-    if (await this.prisma.usuario.findUnique({ where: { email: dto.email } }))
+    const email = dto.email?.trim().toLowerCase() || null;
+    const ru = dto.ru?.trim() || null;
+    if (email && await this.prisma.usuario.findUnique({ where: { email } }))
       throw new BadRequestException('Ya existe un usuario con ese correo');
     if (await this.prisma.usuario.findUnique({ where: { cedula: dto.cedula } }))
       throw new BadRequestException('Ya existe un usuario con esa cédula');
+    if (ru && await this.prisma.usuario.findFirst({ where: { ru } }))
+      throw new BadRequestException('Ya existe un usuario con ese RU. Si tu docente ya te registró, entra con tu RU y tu CI.');
+    if (!email && !ru) throw new BadRequestException('Escribe tu RU: lo usarás para iniciar sesión');
+
+    const apellidoPaterno = dto.apellidoPaterno?.trim() || null;
+    const apellidoMaterno = dto.apellidoMaterno?.trim() || null;
+    const nombres = dto.nombres?.trim() || null;
+    const nombre = [apellidoPaterno, apellidoMaterno, nombres].filter(Boolean).join(' ') || dto.nombre?.trim();
+    if (!nombre || nombre.length < 2) throw new BadRequestException('Escribe tus apellidos y nombres');
+
+    // Curso pedido. El formulario manda el paralelo exacto; los clientes
+    // antiguos mandan solo la letra y quedan enlazados sin pasar por solicitud.
+    let paraleloId: number | null = null;
+    let paralelo = dto.paralelo?.trim().toUpperCase() || null;
+    let pendiente = false;
+    if (dto.paraleloId) {
+      const real = await this.prisma.paralelo.findUnique({ where: { id: dto.paraleloId }, select: { id: true, nombre: true } });
+      if (!real) throw new BadRequestException('El curso elegido ya no existe. Vuelve a cargar la página.');
+      paraleloId = real.id; paralelo = real.nombre; pendiente = true;
+    } else if (paralelo) {
+      const real = await this.prisma.paralelo.findFirst({ where: { nombre: paralelo }, orderBy: { id: 'desc' }, select: { id: true } });
+      paraleloId = real?.id ?? null;
+    }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const paralelo = dto.paralelo.trim().toUpperCase();
-
-    // Si el docente ya creó ese paralelo, el estudiante queda enlazado a él (y con
-    // eso a su materia y a su docente). Se toma el de la materia más reciente.
-    const paraleloReal = await this.prisma.paralelo.findFirst({
-      where: { nombre: paralelo }, orderBy: { id: 'desc' }, select: { id: true },
-    });
-
     const usuario = await this.prisma.usuario.create({
       data: {
-        nombre: dto.nombre, email: dto.email, cedula: dto.cedula,
-        carrera: dto.carrera, passwordHash, rol: 'estudiante',
-        paralelo, paraleloId: paraleloReal?.id ?? null, semestre: dto.semestre ?? 1,
+        nombre, apellidoPaterno, apellidoMaterno, nombres, email, cedula: dto.cedula, ru,
+        carrera: dto.carrera ?? null, passwordHash, rol: 'estudiante',
+        paralelo, paraleloId, semestre: dto.semestre ?? 1,
+        ...(pendiente ? { estadoInscripcion: 'pendiente' as const, inscripcionSolicitada: new Date() } : {}),
         // Constancia del consentimiento informado, con fecha. Solo si el cliente
         // lo declara de forma explícita: si no llega, queda sin registro y el
         // rol investigador lo reporta como tal (no se presume otorgado).
@@ -109,6 +154,20 @@ export class AuthService {
     });
 
     return { usuario, token: this.firmarToken(usuario) };
+  }
+
+  /** Un estudiante rechazado vuelve a pedir inscripción, en el mismo curso o en otro. */
+  async solicitarInscripcion(usuarioId: number, paraleloId: number) {
+    const u = await this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { rol: true, estadoInscripcion: true } });
+    if (!u || u.rol !== 'estudiante') throw new BadRequestException('Solo un estudiante puede pedir inscripción');
+    if (u.estadoInscripcion === 'aprobada') throw new BadRequestException('Tu inscripción ya fue aceptada');
+    const real = await this.prisma.paralelo.findUnique({ where: { id: paraleloId }, select: { id: true, nombre: true } });
+    if (!real) throw new BadRequestException('El curso elegido ya no existe');
+    return this.prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { paraleloId: real.id, paralelo: real.nombre, estadoInscripcion: 'pendiente', inscripcionMotivo: null, inscripcionSolicitada: new Date() },
+      select: SELECT_PUBLICO,
+    });
   }
 
   /** Segundos que faltan para que expire un bloqueo (0 si ya pasó). */

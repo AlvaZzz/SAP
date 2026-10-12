@@ -40,7 +40,7 @@ export default function LoginPage() {
         <div className="relative z-20 lg:z-auto lg:w-[57%] lg:pl-10 xl:pl-14 2xl:pl-16">
           <LoginHero />
         </div>
-        <div className="relative z-10 flex items-center justify-center pb-8 pt-2 sm:pb-10 lg:w-[43%] lg:justify-center lg:border-l lg:border-line/60 lg:px-8 lg:py-8 xl:px-12 2xl:px-16">
+        <div className="relative z-10 flex items-center justify-center pb-8 pt-2 sm:pb-10 lg:w-[43%] lg:justify-center lg:px-8 lg:py-8 xl:px-12 2xl:px-16">
           <LoginForm />
         </div>
       </div>

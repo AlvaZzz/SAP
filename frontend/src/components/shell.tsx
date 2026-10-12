@@ -85,6 +85,7 @@ const NAV_DOCENTE: NavGrupo[] = [
     titulo: 'Estudiantes',
     items: [
       { href: '/docente/estudiantes/registro', label: 'Registro de estudiantes', icon: UserCheck },
+      { href: '/docente/estudiantes/solicitudes', label: 'Solicitudes', icon: Inbox },
       { href: '/docente/estudiantes', label: 'Seguimiento', icon: Users },
     ],
   },
@@ -195,6 +196,8 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
     const rol = usuario.rol as Rol;
     // Contraseña temporal: no entra a ningún área hasta definir la suya.
     if (usuario.mustChangePassword) { router.replace('/primer-ingreso'); return; }
+    // Se registró solo y su docente aún no lo aceptó: espera en su propia pantalla.
+    if (rol === 'estudiante' && usuario.estadoInscripcion && usuario.estadoInscripcion !== 'aprobada') { router.replace('/inscripcion'); return; }
     if (!areaPermite(area, rol)) { router.replace(HOME_ROL[rol]); return; }
     if (area === 'estudiante' && !usuario.introduccionCompletada) router.replace('/introduccion');
     else if (area === 'estudiante' && !usuario.pretestCompletado) router.replace('/pretest');

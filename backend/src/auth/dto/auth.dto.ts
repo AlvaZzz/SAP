@@ -1,4 +1,10 @@
-import { IsEmail, IsString, MinLength, MaxLength, IsOptional, IsInt, Min, Max, IsBoolean, Matches } from 'class-validator';
+import { IsEmail, IsString, MinLength, MaxLength, IsOptional, IsInt, Min, Max, IsBoolean, Matches, ValidateIf } from 'class-validator';
+
+/** Un estudiante no aceptado vuelve a pedir inscripción en un paralelo. */
+export class SolicitarInscripcionDto {
+  @IsInt() @Min(1)
+  paraleloId!: number;
+}
 
 /**
  * Complejidad mínima de contraseña: 8 caracteres con al menos una letra y un
@@ -14,11 +20,32 @@ export const PASSWORD_MENSAJE = 'La contraseña debe tener al menos 8 caracteres
 // restricción al dominio institucional @upea.edu.bo está deshabilitada
 // a pedido del usuario; reactivarla aquí si la tesis lo requiere.
 export class RegisterDto {
-  @IsString() @MinLength(2) @MaxLength(120)
-  nombre!: string;
+  // Datos del estudiante, igual que en la lista del docente.
+  @IsOptional() @IsString() @MaxLength(60)
+  apellidoPaterno?: string;
 
+  @IsOptional() @IsString() @MaxLength(60)
+  apellidoMaterno?: string;
+
+  @IsOptional() @IsString() @MaxLength(80)
+  nombres?: string;
+
+  // Registro universitario: con él inicia sesión.
+  @IsOptional() @IsString() @Matches(/^[0-9A-Za-z-]{4,20}$/, { message: 'El RU solo lleva números y letras (4 a 20)' })
+  ru?: string;
+
+  // Paralelo exacto al que pide inscribirse: la cuenta queda como SOLICITUD.
+  @IsOptional() @IsInt() @Min(1)
+  paraleloId?: number;
+
+  // Compatibilidad con clientes anteriores (nombre en un solo campo).
+  @IsOptional() @IsString() @MinLength(2) @MaxLength(120)
+  nombre?: string;
+
+  // Opcional: sirve para recuperar la contraseña.
+  @ValidateIf((_, v) => v !== undefined && v !== null && v !== '')
   @IsEmail({}, { message: 'Correo inválido' })
-  email!: string;
+  email?: string;
 
   @IsString() @MaxLength(100) @Matches(PASSWORD_REGEX, { message: PASSWORD_MENSAJE })
   password!: string;
@@ -26,12 +53,12 @@ export class RegisterDto {
   @IsString() @MinLength(4) @MaxLength(20)
   cedula!: string;
 
-  @IsString() @MinLength(2) @MaxLength(120)
-  carrera!: string;
+  @IsOptional() @IsString() @MaxLength(120)
+  carrera?: string;
 
-  // Paralelo del estudiante (ej. "A", "B", "C").
-  @IsString() @MinLength(1) @MaxLength(10)
-  paralelo!: string;
+  // Letra del paralelo (clientes anteriores). El formulario actual manda `paraleloId`.
+  @IsOptional() @IsString() @MaxLength(10)
+  paralelo?: string;
 
   @IsOptional() @IsInt() @Min(1) @Max(12)
   semestre?: number;

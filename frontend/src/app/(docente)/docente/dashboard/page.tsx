@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { AvisoSolicitudes } from '@/components/docente/aviso-solicitudes';
 import { NivelDificultad, NIVEL_COLOR } from '@/lib/types';
 import { useAuth } from '@/providers/auth-provider';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
@@ -54,6 +55,7 @@ export default function DocenteDashboardPage() {
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
       <p className="mb-6 mt-1 text-[15px] text-muted">Estos son tus paralelos. Entra a uno para ver a tus estudiantes por nivel.</p>
 
+      <AvisoSolicitudes />
       <TarjetaEvaluarPrexi href="/docente/evaluar-prexi" />
 
       <StatGrid className="mb-6">

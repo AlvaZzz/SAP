@@ -3,7 +3,7 @@ import { Request, Response, CookieOptions } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import {
-  RegisterDto, LoginDto, PerfilDto, PasswordDto, PrimerIngresoDto, TourVistoDto,
+  RegisterDto, SolicitarInscripcionDto, LoginDto, PerfilDto, PasswordDto, PrimerIngresoDto, TourVistoDto,
   RecuperarDto, RestablecerDto, ValidarTokenDto, PreferenciasAudioDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard, AUTH_COOKIE, JwtPayload } from '../common/auth/jwt.guard';
@@ -95,6 +95,19 @@ export class AuthController {
   private sembrarSesion(res: Response, token: string, refresh: { token: string; maxAgeMs: number }) {
     res.cookie(AUTH_COOKIE, token, this.cookieOpts());
     res.cookie(REFRESH_COOKIE, refresh.token, this.refreshCookieOpts(refresh.maxAgeMs));
+  }
+
+  /** Cursos abiertos (materia, paralelo, docente) para el formulario de registro. Público. */
+  @Get('cursos')
+  async cursos() {
+    return { cursos: await this.auth.cursosDisponibles() };
+  }
+
+  /** El estudiante no aceptado pide inscripción otra vez. */
+  @Post('inscripcion')
+  @UseGuards(JwtAuthGuard)
+  async inscripcion(@CurrentUser('sub') usuarioId: number, @Body() dto: SolicitarInscripcionDto) {
+    return { usuario: await this.auth.solicitarInscripcion(usuarioId, dto.paraleloId) };
   }
 
   @Post('register')

@@ -24,6 +24,7 @@ export default function IntroduccionPage() {
 
   useEffect(() => {
     if (usuario && usuario.rol !== 'estudiante') { router.replace('/dashboard'); return; }
+    if (usuario && usuario.estadoInscripcion && usuario.estadoInscripcion !== 'aprobada') { router.replace('/inscripcion'); return; }
     if (usuario && usuario.introduccionCompletada) { router.replace(usuario.pretestCompletado ? '/dashboard' : '/pretest'); return; }
     api.get<{ unidades: UnidadIntro[] }>('/introduccion')
       .then((r) => setUnidades(r.unidades))

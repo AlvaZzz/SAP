@@ -85,3 +85,19 @@ publicación) y los ve agrupados por tipo, unidad y tema. En el paso del conteni
 pedirle a PREXI tres ideas para ese tema, tipo y nivel; elegir una solo rellena el
 formulario, y la salida correcta de un bug debe comprobarla el docente. Un interruptor único muestra u
 oculta todo el módulo.
+
+## Cómo entra un estudiante al curso
+
+Hay dos caminos y ambos terminan igual: el estudiante inicia sesión con su RU.
+
+1. **Lo registra su docente** desde su lista (Registro de estudiantes). Queda inscrito de
+   inmediato; su contraseña inicial es su CI y la cambia en el primer ingreso.
+2. **Se registra solo** en "Crear cuenta": da apellidos, nombres, CI y RU, y elige su
+   materia y paralelo. La cuenta se crea, pero como **solicitud pendiente**. El docente de
+   ese paralelo la ve en *Solicitudes* y la acepta (en el paralelo pedido o en otro suyo) o
+   la rechaza con un mensaje. Mientras no esté aceptado, el estudiante no puede rendir el
+   diagnóstico ni aparece en las listas del docente. Si lo rechazan, ve el motivo y puede
+   pedir otro paralelo.
+
+El sistema no maneja un cupo numérico por paralelo: al revisar las solicitudes el docente
+ve cuántos inscritos tiene cada uno y decide.

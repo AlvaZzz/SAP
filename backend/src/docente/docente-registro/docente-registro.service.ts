@@ -22,9 +22,11 @@ export type ModoExistentes = 'actualizar' | 'omitir';
  * o estudiantes sin paralelo), para que nadie quede invisible. El admin ve todo.
  */
 export function estudiantesDelDocente(docenteId: number, rol: string): Prisma.UsuarioWhereInput {
-  if (rol === 'admin') return { rol: 'estudiante' };
+  // Quien se registró solo y aún no fue aceptado NO es todavía estudiante del
+  // curso: aparece en Solicitudes, no en las listas.
+  if (rol === 'admin') return { rol: 'estudiante', estadoInscripcion: 'aprobada' };
   return {
-    rol: 'estudiante',
+    rol: 'estudiante', estadoInscripcion: 'aprobada',
     OR: [
       { paraleloRef: { docenteId } },
       { paraleloRef: { docenteId: null } },
@@ -538,5 +540,81 @@ export class DocenteRegistroService {
       data: { actorId: docenteId, accion: 'password_reset', entidad: 'usuario', entidadId: id, detalle: 'El docente restableció el acceso (contraseña = CI, cambio obligatorio)' },
     });
     return { ok: true, mensaje: 'El estudiante puede entrar con su RU y su CI; deberá elegir una contraseña nueva.' };
+  }
+  // ── Solicitudes de inscripción (estudiantes que se registraron solos) ──
+
+  /** Solicitudes que le toca resolver a este docente: las de sus paralelos y las de paralelos sin docente. */
+  private solicitudesDe(docenteId: number, rol: string): Prisma.UsuarioWhereInput {
+    return {
+      rol: 'estudiante', estadoInscripcion: 'pendiente',
+      ...(rol === 'admin' ? {} : { OR: [{ paraleloRef: { docenteId } }, { paraleloRef: { docenteId: null } }, { paraleloId: null }] }),
+    };
+  }
+
+  async solicitudes(docenteId: number, rol: string) {
+    const [pendientes, paralelos] = await Promise.all([
+      this.prisma.usuario.findMany({
+        where: this.solicitudesDe(docenteId, rol),
+        orderBy: { inscripcionSolicitada: 'asc' },
+        select: {
+          id: true, nombre: true, cedula: true, ru: true, email: true, inscripcionSolicitada: true, creadoEn: true,
+          paraleloRef: { select: { id: true, nombre: true, materia: { select: { nombre: true, gestion: true } } } },
+        },
+      }),
+      // Paralelos a los que el docente puede enviar al estudiante, con cuántos tiene ya.
+      this.prisma.paralelo.findMany({
+        where: rol === 'admin' ? {} : { OR: [{ docenteId }, { docenteId: null }] },
+        orderBy: [{ materia: { gestion: 'desc' } }, { nombre: 'asc' }],
+        select: {
+          id: true, nombre: true, materia: { select: { nombre: true, gestion: true } },
+          _count: { select: { estudiantes: { where: { estadoInscripcion: 'aprobada', activo: true } } } },
+        },
+      }),
+    ]);
+    return {
+      solicitudes: pendientes.map((u) => ({
+        id: u.id, nombre: u.nombre, ci: u.cedula, ru: u.ru, email: u.email,
+        fecha: u.inscripcionSolicitada ?? u.creadoEn,
+        paralelo: u.paraleloRef ? { id: u.paraleloRef.id, nombre: u.paraleloRef.nombre, materia: u.paraleloRef.materia.nombre, gestion: u.paraleloRef.materia.gestion } : null,
+      })),
+      paralelos: paralelos.map((p) => ({ id: p.id, nombre: p.nombre, materia: p.materia.nombre, gestion: p.materia.gestion, inscritos: p._count.estudiantes })),
+    };
+  }
+
+  /** Cuántas solicitudes esperan respuesta (para el aviso del menú). */
+  async conteoSolicitudes(docenteId: number, rol: string) {
+    return { pendientes: await this.prisma.usuario.count({ where: this.solicitudesDe(docenteId, rol) }) };
+  }
+
+  private async solicitudPropia(id: number, docenteId: number, rol: string) {
+    const u = await this.prisma.usuario.findFirst({ where: { id, ...this.solicitudesDe(docenteId, rol) }, select: { id: true, paraleloId: true } });
+    if (!u) throw new NotFoundException('Esa solicitud ya fue resuelta o no es de tus paralelos');
+    return u;
+  }
+
+  /** Acepta al estudiante, en el paralelo que pidió o en otro que el docente elija. */
+  async aceptarSolicitud(id: number, docenteId: number, rol: string, paraleloId?: number) {
+    const u = await this.solicitudPropia(id, docenteId, rol);
+    const destino = paraleloId ?? u.paraleloId;
+    if (!destino) throw new BadRequestException('Elige el paralelo en el que queda el estudiante');
+    const paralelo = await this.prisma.paralelo.findUnique({ where: { id: destino }, select: { id: true, nombre: true, docenteId: true } });
+    if (!paralelo) throw new BadRequestException('El paralelo elegido no existe');
+    if (rol !== 'admin' && paralelo.docenteId !== null && paralelo.docenteId !== docenteId) {
+      throw new BadRequestException('Solo puedes aceptar estudiantes en tus propios paralelos');
+    }
+    await this.prisma.usuario.update({
+      where: { id },
+      data: { estadoInscripcion: 'aprobada', inscripcionMotivo: null, paraleloId: paralelo.id, paralelo: paralelo.nombre },
+    });
+    return { ok: true };
+  }
+
+  async rechazarSolicitud(id: number, docenteId: number, rol: string, motivo?: string) {
+    await this.solicitudPropia(id, docenteId, rol);
+    await this.prisma.usuario.update({
+      where: { id },
+      data: { estadoInscripcion: 'rechazada', inscripcionMotivo: motivo?.trim() || null },
+    });
+    return { ok: true };
   }
 }

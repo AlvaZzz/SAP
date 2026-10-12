@@ -17,12 +17,15 @@ function huboSesionPrevia(): boolean { try { return localStorage.getItem(HUBO_SE
 function limpiarMarcaSesion() { try { localStorage.removeItem(HUBO_SESION_KEY); } catch { /* sin storage */ } }
 
 export interface RegistroData {
-  nombre: string;
-  email: string;
-  password: string;
+  apellidoPaterno: string;
+  apellidoMaterno?: string;
+  nombres: string;
   cedula: string;
-  carrera: string;
-  paralelo: string;
+  ru: string;
+  /** Paralelo al que pide inscribirse; su docente debe aceptarlo. */
+  paraleloId: number;
+  email?: string;
+  password: string;
   /**
    * Aceptación del consentimiento informado. El formulario ya obligaba a
    * marcarla, pero antes se quedaba en el navegador: ahora viaja al servidor

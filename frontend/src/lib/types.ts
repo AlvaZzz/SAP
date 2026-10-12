@@ -15,6 +15,9 @@ export interface Usuario {
   nombres?: string | null;
   /** true mientras use una contraseña temporal: debe pasar por /primer-ingreso. */
   mustChangePassword?: boolean;
+  /** Quien se registró solo espera en `pendiente` a que su docente lo acepte. */
+  estadoInscripcion?: 'aprobada' | 'pendiente' | 'rechazada';
+  inscripcionMotivo?: string | null;
   /** Curso del estudiante: paralelo, materia y docente a cargo. */
   paraleloRef?: {
     nombre: string;

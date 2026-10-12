@@ -83,12 +83,43 @@ class EstadoDto {
   @IsBoolean() activo!: boolean;
 }
 
+class ResolverSolicitudDto {
+  // Al aceptar: paralelo distinto al pedido (opcional).
+  @IsOptional() @IsInt() @Min(1)
+  paraleloId?: number;
+
+  // Al rechazar: qué se le dice al estudiante (opcional).
+  @IsOptional() @IsString() @MaxLength(300)
+  motivo?: string;
+}
+
 /** Registro de estudiantes del docente: materias, paralelos, carga de la lista y edición. */
 @Controller('docente/registro')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('docente', 'admin')
 export class DocenteRegistroController {
   constructor(private readonly service: DocenteRegistroService) {}
+
+  // ── Solicitudes de estudiantes que se registraron por su cuenta ──
+  @Get('solicitudes')
+  solicitudes(@CurrentUser() u: { sub: number; rol: string }) {
+    return this.service.solicitudes(u.sub, u.rol);
+  }
+
+  @Get('solicitudes/conteo')
+  conteoSolicitudes(@CurrentUser() u: { sub: number; rol: string }) {
+    return this.service.conteoSolicitudes(u.sub, u.rol);
+  }
+
+  @Post('solicitudes/:id/aceptar')
+  aceptar(@CurrentUser() u: { sub: number; rol: string }, @Param('id', ParseIntPipe) id: number, @Body() dto: ResolverSolicitudDto) {
+    return this.service.aceptarSolicitud(id, u.sub, u.rol, dto.paraleloId);
+  }
+
+  @Post('solicitudes/:id/rechazar')
+  rechazar(@CurrentUser() u: { sub: number; rol: string }, @Param('id', ParseIntPipe) id: number, @Body() dto: ResolverSolicitudDto) {
+    return this.service.rechazarSolicitud(id, u.sub, u.rol, dto.motivo);
+  }
 
   @Get('materias')
   async materias(@CurrentUser('sub') docenteId: number) {

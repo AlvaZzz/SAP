@@ -19,6 +19,7 @@ function destino(u: Usuario): string {
   if (u.rol === 'admin') return '/admin/dashboard';
   if (u.rol === 'investigador') return '/investigador/indice';
   if (u.rol === 'docente') return '/docente/dashboard';
+  if (u.estadoInscripcion && u.estadoInscripcion !== 'aprobada') return '/inscripcion';
   if (!u.introduccionCompletada) return '/introduccion';
   if (!u.pretestCompletado) return '/pretest';
   return '/dashboard';
