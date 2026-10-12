@@ -202,9 +202,9 @@ export default function DocenteDashboardPage() {
                 <span className="flex-1 text-sm text-fg">Estudiantes que aún no ingresaron</span>
                 <Badge tone={d?.stats.sin_ingresar ? 'amber' : 'slate'}>{d?.stats.sin_ingresar ?? 0}</Badge>
               </Link>
-              <Link href="/docente/postest" className="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:bg-subtle">
+              <Link href="/docente/examenes" className="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:bg-subtle">
                 <GraduationCap className="h-5 w-5 shrink-0 text-prexi-blue-deep" />
-                <span className="flex-1 text-sm text-fg">Evaluación final: habilitar estudiantes</span>
+                <span className="flex-1 text-sm text-fg">Exámenes de unidad: habilitar estudiantes</span>
                 <ArrowRight className="h-4 w-4 text-muted" />
               </Link>
             </div>

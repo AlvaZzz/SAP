@@ -238,6 +238,13 @@ export interface Nivel {
 
 export interface ResultadoIntento {
   correcto: boolean;
+  /** Resultado graduado. Con `parcial` la respuesta se puede complementar y reenviar. */
+  estado?: 'correcta' | 'parcial' | 'incorrecta';
+  puntaje?: number;
+  faltantes?: string[];
+  retroalimentacion?: string;
+  puede_complementar?: boolean;
+  /** Null cuando la respuesta es parcial: no se revela la solución. */
   respuesta_correcta: string;
   explicacion_base: string | null;
   xp: { xpOtorgado: number; multiplicador: number; rachaDias: number };

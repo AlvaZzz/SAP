@@ -68,13 +68,6 @@ const NAV_ESTUDIANTE: NavGrupo[] = [
       { href: '/perfil', label: 'Perfil', icon: UserIcon },
     ],
   },
-  {
-    // La evaluación final va SIEMPRE al final; se bloquea hasta que el docente la habilite.
-    titulo: 'Evaluación',
-    items: [
-      { href: '/postest', label: 'Evaluación final', icon: GraduationCap },
-    ],
-  },
 ];
 
 /**
@@ -110,7 +103,7 @@ const NAV_DOCENTE: NavGrupo[] = [
     titulo: 'Evaluación',
     items: [
       { href: '/docente/revisiones', label: 'Revisiones de retos', icon: Inbox },
-      { href: '/docente/postest', label: 'Evaluación final', icon: GraduationCap },
+      { href: '/docente/examenes', label: 'Exámenes de unidad', icon: GraduationCap },
       { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
       { href: '/docente/evaluar-prexi', label: 'Evaluar PREXI', icon: ClipboardList },
     ],

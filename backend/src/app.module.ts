@@ -29,7 +29,7 @@ import { DocenteRevisionesModule } from './docente/docente-revisiones/docente-re
 import { DocenteDocumentosModule } from './docente/docente-documentos/docente-documentos.module';
 import { DocenteEstudiantesModule } from './docente/docente-estudiantes/docente-estudiantes.module';
 import { DocenteReportesModule } from './docente/docente-reportes/docente-reportes.module';
-import { DocentePostestModule } from './docente/docente-postest/docente-postest.module';
+import { DocenteExamenesModule } from './docente/docente-examenes/docente-examenes.module';
 import { DocenteRegistroModule } from './docente/docente-registro/docente-registro.module';
 import { InvestigadorPanelModule } from './investigador/investigador-panel/investigador-panel.module';
 import { InvestigadorExportacionModule } from './investigador/investigador-exportacion/investigador-exportacion.module';
@@ -78,7 +78,7 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     DocenteDocumentosModule,
     DocenteEstudiantesModule,
     DocenteReportesModule,
-    DocentePostestModule,
+    DocenteExamenesModule,
     DocenteRegistroModule,
     InvestigadorPanelModule,
     InvestigadorExportacionModule,

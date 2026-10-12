@@ -304,7 +304,7 @@ export default function FichaEstudiantePage() {
         </Card>
       </div>
 
-      <p className="mt-5 text-xs text-muted">Registrado el {fechaCorta(e.registrado_en)}. <Link href="/docente/postest" className="font-semibold text-prexi-blue-deep hover:underline">Ir a la evaluación final</Link></p>
+      <p className="mt-5 text-xs text-muted">Registrado el {fechaCorta(e.registrado_en)}. <Link href="/docente/examenes" className="font-semibold text-prexi-blue-deep hover:underline">Ir a los exámenes de unidad</Link></p>
 
       {editando && <EditarDatos estudiante={e} onCerrar={() => setEditando(false)} onGuardado={() => { setEditando(false); cargar(); }} />}
     </div>

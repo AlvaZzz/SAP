@@ -27,11 +27,11 @@ interface Estado {
     temas_total: number; temas_completos: number; temas_pendientes: string[]; temas_ok: boolean;
     dominio_pct: number; nivel_dominio_label: string; nivel_ok: boolean; nivel_requerido_label: string;
   };
-  ultimo_intento: { theta: number | null; nivel: Nivel; nivel_label: string; puntaje: number; aprobado: boolean; fecha: string } | null;
+  ultimo_intento: { nivel: Nivel; nivel_label: string; puntaje: number; aprobado: boolean; fecha: string } | null;
 }
 interface RepasoTema { id: number; numero: string; titulo: string; repaso: string | null; descripcion: string | null }
 interface Pregunta { id: number; categoria: string; estrellas: number; tipo: string; enunciado: string; codigoPython: string | null; opciones: { id: string; texto: string }[] }
-interface Resultado { aprobado: boolean; puntaje: number; correctos: number; total: number; theta: number | null; nivel: Nivel; nivel_label: string; requiere_nivel_label: string; temas_reforzar: string[] }
+interface Resultado { aprobado: boolean; puntaje: number; correctos: number; parciales: number; total: number; nota_aprobacion: number; nivel: Nivel; nivel_label: string; requiere_nivel_label: string; temas_reforzar: string[] }
 
 const COLOR_NIVEL: Record<Nivel, string> = { basico: '#F59E0B', intermedio: '#3B82F6', avanzado: '#10B981' };
 
@@ -225,9 +225,9 @@ export default function ExamenUnidadPage() {
       <div className="card max-w-md">
         <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-prexi-blue/10 text-prexi-blue-deep"><GraduationCap className="h-7 w-7" /></div>
         <h1 className="text-xl font-bold text-fg">Examen de la Unidad {u.numero}</h1>
-        <p className="mt-2 text-sm text-muted">Son {estado!.total_preguntas} preguntas de los temas de la unidad. Necesitas alcanzar al menos nivel <b className="text-fg">Intermedio</b> para avanzar. Sin ayuda de IA.</p>
+        <p className="mt-2 text-sm text-muted">Son {estado!.total_preguntas} preguntas que combinan los temas de la unidad. Se califica sobre 100 y necesitas <b className="text-fg">80 o más</b> para pasar a la siguiente unidad. Sin ayuda de IA, y una vez enviada una respuesta no se puede corregir.</p>
         {estado!.ultimo_intento && !estado!.ultimo_intento.aprobado && (
-          <p className="mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-600">Intento anterior: {estado!.ultimo_intento.puntaje}% ({estado!.ultimo_intento.nivel_label}). ¡Tú puedes!</p>
+          <p className="mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-600">Intento anterior: {estado!.ultimo_intento.puntaje}/100. Necesitas 80. ¡Tú puedes!</p>
         )}
         {estado!.en_cooldown
           ? <p className="mt-4 rounded-lg bg-subtle px-3 py-2 text-sm text-muted">Debes esperar antes de reintentar. Vuelve más tarde.</p>
@@ -272,13 +272,13 @@ export default function ExamenUnidadPage() {
           <h1 className="text-2xl font-extrabold text-fg">{aprob ? '¡Unidad aprobada!' : 'Aún no lo logras'}</h1>
           <p className="mx-auto mt-1 max-w-sm text-sm text-muted">
             {aprob
-              ? <>Alcanzaste nivel <b style={{ color: COLOR_NIVEL[resultado.nivel] }}>{resultado.nivel_label}</b>. La siguiente unidad ya está desbloqueada.</>
-              : <>Tu desempeño quedó en <b style={{ color: COLOR_NIVEL[resultado.nivel] }}>{resultado.nivel_label}</b>. Necesitas al menos {resultado.requiere_nivel_label} para avanzar.</>}
+              ? <>Sacaste <b className="text-fg">{resultado.puntaje} sobre 100</b>. La siguiente unidad ya está desbloqueada.</>
+              : <>Sacaste <b className="text-fg">{resultado.puntaje} sobre 100</b> y se aprueba con {resultado.nota_aprobacion}. Refuerza los temas de abajo y vuelve a intentarlo.</>}
           </p>
           <div className="my-5 flex items-center justify-center gap-6">
-            <div><p className="text-3xl font-extrabold text-fg">{resultado.puntaje}</p><p className="text-xs text-muted">puntos</p></div>
-            <div><p className="text-3xl font-extrabold text-fg">{resultado.correctos}/{resultado.total}</p><p className="text-xs text-muted">aciertos</p></div>
-            {resultado.theta != null && <div><p className="text-3xl font-extrabold text-fg">{resultado.theta.toFixed(2)}</p><p className="text-xs text-muted">θ (habilidad)</p></div>}
+            <div><p className="text-3xl font-extrabold" style={{ color: aprob ? '#10B981' : '#F59E0B' }}>{resultado.puntaje}<span className="text-base font-semibold text-muted">/100</span></p><p className="text-xs text-muted">tu nota</p></div>
+            <div><p className="text-3xl font-extrabold text-fg">{resultado.correctos}/{resultado.total}</p><p className="text-xs text-muted">correctas</p></div>
+            {resultado.parciales > 0 && <div><p className="text-3xl font-extrabold text-fg">{resultado.parciales}</p><p className="text-xs text-muted">a medias</p></div>}
           </div>
           {!aprob && resultado.temas_reforzar.length > 0 && (
             <div className="mb-4 rounded-xl bg-amber-500/10 p-4 text-left">

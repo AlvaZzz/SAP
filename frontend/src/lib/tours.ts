@@ -101,14 +101,6 @@ export const TOURS: Tour[] = [
       { titulo: 'Volver a ver los tutoriales', texto: 'Si algún día quieres repasar estas guías, en esta página está el botón "Volver a ver los tutoriales": reinicia todos los tours del sistema.' },
     ],
   },
-  {
-    clave: 'postest',
-    ruta: en('/postest'),
-    pasos: [
-      { titulo: 'Evaluación final', texto: 'Este es el POSTEST: 20 preguntas similares a las del pretest, para medir cuánto aprendiste. Solo se rinde una vez, así que tómate tu tiempo.' },
-      { titulo: 'Autoguardado', texto: 'Cada respuesta se guarda automáticamente. Al finalizar verás tu puntaje y tu AVANCE respecto al pretest en la sección "Progreso".' },
-    ],
-  },
 
   // ── Docente ──
   {

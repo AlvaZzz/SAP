@@ -65,8 +65,6 @@ export function crearPrismaMock() {
     materia: delegate(),
     paralelo: delegate(),
     habilitacionExamen: delegate(),
-    repasoUnidad: delegate(),
-    examenUnidad: delegate(),
     diagnosticoTema: delegate(),
     repasoUnidad: delegate(),
     examenUnidad: delegate(),

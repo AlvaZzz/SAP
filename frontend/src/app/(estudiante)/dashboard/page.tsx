@@ -28,7 +28,6 @@ interface Recomendado {
   unidad_numero: number; tema_numero: string; tema_titulo: string;
   razon: string;
 }
-interface PostestEstado { disponible: boolean; completado: boolean }
 
 export default function DashboardPage() {
   const { usuario } = useAuth();
@@ -40,7 +39,6 @@ export default function DashboardPage() {
   const [evo, setEvo] = useState<Evolucion | null>(null);
   const [rangos, setRangos] = useState<Rangos | null>(null);
   const [unidades, setUnidades] = useState<UnidadEstudiante[]>([]);
-  const [postest, setPostest] = useState<PostestEstado | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -52,7 +50,6 @@ export default function DashboardPage() {
       api.get<Rangos>('/gamificacion/rangos').then(setRangos).catch(() => undefined),
       api.get<{ unidades: UnidadEstudiante[] }>('/unidades').then((x) => setUnidades(x.unidades ?? [])).catch(() => undefined),
       api.get<{ recomendados: Recomendado[] }>('/gamificacion/recomendados').then((x) => setRec(x.recomendados)).catch(() => undefined),
-      api.get<PostestEstado>('/postest/estado').then(setPostest).catch(() => undefined),
     ]).finally(() => setCargando(false));
   }, []);
 
@@ -75,25 +72,6 @@ export default function DashboardPage() {
       {/* Evaluación del sistema (SUS): solo aparece con la fase habilitada */}
       <TarjetaEvaluarPrexi href="/evaluar-prexi" />
 
-      {/* Postest desbloqueable — tarjeta destacada */}
-      {postest?.disponible && !postest.completado && (
-        <div className="mb-6 flex flex-col items-start gap-4 overflow-hidden rounded-2xl border-0 bg-gradient-to-r from-prexi-green to-emerald-500 p-6 text-white shadow-soft sm:flex-row sm:items-center">
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/15"><GraduationCap className="h-8 w-8" /></div>
-          <div className="flex-1">
-            <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide"><Award className="h-3.5 w-3.5" /> Nuevo · desbloqueado</div>
-            <h2 className="font-display text-xl font-extrabold">¡Ya puedes rendir la evaluación final!</h2>
-            <p className="text-sm text-white/85">Completaste el avance requerido. Mide cuánto aprendiste (postest) — sin ayuda de tu tutor PREXI.</p>
-          </div>
-          <button onClick={() => router.push('/postest')} className="shrink-0 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-prexi-green transition hover:bg-white/90 active:scale-[0.98]">Rendir evaluación <ArrowRight className="ml-1 inline h-4 w-4" /></button>
-        </div>
-      )}
-      {postest?.completado && (
-        <button onClick={() => router.push('/postest/resultado')} className="mb-6 flex w-full items-center gap-3 rounded-2xl border border-line bg-card p-4 text-left shadow-soft transition hover:bg-subtle">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-500/10 text-prexi-green"><Award className="h-6 w-6" /></div>
-          <div className="flex-1"><p className="font-semibold text-fg">Evaluación final completada</p><p className="text-sm text-muted">Revisa tu puntaje, tu progreso vs. pretest y tus respuestas.</p></div>
-          <ArrowRight className="h-5 w-5 text-muted" />
-        </button>
-      )}
 
       {/* ── Estadísticas destacadas ── */}
       <StatGrid className="mb-5">

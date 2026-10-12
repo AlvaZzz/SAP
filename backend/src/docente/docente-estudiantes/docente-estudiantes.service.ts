@@ -318,6 +318,8 @@ export class DocenteEstudiantesService {
         de_unidad: examenes.map((e) => ({
           unidad: e.unidad.numero, titulo: e.unidad.titulo, nota: e.puntaje, aciertos: e.aciertos, total: e.total,
           aprobado: e.aprobado, fecha: e.fecha,
+          // Detalle por pregunta (correcta / parcial / incorrecta). Null en exámenes antiguos.
+          detalle: Array.isArray(e.detalle) ? e.detalle : null,
         })),
         subida_nivel: subidas.map((s) => ({
           tema: s.tema.numero, titulo: s.tema.titulo, desde: ETIQUETA_NIVEL[s.desde], hacia: ETIQUETA_NIVEL[s.hacia],

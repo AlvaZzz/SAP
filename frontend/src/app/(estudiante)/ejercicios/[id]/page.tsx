@@ -38,6 +38,9 @@ export default function DetallePage() {
   // Respuesta actual reportada por el componente de tipo (null = aún sin responder).
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ResultadoIntento | null>(null);
+  // Respuesta PARCIAL: no cierra el ejercicio. Se muestra qué falta y el estudiante
+  // la complementa y vuelve a comprobar.
+  const [parcial, setParcial] = useState<ResultadoIntento | null>(null);
   const [retro, setRetro] = useState<string | null>(null);
   const [pidiendoIa, setPidiendoIa] = useState(false);
   const [iaPedida, setIaPedida] = useState(false);
@@ -47,7 +50,7 @@ export default function DetallePage() {
   const [inicio, setInicio] = useState(() => Date.now());
 
   useEffect(() => {
-    setResultado(null); setRetro(null); setPidiendoIa(false); setIaPedida(false); setUltimaRespuesta('');
+    setResultado(null); setParcial(null); setRetro(null); setPidiendoIa(false); setIaPedida(false); setUltimaRespuesta('');
     setRespuesta(null); setXpVuela(null); setInicio(Date.now());
     api.get<{ ejercicio: Ejercicio }>(`/ejercicios/${id}`).then((r) => {
       setEj(r.ejercicio);
@@ -79,6 +82,8 @@ export default function DetallePage() {
       const r = await api.post<ResultadoIntento>('/intentos', {
         ejercicioId: ej.id, respuestaDada: respuesta, tiempoSeg: Math.round((Date.now() - inicio) / 1000),
       });
+      if (r.estado === 'parcial') { setParcial(r); return; }
+      setParcial(null);
       setResultado(r);
       registrar(r.correcto);   // racha de sesión: aciertos seguidos vs fallos seguidos
       setAvisoOculto(false);
@@ -208,6 +213,17 @@ export default function DetallePage() {
             {/* Cada tipo renderiza su interacción y reporta la respuesta con onChange.
                 `key={ej.id}` remonta el componente (estado limpio) al cambiar de ejercicio. */}
             <VistaEjercicio key={ej.id} ejercicio={ej} resultado={resultado} onChange={setRespuesta} />
+
+            {parcial && !resultado && (
+              <div className="mt-6 rounded-xl border border-prexi-amber/40 bg-prexi-amber/10 p-4 animate-fade-up" role="status">
+                <p className="font-bold text-prexi-amber">Casi: tu respuesta está parcialmente correcta ({Math.round((parcial.puntaje ?? 0) * 100)} %)</p>
+                <p className="mt-1 text-sm text-fg">{parcial.retroalimentacion}</p>
+                {parcial.faltantes && parcial.faltantes.length > 0 && (
+                  <p className="mt-1 text-sm text-muted">Revisa: {parcial.faltantes.join(', ')}.</p>
+                )}
+                <p className="mt-2 text-sm font-semibold text-fg">Complétala y vuelve a pulsar «Comprobar».</p>
+              </div>
+            )}
 
             {resultado && (
               <div className="mt-6">
