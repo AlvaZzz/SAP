@@ -155,9 +155,9 @@ export const TOURS: Tour[] = [
     // Coincidencia exacta: el registro (subruta) tiene su propio tutorial.
     ruta: (p: string) => p === '/docente/estudiantes' || /^\/docente\/estudiantes\/\d+$/.test(p),
     pasos: [
-      { titulo: 'Qué hacer ahora', texto: 'Arriba ves a quiénes hay que atender y por qué: los que nunca ingresaron, los que dejaron de entrar, los que practican pero fallan y los que están cerca de aprobar. Toca una tarjeta para ver sus nombres.' },
-      { titulo: 'Cómo va el curso', texto: 'A la izquierda, cuántos estudiantes están en cada tema. A la derecha, los temas donde más se equivocan: buenos candidatos para repasar en clase.' },
-      { titulo: 'La lista', texto: 'Cada estudiante muestra en qué tema va, cuánto avanzó y el motivo por el que necesita atención. Puedes descargar la lista que tengas filtrada.' },
+      { titulo: 'Tus estudiantes', texto: 'Una sola lista. Los que necesitan atención aparecen primero, con el motivo escrito debajo de su nombre.' },
+      { titulo: 'Los contadores', texto: 'Arriba ves cuántos nunca ingresaron, dejaron de entrar, fallan mucho o están cerca de aprobar. Toca uno para ver solo a esos estudiantes.' },
+      { titulo: 'Su ficha', texto: 'Toca a un estudiante para ver su detalle. También puedes descargar la lista para abrirla en Excel.' },
     ],
   },
   {

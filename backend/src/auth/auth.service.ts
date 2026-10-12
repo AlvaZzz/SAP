@@ -153,6 +153,8 @@ export class AuthService {
       select: SELECT_PUBLICO,
     });
 
+    if (pendiente && paraleloId) await this.avisarSolicitud(paraleloId, nombre);
+
     return { usuario, token: this.firmarToken(usuario) };
   }
 
@@ -163,11 +165,40 @@ export class AuthService {
     if (u.estadoInscripcion === 'aprobada') throw new BadRequestException('Tu inscripción ya fue aceptada');
     const real = await this.prisma.paralelo.findUnique({ where: { id: paraleloId }, select: { id: true, nombre: true } });
     if (!real) throw new BadRequestException('El curso elegido ya no existe');
-    return this.prisma.usuario.update({
+    const actualizado = await this.prisma.usuario.update({
       where: { id: usuarioId },
       data: { paraleloId: real.id, paralelo: real.nombre, estadoInscripcion: 'pendiente', inscripcionMotivo: null, inscripcionSolicitada: new Date() },
       select: SELECT_PUBLICO,
     });
+    await this.avisarSolicitud(real.id, actualizado.nombre);
+    return actualizado;
+  }
+
+  /**
+   * Notifica (campana) al docente del paralelo que un estudiante pide entrar.
+   * Si el paralelo aún no tiene docente, avisa a los administradores. Un fallo
+   * aquí nunca debe impedir el registro.
+   */
+  private async avisarSolicitud(paraleloId: number, estudiante: string) {
+    try {
+      const p = await this.prisma.paralelo.findUnique({
+        where: { id: paraleloId },
+        select: { nombre: true, docenteId: true, materia: { select: { nombre: true } } },
+      });
+      if (!p) return;
+      const destinatarios = p.docenteId
+        ? [p.docenteId]
+        : (await this.prisma.usuario.findMany({ where: { rol: 'admin', activo: true }, select: { id: true } })).map((a) => a.id);
+      if (destinatarios.length === 0) return;
+      await this.prisma.notificacion.createMany({
+        data: destinatarios.map((usuarioId) => ({
+          usuarioId, tipo: 'solicitud_inscripcion',
+          titulo: 'Nueva solicitud de inscripción',
+          mensaje: `${estudiante} pide entrar a ${p.materia.nombre}, paralelo ${p.nombre}.`,
+          enlace: '/docente/estudiantes/registro?ver=solicitudes',
+        })),
+      });
+    } catch { /* la notificación es un aviso, no parte del registro */ }
   }
 
   /** Segundos que faltan para que expire un bloqueo (0 si ya pasó). */

@@ -85,7 +85,6 @@ const NAV_DOCENTE: NavGrupo[] = [
     titulo: 'Estudiantes',
     items: [
       { href: '/docente/estudiantes/registro', label: 'Registro de estudiantes', icon: UserCheck },
-      { href: '/docente/estudiantes/solicitudes', label: 'Solicitudes', icon: Inbox },
       { href: '/docente/estudiantes', label: 'Seguimiento', icon: Users },
     ],
   },

@@ -94,7 +94,8 @@ Hay dos caminos y ambos terminan igual: el estudiante inicia sesión con su RU.
    inmediato; su contraseña inicial es su CI y la cambia en el primer ingreso.
 2. **Se registra solo** en "Crear cuenta": da apellidos, nombres, CI y RU, y elige su
    materia y paralelo. La cuenta se crea, pero como **solicitud pendiente**. El docente de
-   ese paralelo la ve en *Solicitudes* y la acepta (en el paralelo pedido o en otro suyo) o
+   ese paralelo recibe un aviso en la campana, la ve en *Registro de estudiantes → Solicitudes
+   por aceptar* y la acepta (en el paralelo pedido o en otro suyo) o
    la rechaza con un mensaje. Mientras no esté aceptado, el estudiante no puede rendir el
    diagnóstico ni aparece en las listas del docente. Si lo rechazan, ve el motivo y puede
    pedir otro paralelo.

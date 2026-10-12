@@ -606,6 +606,11 @@ export class DocenteRegistroService {
       where: { id },
       data: { estadoInscripcion: 'aprobada', inscripcionMotivo: null, paraleloId: paralelo.id, paralelo: paralelo.nombre },
     });
+    try {
+      await this.prisma.notificacion.create({
+        data: { usuarioId: id, tipo: 'inscripcion_aceptada', titulo: 'Ya estás en el curso', mensaje: `Tu docente aceptó tu inscripción en el paralelo ${paralelo.nombre}.`, enlace: '/dashboard' },
+      });
+    } catch { /* el aviso no debe impedir aceptar */ }
     return { ok: true };
   }
 

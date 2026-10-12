@@ -12,6 +12,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Solicitudes } from '@/components/docente/solicitudes';
 import { api, ApiError } from '@/lib/api';
 import { Badge, Card, PageHeader, Skeleton } from '@/components/ui';
 import {
@@ -50,6 +52,25 @@ const mensaje = (e: unknown, porDefecto: string) => (e instanceof ApiError ? e.m
 
 export default function RegistroEstudiantesPage() {
   const [paso, setPaso] = useState(0);
+  // Dos caminos para que un estudiante entre al curso, en la misma pantalla:
+  // registrarlo desde la lista, o aceptar la solicitud del que se registró solo.
+  const vista = useSearchParams().get('ver') === 'solicitudes' ? 'solicitudes' : 'lista';
+  const [porAceptar, setPorAceptar] = useState(0);
+  const contarSolicitudes = useCallback(() => {
+    api.get<{ pendientes: number }>('/docente/registro/solicitudes/conteo').then((r) => setPorAceptar(r.pendientes)).catch(() => undefined);
+  }, []);
+  useEffect(() => { contarSolicitudes(); }, [contarSolicitudes]);
+  const pestanas = (
+    <div className="mb-6 flex flex-wrap gap-2" role="tablist">
+      {([['lista', 'Registrar desde mi lista', '/docente/estudiantes/registro'], ['solicitudes', 'Solicitudes por aceptar', '/docente/estudiantes/registro?ver=solicitudes']] as const).map(([clave, texto, href]) => (
+        <Link key={clave} href={href} role="tab" aria-selected={vista === clave}
+          className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${vista === clave ? 'border-prexi-blue bg-prexi-blue/10 text-fg' : 'border-line bg-card text-muted hover:bg-subtle'}`}>
+          {texto}
+          {clave === 'solicitudes' && porAceptar > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-prexi-red px-1.5 text-xs font-bold text-white">{porAceptar}</span>}
+        </Link>
+      ))}
+    </div>
+  );
   const [materias, setMaterias] = useState<Materia[] | null>(null);
   const [materiaId, setMateriaId] = useState<number | null>(null);
   const [soyDocente, setSoyDocente] = useState(true);
@@ -110,6 +131,16 @@ export default function RegistroEstudiantesPage() {
     cargarMaterias();
   }
 
+  if (vista === 'solicitudes') {
+    return (
+      <div className="animate-fade-up">
+        <PageHeader title="Registro de estudiantes" subtitle="Acepta a los estudiantes que se registraron por su cuenta y pidieron entrar a tu paralelo." />
+        {pestanas}
+        <Solicitudes onCambio={contarSolicitudes} />
+      </div>
+    );
+  }
+
   if (resultado) return <PasoResultado r={resultado} materia={materia} onOtra={reiniciar} />;
 
   return (
@@ -119,6 +150,8 @@ export default function RegistroEstudiantesPage() {
         subtitle="Crea las cuentas de tu curso desde la lista que ya tienes. Cada estudiante entrará con su RU y su CI."
         action={<Link href="/docente/estudiantes" className="btn-ghost"><Users className="h-4 w-4" /> Ver estudiantes</Link>}
       />
+
+      {pestanas}
 
       {/* Indicador de pasos */}
       <ol className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4">

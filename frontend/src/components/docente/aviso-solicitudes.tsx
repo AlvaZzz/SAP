@@ -13,7 +13,7 @@ export function AvisoSolicitudes() {
   }, []);
   if (n === 0) return null;
   return (
-    <Link href="/docente/estudiantes/solicitudes"
+    <Link href="/docente/estudiantes/registro?ver=solicitudes"
       className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border-2 border-prexi-blue bg-prexi-blue/10 p-4 transition hover:bg-prexi-blue/15">
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-prexi-blue/20 text-prexi-blue-deep"><Inbox className="h-5 w-5" /></span>
       <span className="min-w-0 flex-1">

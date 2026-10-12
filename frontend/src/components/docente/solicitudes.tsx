@@ -7,10 +7,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
-import { PageHeader, Card, Skeleton, Badge } from '@/components/ui';
-import { CheckCircle, X, Inbox, Users, UserCheck } from '@/components/icons';
+import { Card, Skeleton, Badge } from '@/components/ui';
+import { CheckCircle, X, Inbox, Users } from '@/components/icons';
 
 interface Solicitud {
   id: number; nombre: string; ci: string | null; ru: string | null; email: string | null; fecha: string;
@@ -28,7 +27,7 @@ function hace(f: string): string {
   return d === 1 ? 'Ayer' : `Hace ${d} días`;
 }
 
-export default function SolicitudesPage() {
+export function Solicitudes({ onCambio }: { onCambio?: () => void }) {
   const [d, setD] = useState<Respuesta | null>(null);
   const [destino, setDestino] = useState<Record<number, string>>({});
   const [rechazando, setRechazando] = useState<number | null>(null);
@@ -40,7 +39,8 @@ export default function SolicitudesPage() {
   const cargar = useCallback(async () => {
     const r = await api.get<Respuesta>('/docente/registro/solicitudes').catch(() => null);
     setD(r ?? { solicitudes: [], paralelos: [] });
-  }, []);
+    onCambio?.();
+  }, [onCambio]);
   useEffect(() => { cargar(); }, [cargar]);
 
   const paraleloDe = (s: Solicitud) => destino[s.id] ?? (s.paralelo ? String(s.paralelo.id) : '');
@@ -83,11 +83,10 @@ export default function SolicitudesPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Solicitudes de inscripción"
-        subtitle="Estudiantes que se registraron por su cuenta. Acepta solo a quienes sí pertenecen a tu paralelo."
-        action={d && d.solicitudes.length > 1
-          ? <button onClick={aceptarTodas} disabled={ocupado !== null} className="btn-primary disabled:opacity-60"><CheckCircle className="h-4 w-4" /> {ocupado === 'todas' ? 'Aceptando…' : `Aceptar las ${d.solicitudes.length}`}</button>
-          : undefined} />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted">Estudiantes que se registraron por su cuenta. Acepta solo a quienes sí pertenecen a tu paralelo.</p>
+        {d && d.solicitudes.length > 1 && <button onClick={aceptarTodas} disabled={ocupado !== null} className="btn-primary disabled:opacity-60"><CheckCircle className="h-4 w-4" /> {ocupado === 'todas' ? 'Aceptando…' : `Aceptar las ${d.solicitudes.length}`}</button>}
+      </div>
 
       {d && d.paralelos.length > 0 && (
         <div className="mb-5 flex flex-wrap gap-2">
@@ -108,7 +107,6 @@ export default function SolicitudesPage() {
             <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full bg-subtle text-muted"><Inbox className="h-7 w-7" /></div>
             <h2 className="font-display text-lg font-bold text-fg">No hay solicitudes por revisar</h2>
             <p className="mx-auto mt-1 max-w-md text-sm text-muted">Cuando un estudiante se registre por su cuenta y elija uno de tus paralelos, aparecerá aquí para que lo aceptes.</p>
-            <Link href="/docente/estudiantes/registro" className="btn-ghost mt-4"><UserCheck className="h-4 w-4" /> Registrar estudiantes desde mi lista</Link>
           </Card>
         ) : (
           <ul className="space-y-3">

@@ -32,6 +32,18 @@ describe('Registro por cuenta propia → solicitud de inscripción', () => {
     expect(creado().inscripcionSolicitada).toBeInstanceOf(Date);
   });
 
+  it('avisa por la campana al docente del paralelo', async () => {
+    prisma.paralelo.findUnique.mockResolvedValue({ id: 4, nombre: 'A', docenteId: 9, materia: { nombre: 'Programación I' } });
+    await auth.register(base as never);
+    expect(prisma.notificacion.createMany).toHaveBeenCalledWith({
+      data: [expect.objectContaining({
+        usuarioId: 9, tipo: 'solicitud_inscripcion',
+        mensaje: 'Quispe Mamani Ana pide entrar a Programación I, paralelo A.',
+        enlace: '/docente/estudiantes/registro?ver=solicitudes',
+      })],
+    });
+  });
+
   it('el correo es opcional: basta el RU para iniciar sesión', async () => {
     await expect(auth.register(base as never)).resolves.toBeTruthy();
   });
