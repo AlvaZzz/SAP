@@ -11,8 +11,8 @@ import { NotificacionesBell } from './notificaciones-bell';
 import { BuscadorNav } from './buscador-nav';
 import {
   LayoutDashboard, Code, BookOpen, Target, TrendingUp, Trophy, User as UserIcon,
-  LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Activity, Download, Settings, FlaskConical,
-  Layers, Bot, Inbox, Sparkles, ShieldCheck, AlertTriangle, UserCheck,
+  LogOut, Menu, X, Users, BarChart3, FileText, GraduationCap, ClipboardList, Download, Settings, FlaskConical,
+  Layers, Bot, Inbox, Sparkles, ShieldCheck, UserCheck,
 } from './icons';
 
 type Area = 'estudiante' | 'docente' | 'investigador' | 'admin';
@@ -28,9 +28,8 @@ interface NavGrupo { titulo: string; items: NavItem[] }
 // Home por rol (adónde llega/redirige cada rol).
 const HOME_ROL: Record<Rol, string> = {
   estudiante: '/dashboard',
-  // Ambos roles entran por su ÍNDICE de módulos: la primera pantalla debe
-  // mostrar el recorrido completo, no un fragmento de él.
-  docente: '/docente/indice',
+  // El docente entra directo a sus paralelos; el investigador, a su índice.
+  docente: '/docente/dashboard',
   admin: '/admin/dashboard',
   investigador: '/investigador/indice',
 };
@@ -79,20 +78,21 @@ const NAV_ESTUDIANTE: NavGrupo[] = [
 ];
 
 /**
- * Navegación del rol DOCENTE. Los grupos separan el seguimiento del curso
- * (Seguimiento e Informes) de las herramientas de autoría (Contenido).
+ * Navegación del rol DOCENTE, en el orden en que se usa: primero sus
+ * paralelos, luego sus estudiantes, el contenido y la evaluación.
  */
 const NAV_DOCENTE: NavGrupo[] = [
   {
-    titulo: 'Seguimiento',
+    titulo: 'Inicio',
     items: [
-      { href: '/docente/indice', label: 'Índice', icon: LayoutDashboard },
-      { href: '/docente/dashboard', label: 'Dashboard', icon: Activity },
-      { href: '/docente/pendientes', label: 'Pendientes', icon: Inbox },
+      { href: '/docente/dashboard', label: 'Mis paralelos', icon: LayoutDashboard },
+    ],
+  },
+  {
+    titulo: 'Estudiantes',
+    items: [
       { href: '/docente/estudiantes/registro', label: 'Registro de estudiantes', icon: UserCheck },
-      { href: '/docente/estudiantes', label: 'Estudiantes', icon: Users },
-      { href: '/docente/riesgo', label: 'En riesgo', icon: AlertTriangle },
-      { href: '/docente/revisiones', label: 'Revisiones', icon: ClipboardList },
+      { href: '/docente/estudiantes', label: 'Seguimiento', icon: Users },
     ],
   },
   {
@@ -107,10 +107,11 @@ const NAV_DOCENTE: NavGrupo[] = [
     ],
   },
   {
-    titulo: 'Informes',
+    titulo: 'Evaluación',
     items: [
-      { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
+      { href: '/docente/revisiones', label: 'Revisiones de retos', icon: Inbox },
       { href: '/docente/postest', label: 'Evaluación final', icon: GraduationCap },
+      { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
       { href: '/docente/evaluar-prexi', label: 'Evaluar PREXI', icon: ClipboardList },
     ],
   },

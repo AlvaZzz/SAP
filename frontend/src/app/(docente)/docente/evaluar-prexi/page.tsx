@@ -54,7 +54,7 @@ export default function DocenteEvaluarPrexiPage() {
         </button>
       </Card>
 
-      <CuestionarioInstrumento key={version} clave="ISO25010" volver="/docente/indice" />
+      <CuestionarioInstrumento key={version} clave="ISO25010" volver="/docente/dashboard" />
     </div>
   );
 }

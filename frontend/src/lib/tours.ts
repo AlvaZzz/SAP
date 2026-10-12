@@ -115,8 +115,9 @@ export const TOURS: Tour[] = [
     clave: 'docente-dashboard',
     ruta: en('/docente/dashboard'),
     pasos: [
-      { titulo: 'Panel del docente', texto: 'Resumen de tu curso: estudiantes activos, avance promedio, entregas pendientes de revisión y alertas de estudiantes en riesgo.' },
-      { titulo: 'Tus herramientas', texto: 'Desde el menú gestionas ejercicios, retos, documentos, el seguimiento de estudiantes, las revisiones de entregas y los reportes del curso.', selector: 'nav' },
+      { titulo: 'Tus paralelos', texto: 'Aquí ves una tarjeta por cada paralelo a tu cargo. Entra a uno para ver cuántos estudiantes hay en nivel Básico, Intermedio y Avanzado.' },
+      { titulo: 'Cada número tiene nombres', texto: 'Toca un nivel y se abre la lista de esos estudiantes, con su CI y su RU. Al tocar un estudiante ves su ficha completa.' },
+      { titulo: 'Tus herramientas', texto: 'Desde el menú registras estudiantes, haces su seguimiento, armas el contenido y habilitas la evaluación final.', selector: 'nav' },
     ],
   },
   {
@@ -158,8 +159,8 @@ export const TOURS: Tour[] = [
     // Coincidencia exacta: el registro (subruta) tiene su propio tutorial.
     ruta: (p: string) => p === '/docente/estudiantes' || /^\/docente\/estudiantes\/\d+$/.test(p),
     pasos: [
-      { titulo: 'Seguimiento de estudiantes', texto: 'Lista completa con nivel, XP, avance y última actividad de cada estudiante. Haz clic en uno para ver su detalle.' },
-      { titulo: 'Estudiantes en riesgo', texto: 'El sistema marca automáticamente a quienes llevan días sin actividad o tienen baja tasa de acierto, para que intervengas a tiempo.' },
+      { titulo: 'Seguimiento de estudiantes', texto: 'Los estudiantes de tus paralelos con su nivel actual y su promedio sobre 100. Búscalos por nombre, CI o RU, y haz clic en uno para ver su ficha.' },
+      { titulo: 'Quién necesita atención', texto: 'Los botones de arriba filtran la lista: quiénes necesitan atención, quiénes aún no ingresaron y quiénes están cerca del 80.' },
       { titulo: 'Notas privadas', texto: 'Puedes escribir una nota de seguimiento por estudiante: solo tú la ves.' },
     ],
   },

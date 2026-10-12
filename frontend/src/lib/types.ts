@@ -248,7 +248,6 @@ export interface ResultadoIntento {
 }
 
 /* ── Rol docente ─────────────────────────────────────── */
-export type EstadoEstudiante = 'completado' | 'en_progreso' | 'inactivo' | 'en_riesgo';
 
 export interface DocenteEjercicio {
   id: number;
@@ -334,35 +333,6 @@ export interface DocenteDocumento {
   tema_titulo: string | null;
   tiene_texto: boolean;
   fecha: string;
-}
-
-export interface EstudianteFila {
-  id: number;
-  nombre: string;
-  email: string;
-  nivel_actual: number;
-  xp: number;
-  ejercicios_completados: number;
-  ultima_sesion: string | null;
-  estado: EstadoEstudiante;
-}
-
-export interface EstudianteDetalle {
-  estudiante: {
-    id: number; nombre: string; email: string; carrera: string | null;
-    estado: EstadoEstudiante;
-    xp: number; racha_dias: number; ejercicios_completados: number;
-    total_intentos: number; tasa_acierto: number; ultima_sesion: string | null;
-  };
-  progreso_niveles: { numero: number; titulo: string; umbral: number; ejercicios_completados: number; desbloqueado: boolean; estado: string }[];
-  actividad: { dia: string; intentos: number; aciertos: number }[];
-  historial: { titulo: string; categoria: string; correcto: boolean; xp: number; tiempo_seg: number; fecha: string }[];
-  // Errores recurrentes detectados por PREXI (mismo detector que usa el tutor).
-  patrones_error: { clave: string; descripcion: string; frecuencia: number }[];
-  pretest: { puntaje: number; tiempo_seg: number; por_categoria: unknown; fecha: string } | null;
-  postest: { puntaje: number; tiempo_seg: number; por_categoria: unknown; fecha: string } | null;
-  avance: number | null;
-  nota: string;
 }
 
 /** Progreso del estudiante DENTRO de su nivel actual en un tema. */

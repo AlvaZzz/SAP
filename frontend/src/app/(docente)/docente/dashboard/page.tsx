@@ -1,142 +1,233 @@
 'use client';
 
+/**
+ * DASHBOARD DEL DOCENTE — sus paralelos.
+ *
+ * Una tarjeta por paralelo. Al entrar a uno se ve cuántos estudiantes hay en
+ * Básico, Intermedio y Avanzado, y al tocar un nivel se despliega la lista de
+ * esos estudiantes (nombre, CI, RU). Cada estudiante abre su ficha.
+ */
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { NivelDificultad, NIVEL_COLOR } from '@/lib/types';
 import { useAuth } from '@/providers/auth-provider';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
-import { EstadoBadge } from '@/components/docente/estado-badge';
 import { TarjetaEvaluarPrexi } from '@/components/cuestionario-instrumento';
-import { Users, UserCheck, CheckCircle, AlertTriangle, Star, Code, Target, FileText, BarChart3, ClipboardList } from '@/components/icons';
+import { ListaNominal, Motivo, Nominal, PromedioChip } from '@/components/docente/curso';
+import { Users, UserCheck, CheckCircle, AlertTriangle, ClipboardList, ArrowLeft, ArrowRight, GraduationCap } from '@/components/icons';
 
+interface NivelParalelo { nivel: NivelDificultad; titulo: string; total: number; estudiantes: Nominal[] }
+interface Paralelo {
+  id: number | null; nombre: string; materia: string | null; gestion: string | null; docente: string | null; es_mio: boolean;
+  total: number; sin_ingresar: number; en_riesgo: number; promedio: number | null; niveles: NivelParalelo[];
+}
 interface Dashboard {
-  stats: { estudiantes_total: number; estudiantes_activos: number; completados_hoy: number; promedio_xp: number; en_riesgo: number; entregas_pendientes: number };
-  // Distribución por NIVEL ADAPTATIVO (básico/intermedio/avanzado), que es el
-  // que el sistema usa para adaptar. Antes venía del modelo viejo de 5 niveles.
-  distribucion_niveles: { nivel: NivelDificultad; numero: number; titulo: string; estudiantes: number }[];
-  en_riesgo: { id: number; nombre: string; estado: string; xp: number; ejercicios_completados: number }[];
-  actividad_reciente: { estudiante: string; titulo: string; categoria: string; correcto: boolean; xp: number; fecha: string }[];
+  stats: {
+    estudiantes_total: number; estudiantes_activos: number; resolvieron_hoy: number;
+    necesitan_atencion: number; sin_ingresar: number; entregas_pendientes: number;
+  };
+  paralelos: Paralelo[];
+  atencion: (Nominal & { motivos: Motivo[] })[];
+  actividad_reciente: { estudiante_id: number; estudiante: string; titulo: string; categoria: string; correcto: boolean; fecha: string }[];
 }
 
-const ACCESOS = [
-  { href: '/docente/ejercicios', label: 'Ejercicios', icon: Code },
-  { href: '/docente/retos', label: 'Retos', icon: Target },
-  { href: '/docente/revisiones', label: 'Revisiones', icon: ClipboardList },
-  { href: '/docente/documentos', label: 'Documentos', icon: FileText },
-  { href: '/docente/estudiantes', label: 'Estudiantes', icon: Users },
-  { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
-];
+const claveDe = (p: Paralelo) => `${p.id ?? 'sin'}`;
 
 export default function DocenteDashboardPage() {
   const { usuario } = useAuth();
   const [d, setD] = useState<Dashboard | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [abierto, setAbierto] = useState<string | null>(null);
+  const [nivel, setNivel] = useState<NivelDificultad | null>(null);
 
   useEffect(() => {
     api.get<Dashboard>('/docente/dashboard').then(setD).catch(() => undefined).finally(() => setCargando(false));
   }, []);
 
-  const maxNivel = d ? Math.max(1, ...d.distribucion_niveles.map((n) => n.estudiantes)) : 1;
+  const paralelo = d?.paralelos.find((p) => claveDe(p) === abierto) ?? null;
   const hora = (f: string) => new Date(f).toLocaleString('es-BO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">
-        Panel del docente
-      </h1>
-      <p className="mb-7 mt-1 text-[15px] text-muted">Resumen del grupo, {usuario?.nombre.split(' ')[0]}.</p>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
+      <p className="mb-6 mt-1 text-[15px] text-muted">Estos son tus paralelos. Entra a uno para ver a tus estudiantes por nivel.</p>
 
-      {/* Cuestionario de calidad (ISO/IEC 25010): solo con la fase habilitada */}
       <TarjetaEvaluarPrexi href="/docente/evaluar-prexi" />
 
-      {/* Stat cards */}
       <StatGrid className="mb-6">
-        {cargando ? [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
+        {cargando ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
           <>
-            <StatCard icon={<UserCheck className="h-7 w-7" />} accent="blue" label="Estudiantes activos" value={`${d?.stats.estudiantes_activos ?? 0}/${d?.stats.estudiantes_total ?? 0}`} />
-            <StatCard icon={<CheckCircle className="h-7 w-7" />} accent="green" label="Completados hoy" value={d?.stats.completados_hoy ?? 0} />
-            <StatCard icon={<Star className="h-7 w-7" />} accent="navy" label="XP promedio" value={d?.stats.promedio_xp ?? 0} />
-            <StatCard icon={<AlertTriangle className="h-7 w-7" />} accent="amber" label="En riesgo" value={d?.stats.en_riesgo ?? 0} />
-            <Link href="/docente/revisiones" className="block">
-              <StatCard icon={<ClipboardList className="h-7 w-7" />} accent="blue" label="Por revisar" value={d?.stats.entregas_pendientes ?? 0} />
-            </Link>
+            <StatCard icon={<Users className="h-7 w-7" />} accent="blue" label="Estudiantes" value={d?.stats.estudiantes_total ?? 0} />
+            <StatCard icon={<UserCheck className="h-7 w-7" />} accent="green" label="Activos esta semana" value={d?.stats.estudiantes_activos ?? 0} />
+            <StatCard icon={<CheckCircle className="h-7 w-7" />} accent="navy" label="Resolvieron hoy" value={d?.stats.resolvieron_hoy ?? 0} />
+            <StatCard icon={<AlertTriangle className="h-7 w-7" />} accent="amber" label="Necesitan atención" value={d?.stats.necesitan_atencion ?? 0} />
           </>
         )}
       </StatGrid>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Distribución por nivel */}
-        <Card className="min-w-0 lg:col-span-2">
-          <SectionTitle className="mb-1">Distribución de estudiantes por nivel</SectionTitle>
-          <p className="mb-5 text-xs text-muted">Nivel adaptativo (dominio combinado de todos sus temas), que es el que decide qué ejercicios recibe cada estudiante.</p>
-          {cargando ? <div className="space-y-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8" />)}</div> : (
-            <div className="space-y-3.5">
-              {d?.distribucion_niveles.map((n) => (
-                <div key={n.nivel} className="flex items-center gap-3">
-                  {/* Etiqueta y color del NIVEL ADAPTATIVO: los mismos que ve el
-                      estudiante en su vista de unidad, para que docente y
-                      estudiante nunca lean cifras que se contradigan. */}
-                  <span className="w-28 shrink-0 text-sm font-medium text-fg">{n.titulo}</span>
-                  <div className="h-7 flex-1 overflow-hidden rounded-lg bg-subtle">
-                    <div className="flex h-full items-center justify-end rounded-lg px-2 text-xs font-bold text-white transition-all duration-700"
-                      style={{ width: `${Math.max(6, (n.estudiantes / maxNivel) * 100)}%`, backgroundColor: NIVEL_COLOR[n.nivel] }}>
-                      {n.estudiantes > 0 && n.estudiantes}
-                    </div>
+      {/* ── Paralelos ── */}
+      {cargando ? <Skeleton className="h-48" /> : !d || d.paralelos.length === 0 ? (
+        <Card>
+          <EmptyState icon={<Users className="h-7 w-7" />} title="Todavía no tienes paralelos"
+            hint="Empieza registrando a tus estudiantes: se crean los paralelos y quedas como su docente." />
+          <div className="mt-4 text-center"><Link href="/docente/estudiantes/registro" className="btn-primary">Registrar estudiantes <ArrowRight className="h-4 w-4" /></Link></div>
+        </Card>
+      ) : !paralelo ? (
+        <>
+          <SectionTitle className="mb-3">Mis paralelos</SectionTitle>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {d.paralelos.map((p) => (
+              <button key={claveDe(p)} onClick={() => { setAbierto(claveDe(p)); setNivel(null); }}
+                className="card text-left transition hover:-translate-y-0.5 hover:border-prexi-blue/50 hover:shadow-lift">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted">{p.materia ?? 'Sin materia'}{p.gestion ? ` · ${p.gestion}` : ''}</p>
+                    <p className="font-display text-2xl font-extrabold text-fg">{p.id === null ? p.nombre : `Paralelo ${p.nombre}`}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-display text-3xl font-extrabold text-prexi-blue-deep">{p.total}</p>
+                    <p className="text-[11px] text-muted">estudiantes</p>
                   </div>
                 </div>
-              ))}
+                <p className="mt-1 text-sm text-muted">{p.es_mio ? 'Tú eres el docente' : p.docente ? `Docente: ${p.docente}` : 'Sin docente asignado'}</p>
+
+                {/* Barra de distribución por nivel */}
+                <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-subtle">
+                  {p.niveles.map((n) => p.total > 0 && n.total > 0 && (
+                    <div key={n.nivel} style={{ width: `${(n.total / p.total) * 100}%`, backgroundColor: NIVEL_COLOR[n.nivel] }} title={`${n.titulo}: ${n.total}`} />
+                  ))}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+                  {p.niveles.map((n) => (
+                    <span key={n.nivel} className="inline-flex items-center gap-1.5">
+                      <i className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: NIVEL_COLOR[n.nivel] }} />{n.titulo} <b className="text-fg">{n.total}</b>
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {p.en_riesgo > 0 && <Badge tone="red">{p.en_riesgo} necesitan atención</Badge>}
+                  {p.sin_ingresar > 0 && <Badge tone="slate">{p.sin_ingresar} sin ingresar</Badge>}
+                </div>
+                <p className="mt-3 flex items-center gap-1 text-sm font-semibold text-prexi-blue-deep">Ver estudiantes por nivel <ArrowRight className="h-4 w-4" /></p>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        /* ── Dentro de un paralelo: niveles → lista nominal ── */
+        <Card>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <button onClick={() => setAbierto(null)} className="mb-2 inline-flex items-center gap-1.5 text-sm font-semibold text-prexi-blue-deep hover:underline">
+                <ArrowLeft className="h-4 w-4" /> Todos mis paralelos
+              </button>
+              <h2 className="font-display text-2xl font-extrabold text-fg">{paralelo.id === null ? paralelo.nombre : `Paralelo ${paralelo.nombre}`}</h2>
+              <p className="text-sm text-muted">
+                {paralelo.materia ?? 'Sin materia'}{paralelo.gestion ? ` · ${paralelo.gestion}` : ''} · {paralelo.total} estudiantes ·
+                promedio del paralelo: <PromedioChip promedio={paralelo.promedio} />
+              </p>
             </div>
+            <Link href={`/docente/estudiantes?paralelo=${encodeURIComponent(paralelo.nombre)}`} className="btn-ghost"><Users className="h-4 w-4" /> Ver seguimiento</Link>
+          </div>
+
+          <p className="mb-3 mt-5 text-sm font-semibold text-fg">Estudiantes según su nivel actual</p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {paralelo.niveles.map((n) => {
+              const activo = nivel === n.nivel;
+              return (
+                <button key={n.nivel} onClick={() => setNivel(activo ? null : n.nivel)} aria-pressed={activo}
+                  className={`rounded-2xl border-2 p-4 text-left transition ${activo ? 'bg-subtle' : 'border-line hover:bg-subtle/60'}`}
+                  style={activo ? { borderColor: NIVEL_COLOR[n.nivel] } : undefined}>
+                  <p className="text-xs font-bold uppercase tracking-wide" style={{ color: NIVEL_COLOR[n.nivel] }}>{n.titulo}</p>
+                  <p className="font-display text-4xl font-extrabold text-fg">{n.total}</p>
+                  <p className="text-xs text-muted">
+                    {paralelo.total > 0 ? `${Math.round((n.total / paralelo.total) * 100)} % del paralelo` : 'sin estudiantes'} · {activo ? 'ocultar lista' : 'ver quiénes son'}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          {nivel && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-semibold text-fg">
+                {paralelo.niveles.find((n) => n.nivel === nivel)?.total} estudiante(s) en nivel {paralelo.niveles.find((n) => n.nivel === nivel)?.titulo}
+              </p>
+              <ListaNominal estudiantes={paralelo.niveles.find((n) => n.nivel === nivel)?.estudiantes ?? []} vacio="Nadie está en este nivel todavía." />
+            </div>
+          )}
+          {!nivel && paralelo.total > 0 && <p className="mt-4 text-sm text-muted">Toca un nivel para ver la lista de sus estudiantes.</p>}
+        </Card>
+      )}
+
+      {/* ── Lo que necesita tu atención ── */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <SectionTitle>Estudiantes que necesitan atención</SectionTitle>
+            <Link href="/docente/estudiantes?estado=atencion" className="text-sm font-semibold text-prexi-blue-deep hover:underline">Ver todos</Link>
+          </div>
+          {cargando ? <Skeleton className="h-32" /> : !d || d.atencion.length === 0 ? (
+            <p className="rounded-xl bg-subtle px-4 py-6 text-center text-sm text-muted">Ningún estudiante necesita atención por ahora.</p>
+          ) : (
+            <ul className="space-y-2">
+              {d.atencion.map((e) => (
+                <li key={e.id}>
+                  <Link href={`/docente/estudiantes/${e.id}`} className="block rounded-xl border border-line p-3 transition hover:bg-subtle">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-semibold text-fg">{e.nombre}</span>
+                      <span className="text-xs text-muted">RU {e.ru ?? '—'} · Par. {e.paralelo}</span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted">{e.motivos.map((m) => m.detalle).join(' ')}</p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </Card>
 
-        {/* En riesgo */}
-        <Card className="min-w-0">
-          <div className="mb-4 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-prexi-amber" /><SectionTitle>Requieren atención</SectionTitle></div>
-          {cargando ? <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div>
-            : d && d.en_riesgo.length > 0 ? (
-              <div className="space-y-2.5">
-                {d.en_riesgo.map((e) => (
-                  <Link key={e.id} href={`/docente/estudiantes?id=${e.id}`} className="flex items-center justify-between gap-2 rounded-xl border border-line p-3 transition hover:border-prexi-blue/40 hover:bg-subtle">
-                    <div className="min-w-0"><p className="truncate text-sm font-semibold text-fg">{e.nombre}</p><p className="text-xs text-muted">{e.ejercicios_completados} ejercicios · {e.xp} XP</p></div>
-                    <EstadoBadge estado="en_riesgo" />
-                  </Link>
-                ))}
-              </div>
-            ) : <p className="py-6 text-center text-sm text-muted">Ningún estudiante en riesgo.</p>}
-        </Card>
-      </div>
-
-      {/* Actividad reciente + accesos rápidos */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card className="min-w-0 lg:col-span-2">
-          <SectionTitle className="mb-4">Actividad reciente del grupo</SectionTitle>
-          {cargando ? <div className="space-y-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-11" />)}</div>
-            : d && d.actividad_reciente.length > 0 ? (
-              <div className="divide-y divide-line">
-                {d.actividad_reciente.map((a, i) => (
-                  <div key={i} className="flex items-center gap-2.5 py-2.5">
-                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${a.correcto ? 'bg-prexi-green' : 'bg-prexi-red'}`} />
-                    <div className="min-w-0 flex-1"><p className="truncate text-sm text-fg"><b className="font-semibold">{a.estudiante}</b> · {a.titulo}</p></div>
-                    <Badge tone="blue" className="hidden sm:inline-flex">{a.categoria}</Badge>
-                    <span className="hidden shrink-0 text-xs text-muted sm:inline">{hora(a.fecha)}</span>
-                  </div>
-                ))}
-              </div>
-            ) : <EmptyState title="Sin actividad todavía" hint="Cuando los estudiantes resuelvan ejercicios, aparecerá aquí." />}
-        </Card>
-
-        <Card>
-          <SectionTitle className="mb-4">Accesos rápidos</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
-            {ACCESOS.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} className="flex flex-col items-center gap-2 rounded-xl border border-line p-4 text-center transition hover:border-prexi-blue/40 hover:bg-subtle">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-prexi-blue/10 text-prexi-blue-deep"><Icon className="h-5 w-5" /></div>
-                <span className="text-sm font-medium text-fg">{label}</span>
+        <div className="space-y-6">
+          <Card>
+            <SectionTitle className="mb-3">Pendientes</SectionTitle>
+            <div className="space-y-2">
+              <Link href="/docente/revisiones" className="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:bg-subtle">
+                <ClipboardList className="h-5 w-5 shrink-0 text-prexi-blue-deep" />
+                <span className="flex-1 text-sm text-fg">Entregas de retos por revisar</span>
+                <Badge tone={d?.stats.entregas_pendientes ? 'amber' : 'slate'}>{d?.stats.entregas_pendientes ?? 0}</Badge>
               </Link>
-            ))}
-          </div>
-        </Card>
+              <Link href="/docente/estudiantes?estado=sin_ingresar" className="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:bg-subtle">
+                <UserCheck className="h-5 w-5 shrink-0 text-prexi-blue-deep" />
+                <span className="flex-1 text-sm text-fg">Estudiantes que aún no ingresaron</span>
+                <Badge tone={d?.stats.sin_ingresar ? 'amber' : 'slate'}>{d?.stats.sin_ingresar ?? 0}</Badge>
+              </Link>
+              <Link href="/docente/postest" className="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:bg-subtle">
+                <GraduationCap className="h-5 w-5 shrink-0 text-prexi-blue-deep" />
+                <span className="flex-1 text-sm text-fg">Evaluación final: habilitar estudiantes</span>
+                <ArrowRight className="h-4 w-4 text-muted" />
+              </Link>
+            </div>
+          </Card>
+
+          <Card>
+            <SectionTitle className="mb-3">Actividad reciente de tus estudiantes</SectionTitle>
+            {cargando ? <Skeleton className="h-32" /> : !d || d.actividad_reciente.length === 0 ? (
+              <p className="rounded-xl bg-subtle px-4 py-6 text-center text-sm text-muted">Aún no hay actividad.</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {d.actividad_reciente.map((a, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${a.correcto ? 'bg-prexi-green' : 'bg-prexi-red'}`} />
+                    <Link href={`/docente/estudiantes/${a.estudiante_id}`} className="shrink-0 font-medium text-fg hover:underline">{a.estudiante}</Link>
+                    <span className="min-w-0 flex-1 truncate text-muted">{a.correcto ? 'resolvió' : 'falló'} · {a.titulo}</span>
+                    <span className="shrink-0 text-xs text-muted">{hora(a.fecha)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
       </div>
     </div>
   );

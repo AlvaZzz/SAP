@@ -11,7 +11,7 @@ export class DocenteDashboardController {
   constructor(private readonly service: DocenteDashboardService) {}
 
   @Get()
-  resumen(@CurrentUser('sub') docenteId: number) {
-    return this.service.resumen(docenteId);
+  resumen(@CurrentUser('sub') docenteId: number, @CurrentUser('rol') rol: string) {
+    return this.service.resumen(docenteId, rol);
   }
 }
