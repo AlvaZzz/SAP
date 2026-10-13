@@ -45,9 +45,10 @@ export const TOURS: Tour[] = [
     clave: 'ejercicios',
     ruta: en('/ejercicios'),
     pasos: [
-      { titulo: 'Ejercicios por nivel', texto: 'Aquí están los 5 niveles del curso. Cada uno agrupa ejercicios de un tema (variables, condicionales, bucles, funciones, listas).' },
-      { titulo: 'Desbloqueo progresivo', texto: 'Los niveles se desbloquean en orden: al completar el porcentaje requerido de un nivel, se abre el siguiente. Los candados indican niveles aún bloqueados.' },
-      { titulo: 'XP y pistas', texto: 'Cada ejercicio correcto suma XP (más si mantienes racha diaria). Puedes pedir pistas a PREXI, pero usarlas descuenta un poco de XP: intenta primero por tu cuenta.' },
+      { titulo: 'Tu camino', texto: 'Las unidades del curso van en orden, cada una con su color. El botón de arriba te lleva directo a lo que toca hacer ahora.' },
+      { titulo: 'Temas y niveles', texto: 'Dentro de una unidad, cada tema tiene tres niveles: Básico, Intermedio y Avanzado. Resuelve los ejercicios de tu nivel y rinde la prueba de nivel: con 80 sobre 100 subes al siguiente.' },
+      { titulo: 'El examen de la unidad', texto: 'Cuando completes todos los temas en nivel Intermedio o más, se habilita el examen. Al aprobarlo se abre la siguiente unidad.' },
+      { titulo: 'XP y pistas', texto: 'Cada ejercicio correcto suma XP (más si mantienes tu racha). Puedes pedir pistas a PREXI, pero restan un poco de XP: intenta primero por tu cuenta.' },
     ],
   },
   {

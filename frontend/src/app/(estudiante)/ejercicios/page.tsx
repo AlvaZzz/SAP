@@ -108,21 +108,23 @@ export default function EjerciciosPage() {
               {/* Línea del recorrido y parada */}
               {!ultima && <span aria-hidden className="absolute left-[19px] top-12 h-[calc(100%+0.25rem)] w-1 rounded-full sm:left-[23px]" style={{ backgroundColor: examen === 'aprobado' ? '#10B981' : 'rgb(var(--line))' }} />}
               <span className="absolute left-0 top-3 grid h-10 w-10 place-items-center rounded-full font-display text-lg font-extrabold text-white shadow-soft ring-4 ring-app sm:h-12 sm:w-12"
-                style={{ backgroundColor: examen === 'aprobado' ? '#10B981' : abierta ? color : 'rgb(var(--muted))' }}>
+                style={{ backgroundColor: examen === 'aprobado' ? '#10B981' : color, opacity: abierta ? 1 : 0.55 }}>
                 {examen === 'aprobado' ? <CheckCircle className="h-6 w-6" /> : abierta ? u.numero : <Lock className="h-5 w-5" />}
               </span>
 
-              <div className={`overflow-hidden rounded-2xl border bg-card transition ${esActual ? 'border-2 shadow-lift' : 'border-line shadow-soft'} ${abierta ? '' : 'opacity-65'}`}
+              <div className={`overflow-hidden rounded-2xl border bg-card transition ${esActual ? 'border-2 shadow-lift' : 'border-line shadow-soft'}`}
                 style={esActual ? { borderColor: color } : undefined}>
+                {/* Franja superior con el color de la unidad (más tenue si está cerrada) */}
+                <div aria-hidden className="h-1.5 w-full" style={{ backgroundColor: color, opacity: abierta ? 1 : 0.45 }} />
                 <div className="p-4 sm:p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-[200px] flex-1">
-                      <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: abierta ? color : undefined }}>
+                      <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color }}>
                         Unidad {u.numero}
                         {esActual && <span className="chip-accion">Estás aquí</span>}
                         {examen === 'aprobado' && <span className="rounded-full bg-prexi-green/15 px-2 py-0.5 text-2xs text-prexi-green">Aprobada</span>}
                       </p>
-                      <h3 className="font-display text-xl font-bold text-fg">{u.titulo}</h3>
+                      <h3 className={`font-display text-xl font-bold ${abierta ? 'text-fg' : 'text-muted'}`}>{u.titulo}</h3>
                       {abierta
                         ? u.descripcion && <p className="mt-0.5 line-clamp-2 max-w-2xl text-sm text-muted">{u.descripcion}</p>
                         : <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><Lock className="h-4 w-4" /> Se abre al aprobar el examen de la Unidad {u.numero - 1}.</p>}

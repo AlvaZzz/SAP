@@ -139,7 +139,14 @@ export default function UnidadPage() {
 
       {/* ── Temas, como pasos ── */}
       <h2 className="mb-1 font-display text-xl font-extrabold text-fg">Temas de la unidad</h2>
-      <p className="mb-4 text-sm text-muted">Van en orden: al completar uno se abre el siguiente.</p>
+      <p className="mb-3 text-sm text-muted">Van en orden: al completar uno se abre el siguiente.</p>
+      <div className="mb-4 flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-500/15 text-violet-500"><TrendingUp className="h-5 w-5" /></span>
+        <div className="text-sm text-muted">
+          <p className="font-bold text-fg">¿Cómo subo de nivel?</p>
+          <p className="mt-0.5">Cada tema tiene tres niveles: <b style={{ color: NIVEL_COLOR.basico }}>Básico</b>, <b style={{ color: NIVEL_COLOR.intermedio }}>Intermedio</b> y <b style={{ color: NIVEL_COLOR.avanzado }}>Avanzado</b>. Resuelve los ejercicios de tu nivel, rinde la <b className="text-fg">prueba de nivel</b> (10 preguntas) y con <b className="text-fg">80 sobre 100</b> pasas al siguiente. Para el examen de la unidad necesitas estar al menos en Intermedio en todos los temas.</p>
+        </div>
+      </div>
       <ol className="space-y-3">
         {unidad.temas.map((t, i) => (
           <li key={t.id}><TemaPaso tema={t} paso={i + 1} unidadId={unidadId} esSiguiente={sig?.id === t.id} siguienteId={sig?.id ?? null} yendo={yendo} onIniciar={iniciar} onSubir={subir} /></li>
@@ -223,7 +230,8 @@ function TemaPaso({ tema, paso, unidadId, esSiguiente, siguienteId, yendo, onIni
   const subtemas = tema.subtemas ?? [];
 
   return (
-    <div className={`rounded-2xl border bg-card p-4 transition sm:p-5 ${esSiguiente ? 'border-2 border-amber-500/70 shadow-soft' : 'border-line shadow-soft'} ${bloqueado ? 'opacity-60' : ''}`}>
+    <div className={`rounded-2xl border border-l-[6px] bg-card p-4 transition sm:p-5 ${esSiguiente ? 'shadow-lift ring-2 ring-amber-500/60' : 'shadow-soft'} ${bloqueado ? 'opacity-60' : ''}`}
+      style={{ borderColor: 'rgb(var(--line))', borderLeftColor: acento ?? 'rgb(var(--line))' }}>
       <div className="flex flex-wrap items-center gap-4">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full font-display text-lg font-extrabold"
           style={acento ? { color: completo ? '#fff' : acento, backgroundColor: completo ? acento : `${acento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}>
@@ -251,9 +259,9 @@ function TemaPaso({ tema, paso, unidadId, esSiguiente, siguienteId, yendo, onIni
 
       {/* Apoyos del tema: flashcards y subir de nivel */}
       {!bloqueado && (
-        <div className="mt-3 flex flex-wrap items-center gap-2 pl-0 sm:pl-[3.75rem]">
+        <div className="mt-3 space-y-3 sm:pl-[3.75rem]">
+          {tema.total_ejercicios > 0 && <EscaleraNivel t={tema} onSubir={onSubir} />}
           <BotonFlashcards compacto href={`/flashcards/tema/${tema.id}?volver=/ejercicios/unidad/${unidadId}`} />
-          <SubirNivel t={tema} onSubir={onSubir} />
         </div>
       )}
 
@@ -285,6 +293,62 @@ function TemaPaso({ tema, paso, unidadId, esSiguiente, siguienteId, yendo, onIni
   );
 }
 
+/**
+ * ESCALERA DE NIVELES de un tema: en cuál estoy, cuál sigue y qué me falta para
+ * subir. El botón de la prueba está siempre a la vista: apagado mientras falten
+ * ejercicios (y dice cuántos), encendido cuando ya se puede rendir.
+ */
+function EscaleraNivel({ t, onSubir }: { t: TemaEstudiante; onSubir: (id: number) => void }) {
+  const orden = ['basico', 'intermedio', 'avanzado'] as const;
+  const nombres = { basico: 'Básico', intermedio: 'Intermedio', avanzado: 'Avanzado' };
+  const actual = orden.indexOf(t.nivel_actual);
+  const siguiente = t.nivel_objetivo_label ?? (actual < 2 ? nombres[orden[actual + 1]] : null);
+  const minimo = Math.max(1, t.minimo_nivel);
+  const pct = Math.min(100, Math.round((t.resueltos_nivel / minimo) * 100));
+  return (
+    <div className="rounded-xl border border-line bg-subtle/40 p-3">
+      <div className="flex flex-wrap items-center gap-1.5" role="img" aria-label={`Estás en nivel ${nombres[t.nivel_actual]}`}>
+        {orden.map((n, i) => {
+          const c = NIVEL_COLOR[n];
+          const pasado = i < actual;
+          const aqui = i === actual;
+          return (
+            <span key={n} className="flex items-center gap-1.5">
+              {i > 0 && <span className="h-0.5 w-4 rounded-full sm:w-7" style={{ backgroundColor: i <= actual ? c : 'rgb(var(--line))' }} />}
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${aqui ? 'text-white' : ''}`}
+                style={aqui ? { backgroundColor: c } : pasado ? { color: c, backgroundColor: `${c}22` } : { color: 'rgb(var(--muted))', backgroundColor: 'rgb(var(--subtle))' }}>
+                {pasado && <CheckCircle className="h-3.5 w-3.5" />}{nombres[n]}{aqui && ' · estás aquí'}
+              </span>
+            </span>
+          );
+        })}
+      </div>
+
+      {t.nivel_maximo ? (
+        <p className="mt-2.5 flex items-center gap-1.5 text-sm font-semibold text-prexi-green"><CheckCircle className="h-4 w-4" /> Llegaste al nivel más alto de este tema.</p>
+      ) : t.puede_subir ? (
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-fg">Ya puedes rendir la prueba para pasar a <b>{siguiente}</b>.</p>
+          <button onClick={() => onSubir(t.id)} className="btn-accion !rounded-xl !px-4 !py-2 text-sm"><TrendingUp className="h-4 w-4" /> Rendir la prueba de nivel</button>
+        </div>
+      ) : t.total_ejercicios_nivel === 0 ? (
+        <p className="mt-2.5 text-sm text-muted">Tu docente aún no cargó ejercicios de este nivel.</p>
+      ) : (
+        <div className="mt-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <p className="text-muted">Para pasar a <b className="text-fg">{siguiente}</b>: resuelve <b className="text-fg">{t.faltan_nivel === 1 ? '1 ejercicio más' : `${t.faltan_nivel} ejercicios más`}</b> de nivel {nombres[t.nivel_actual]} y se activa la prueba.</p>
+            <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-card px-3 py-1.5 text-xs font-semibold text-muted" title="Se activa al completar los ejercicios de tu nivel"><Lock className="h-3.5 w-3.5" /> Prueba de nivel</span>
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="h-2 flex-1 overflow-hidden rounded-full bg-subtle"><span className="block h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: NIVEL_COLOR[t.nivel_actual] }} /></span>
+            <span className="shrink-0 text-xs font-semibold text-muted">{Math.min(t.resueltos_nivel, minimo)} de {minimo}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** "Subir de nivel": visible y llamativo cuando ya se puede; si falta, dice cuánto. */
 function SubirNivel({ t, onSubir }: { t: TemaEstudiante; onSubir: (id: number) => void }) {
   if (!t.desbloqueado || t.total_ejercicios === 0) return null;
@@ -292,7 +356,7 @@ function SubirNivel({ t, onSubir }: { t: TemaEstudiante; onSubir: (id: number) =
   if (t.puede_subir && t.nivel_objetivo_label) {
     return (
       <button onClick={() => onSubir(t.id)} className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-prexi-blue px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition hover:-translate-y-0.5">
-        <TrendingUp className="h-3.5 w-3.5" /> Subir a nivel {t.nivel_objetivo_label}
+        <TrendingUp className="h-3.5 w-3.5" /> Prueba para subir a {t.nivel_objetivo_label}
       </button>
     );
   }
