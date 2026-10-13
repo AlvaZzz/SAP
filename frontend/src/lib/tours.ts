@@ -136,8 +136,9 @@ export const TOURS: Tour[] = [
     clave: 'docente-documentos',
     ruta: en('/docente/documentos'),
     pasos: [
-      { titulo: 'Material del curso', texto: 'Sube PDFs (guías, teoría, prácticas) y asócialos a un nivel para que los estudiantes los encuentren en su sección "Documentos".' },
-      { titulo: 'Solo PDF', texto: 'Por seguridad el sistema solo acepta archivos PDF de hasta el tamaño configurado. El archivo se valida en el servidor.' },
+      { titulo: 'Material del curso', texto: 'Aquí están los PDF que compartes con tus estudiantes, ordenados por unidad y tema, igual que ellos los ven.' },
+      { titulo: 'Subir es en tres pasos', texto: 'Eliges el PDF (o lo arrastras), indicas de qué tema es y le pones un nombre. Solo se aceptan PDF de hasta 15 MB.' },
+      { titulo: 'PREXI también lo usa', texto: 'Si el PDF tiene texto seleccionable, PREXI lo usa como referencia. Los escaneados se pueden leer, pero PREXI no.' },
     ],
   },
   {

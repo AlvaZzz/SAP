@@ -85,7 +85,7 @@ const NAV_DOCENTE: NavGrupo[] = [
   {
     titulo: 'Estudiantes',
     items: [
-      { href: '/docente/estudiantes/registro', label: 'Registro de estudiantes', icon: UserCheck },
+      { href: '/docente/estudiantes/registro', label: 'Registro', icon: UserCheck },
       { href: '/docente/estudiantes', label: 'Seguimiento', icon: Users },
     ],
   },
@@ -100,8 +100,8 @@ const NAV_DOCENTE: NavGrupo[] = [
   {
     titulo: 'Evaluación',
     items: [
-      { href: '/docente/revisiones', label: 'Revisiones de retos', icon: Inbox },
-      { href: '/docente/examenes', label: 'Exámenes de unidad', icon: GraduationCap },
+      { href: '/docente/revisiones', label: 'Revisar retos', icon: Inbox },
+      { href: '/docente/examenes', label: 'Exámenes', icon: GraduationCap },
       { href: '/docente/reportes', label: 'Reportes', icon: BarChart3 },
       { href: '/docente/evaluar-prexi', label: 'Evaluar PREXI', icon: ClipboardList },
     ],
@@ -265,7 +265,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
                         <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] transition ${activo ? 'bg-[rgb(var(--sidebar-bar))] text-white shadow-[0_6px_16px_-6px_rgb(var(--sidebar-bar))]' : 'bg-white/[0.05] group-hover:bg-white/[0.09]'}`}>
                           <Icon className="h-[19px] w-[19px]" />
                         </span>
-                        <span className="truncate">{label}</span>
+                        <span className="min-w-0 leading-tight">{label}</span>
                       </Link>
                     </li>
                   );
