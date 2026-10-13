@@ -9,7 +9,7 @@ import { FlashcardCard } from './flashcard-card';
 import { useSound } from '@/components/use-sound';
 import { claveMazo, type Flashcard } from '@/lib/flashcards';
 import { NIVEL_COLOR, NIVEL_LABEL, type NivelDificultad } from '@/lib/types';
-import { CheckCircle, RotateCcw, ChevronLeft, ChevronRight, ArrowLeft, Sparkles, X } from '@/components/icons';
+import { CheckCircle, RotateCcw, ChevronLeft, ArrowLeft, Sparkles, X } from '@/components/icons';
 
 /**
  * MAZO de flashcards: pila apilada, swipe (Framer `drag`) + flechas/teclado,
@@ -53,8 +53,8 @@ export function Mazo({ cards, color, titulo, scope, onSalir, nivelSesion }: {
   // Persiste el progreso del mazo COMPLETO (no el sub-mazo transitorio).
   useEffect(() => {
     if (typeof window === 'undefined' || esSub) return;
-    try { localStorage.setItem(key, JSON.stringify({ idx, dominadas: [...dominadas], repasar: [...repasar] })); } catch { /* sin espacio */ }
-  }, [key, idx, dominadas, repasar, esSub]);
+    try { localStorage.setItem(key, JSON.stringify({ idx, dominadas: [...dominadas], repasar: [...repasar], total: cards.length, t: Date.now() })); } catch { /* sin espacio */ }
+  }, [key, idx, dominadas, repasar, esSub, cards.length]);
 
   const total = deck.length;
   const actual = deck[idx];
@@ -111,23 +111,41 @@ export function Mazo({ cards, color, titulo, scope, onSalir, nivelSesion }: {
       onReiniciar={reiniciar} onSalir={onSalir} />;
   }
 
+  const voltear = () => { setFlipped((f) => !f); playFlip(); };
+  /** Deshace la última tarjeta: vuelve a ella y le quita la marca. */
+  const anterior = () => {
+    if (idx === 0) return;
+    const previa = deck[idx - 1];
+    setDir(0);
+    setDominadas((p) => { const n = new Set(p); n.delete(previa.id); return n; });
+    setRepasar((p) => { const n = new Set(p); n.delete(previa.id); return n; });
+    setFlipped(false);
+    setIdx(idx - 1);
+  };
+
   return (
     // data-sonido-off: voltear/marcar tienen sus PROPIOS sonidos (flip/positivo/neutro).
-    <div className="mx-auto max-w-md" data-sonido-off>
-      {/* Cabecera + progreso + nivel de la sesión */}
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="min-w-0 truncate text-sm font-semibold text-fg">{titulo}</p>
-        <span className="flex shrink-0 items-center gap-1.5">
-          {nivelSesion && (
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: nivelSesion.color, backgroundColor: `${nivelSesion.color}22` }}>
-              {nivelSesion.label}
-            </span>
-          )}
-          <span className="rounded-full bg-subtle px-2.5 py-1 text-xs font-bold text-muted" style={{ fontVariantNumeric: 'tabular-nums' }}>{Math.min(idx + 1, total)} / {total}</span>
+    <div className="mx-auto max-w-xl" data-sonido-off>
+      {/* Cabecera: qué mazo es y cómo voy */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="min-w-0 truncate font-display text-lg font-bold text-fg">{titulo}</p>
+        <span className="rounded-full bg-subtle px-3 py-1 text-sm font-bold text-fg" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          Tarjeta {Math.min(idx + 1, total)} <span className="font-medium text-muted">de {total}</span>
         </span>
       </div>
-      <div className="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-subtle">
-        <motion.div className="h-full rounded-full" style={{ backgroundColor: color }} initial={false} animate={{ width: `${(idx / total) * 100}%` }} transition={{ duration: 0.3 }} />
+
+      {/* Una marca por tarjeta: verde = ya la sé, ámbar = repasar, color = la actual */}
+      <div className="mb-4 flex gap-1" role="img" aria-label={`${dominadas.size} dominadas, ${repasar.size} para repasar, ${total - idx} por ver`}>
+        {deck.map((c, i) => (
+          <span key={c.id} className={`h-2 min-w-0 flex-1 rounded-full transition-all ${i === idx ? 'scale-y-150' : ''}`}
+            style={{ backgroundColor: dominadas.has(c.id) ? '#22C55E' : repasar.has(c.id) ? '#F59E0B' : i === idx ? color : 'rgb(var(--line))' }} />
+        ))}
+      </div>
+
+      <div className="mb-5 grid grid-cols-3 gap-2 text-center">
+        <Contador n={repasar.size} texto="Para repasar" color="#F59E0B" />
+        <Contador n={total - idx} texto="Por ver" color="rgb(var(--muted))" />
+        <Contador n={dominadas.size} texto="Ya las sé" color="#22C55E" />
       </div>
 
       {/* Pila de tarjetas */}
@@ -139,27 +157,53 @@ export function Mazo({ cards, color, titulo, scope, onSalir, nivelSesion }: {
         <AnimatePresence custom={dir} initial={false}>
           {actual && (
             <Arrastrable key={actual.id} dir={dir} reduce={!!reduce} onMarcar={marcar}>
-              <FlashcardCard card={actual} color={color} flipped={flipped} onFlip={() => { setFlipped((f) => !f); playFlip(); }} />
+              <FlashcardCard card={actual} color={color} flipped={flipped} onFlip={voltear} />
             </Arrastrable>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Controles accesibles (equivalentes al swipe) */}
-      <div className="mt-6 flex items-center justify-center gap-3">
-        <button onClick={() => marcar('repasar')} className="inline-flex items-center gap-2 rounded-xl border border-amber-400/60 bg-amber-500/10 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-500/20 dark:text-amber-300">
-          <ChevronLeft className="h-4 w-4" /> Repasar
-        </button>
-        <button onClick={() => { setFlipped((f) => !f); playFlip(); }} aria-label="Voltear tarjeta" className="grid h-11 w-11 place-items-center rounded-full border border-line bg-card text-muted shadow-soft transition hover:bg-subtle hover:text-fg">
-          <RotateCcw className="h-5 w-5" />
-        </button>
-        <button onClick={() => marcar('dominada')} className="inline-flex items-center gap-2 rounded-xl border border-[#22C55E]/60 bg-[#22C55E]/10 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-[#22C55E]/20 dark:text-emerald-300">
-          Ya la sé <ChevronRight className="h-4 w-4" />
-        </button>
+      {/* Paso 1: voltear. Paso 2: decir si la sabías. */}
+      <div className="mt-7">
+        {!flipped ? (
+          <button onClick={voltear} className="btn-primary h-12 w-full justify-center text-base">
+            <RotateCcw className="h-5 w-5" /> Ver la respuesta <Tecla>Espacio</Tecla>
+          </button>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => marcar('repasar')}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-amber-400/70 bg-amber-500/10 text-base font-bold text-amber-700 transition hover:bg-amber-500/20 dark:text-amber-300">
+              <Tecla>←</Tecla> Aún no la sé
+            </button>
+            <button onClick={() => marcar('dominada')}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-[#22C55E]/70 bg-[#22C55E]/10 text-base font-bold text-emerald-700 transition hover:bg-[#22C55E]/20 dark:text-emerald-300">
+              Ya la sé <Tecla>→</Tecla>
+            </button>
+          </div>
+        )}
+        <div className="mt-3 flex items-center justify-between text-xs text-muted">
+          <button onClick={anterior} disabled={idx === 0} className="inline-flex items-center gap-1 font-semibold hover:text-fg disabled:opacity-40">
+            <ChevronLeft className="h-3.5 w-3.5" /> Volver a la anterior
+          </button>
+          <span>También puedes arrastrar la tarjeta. No puntúa.</span>
+        </div>
       </div>
-      <p className="mt-3 text-center text-[11px] text-muted">Arrastra la tarjeta (o usa ←/→); Espacio para voltear. Este repaso no puntúa.</p>
     </div>
   );
+}
+
+function Contador({ n, texto, color }: { n: number; texto: string; color: string }) {
+  return (
+    <div className="rounded-xl border border-line bg-card px-2 py-2">
+      <p className="font-display text-xl font-extrabold leading-none" style={{ color, fontVariantNumeric: 'tabular-nums' }}>{n}</p>
+      <p className="mt-1 text-[11px] font-semibold text-muted">{texto}</p>
+    </div>
+  );
+}
+
+/** Tecla de atajo, solo en pantallas con teclado. */
+function Tecla({ children }: { children: React.ReactNode }) {
+  return <kbd className="hidden rounded-md border border-current px-1.5 py-0.5 text-[11px] font-bold opacity-70 sm:inline">{children}</kbd>;
 }
 
 /** Tarjeta superior arrastrable: x propio (se reinicia por tarjeta), rotación y
@@ -230,7 +274,7 @@ function Resumen({ color, deck, dominadas, repasar, onRepasarMarcadas, onReinici
     .filter((x) => x.total > 0);
 
   return (
-    <div className="mx-auto max-w-md animate-fade-up rounded-2xl border border-line bg-card p-6 text-center shadow-lift" style={{ borderTop: `4px solid ${color}` }}>
+    <div className="mx-auto max-w-xl animate-fade-up rounded-2xl border border-line bg-card p-6 text-center shadow-lift" style={{ borderTop: `4px solid ${color}` }}>
       <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-full" style={{ backgroundColor: `${color}22`, color }}><CheckCircle className="h-7 w-7" /></div>
       <h2 className="font-display text-xl font-extrabold text-fg">¡Terminaste el mazo!</h2>
       <p className="mt-1 text-sm text-muted">Repasaste {total} {total === 1 ? 'tarjeta' : 'tarjetas'}. Recuerda: esto no afecta tu nota ni tu nivel.</p>
