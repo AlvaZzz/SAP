@@ -8,10 +8,11 @@ import { BotonVoz } from '@/components/boton-voz';
 import { useAuth } from '@/providers/auth-provider';
 import { useAnimo } from '@/components/animo-tutor';
 import { useVoz } from '@/lib/voz';
+import { avisoPrexi, nombreDePila } from '@/lib/prexi-amable';
 import { Lightbulb, Lock, ChevronDown, Send, Sparkles } from './icons';
 import type { TipoEjercicio, ResultadoIntento } from '@/lib/types';
 
-const ETIQUETA: Record<number, string> = { 1: 'El concepto', 2: 'Dónde está el error', 3: 'Casi la solución' };
+const ETIQUETA: Record<number, string> = { 1: 'Una idea para empezar', 2: 'Dónde mirar', 3: 'Casi la respuesta' };
 
 interface Mensaje { id: number; de: 'tutor' | 'tu'; texto: string }
 
@@ -26,11 +27,13 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
   ejercicioId: number; contextoTema?: string; maxPistas: number;
   tipo?: TipoEjercicio; resultado?: ResultadoIntento | null;
 }) {
-  const bienvenida = contextoTema
-    ? `Hola. Estás en **${contextoTema}**. Pregúntame lo que quieras: te guío para que lo resuelvas tú, no te doy la respuesta.`
-    : 'Hola. Soy PREXI, tu tutor. Pregúntame sobre el concepto o pídeme una pista: te guío para que lo resuelvas tú.';
-
   const { usuario } = useAuth();
+  const saludo = nombreDePila(usuario);
+  const hola = saludo ? `Hola, ${saludo}.` : 'Hola.';
+  const bienvenida = contextoTema
+    ? `${hola} Estás en **${contextoTema}**. Pregúntame lo que quieras: te guío para que lo resuelvas tú, no te doy la respuesta.`
+    : `${hola} Soy PREXI, tu tutor. Pregúntame sobre el concepto o pídeme una pista: te guío para que lo resuelvas tú.`;
+
   const { alentar } = useAnimo();
   const { hablar } = useVoz();
   const [mensajes, setMensajes] = useState<Mensaje[]>([{ id: 0, de: 'tutor', texto: bienvenida }]);
@@ -38,7 +41,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
   const [pistas, setPistas] = useState<Record<number, string>>({});
   const [abierta, setAbierta] = useState<number | null>(null);
   const [cargando, setCargando] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<{ titulo: string; texto: string } | null>(null);
   const cuerpoRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
   const resPrev = useRef<ResultadoIntento | null>(null);
@@ -78,7 +81,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
     if (!q || cargando) return;
     setPregunta('');
     empujar('tu', q);
-    setCargando(true); setError('');
+    setCargando(true); setError(null);
     const cuerpo = { pregunta: q, contextoTema, ejercicio_id: ejercicioId };
     // Mensaje de PREXI que se irá rellenando con el streaming.
     const idTutor = nextId.current++;
@@ -114,18 +117,18 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
       } catch (err) {
         set('');
         setMensajes((m) => m.filter((x) => x.id !== idTutor));
-        setError(err instanceof ApiError ? err.message : streamErr instanceof ApiError ? streamErr.message : 'PREXI no está disponible ahora, intenta de nuevo.');
+        setError(avisoPrexi(err instanceof ApiError ? err : streamErr));
       }
     } finally { setCargando(false); }
   }
 
   async function pedirPista(nivel: 1 | 2 | 3) {
     if (pistas[nivel]) { setAbierta(abierta === nivel ? null : nivel); return; }
-    setCargando(true); setError('');
+    setCargando(true); setError(null);
     try {
       const r = await api.post<{ pista: string }>('/tutor-ia/pista', { ejercicio_id: ejercicioId, nivel_pista: nivel });
       setPistas((p) => ({ ...p, [nivel]: r.pista })); setAbierta(nivel);
-    } catch (err) { setError(err instanceof ApiError ? err.message : 'No se pudo obtener la pista.'); }
+    } catch (err) { setError(avisoPrexi(err)); }
     finally { setCargando(false); }
   }
 
@@ -144,7 +147,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
     // propia junto al ejercicio; por debajo se apila y fluye con la página.
     <div className="flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-lift xl:sticky xl:top-24">
       {/* Header con avatar + estado */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-line bg-gradient-to-r from-prexi-navy to-prexi-navy-soft px-4 py-3.5">
+      <div className="relative flex shrink-0 items-center gap-3 overflow-hidden border-b-2 border-[#F97316] bg-gradient-to-r from-prexi-navy to-prexi-navy-soft px-4 py-3.5">
         <TutorAvatar estado={estadoAvatar} size={44} />
         <div className="min-w-0">
           <p className="font-bold leading-tight text-white">PREXI · <span className="font-semibold text-blue-100/90">Tu tutor</span></p>
@@ -183,7 +186,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
         {/* Pistas progresivas (acordeón con candado + costo XP honesto) */}
         <div className="!mt-4 rounded-xl border border-line bg-subtle/50 p-2.5">
           <p className="mb-1.5 flex items-center gap-1.5 px-1 text-2xs font-bold uppercase tracking-wide text-muted">
-            <Lightbulb className="h-3.5 w-3.5 text-prexi-amber" /> Pistas progresivas
+            <Lightbulb className="h-3.5 w-3.5 text-prexi-amber" /> ¿Te trabaste? Pide una pista
           </p>
           <div className="space-y-1.5">
             {([1, 2, 3] as const).map((nivel) => {
@@ -200,7 +203,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
                     </span>
                     {desbloqueada
                       ? <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
-                      : <span className="shrink-0 rounded-full bg-prexi-amber/15 px-2 py-0.5 text-2xs font-bold text-prexi-amber">cuesta XP</span>}
+                      : <span className="shrink-0 rounded-full bg-prexi-amber/15 px-2 py-0.5 text-2xs font-bold text-prexi-amber">resta algo de XP</span>}
                   </button>
                   {open && <div className="border-t border-line px-3 py-2.5 text-sm leading-relaxed text-fg"><Markdown content={pistas[nivel]} /></div>}
                 </div>
@@ -210,16 +213,25 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
           <p className="mt-1.5 px-1 text-2xs leading-snug text-muted">Cada pista que abras reduce un poco el XP del ejercicio. Úsalas cuando de verdad lo necesites.</p>
         </div>
 
-        {error && <p className="!mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-prexi-red">{error}</p>}
+        {error && (
+          <div className="!mt-3 flex items-start gap-2.5 rounded-xl border border-prexi-amber/40 bg-prexi-amber/10 px-3 py-2.5" role="status">
+            <TutorAvatar estado="atento" size={28} className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-fg">{error.titulo}</p>
+              <p className="text-sm leading-snug text-muted">{error.texto}</p>
+            </div>
+            <button onClick={() => setError(null)} aria-label="Cerrar aviso" className="shrink-0 text-xs font-semibold text-muted hover:text-fg">Cerrar</button>
+          </div>
+        )}
       </div>
 
       {/* Sugerencias rápidas (bajan la barrera de uso) */}
       <div className="shrink-0 border-t border-line px-3 pt-2.5">
-        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-2xs font-semibold text-muted"><Sparkles className="h-3 w-3 text-prexi-blue-deep" /> Pregúntame rápido:</p>
-        <div className="flex flex-wrap gap-1.5">
+        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-xs font-semibold text-muted"><Sparkles className="h-3.5 w-3.5 text-[#F97316]" /> Toca una pregunta o escribe la tuya:</p>
+        <div className="grid grid-cols-2 gap-1.5">
           {chips.map((c) => (
             <button key={c} disabled={cargando} onClick={() => enviar(c)}
-              className="rounded-full border border-prexi-blue/30 bg-prexi-blue/10 px-2.5 py-1 text-xs font-medium text-prexi-blue-deep transition hover:border-prexi-blue/60 hover:bg-prexi-blue/20 disabled:opacity-45">
+              className="rounded-xl border border-prexi-blue/30 bg-prexi-blue/10 px-2.5 py-2 text-left text-sm font-semibold leading-tight text-prexi-blue-deep transition hover:border-prexi-blue/60 hover:bg-prexi-blue/20 disabled:opacity-45">
               {c}
             </button>
           ))}
@@ -230,14 +242,14 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
       <div className="flex shrink-0 items-end gap-2 p-3">
         <input
           className="input min-w-0 flex-1 !py-2.5 text-sm"
-          placeholder="Escríbele a PREXI…"
+          placeholder="Escribe tu duda aquí…"
           value={pregunta}
           onChange={(e) => setPregunta(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && enviar(pregunta)}
           disabled={cargando}
         />
         <button onClick={() => enviar(pregunta)} disabled={cargando || !pregunta.trim()} aria-label="Enviar"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-prexi-blue text-accent-on shadow-glow transition hover:bg-prexi-blue-hover disabled:opacity-50 disabled:shadow-none">
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#EA580C] text-white shadow-[0_8px_20px_-8px_rgba(234,88,12,0.9)] transition hover:bg-[#F97316] disabled:opacity-40 disabled:shadow-none">
           <Send className="h-[18px] w-[18px]" />
         </button>
       </div>
