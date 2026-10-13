@@ -24,9 +24,13 @@ No desbloquea temas ni unidades: un diagnóstico alto no permite saltarse nada.
 ## Dentro de una unidad
 
 1. Los temas y subtemas se abren **en orden**: el siguiente se desbloquea al completar el
-   anterior (`common/niveles/desbloqueo.ts`).
-2. En cada tema el estudiante practica en su nivel. Para subir rinde una evaluación de
-   10 preguntas del nivel siguiente y necesita **80 sobre 100**.
+   anterior (`common/niveles/desbloqueo.ts`). Un tema se completa con **10 ejercicios
+   resueltos** (su umbral entero).
+2. En cada tema el estudiante practica en su nivel. Al resolver 10 ejercicios de su nivel
+   (o todos, si el tema tiene menos) se abre la **prueba de nivel**: 10 preguntas del nivel
+   siguiente y **80 sobre 100** para subir. Si el nivel siguiente tiene menos de 10
+   ejercicios, la prueba se completa hasta 10 con los más difíciles del nivel actual.
+   Solo cuentan los ejercicios del banco de práctica.
 3. Una respuesta puede ser correcta, **parcial** o incorrecta (`ejercicios/correccion.ts`).
    En la práctica, una respuesta parcial muestra qué falta y se puede completar. En una
    evaluación o examen cuenta con su puntaje proporcional y no se puede completar.

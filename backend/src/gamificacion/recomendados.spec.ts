@@ -15,8 +15,8 @@ describe('GamificacionService.recomendados (motor de reglas)', () => {
       id: 1, numero: 1, temas: [
         {
           id: 10, numero: '1.1', titulo: 'Concepto de algoritmo', umbral: 10,
-          // Tema 1.1 completo (8 de 10 con umbral 80 %): abre el 1.2.
-          progreso: [{ ejerciciosCompletados: 8, nivelActual: 'intermedio' }], subtemas: [],
+          // Tema 1.1 completo (10 de 10): abre el 1.2.
+          progreso: [{ ejerciciosCompletados: 10, nivelActual: 'intermedio' }], subtemas: [],
         },
         {
           id: 11, numero: '1.2', titulo: 'Tipos de datos y variables', umbral: 10,

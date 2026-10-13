@@ -167,11 +167,15 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
       expect(t.puede_subir).toBe(true);
     });
 
-    it('el tema se muestra completo con la misma regla que abre el siguiente (80 % del umbral)', async () => {
+    it('el tema se completa con su umbral entero: 10 de 10 (9 todavía no)', async () => {
       prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
-      prisma.unidad.findMany.mockResolvedValue(unidadCon(tema(1, { progreso: [{ nivelActual: 'basico', ejerciciosCompletados: 8 }] })));
-      const [u] = await service.listar(7);
-      expect(u.temas[0].umbral).toBe(8);
+      prisma.unidad.findMany.mockResolvedValue(unidadCon(tema(1, { progreso: [{ nivelActual: 'basico', ejerciciosCompletados: 9 }] })));
+      let [u] = await service.listar(7);
+      expect(u.temas[0].umbral).toBe(10);
+      expect(u.temas[0].estado).toBe('en_progreso');
+
+      prisma.unidad.findMany.mockResolvedValue(unidadCon(tema(1, { progreso: [{ nivelActual: 'basico', ejerciciosCompletados: 10 }] })));
+      [u] = await service.listar(7);
       expect(u.temas[0].estado).toBe('completado');
     });
   });

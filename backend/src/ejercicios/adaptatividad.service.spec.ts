@@ -126,6 +126,29 @@ describe('AdaptatividadService (niveles Básico/Intermedio/Avanzado por tema)', 
       expect(r.total).toBe(2);
     });
 
+    it('la prueba SIEMPRE llega a N preguntas: completa con los más difíciles del nivel vigente', async () => {
+      prisma.tema.findUnique.mockResolvedValue({ id: 3, titulo: 'T', numero: '1.1' });
+      prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'intermedio' });
+      prisma.configuracionSistema.findUnique.mockResolvedValue({ subirNivelPreguntas: 10, subirNivelUmbral: 80, subirNivelEsperaHoras: 0 });
+      const intermedios = Array.from({ length: 10 }, (_, i) => ({ id: 100 + i, nivelDificultad: 'intermedio' }));
+      const avanzados = Array.from({ length: 5 }, (_, i) => ({ id: 200 + i, nivelDificultad: 'avanzado' }));
+      prisma.ejercicio.count.mockResolvedValue(10);
+      prisma.ejercicio.findMany
+        .mockResolvedValueOnce(intermedios)   // práctica mínima del nivel vigente
+        .mockResolvedValueOnce(avanzados)     // nivel objetivo: solo hay 5
+        .mockResolvedValueOnce(intermedios);  // refuerzo, ya ordenado por dificultad
+      prisma.intento.findMany.mockResolvedValue(intermedios.map((e) => ({ ejercicioId: e.id })));
+
+      const r = await service.iniciarSubida(7, 3);
+      expect(r.total).toBe(10);
+      const ids = r.preguntas.map((p: { id: number }) => p.id);
+      expect(new Set(ids).size).toBe(10);
+      // Entran los 5 avanzados y, de refuerzo, los 5 primeros (más difíciles) del nivel vigente.
+      expect(ids.filter((id: number) => id >= 200).length).toBe(5);
+      expect(ids.filter((id: number) => id < 200).sort()).toEqual([100, 101, 102, 103, 104]);
+      expect(prisma.ejercicio.findMany.mock.calls[2][0].orderBy[0]).toEqual({ dificultadB: 'desc' });
+    });
+
     it('rechaza si no hay ejercicios del nivel objetivo', async () => {
       prisma.tema.findUnique.mockResolvedValue({ id: 3, titulo: 'T', numero: '1.1' });
       prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'basico' });

@@ -386,7 +386,23 @@ export class AdaptatividadService {
     }
 
     // Selección aleatoria de hasta N preguntas del nivel objetivo.
-    const barajado = barajarAlAzar(disponibles).slice(0, cfg.preguntas);
+    const elegidas = barajarAlAzar(disponibles).slice(0, cfg.preguntas);
+    // La prueba SIEMPRE llega a N preguntas: si el nivel objetivo tiene menos, se
+    // completa con los ejercicios MÁS DIFÍCILES del nivel vigente (mayor b). No se
+    // inventa contenido y la prueba sigue midiendo el tramo alto de lo que domina.
+    if (elegidas.length < cfg.preguntas) {
+      const usados = new Set(elegidas.map((e) => e.id));
+      const refuerzo = await this.prisma.ejercicio.findMany({
+        where: { temaId, banco: 'practica', activo: true, nivelDificultad: actual },
+        orderBy: [{ dificultadB: 'desc' }, { id: 'asc' }],
+        select: SELECT_PUBLICO,
+      });
+      for (const e of refuerzo) {
+        if (elegidas.length >= cfg.preguntas) break;
+        if (!usados.has(e.id)) { usados.add(e.id); elegidas.push(e); }
+      }
+    }
+    const barajado = barajarAlAzar(elegidas);
     return {
       tema: { id: tema.id, numero: tema.numero, titulo: tema.titulo },
       nivel_actual: actual, nivel_actual_label: ETIQUETA_NIVEL[actual],
@@ -447,10 +463,11 @@ export class AdaptatividadService {
     await this.exigirPracticaMinima(usuarioId, temaId);
     await this.verificarCooldown(usuarioId, temaId, cfg.esperaHoras);
 
-    // Solo se aceptan ejercicios que REALMENTE pertenecen a este tema y nivel objetivo.
+    // Solo se aceptan ejercicios que REALMENTE pertenecen a este tema: los del nivel
+    // objetivo y, si hizo falta completar la prueba, los del nivel vigente.
     const ids = respuestas.map((r) => r.ejercicioId);
     const ejercicios = await this.prisma.ejercicio.findMany({
-      where: { id: { in: ids }, temaId, banco: 'practica', activo: true, nivelDificultad: objetivo },
+      where: { id: { in: ids }, temaId, banco: 'practica', activo: true, nivelDificultad: { in: [objetivo, actual] } },
       select: { id: true, tipo: true, respuestaCorrecta: true, dificultadB: true },
     });
     if (ejercicios.length === 0) throw new BadRequestException('Las preguntas no corresponden al mini-diagnóstico.');

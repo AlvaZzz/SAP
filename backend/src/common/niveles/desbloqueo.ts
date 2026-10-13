@@ -17,9 +17,15 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-/** Ejercicios resueltos que hacen falta para dar un tema por completo. */
-export function requeridosTema(umbral: number, umbralPct: number): number {
-  return Math.ceil((umbral * umbralPct) / 100);
+/**
+ * Ejercicios resueltos que hacen falta para dar un tema por completo: su umbral
+ * ENTERO (10 por defecto). El porcentaje de la configuración se conserva en la
+ * firma porque los llamadores ya lo traen, pero no rebaja la exigencia del tema:
+ * ese porcentaje gobierna solo los niveles de gamificación.
+ */
+export function requeridosTema(umbral: number, umbralPct?: number): number {
+  void umbralPct;
+  return umbral;
 }
 
 export function temaCompleto(completados: number, umbral: number, umbralPct: number): boolean {

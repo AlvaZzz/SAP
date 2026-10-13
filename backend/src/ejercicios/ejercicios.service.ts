@@ -7,7 +7,7 @@ import { corregirGraduado } from './correccion';
 import { EmblemasService } from '../gamificacion/emblemas.service';
 import { RangosService } from '../gamificacion/rangos.service';
 import { factorXpNivel } from '../common/niveles/nivel-dificultad';
-import { desbloqueoSecuencial } from '../common/niveles/desbloqueo';
+import { desbloqueoSecuencial, requeridosTema } from '../common/niveles/desbloqueo';
 import { estimarTheta, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
 import { msDesde } from '../mediciones/motor/motor';
 import type { DecisionMotor } from './log-adaptacion.service';
@@ -162,7 +162,7 @@ export class EjerciciosService {
       update: { ejerciciosCompletados: completadosTotal, desbloqueado: true },
     });
 
-    const requeridos = Math.ceil((tema.umbral * umbralPct) / 100);
+    const requeridos = requeridosTema(tema.umbral, umbralPct);
     if (completadosTotal < requeridos) return;
 
     // Desbloquea el siguiente hermano (mismo padre, o mismo nivel superior si no tiene padre).
@@ -187,7 +187,7 @@ export class EjerciciosService {
         hermanos.map(async (h) => {
           if (h.id === tema.id) return true;
           const pr = await tx.progresoTema.findUnique({ where: { usuarioId_temaId: { usuarioId, temaId: h.id } } });
-          const req = Math.ceil((h.umbral * umbralPct) / 100);
+          const req = requeridosTema(h.umbral, umbralPct);
           return (pr?.ejerciciosCompletados ?? 0) >= req;
         }),
       )).every(Boolean);
@@ -221,7 +221,7 @@ export class EjerciciosService {
     const todos = (await Promise.all(
       temasTop.map(async (t) => {
         const pr = await tx.progresoTema.findUnique({ where: { usuarioId_temaId: { usuarioId, temaId: t.id } } });
-        const req = Math.ceil((t.umbral * umbralPct) / 100);
+        const req = requeridosTema(t.umbral, umbralPct);
         return (pr?.ejerciciosCompletados ?? 0) >= req;
       }),
     )).every(Boolean);
