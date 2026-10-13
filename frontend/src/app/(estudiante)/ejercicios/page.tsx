@@ -51,10 +51,10 @@ export default function EjerciciosPage() {
       {/* ── Por dónde seguir ── */}
       <section className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-prexi-navy via-[#12356B] to-prexi-blue p-6 text-white shadow-lift sm:p-8">
         <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-24 h-64 w-64 rounded-full bg-orange-500/35 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-24 h-64 w-64 rounded-full bg-amber-300/15 blur-3xl" />
         <div className="relative flex flex-wrap items-center gap-6">
           <div className="min-w-[240px] flex-1">
-            <p className="inline-flex items-center gap-2 text-sm font-bold text-orange-300"><span className="h-1.5 w-6 rounded-full bg-orange-400" /> Tu camino en Programación I</p>
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200"><span className="h-1.5 w-6 rounded-full bg-amber-300" /> Tu camino en Programación I</p>
             {actual ? (
               <>
                 <h1 className="mt-1 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
@@ -66,7 +66,7 @@ export default function EjerciciosPage() {
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   {actual.examen === 'listo' ? (
-                    <Link href={`/examen-unidad/${actual.u.id}`} className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-base font-extrabold text-[#3a2500] shadow-[0_10px_30px_-8px_rgba(251,191,36,0.9)] transition hover:-translate-y-0.5 hover:bg-amber-300">
+                    <Link href={`/examen-unidad/${actual.u.id}`} className="btn-accion !py-3.5 text-base">
                       <GraduationCap className="h-5 w-5" /> Rendir el examen de la unidad <ArrowRight className="h-5 w-5" />
                     </Link>
                   ) : (
@@ -119,7 +119,7 @@ export default function EjerciciosPage() {
                     <div className="min-w-[200px] flex-1">
                       <p className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: abierta ? color : undefined }}>
                         Unidad {u.numero}
-                        {esActual && <span className="rounded-full bg-[#EA580C] px-2 py-0.5 text-2xs text-white">Estás aquí</span>}
+                        {esActual && <span className="chip-accion">Estás aquí</span>}
                         {examen === 'aprobado' && <span className="rounded-full bg-prexi-green/15 px-2 py-0.5 text-2xs text-prexi-green">Aprobada</span>}
                       </p>
                       <h3 className="font-display text-xl font-bold text-fg">{u.titulo}</h3>
@@ -171,9 +171,9 @@ function PuertaExamen({ unidad, estado, completos, temas }: { unidad: UnidadEstu
   }
   if (estado === 'listo') {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-400/50 bg-gradient-to-r from-amber-400/20 to-amber-300/10 px-4 py-3.5 sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-300/50 bg-amber-300/10 px-4 py-3.5 sm:px-5">
         <p className="flex items-center gap-2.5 text-sm font-semibold text-fg"><Star className="h-5 w-5 shrink-0 text-amber-500" /> Completaste todos los temas. ¡El examen te espera!</p>
-        <Link href={`/examen-unidad/${unidad.id}`} className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-extrabold text-[#3a2500] shadow-[0_8px_24px_-8px_rgba(251,191,36,0.95)] transition hover:-translate-y-0.5 hover:bg-amber-300">
+        <Link href={`/examen-unidad/${unidad.id}`} className="btn-accion !rounded-xl !px-5 !py-2.5 text-sm">
           <GraduationCap className="h-5 w-5" /> Rendir el examen <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -198,7 +198,7 @@ function Anillo({ pct }: { pct: number }) {
     <div className="relative h-[88px] w-[88px] shrink-0" role="img" aria-label={`${pct} % del curso completado`}>
       <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
         <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="8" />
-        <circle cx="40" cy="40" r={r} fill="none" stroke="#FB923C" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100} className="transition-all duration-700" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#F7C255" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100} className="transition-all duration-700" />
       </svg>
       <span className="absolute inset-0 grid place-items-center font-display text-lg font-extrabold">{pct}%</span>
     </div>

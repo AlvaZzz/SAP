@@ -147,7 +147,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
     // propia junto al ejercicio; por debajo se apila y fluye con la página.
     <div className="flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-lift xl:sticky xl:top-24">
       {/* Header con avatar + estado */}
-      <div className="relative flex shrink-0 items-center gap-3 overflow-hidden border-b-2 border-[#F97316] bg-gradient-to-r from-prexi-navy to-prexi-navy-soft px-4 py-3.5">
+      <div className="relative flex shrink-0 items-center gap-3 overflow-hidden border-b border-line bg-gradient-to-r from-prexi-navy to-prexi-navy-soft px-4 py-3.5">
         <TutorAvatar estado={estadoAvatar} size={44} />
         <div className="min-w-0">
           <p className="font-bold leading-tight text-white">PREXI · <span className="font-semibold text-blue-100/90">Tu tutor</span></p>
@@ -227,7 +227,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
 
       {/* Sugerencias rápidas (bajan la barrera de uso) */}
       <div className="shrink-0 border-t border-line px-3 pt-2.5">
-        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-xs font-semibold text-muted"><Sparkles className="h-3.5 w-3.5 text-[#F97316]" /> Toca una pregunta o escribe la tuya:</p>
+        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-xs font-semibold text-muted"><Sparkles className="h-3.5 w-3.5 text-prexi-amber" /> Toca una pregunta o escribe la tuya:</p>
         <div className="grid grid-cols-2 gap-1.5">
           {chips.map((c) => (
             <button key={c} disabled={cargando} onClick={() => enviar(c)}
@@ -249,7 +249,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
           disabled={cargando}
         />
         <button onClick={() => enviar(pregunta)} disabled={cargando || !pregunta.trim()} aria-label="Enviar"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#EA580C] text-white shadow-[0_8px_20px_-8px_rgba(234,88,12,0.9)] transition hover:bg-[#F97316] disabled:opacity-40 disabled:shadow-none">
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-prexi-blue text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-40">
           <Send className="h-[18px] w-[18px]" />
         </button>
       </div>

@@ -230,7 +230,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
         <Link href={homeHref} className="flex items-center gap-2.5">
           <div className="grid h-[44px] w-[44px] place-items-center rounded-[14px] bg-gradient-to-br from-prexi-blue to-blue-600 text-[21px] font-extrabold text-white shadow-lg shadow-blue-900/50 ring-1 ring-white/15">P</div>
           <div>
-            <p className="font-display text-[22px] font-extrabold leading-none tracking-tight text-white">PRE<span className="bg-gradient-to-r from-[#F97316] to-[#FB923C] bg-clip-text text-transparent">XI</span></p>
+            <p className="font-display text-[22px] font-extrabold leading-none tracking-tight text-white">PRE<span className="text-amber-300">XI</span></p>
             <p className="mt-1 text-[12px] font-medium text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
           </div>
         </Link>
@@ -261,7 +261,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
                         className={`group relative flex items-center gap-[12px] rounded-[12px] py-[7px] pl-[11px] pr-[8px] text-[16.5px] transition ${activo
                           ? 'bg-[rgb(var(--sidebar-active))] font-semibold text-[rgb(var(--sidebar-active-ink))] ring-1 ring-white/[0.06]'
                           : 'font-medium text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.05] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
-                        {activo && <span aria-hidden className="absolute left-0 top-1/2 h-[20px] w-[3px] -translate-y-1/2 rounded-r-full bg-[#F97316]" />}
+                        {activo && <span aria-hidden className="absolute left-0 top-1/2 h-[20px] w-[3px] -translate-y-1/2 rounded-r-full bg-[rgb(var(--sidebar-bar))]" />}
                         <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] transition ${activo ? 'bg-[rgb(var(--sidebar-bar))] text-white shadow-[0_6px_16px_-6px_rgb(var(--sidebar-bar))]' : 'bg-white/[0.05] group-hover:bg-white/[0.09]'}`}>
                           <Icon className="h-[19px] w-[19px]" />
                         </span>

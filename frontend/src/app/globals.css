@@ -111,14 +111,16 @@ body {
   .btn-primary:active:not(:disabled) {
     background-color: rgb(var(--accent-pressed));
   }
-  /* Botón de ACCIÓN principal ("sigue por aquí"): el naranja de la marca PREXI.
-     Rompe el azul dominante y señala lo único que hay que pulsar. Texto blanco
-     en negrita grande sobre #EA580C (contraste 3,6:1, válido para texto grande). */
+  /* Botón de ACCIÓN principal ("sigue por aquí"). Usa el ámbar SOBRIO de la
+     paleta del sistema (el mismo de racha y avisos), en un tono suave y con
+     texto oscuro: se distingue del azul sin gritar. Un solo cálido en toda la app. */
   .btn-accion {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-extrabold text-white
-           transition hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0;
-    background-image: linear-gradient(135deg, #EA580C 0%, #F97316 100%);
-    box-shadow: 0 10px 26px -10px rgba(234, 88, 12, 0.85);
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-300 px-6 py-3 font-bold text-amber-900
+           shadow-soft transition hover:bg-amber-400 active:scale-[0.98] disabled:opacity-60;
+  }
+  /* Etiqueta cálida suave ("Estás aquí", "Sigue aquí"). */
+  .chip-accion {
+    @apply rounded-full bg-amber-500/15 px-2 py-0.5 text-2xs font-bold text-amber-700 dark:text-amber-300;
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-card

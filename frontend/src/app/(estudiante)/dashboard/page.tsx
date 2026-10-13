@@ -65,8 +65,18 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
-      <p className="mb-5 mt-1 text-base text-muted">Este es tu avance en Programación I. El verde significa que avanzaste; el ámbar, que vas en camino.</p>
+      <section className="relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-prexi-navy via-[#12356B] to-prexi-blue p-5 text-white shadow-lift sm:p-7">
+        <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 right-28 h-56 w-56 rounded-full bg-amber-300/15 blur-3xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0 flex-1 basis-64">
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200"><span className="h-1.5 w-6 rounded-full bg-amber-300" /> Tu panel</p>
+            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
+            <p className="mt-1 text-base text-blue-100/90">Este es tu avance en Programación I. El verde significa que avanzaste; el ámbar, que vas en camino.</p>
+          </div>
+          <button onClick={() => router.push('/ejercicios')} className="btn-accion w-full sm:w-auto">Seguir aprendiendo <ArrowRight className="h-5 w-5" /></button>
+        </div>
+      </section>
       <MiCurso className="mb-5" />
 
       {/* Evaluación del sistema (SUS): solo aparece con la fase habilitada */}
@@ -74,7 +84,7 @@ export default function DashboardPage() {
 
 
       {/* ── Estadísticas destacadas ── */}
-      <StatGrid className="mb-5">
+      <StatGrid className="mb-5 !grid-cols-2 sm:!grid-cols-[repeat(auto-fit,minmax(210px,1fr))]">
         {cargando ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[96px]" />) : (
           <>
             <SparkStat color={AZUL} icon={<Star className="h-5 w-5" />} label="Puntos XP"
@@ -98,8 +108,8 @@ export default function DashboardPage() {
           contenido y la fila quedaba despareja. El valor por defecto de la
           rejilla (stretch) iguala las tres tarjetas, también en `lg` (2 col). */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.9fr)] xl:gap-6">
-        <Card className="flex h-full min-w-0 flex-col border-l-4 border-l-prexi-blue">
-          <div className="mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5 text-prexi-blue-deep" /><h2 className="font-display text-xl font-bold text-prexi-blue-deep">Recomendado por tu tutor PREXI</h2></div>
+        <Card className="flex h-full min-w-0 flex-col">
+          <div className="mb-1 flex items-center gap-3"><Tile color={AMBAR}><Sparkles className="h-5 w-5" /></Tile><SectionTitle>Recomendado por tu tutor PREXI</SectionTitle></div>
           <p className="mb-4 text-sm text-muted">Elegidos según tu desempeño real: refuerzan tus puntos débiles y te acercan al siguiente nivel.</p>
           <div className="space-y-2.5">
             {rec.slice(0, 2).map((e) => {
@@ -117,9 +127,9 @@ export default function DashboardPage() {
                 <p className="mt-1 flex items-start gap-1.5 text-xs leading-relaxed text-muted">
                   <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-prexi-amber" /> {e.razon}
                 </p>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
+                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
                   <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-prexi-amber">+{e.xp} XP</span>
-                  <button onClick={() => router.push(`/ejercicios/${e.id}`)} className="btn-primary !px-3.5 !py-1.5 text-sm">
+                  <button onClick={() => router.push(`/ejercicios/${e.id}`)} className="btn-primary flex-1 !px-3.5 !py-2 text-sm sm:flex-none sm:!py-1.5">
                     Resolver <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -135,9 +145,9 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="flex h-full min-w-0 flex-col">
+        <Card className="order-3 flex h-full min-w-0 flex-col lg:order-none">
           <div className="mb-1 flex flex-wrap items-start justify-between gap-3">
-            <div><SectionTitle>Tu evolución</SectionTitle><p className="mt-0.5 text-xs text-muted">Habilidad estimada (θ) en cada medición · comparada con tu grupo</p></div>
+            <div className="flex items-center gap-3"><Tile color={AZUL}><TrendingUp className="h-5 w-5" /></Tile><div><SectionTitle>Tu evolución</SectionTitle><p className="mt-0.5 text-xs text-muted">Habilidad estimada (θ) en cada medición · comparada con tu grupo</p></div></div>
             <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-subtle px-3 py-1.5 text-xs font-semibold text-fg"><TrendingUp className="h-3.5 w-3.5" style={{ color: AZUL }} /> IRT · Rasch</span>
           </div>
           <div className="mb-2 flex gap-5 text-2xs text-muted">
@@ -149,9 +159,8 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="flex h-full min-w-0 flex-col">
-          <SectionTitle>Progreso por unidad</SectionTitle>
-          <p className="mb-4 mt-0.5 text-xs text-muted">Dominio estimado en cada unidad del plan</p>
+        <Card className="order-2 flex h-full min-w-0 flex-col lg:order-none">
+          <div className="mb-4 flex items-center gap-3"><Tile color={VERDE}><GraduationCap className="h-5 w-5" /></Tile><div><SectionTitle>Progreso por unidad</SectionTitle><p className="mt-0.5 text-xs text-muted">Dominio estimado en cada unidad del plan</p></div></div>
           {cargando ? <div className="space-y-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10" />)}</div>
             : unidades.length === 0 ? <p className="py-8 text-center text-sm text-muted">Aún no hay unidades publicadas.</p>
               : (
@@ -165,13 +174,13 @@ export default function DashboardPage() {
       {/* ── Actividad reciente, en una fila propia ── */}
       <div className="mt-6">
         <Card className="min-w-0">
-          <SectionTitle className="mb-4">Actividad reciente</SectionTitle>
+          <div className="mb-4 flex items-center gap-3"><Tile color={VIOLETA}><Flame className="h-5 w-5" /></Tile><SectionTitle>Actividad reciente</SectionTitle></div>
           {cargando ? <div className="space-y-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div>
             : !recientes || recientes.recientes.length === 0 ? <p className="py-8 text-center text-sm text-muted">Cuando resuelvas ejercicios, tu actividad aparecerá aquí.</p>
               : (
                 <div className="divide-y divide-line">
                   {recientes.recientes.map((a, i) => (
-                    <div key={i} className="flex items-center gap-3.5 py-2.5">
+                    <div key={i} className="flex items-center gap-3 py-3 sm:gap-3.5">
                       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ backgroundColor: `${a.correcto ? VERDE : ROJO}1f` }}>
                         <FlechaDir up={a.correcto} />
                       </span>
@@ -194,6 +203,11 @@ export default function DashboardPage() {
   );
 }
 
+/** Recuadro de icono de las cabeceras: da a cada tarjeta su color sin llenarla. */
+function Tile({ color, children }: { color: string; children: React.ReactNode }) {
+  return <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ color, backgroundColor: `${color}1c` }}>{children}</span>;
+}
+
 /* ── Tarjeta destacada: ícono de color + número grande + sparkline real ── */
 function SparkStat({ color, icon, label, value, sub, serie }: {
   color: string; icon: React.ReactNode; label: string; value: React.ReactNode; sub: React.ReactNode; serie?: number[];
@@ -203,13 +217,13 @@ function SparkStat({ color, icon, label, value, sub, serie }: {
     // menos el ícono, y el sparkline baja junto al subtexto. En la versión en
     // fila, el sparkline (88px) e ícono (44px) dejaban ~20px al texto dentro de
     // una columna de 210px, y la etiqueta se partía letra por letra (vertical).
-    <div className="card card-hover relative flex flex-col gap-2 overflow-hidden !px-4">
+    <div className="card card-hover relative flex flex-col gap-1.5 overflow-hidden !p-3.5 sm:gap-2 sm:!p-5 sm:!px-4">
       {/* Degradado MUY sutil desde el acento hacia el fondo */}
       <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: `radial-gradient(120% 140% at 0% 0%, ${color}17, transparent 55%)` }} />
 
       {/* Fila superior: ícono + etiqueta SIEMPRE horizontal (1-2 líneas) */}
       <div className="relative flex items-center gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl" style={{ backgroundColor: `${color}1c`, color, boxShadow: `inset 0 0 0 1px ${color}33` }}>{icon}</div>
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl sm:h-11 sm:w-11 sm:rounded-2xl" style={{ backgroundColor: `${color}1c`, color, boxShadow: `inset 0 0 0 1px ${color}33` }}>{icon}</div>
         <p className="stat-label min-w-0 flex-1">{label}</p>
       </div>
 
