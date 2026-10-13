@@ -44,7 +44,7 @@ export function NivelBadge({
 }) {
   const n: NivelDificultad = nivel ?? (estrellas != null ? nivelDesdeEstrellas(estrellas) : 'basico');
   const color = NIVEL_COLOR[n];
-  const pad = size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-[11px]';
+  const pad = size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-0.5 text-2xs';
   return (
     <span
       className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full font-bold uppercase tracking-wide ${pad} ${className}`}

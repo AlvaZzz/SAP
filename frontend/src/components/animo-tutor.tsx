@@ -92,7 +92,7 @@ export function AnimoProvider({ children }: { children: ReactNode }) {
               <TutorAvatar estado="alentando" size={44} className="animo-bounce relative" />
             </div>
             <div className="relative min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-prexi-blue-deep">PREXI dice:</p>
+              <p className="text-2xs font-bold uppercase tracking-widest text-prexi-blue-deep">PREXI dice:</p>
               <div className="mt-0.5 text-sm leading-relaxed text-fg [&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
                 <Markdown content={actual.texto} />
               </div>

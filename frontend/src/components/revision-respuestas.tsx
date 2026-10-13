@@ -56,7 +56,7 @@ export function RevisionRespuestas({ endpoint, titulo, volverHref }: { endpoint:
         <div className="mt-6"><EmptyState icon={<ClipboardList className="h-7 w-7" />} title="Sin respuestas para revisar" hint="Completa el examen para ver la revisión." /></div>
       ) : (
         <>
-          <p className="mt-1 text-[15px] text-muted">Acertaste <b className="text-fg">{aciertos}</b> de <b className="text-fg">{items.length}</b> preguntas.</p>
+          <p className="mt-1 text-base text-muted">Acertaste <b className="text-fg">{aciertos}</b> de <b className="text-fg">{items.length}</b> preguntas.</p>
 
           <div className="my-5 flex flex-wrap gap-2">
             {([['todas', `Todas (${items.length})`], ['correctas', `Correctas (${aciertos})`], ['incorrectas', `Incorrectas (${items.length - aciertos})`]] as [Filtro, string][]).map(([k, label]) => (
@@ -75,10 +75,10 @@ export function RevisionRespuestas({ endpoint, titulo, volverHref }: { endpoint:
                 <div key={it.numero} className="card">
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-prexi-blue-deep">#{it.numero} · {it.categoria}</span>
+                      <span className="text-2xs font-bold uppercase tracking-wide text-prexi-blue-deep">#{it.numero} · {it.categoria}</span>
                       <h3 className="mt-1 font-semibold text-fg">{it.enunciado}</h3>
                     </div>
-                    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${it.correcto ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'}`}>
+                    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-2xs font-bold ${it.correcto ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/15 text-red-600 dark:text-red-400'}`}>
                       {it.correcto ? <><CheckCircle className="h-3.5 w-3.5" /> Correcta</> : <><X className="h-3.5 w-3.5" /> Incorrecta</>}
                     </span>
                   </div>

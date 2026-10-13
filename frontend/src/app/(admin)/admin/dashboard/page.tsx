@@ -46,7 +46,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="animate-fade-up">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Panel de administración</h1>
-      <p className="mb-7 mt-1 text-[15px] text-muted">Estado técnico del sistema, {usuario?.nombre.split(' ')[0]}.</p>
+      <p className="mb-7 mt-1 text-base text-muted">Estado técnico del sistema, {usuario?.nombre.split(' ')[0]}.</p>
 
       <StatGrid className="mb-6">
         {cargando ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
                 <div className="rounded-xl bg-subtle py-3"><p className="text-lg font-extrabold text-fg">{d!.estudio.estudiantes}</p><p className="text-xs text-muted">Estudiantes</p></div>
                 <div className="rounded-xl bg-subtle py-3"><p className="text-lg font-extrabold text-fg">{d!.estudio.activos}</p><p className="text-xs text-muted">Cuentas activas</p></div>
               </div>
-              <p className="mt-2 text-center text-[11px] text-muted">El detalle y la exportación los ve el rol investigador.</p>
+              <p className="mt-2 text-center text-2xs text-muted">El detalle y la exportación los ve el rol investigador.</p>
             </>
           )}
         </Card>
@@ -105,8 +105,8 @@ export default function AdminDashboardPage() {
                   <div className="flex w-full flex-1 items-end justify-center">
                     <div className="w-full max-w-[44px] rounded-t-lg bg-prexi-blue transition-all duration-700" style={{ height: `${(r.nuevos / maxReg) * 100}%`, minHeight: r.nuevos ? '6px' : '0' }} />
                   </div>
-                  <span className="text-[11px] font-semibold text-fg">{r.nuevos}</span>
-                  <span className="text-[10px] text-muted">{new Date(r.semana + 'T00:00').toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}</span>
+                  <span className="text-2xs font-semibold text-fg">{r.nuevos}</span>
+                  <span className="text-2xs text-muted">{new Date(r.semana + 'T00:00').toLocaleDateString('es-BO', { day: 'numeric', month: 'short' })}</span>
                 </div>
               ))}
             </div>

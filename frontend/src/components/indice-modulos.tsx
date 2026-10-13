@@ -52,7 +52,7 @@ export function IndiceModulos({
       <div className="flex flex-col gap-8">
         {grupos.map((grupo) => (
           <section key={grupo.titulo}>
-            <h2 className="mb-3 border-b border-line pb-2 text-[11px] font-bold uppercase tracking-widest text-muted">
+            <h2 className="mb-3 border-b border-line pb-2 text-2xs font-bold uppercase tracking-widest text-muted">
               {grupo.titulo}
             </h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

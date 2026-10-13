@@ -56,7 +56,7 @@ export function EstadoChip({ estado }: { estado: EstadoCurso }) {
 export function NivelChip({ nivel }: { nivel: NivelDificultad }) {
   const color = NIVEL_COLOR[nivel];
   return (
-    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide"
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wide"
       style={{ color, backgroundColor: `${color}26` }}>
       {NIVEL_LABEL[nivel]}
     </span>

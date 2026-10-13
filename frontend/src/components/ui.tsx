@@ -25,7 +25,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-7">
       <div className="min-w-0">
         <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-[2rem]">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm leading-relaxed text-muted sm:text-[15px]">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-sm leading-relaxed text-muted sm:text-base">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -94,7 +94,7 @@ export function Badge({ children, tone = 'slate', className = '' }: {
   children: ReactNode; tone?: keyof typeof TONES; className?: string;
 }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${TONES[tone]} ${className}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wide ${TONES[tone]} ${className}`}>
       {children}
     </span>
   );
@@ -234,7 +234,7 @@ export function ResponsiveTable<T>({ cols, rows, rowKey, onRowClick, card, foote
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {cols.slice(1).filter((c) => !c.cardHidden).map((c, i) => (
                     <div key={i} className="min-w-0">
-                      <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted">{c.header}</dt>
+                      <dt className="text-2xs font-semibold uppercase tracking-wider text-muted">{c.header}</dt>
                       <dd className="mt-0.5 text-sm text-fg">{c.cell(r)}</dd>
                     </div>
                   ))}

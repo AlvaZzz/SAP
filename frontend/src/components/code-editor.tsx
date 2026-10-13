@@ -31,7 +31,7 @@ export function CodeEditor({
         basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: !readOnly }}
         style={{
           fontFamily: 'var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-          fontSize: 'clamp(15px, 4.2vw, 18px)',
+          fontSize: '0.875rem',
           lineHeight: 1.55,
           height: '100%',
         }}

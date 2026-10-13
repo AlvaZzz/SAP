@@ -97,7 +97,7 @@ export default function ClasificacionPage() {
         <div className="mb-3 grid grid-cols-3 gap-2">
           {d.umbrales_vigentes.anclas_b.map((a) => (
             <div key={a.nivel} className="rounded-lg bg-subtle px-2 py-1.5 text-center">
-              <p className="text-[10px] uppercase tracking-wide text-muted">{ETIQUETA[a.nivel]}</p>
+              <p className="text-2xs uppercase tracking-wide text-muted">{ETIQUETA[a.nivel]}</p>
               <p className="font-mono text-sm font-semibold text-fg">b = {a.b > 0 ? '+' : ''}{a.b}</p>
             </div>
           ))}
@@ -147,7 +147,7 @@ export default function ClasificacionPage() {
                   ['Máx', num(d.distribucion.theta.max, 2)],
                 ].map(([l, v]) => (
                   <div key={l} className="rounded-lg bg-subtle px-2 py-1.5 text-center">
-                    <p className="text-[10px] uppercase tracking-wide text-muted">{l}</p>
+                    <p className="text-2xs uppercase tracking-wide text-muted">{l}</p>
                     <p className="text-sm font-semibold text-fg">{v}</p>
                   </div>
                 ))}
@@ -187,7 +187,7 @@ export default function ClasificacionPage() {
                   <div className="grid grid-cols-3 gap-1.5 text-center">
                     {[['Básicos', pct(t.tasa_en_items_basicos)], ['Interm.', pct(t.tasa_en_items_intermedios)], ['Avanz.', pct(t.tasa_en_items_avanzados)]].map(([l, v]) => (
                       <div key={l} className="rounded-lg bg-subtle px-1 py-1.5">
-                        <p className="text-[10px] uppercase text-muted">{l}</p>
+                        <p className="text-2xs uppercase text-muted">{l}</p>
                         <p className="text-sm font-semibold text-fg">{v}</p>
                       </div>
                     ))}
@@ -229,7 +229,7 @@ export default function ClasificacionPage() {
               ].map(([l, v]) => (
                 <div key={String(l)} className="rounded-xl bg-subtle px-2 py-3 text-center">
                   <p className="font-display text-2xl font-bold text-fg">{v}</p>
-                  <p className="text-[10px] uppercase tracking-wide text-muted">{l}</p>
+                  <p className="text-2xs uppercase tracking-wide text-muted">{l}</p>
                 </div>
               ))}
             </div>

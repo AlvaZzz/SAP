@@ -89,7 +89,7 @@ export function LoginHero({ showDescription = false }: { showDescription?: boole
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="hidden max-w-[46ch] text-[15px] leading-relaxed text-muted lg:block lg:text-base xl:text-[17px]"
+            className="hidden max-w-[46ch] text-base leading-relaxed text-muted lg:block lg:text-base xl:text-base"
           >
             Ejercicios adaptativos, retroalimentación inteligente y gamificación para llevar tus habilidades al siguiente nivel.
           </motion.p>

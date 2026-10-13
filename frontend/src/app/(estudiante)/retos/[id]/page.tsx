@@ -182,21 +182,21 @@ export default function RetoEditorPage() {
         <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{reto.titulo}</h1>
 
         {/* Qué hay que hacer */}
-        <div className="mt-3 grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+        <div className="mt-3 grid items-start gap-3 lg:grid-cols-[1.6fr_1fr]">
           <div className="card border-l-4" style={{ borderLeftColor: infoTipo.color }}>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">{esAuto ? 'Tu misión' : 'Lo que tienes que programar'}</p>
-            <p className="mt-1 whitespace-pre-line text-[15px] leading-relaxed text-fg">{reto.enunciado}</p>
+            <p className="text-2xs font-bold uppercase tracking-wide text-muted">{esAuto ? 'Tu misión' : 'Lo que tienes que programar'}</p>
+            <p className="mt-1 whitespace-pre-line text-base leading-relaxed text-fg">{reto.enunciado}</p>
             {(reto.ejemploEntrada || reto.ejemploSalida) && (
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {reto.ejemploEntrada && (
                   <div className="rounded-xl bg-subtle px-3 py-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Ejemplo de entrada</p>
+                    <p className="text-2xs font-bold uppercase tracking-wide text-muted">Ejemplo de entrada</p>
                     <pre className="mt-0.5 whitespace-pre-wrap font-mono text-sm text-fg">{reto.ejemploEntrada}</pre>
                   </div>
                 )}
                 {reto.ejemploSalida && (
                   <div className="rounded-xl bg-prexi-green/10 px-3 py-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-prexi-green">{esAuto ? 'Debe imprimir exactamente' : 'Salida esperada'}</p>
+                    <p className="text-2xs font-bold uppercase tracking-wide text-prexi-green">{esAuto ? 'Debe imprimir exactamente' : 'Salida esperada'}</p>
                     <pre className="mt-0.5 whitespace-pre-wrap font-mono text-sm text-fg">{reto.ejemploSalida}</pre>
                   </div>
                 )}
@@ -206,8 +206,8 @@ export default function RetoEditorPage() {
 
           {/* Cómo se resuelve, en tres pasos */}
           <div className="card">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Cómo resolverlo</p>
-            <ol className="mt-2 space-y-2.5 text-sm">
+            <p className="text-2xs font-bold uppercase tracking-wide text-muted">Cómo resolverlo</p>
+            <ol className="mt-2 space-y-2.5 text-base">
             {[
               reto.esBugHunt ? 'Lee el código: tiene un error escondido.' : 'Escribe tu programa en el editor.',
               'Pulsa «Ejecutar» para probarlo. Si no entiendes qué pasa, usa «Ver paso a paso».',
@@ -252,25 +252,25 @@ export default function RetoEditorPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
         {/* Editor + consola, y debajo la ejecución paso a paso */}
         <div className="min-w-0">
-        <div className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#04162E] shadow-soft xl:min-h-[68vh]">
+        <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#04162E] shadow-soft">
           <div className="flex items-center justify-between border-b border-slate-700/80 px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full bg-red-400" /><span className="h-3 w-3 rounded-full bg-amber-400" /><span className="h-3 w-3 rounded-full bg-green-400" />
               <span className="ml-2 font-mono text-xs text-slate-400">main.py</span>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="h-[19rem] overflow-hidden sm:h-[22rem] xl:h-[24rem]">
             <CodeEditor value={codigo} onChange={setCodigo} height="100%" className="h-full" />
           </div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-700/80 px-4 py-3">
-            <button onClick={ejecutar} disabled={ejecutando || cargandoPython} className="inline-flex items-center gap-2 rounded-xl bg-prexi-green px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60">
+          <div className="grid grid-cols-2 gap-2 border-t border-slate-700/80 px-3 py-3 sm:flex sm:flex-wrap sm:items-center sm:px-4">
+            <button onClick={ejecutar} disabled={ejecutando || cargandoPython} className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-prexi-green px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60">
               <Play className="h-4 w-4" /> {cargandoPython ? 'Preparando Python…' : ejecutando ? 'Ejecutando…' : 'Ejecutar'}
             </button>
             <button onClick={verTraza} disabled={trazando || cargandoPython} title="Ejecuta el programa línea por línea y muestra cuánto vale cada variable"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 disabled:opacity-60">
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 px-3 py-2.5 text-sm font-semibold text-slate-200 sm:px-4 transition hover:bg-slate-800 disabled:opacity-60">
               <Layers className="h-4 w-4" /> {trazando ? 'Preparando…' : 'Ver paso a paso'}
             </button>
-            <button onClick={() => { if (confirm('¿Borrar lo que escribiste y volver al código inicial?')) setCodigo(reto.codigoInicial || '# Escribe tu solución aquí\n'); }} title="Vuelve al código con el que empezó el reto" className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">
+            <button onClick={() => { if (confirm('¿Borrar lo que escribiste y volver al código inicial?')) setCodigo(reto.codigoInicial || '# Escribe tu solución aquí\n'); }} title="Vuelve al código con el que empezó el reto" className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-600 px-3 py-2.5 text-sm font-semibold text-slate-200 sm:px-4 transition hover:bg-slate-800">
               <RotateCcw className="h-4 w-4" /> Empezar de nuevo
             </button>
             {/* Los retos DERIVADOS del banco (y los bug-hunt) se autocalifican
@@ -278,7 +278,7 @@ export default function RetoEditorPage() {
             {reto.esBugHunt || reto.autoCalificable ? (
               <button onClick={verificarBug} disabled={verificando || est === 'aprobado'}
                 title={est === 'aprobado' ? 'Ya resolviste este reto' : 'Comprobar tu solución contra la salida esperada'}
-                className="ml-auto inline-flex items-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
+                className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5 text-sm font-semibold text-white sm:ml-auto transition hover:bg-blue-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
                 <CheckCircle className="h-4 w-4" />
                 {verificando ? 'Verificando…'
                   : est === 'aprobado' ? (reto.esBugHunt ? 'Bug corregido' : 'Resuelto')
@@ -287,13 +287,13 @@ export default function RetoEditorPage() {
             ) : (
               <button onClick={entregarReto} disabled={entregando || bloqueoEntrega}
                 title={bloqueoEntrega ? 'Ya entregaste este reto' : 'Enviar tu solución al docente'}
-                className="ml-auto inline-flex items-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
+                className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5 text-sm font-semibold text-white sm:ml-auto transition hover:bg-blue-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
                 <Upload className="h-4 w-4" /> {entregando ? 'Entregando…' : est === 'necesita_mejorar' ? 'Volver a entregar' : est === 'aprobado' ? 'Aprobado' : est === 'pendiente_revision' ? 'En revisión' : 'Entregar'}
               </button>
             )}
           </div>
           <div className="border-t border-slate-700/80 px-4 py-3">
-            <p className="mb-1.5 flex items-center gap-2 font-mono text-xs text-slate-400">▸ Lo que imprime tu programa {salida && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${salida.ok ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>{salida.ok ? 'Terminó bien' : 'Hubo un error'}</span>}</p>
+            <p className="mb-1.5 flex items-center gap-2 font-mono text-xs text-slate-400">▸ Lo que imprime tu programa {salida && <span className={`rounded-full px-2 py-0.5 text-2xs font-bold ${salida.ok ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>{salida.ok ? 'Terminó bien' : 'Hubo un error'}</span>}</p>
             <pre className={`max-h-44 overflow-auto whitespace-pre-wrap font-mono text-sm ${salida ? (salida.ok ? 'text-green-300' : 'text-red-300') : 'text-slate-500'}`}>
               {salida ? salida.texto : cargandoPython ? 'Preparando el entorno de Python… (solo la primera vez)' : 'Aquí verás el resultado cuando pulses «Ejecutar».'}
             </pre>
@@ -318,8 +318,8 @@ export default function RetoEditorPage() {
                     <p className="font-bold text-amber-100">Todavía no coincide.</p>
                     <p className="mt-0.5 text-sm text-amber-100/75">Compara las dos salidas: fíjate en qué se diferencian. «Ver paso a paso» te ayuda a encontrar dónde se desvía.</p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-xl border border-rose-300/20 bg-rose-950/30 p-2.5"><p className="text-[11px] font-bold uppercase tracking-wide text-rose-200">Tu salida</p><pre className="mt-1 overflow-x-auto rounded-lg border border-rose-200/10 bg-[#120d16] px-3 py-2 font-mono text-base leading-6 text-rose-100">{verif.salida || '(vacía)'}</pre></div>
-                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/30 p-2.5"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-200">Salida esperada</p><pre className="mt-1 overflow-x-auto rounded-lg border border-emerald-200/10 bg-[#091710] px-3 py-2 font-mono text-base leading-6 text-emerald-100">{verif.esperado}</pre></div>
+                      <div className="rounded-xl border border-rose-300/20 bg-rose-950/30 p-2.5"><p className="text-2xs font-bold uppercase tracking-wide text-rose-200">Tu salida</p><pre className="mt-1 overflow-x-auto rounded-lg border border-rose-200/10 bg-[#120d16] px-3 py-2 font-mono text-base leading-6 text-rose-100">{verif.salida || '(vacía)'}</pre></div>
+                      <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/30 p-2.5"><p className="text-2xs font-bold uppercase tracking-wide text-emerald-200">Salida esperada</p><pre className="mt-1 overflow-x-auto rounded-lg border border-emerald-200/10 bg-[#091710] px-3 py-2 font-mono text-base leading-6 text-emerald-100">{verif.esperado}</pre></div>
                     </div>
                   </div>
                 </div>

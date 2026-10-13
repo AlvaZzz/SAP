@@ -99,7 +99,7 @@ function Cascada({ etapas }: { etapas: Etapa[] }) {
             <span className="text-sm font-medium text-fg">{e.etapa}</span>
             <span className="shrink-0 font-display text-sm font-bold text-fg">
               {e.n}
-              <span className="ml-1 text-[10px] font-normal text-muted">{e.pct_del_inicial} %</span>
+              <span className="ml-1 text-2xs font-normal text-muted">{e.pct_del_inicial} %</span>
             </span>
           </div>
           <div className="h-2.5 overflow-hidden rounded bg-subtle">
@@ -108,9 +108,9 @@ function Cascada({ etapas }: { etapas: Etapa[] }) {
               style={{ width: `${(e.n / inicial) * 100}%` }}
             />
           </div>
-          <p className="mt-1 text-[11px] text-muted">{e.nota}</p>
+          <p className="mt-1 text-2xs text-muted">{e.nota}</p>
           {e.perdida !== null && e.perdida > 0 && (
-            <p className="mt-1 text-[11px] text-prexi-red">↓ {e.perdida} menos que en la etapa anterior</p>
+            <p className="mt-1 text-2xs text-prexi-red">↓ {e.perdida} menos que en la etapa anterior</p>
           )}
         </div>
       ))}
@@ -121,7 +121,7 @@ function Cascada({ etapas }: { etapas: Etapa[] }) {
 function Celda({ etiqueta, valor, destacado = false }: { etiqueta: string; valor: string; destacado?: boolean }) {
   return (
     <div className={`rounded-lg px-2 py-1.5 text-center ${destacado ? 'bg-prexi-blue/10' : 'bg-subtle'}`}>
-      <p className="text-[10px] uppercase tracking-wide text-muted">{etiqueta}</p>
+      <p className="text-2xs uppercase tracking-wide text-muted">{etiqueta}</p>
       <p className="text-sm font-semibold text-fg">{valor}</p>
     </div>
   );

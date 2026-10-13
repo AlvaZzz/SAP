@@ -143,7 +143,7 @@ export default function UnidadPage() {
 function NivelChip({ label, nivel }: { label: string; nivel: TemaEstudiante['nivel_actual'] }) {
   const color = NIVEL_COLOR[nivel];
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ color, backgroundColor: `${color}26` }} title="Tu nivel de dificultad en este tema">
+    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold" style={{ color, backgroundColor: `${color}26` }} title="Tu nivel de dificultad en este tema">
       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> Tu nivel: {label}
     </span>
   );
@@ -175,8 +175,8 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
             <Icono className="h-5 w-5" /></div>
           <div>
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-prexi-navy/10 px-2 py-0.5 text-[11px] font-bold text-prexi-navy dark:bg-white/10 dark:text-blue-200">Nivel {nivel}</span>
-              <span className="text-[11px] font-semibold text-muted">Tema {tema.numero}</span>
+              <span className="rounded-full bg-prexi-navy/10 px-2 py-0.5 text-2xs font-bold text-prexi-navy dark:bg-white/10 dark:text-blue-200">Nivel {nivel}</span>
+              <span className="text-2xs font-semibold text-muted">Tema {tema.numero}</span>
               {tema.desbloqueado && <NivelChip label={tema.nivel_actual_label} nivel={tema.nivel_actual} />}
               {completo && <Badge tone="green"><CheckCircle className="h-3 w-3" /> Completado</Badge>}
             </div>
@@ -206,7 +206,7 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
       {/* Progreso del tema (ejercicios completados) — dato DISTINTO del nivel/dominio */}
       {tema.desbloqueado && tema.total_ejercicios > 0 && (
         <div className="mt-4">
-          <div className="mb-1 flex justify-between text-[11px] text-muted">
+          <div className="mb-1 flex justify-between text-2xs text-muted">
             <span>Progreso: {tema.ejercicios_completados} de {tema.umbral} para completar el tema</span>
             <span>{tema.total_ejercicios_nivel} ejercicios en tu nivel</span>
           </div>
@@ -254,7 +254,7 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
                       <p className="text-sm font-semibold text-fg">{s.numero} {s.titulo}</p>
                       {s.desbloqueado && <NivelChip label={s.nivel_actual_label} nivel={s.nivel_actual} />}
                     </div>
-                    <p className="text-[11px] text-muted">
+                    <p className="text-2xs text-muted">
                       {s.ejercicios_completados}/{s.umbral} · {s.total_ejercicios_nivel} en tu nivel
                       {!s.nivel_maximo && !s.cumple_minimo_nivel && s.total_ejercicios_nivel > 0 && <> · faltan {s.faltan_nivel} para subir</>}
                     </p>
@@ -263,14 +263,14 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
                 <div className="flex items-center gap-3">
                   {s.desbloqueado && s.puede_subir && s.nivel_objetivo_label ? (
                     <button onClick={() => onSubir(s.id)} title={`Subir a nivel ${s.nivel_objetivo_label}`}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-prexi-blue-deep hover:underline"><TrendingUp className="h-3 w-3" /> Subir</button>
+                      className="inline-flex items-center gap-1 text-2xs font-semibold text-prexi-blue-deep hover:underline"><TrendingUp className="h-3 w-3" /> Subir</button>
                   ) : s.desbloqueado && s.nivel_maximo ? (
-                    <span title="Estás en el nivel máximo (Avanzado)" className="inline-flex items-center gap-1 text-[11px] font-semibold text-prexi-green"><TrendingUp className="h-3 w-3" /> Nivel máx.</span>
+                    <span title="Estás en el nivel máximo (Avanzado)" className="inline-flex items-center gap-1 text-2xs font-semibold text-prexi-green"><TrendingUp className="h-3 w-3" /> Nivel máx.</span>
                   ) : null}
                   {s.total_ejercicios === 0 ? (
-                    <span className="text-[11px] italic text-muted">Sin ejercicios aún</span>
+                    <span className="text-2xs italic text-muted">Sin ejercicios aún</span>
                   ) : !s.desbloqueado ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>
+                    <span className="inline-flex items-center gap-1 text-2xs text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>
                   ) : (
                     <button onClick={() => onIniciar(s.id, s.total_ejercicios_nivel)} disabled={yendo === s.id}
                       className="inline-flex items-center gap-1 text-sm font-semibold text-prexi-blue-deep hover:underline disabled:opacity-50">

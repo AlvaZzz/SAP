@@ -66,7 +66,7 @@ export default function DashboardPage() {
   return (
     <div className="animate-fade-up">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
-      <p className="mb-5 mt-1 text-[15px] text-muted">Este es tu avance en Programación I. El verde significa que avanzaste; el ámbar, que vas en camino.</p>
+      <p className="mb-5 mt-1 text-base text-muted">Este es tu avance en Programación I. El verde significa que avanzaste; el ámbar, que vas en camino.</p>
       <MiCurso className="mb-5" />
 
       {/* Evaluación del sistema (SUS): solo aparece con la fase habilitada */}
@@ -107,7 +107,7 @@ export default function DashboardPage() {
               return (
               <div key={e.id} className="rounded-xl border border-line bg-subtle p-3 transition hover:border-prexi-blue/40">
                 <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-                  <span className="max-w-full truncate rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                  <span className="max-w-full truncate rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-wide"
                     style={{ color: cU, backgroundColor: `${cU}26` }}>
                     Unidad {e.unidad_numero} · {e.tema_numero} {e.tema_titulo}
                   </span>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             <div><SectionTitle>Tu evolución</SectionTitle><p className="mt-0.5 text-xs text-muted">Habilidad estimada (θ) en cada medición · comparada con tu grupo</p></div>
             <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-subtle px-3 py-1.5 text-xs font-semibold text-fg"><TrendingUp className="h-3.5 w-3.5" style={{ color: AZUL }} /> IRT · Rasch</span>
           </div>
-          <div className="mb-2 flex gap-5 text-[11px] text-muted">
+          <div className="mb-2 flex gap-5 text-2xs text-muted">
             <span className="flex items-center gap-1.5"><i className="inline-block w-4 rounded border-t-[2.5px]" style={{ borderColor: AZUL }} /> Tu habilidad (θ)</span>
             <span className="flex items-center gap-1.5"><i className="inline-block w-4 rounded border-t-[2.5px] border-dashed border-muted" /> Promedio del grupo</span>
           </div>
@@ -214,11 +214,11 @@ function SparkStat({ color, icon, label, value, sub, serie }: {
       </div>
 
       {/* Número grande a todo el ancho: nada compite por su espacio */}
-      <p className="relative font-display text-[26px] font-extrabold leading-tight text-fg sm:text-3xl" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+      <p className="relative font-display text-2xl font-extrabold leading-tight text-fg sm:text-3xl" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</p>
 
       {/* Fila inferior: subtexto + sparkline (que ya no aprieta la etiqueta) */}
       <div className="relative flex items-end justify-between gap-2">
-        <p className="min-w-0 flex-1 text-[11px] leading-snug text-muted">{sub}</p>
+        <p className="min-w-0 flex-1 text-2xs leading-snug text-muted">{sub}</p>
         {serie && serie.length >= 2 && <Sparkline values={serie} color={color} className="-mb-1" />}
       </div>
     </div>
@@ -302,11 +302,11 @@ function FilaUnidad({ u, actual, onClick }: { u: UnidadEstudiante; actual: boole
       <Anillo pct={bloqueada ? 0 : u.dominio_pct} color={colorAnillo} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-bold text-fg">Unidad {u.numero}</p>
-        <p className="truncate text-[11px] text-muted">{u.titulo}</p>
+        <p className="truncate text-2xs text-muted">{u.titulo}</p>
       </div>
       {!bloqueada && <span className="text-xs font-semibold" style={{ color: colorAnillo }}>{u.nivel_dominio_label}</span>}
       {u.examen_aprobado ? <Badge tone="green">Completado</Badge>
-        : bloqueada ? <span className="inline-flex items-center gap-1 rounded-full bg-subtle px-2.5 py-0.5 text-[11px] font-bold text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>
+        : bloqueada ? <span className="inline-flex items-center gap-1 rounded-full bg-subtle px-2.5 py-0.5 text-2xs font-bold text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>
           : <Badge tone="amber">En progreso</Badge>}
     </button>
   );
@@ -317,7 +317,7 @@ function FilaUnidad({ u, actual, onClick }: { u: UnidadEstudiante; actual: boole
 function PillNivel({ nivel, label }: { nivel: NivelDificultad; label: string }) {
   const color = NIVEL_COLOR[nivel];
   return (
-    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-wide"
       style={{ color, backgroundColor: `${color}26` }}>
       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> {label}
     </span>

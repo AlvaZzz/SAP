@@ -52,7 +52,7 @@ export function EmblemasGaleria({ compacto = false }: { compacto?: boolean }) {
         <div className="space-y-5">
           {categorias.map((cat) => (
             <div key={cat}>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">{CAT_LABEL[cat] ?? cat}</p>
+              <p className="mb-2 text-2xs font-bold uppercase tracking-wider text-muted">{CAT_LABEL[cat] ?? cat}</p>
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {data.emblemas.filter((e) => e.categoria === cat).map((e) => (
                   <div key={e.id} className={`flex items-start gap-3 rounded-xl border p-3 transition ${e.obtenido ? 'border-prexi-amber/40 bg-amber-500/5' : 'border-line opacity-80'}`}>
@@ -62,7 +62,7 @@ export function EmblemasGaleria({ compacto = false }: { compacto?: boolean }) {
                     <div className="min-w-0">
                       <p className={`text-sm font-semibold ${e.obtenido ? 'text-fg' : 'text-muted'}`}>{e.nombre}</p>
                       <p className="text-xs text-muted">{e.obtenido ? e.descripcion : e.condicion}</p>
-                      {!e.obtenido && <p className="mt-0.5 text-[11px] font-medium text-prexi-amber/80">{e.condicion}</p>}
+                      {!e.obtenido && <p className="mt-0.5 text-2xs font-medium text-prexi-amber/80">{e.condicion}</p>}
                     </div>
                   </div>
                 ))}
@@ -83,7 +83,7 @@ function EmblemaBadge({ e }: { e: Emblema }) {
       <div className={`grid h-12 w-12 place-items-center rounded-full ${e.obtenido ? 'bg-amber-500/15 text-prexi-amber ring-2 ring-amber-500/20' : 'bg-subtle text-muted/40'}`}>
         <EmblemaIcon svgKey={e.svgKey} className="h-6 w-6" />
       </div>
-      <span className={`text-center text-[10px] leading-tight ${e.obtenido ? 'text-fg' : 'text-muted'}`}>{e.nombre}</span>
+      <span className={`text-center text-2xs leading-tight ${e.obtenido ? 'text-fg' : 'text-muted'}`}>{e.nombre}</span>
     </div>
   );
 }

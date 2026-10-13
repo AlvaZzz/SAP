@@ -34,7 +34,7 @@ export function QuestionNavigator({ total, current, answered, onJump }: {
               onClick={() => onJump(i)}
               aria-label={`Ir a la pregunta ${i + 1}${ok ? ' (respondida)' : ''}${esActual ? ' (actual)' : ''}`}
               aria-current={esActual ? 'true' : undefined}
-              className={`relative grid aspect-square place-items-center rounded-md border text-[11px] font-bold tabular-nums transition ${clase}`}
+              className={`relative grid aspect-square place-items-center rounded-md border text-2xs font-bold tabular-nums transition ${clase}`}
             >
               {ok && !esActual ? <Check className="h-3.5 w-3.5" /> : i + 1}
             </button>
@@ -42,7 +42,7 @@ export function QuestionNavigator({ total, current, answered, onJump }: {
         })}
       </div>
       {/* Leyenda */}
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] font-medium text-muted">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-2xs font-medium text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-prexi-blue" /> Actual</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Respondida</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-full border border-line bg-app" /> Sin responder</span>

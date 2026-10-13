@@ -100,7 +100,7 @@ export function LogrosProvider({ children }: { children: ReactNode }) {
                 : <span className="logro-bounce text-prexi-amber"><EmblemaIcon svgKey={actual.svgKey} className="h-11 w-11" /></span>}
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-prexi-amber">{actual.tipo === 'rango' ? '¡Subiste de rango!' : '¡Logro desbloqueado!'}</p>
+              <p className="text-2xs font-bold uppercase tracking-widest text-prexi-amber">{actual.tipo === 'rango' ? '¡Subiste de rango!' : '¡Logro desbloqueado!'}</p>
               <p className="truncate font-display text-lg font-extrabold text-fg">{actual.nombre}</p>
               <p className="truncate text-xs text-muted">{actual.descripcion}</p>
             </div>

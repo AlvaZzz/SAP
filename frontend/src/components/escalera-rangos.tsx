@@ -74,13 +74,13 @@ export function EscaleraRangos() {
               </span>
 
               {/* El umbral es la meta concreta de cada peldaño. */}
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted">
+              <span className="inline-flex items-center gap-1 text-2xs text-muted">
                 {!alcanzado && <Lock className="h-3 w-3" aria-hidden />}
                 {r.umbral === 0 ? 'Inicio' : `${r.umbral} pts`}
               </span>
 
               {esActual && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-on"
+                <span className="rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-wide text-accent-on"
                   style={{ backgroundColor: actual.color }}>
                   Tu rango
                 </span>

@@ -136,12 +136,12 @@ export default function ValidacionPage() {
                 <p className="text-xs uppercase tracking-wide text-muted">Asignaciones dentro del rango objetivo</p>
                 <p className="font-display text-4xl font-extrabold text-fg">{num(precision.en_rango.estimacion, 1)} %</p>
                 <p className="mt-1 text-sm text-muted">{intervalo(precision.en_rango, ' %')}</p>
-                <p className="mt-1 text-[11px] text-muted">
+                <p className="mt-1 text-2xs text-muted">
                   Bootstrap de percentil · {precision.en_rango.remuestreos} remuestreos · semilla {precision.en_rango.semilla} ·
                   rango objetivo {precision.rango_objetivo.min}–{precision.rango_objetivo.max}
                 </p>
                 {precision.n_no_evaluables > 0 && (
-                  <p className="mt-2 text-[11px] text-muted">{precision.n_no_evaluables} asignación(es) sin habilidad previa quedaron fuera del cálculo.</p>
+                  <p className="mt-2 text-2xs text-muted">{precision.n_no_evaluables} asignación(es) sin habilidad previa quedaron fuera del cálculo.</p>
                 )}
               </div>
               <div className="rounded-2xl border border-line p-4">

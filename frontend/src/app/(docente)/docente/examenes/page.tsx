@@ -197,9 +197,9 @@ export default function ExamenesUnidadPage() {
                         <p className="text-xs text-muted">CI {e.ci ?? '—'} · RU {e.ru ?? '—'} · Paralelo {e.paralelo}</p>
                       </button>
                       <NivelChip nivel={e.nivel} />
-                      <div className="w-24 text-center"><p className="text-[10px] uppercase tracking-wide text-muted">Promedio</p><PromedioChip promedio={e.promedio} /></div>
+                      <div className="w-24 text-center"><p className="text-2xs uppercase tracking-wide text-muted">Promedio</p><PromedioChip promedio={e.promedio} /></div>
                       <div className="w-24 text-center">
-                        <p className="text-[10px] uppercase tracking-wide text-muted">Examen</p>
+                        <p className="text-2xs uppercase tracking-wide text-muted">Examen</p>
                         {e.nota !== null ? <PromedioChip promedio={e.nota} /> : <span className="text-xs text-muted">Sin rendir</span>}
                       </div>
                       <Badge tone={est.tone}>{est.label}</Badge>

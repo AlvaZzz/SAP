@@ -273,7 +273,7 @@ export function LoginForm() {
 
 /** Input 58px translúcido con glow de acento en hover/focus (tokens del sistema). */
 function campo(error: boolean) {
-  return `h-[52px] w-full rounded-2xl border bg-app/70 pl-12 pr-12 text-[16px] text-fg outline-none transition placeholder:text-muted sm:h-[56px] lg:h-[58px]
+  return `h-[52px] w-full rounded-2xl border bg-app/70 pl-12 pr-12 text-base text-fg outline-none transition placeholder:text-muted sm:h-[56px] lg:h-[58px]
     hover:border-prexi-blue/50 hover:shadow-[0_0_0_3px_rgb(var(--accent)/0.10)]
     focus:ring-2 ${
       error

@@ -47,7 +47,7 @@ export function Enunciado({ children, tipo, como: Etiqueta = 'h1' }: { children:
   const t = infoDe(tipo);
   return (
     <div className="mb-5 border-l-4 pl-4" style={{ borderColor: t.color }}>
-      <Etiqueta className="whitespace-pre-line font-display text-xl font-bold leading-snug text-fg sm:text-[1.4rem]">{children}</Etiqueta>
+      <Etiqueta className="whitespace-pre-line font-display text-xl font-bold leading-snug text-fg sm:text-2xl">{children}</Etiqueta>
       <p className="mt-1.5 text-sm text-muted">{t.instruccion}</p>
     </div>
   );

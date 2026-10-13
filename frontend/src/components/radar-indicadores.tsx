@@ -105,7 +105,7 @@ export function RadarIndicadores() {
     <section className="card mb-6" aria-label="Resumen de tus 5 indicadores">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-lg font-extrabold text-fg sm:text-xl">Tu perfil de aprendizaje</h2>
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">5 indicadores · datos reales</span>
+        <span className="text-2xs font-semibold uppercase tracking-wide text-muted">5 indicadores · datos reales</span>
       </div>
       <p className="mb-4 text-sm text-muted">Cómo vas en resultado (aprendizaje y dominio) y en hábitos (constancia, autonomía y eficiencia), de un vistazo.</p>
 
@@ -130,7 +130,7 @@ export function RadarIndicadores() {
               <div className="mb-1.5 h-1.5 w-full overflow-hidden rounded-full bg-subtle">
                 <div className="h-full rounded-full transition-all" style={{ width: `${e.valor}%`, backgroundColor: e.color }} />
               </div>
-              <p className="text-[11px] leading-snug text-muted">{e.frase}</p>
+              <p className="text-2xs leading-snug text-muted">{e.frase}</p>
             </div>
           ))}
         </div>

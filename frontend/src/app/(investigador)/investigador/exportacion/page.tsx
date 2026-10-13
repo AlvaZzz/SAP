@@ -92,13 +92,13 @@ export default function ExportacionPage() {
               ['Última actividad', meta.ultima_actividad_registrada ? new Date(meta.ultima_actividad_registrada).toLocaleDateString('es-BO') : '—'],
             ].map(([l, v]) => (
               <div key={l} className="rounded-lg bg-subtle px-2 py-1.5 text-center">
-                <p className="text-[10px] uppercase tracking-wide text-muted">{l}</p>
+                <p className="text-2xs uppercase tracking-wide text-muted">{l}</p>
                 <p className="text-sm font-semibold text-fg">{v}</p>
               </div>
             ))}
           </div>
           <div className="mt-3 rounded-xl border border-line p-3">
-            <p className="text-[10px] uppercase tracking-wide text-muted">Hash SHA-256 del dataset</p>
+            <p className="text-2xs uppercase tracking-wide text-muted">Hash SHA-256 del dataset</p>
             <p className="break-all font-mono text-xs text-fg">{meta.hash_sha256}</p>
           </div>
           <Explicacion>{meta.como_verificar}</Explicacion>
@@ -142,7 +142,7 @@ export default function ExportacionPage() {
               ['Sin registro verificable', String(etica.consentimiento.sin_registro_verificable)],
             ].map(([l, v]) => (
               <div key={l} className="rounded-lg bg-subtle px-2 py-1.5 text-center">
-                <p className="text-[10px] uppercase tracking-wide text-muted">{l}</p>
+                <p className="text-2xs uppercase tracking-wide text-muted">{l}</p>
                 <p className="text-sm font-semibold text-fg">{v}</p>
               </div>
             ))}
@@ -200,8 +200,8 @@ export default function ExportacionPage() {
               <div className="space-y-1">
                 <p className="font-mono text-sm font-semibold text-fg">{v.variable} <span className="font-normal text-muted">· {v.dataset}</span></p>
                 <p className="text-xs text-muted">{v.descripcion}</p>
-                <p className="text-[11px] text-muted">{v.tipo} · {v.unidad} · {v.rango}</p>
-                <p className="text-[11px] italic text-muted">{v.calculo}</p>
+                <p className="text-2xs text-muted">{v.tipo} · {v.unidad} · {v.rango}</p>
+                <p className="text-2xs italic text-muted">{v.calculo}</p>
               </div>
             )}
           />
@@ -247,8 +247,8 @@ export default function ExportacionPage() {
                   </div>
                   <p className="text-xs text-muted">Nivel inicial: {f.nivel_inicial ?? '—'}</p>
                   <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Diagnóstico</p><p className="text-sm font-semibold text-fg">{f.pretest_total ?? '—'}</p></div>
-                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-[10px] uppercase tracking-wide text-muted">Eval. final</p><p className="text-sm font-semibold text-fg">{f.postest_total ?? '—'}</p></div>
+                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-2xs uppercase tracking-wide text-muted">Diagnóstico</p><p className="text-sm font-semibold text-fg">{f.pretest_total ?? '—'}</p></div>
+                    <div className="rounded-lg bg-subtle px-2 py-1.5"><p className="text-2xs uppercase tracking-wide text-muted">Eval. final</p><p className="text-sm font-semibold text-fg">{f.postest_total ?? '—'}</p></div>
                   </div>
                   <p className="text-xs text-muted">{f.ejercicios_resueltos} ejerc. · {f.xp_total} XP · {f.consultas_ia} IA · {f.pistas_usadas} pistas · {f.retos_entregados} retos</p>
                 </div>

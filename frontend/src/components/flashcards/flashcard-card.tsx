@@ -79,7 +79,7 @@ function NivelChip({ card, color }: { card: Flashcard; color: string }) {
   if (!card.nivel) return null;
   const c = NIVEL_COLOR[card.nivel];
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: c, backgroundColor: `${c}22` }}>
+    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-wide" style={{ color: c, backgroundColor: `${c}22` }}>
       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: c }} /> {NIVEL_LABEL[card.nivel]}
     </span>
   );
@@ -89,7 +89,7 @@ function Frente({ card, color }: { card: Flashcard; color: string }) {
   return (
     <div className="relative flex h-full flex-col">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color }}>Pregunta</span>
+        <span className="text-2xs font-bold uppercase tracking-wide" style={{ color }}>Pregunta</span>
         <NivelChip card={card} color={color} />
       </div>
       <p className="font-display text-lg font-bold leading-snug text-fg sm:text-xl">{card.frente}</p>
@@ -109,7 +109,7 @@ function Reverso({ card, color }: { card: Flashcard; color: string }) {
   return (
     <div className="relative flex h-full flex-col">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-bold uppercase tracking-wide text-prexi-green">Respuesta</span>
+        <span className="text-2xs font-bold uppercase tracking-wide text-prexi-green">Respuesta</span>
         <NivelChip card={card} color={color} />
       </div>
       <p className="font-display text-lg font-extrabold leading-snug text-fg sm:text-xl">{card.reverso}</p>

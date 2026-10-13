@@ -130,13 +130,13 @@ body {
   }
   /* Etiqueta de stat: mayúsculas pequeñas con tracking. */
   .stat-label {
-    @apply text-[11px] font-semibold uppercase tracking-wider text-muted;
+    @apply text-2xs font-semibold uppercase tracking-wider text-muted;
   }
   /* Material de estudio: el Markdown de la app es text-sm, pensado para bloques
      cortos (chat, chips). El apartado teórico es LECTURA LARGA en teléfono, así
      que ahí el cuerpo va un punto más grande y más aireado. */
   .prose-teoria :is(p, li) {
-    @apply text-[15px] leading-7 sm:text-base;
+    @apply text-base leading-7;
   }
   .prose-teoria :is(h3, h4) {
     @apply mt-6 text-lg;

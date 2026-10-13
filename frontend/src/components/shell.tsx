@@ -228,7 +228,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
           <div className="grid h-11 w-11 place-items-center rounded-2xl bg-prexi-blue text-xl font-extrabold text-white shadow-lg shadow-blue-900/40">P</div>
           <div>
             <p className="font-display text-xl font-extrabold leading-none text-white">PREXI</p>
-            <p className="text-[11px] text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
+            <p className="text-2xs text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
           </div>
         </Link>
         <button onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 hover:bg-white/10 lg:hidden"><X className="h-5 w-5" /></button>
@@ -246,7 +246,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
           const tituloId = `${navId}-${i}`;
           return (
             <div key={grupo.titulo} className={i > 0 ? 'border-t border-[rgb(var(--sidebar-ink))]/15 pt-4' : ''}>
-              <h2 id={tituloId} className="px-3.5 pb-2 text-[10px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]">
+              <h2 id={tituloId} className="px-3.5 pb-2 text-2xs font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]">
                 {grupo.titulo}
               </h2>
               <ul aria-labelledby={tituloId} className="flex flex-col gap-1">
@@ -255,7 +255,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
                   return (
                     <li key={href}>
                       <Link href={href} aria-current={activo ? 'page' : undefined}
-                        className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[15px] font-medium transition ${activo
+                        className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-base font-medium transition ${activo
                           ? 'bg-[rgb(var(--sidebar-active))] text-[rgb(var(--sidebar-active-ink))] shadow-[0_0_22px_-6px_rgb(var(--sidebar-bar)/0.7)]'
                           : 'text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.06] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
                         <Icon className={`h-[20px] w-[20px] shrink-0 transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} />
@@ -300,7 +300,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
             {(area === 'estudiante' || area === 'docente') && <NotificacionesBell />}
             <Link href={homeHref} className="flex items-center gap-2.5 rounded-xl py-1 pl-1 pr-2.5 transition hover:bg-subtle">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-prexi-navy to-prexi-blue text-sm font-bold text-white">{inicial}</div>
-              <div className="hidden text-left leading-tight sm:block"><p className="text-sm font-semibold text-fg">{usuario.nombre.split(' ')[0]}</p><p className="text-[11px] text-muted">{rolTexto}</p></div>
+              <div className="hidden text-left leading-tight sm:block"><p className="text-sm font-semibold text-fg">{usuario.nombre.split(' ')[0]}</p><p className="text-2xs text-muted">{rolTexto}</p></div>
             </Link>
           </div>
         </header>

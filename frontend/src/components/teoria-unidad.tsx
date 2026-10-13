@@ -124,15 +124,15 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
       voz: `Al terminar esta unidad, ${lead} ¿Dónde se usa en la vida real? ${apps.map((a) => `${a.titulo}: ${a.desc}`).join(' ')}`,
       contenido: (
         <>
-          <p className="text-[16px] leading-relaxed text-fg">Al terminar esta unidad, <b>{lead}</b></p>
+          <p className="text-base leading-relaxed text-fg">Al terminar esta unidad, <b>{lead}</b></p>
 
-          <p className="mb-3 mt-6 text-[11px] font-bold uppercase tracking-wide text-muted">¿Dónde se usa esto en la vida real?</p>
+          <p className="mb-3 mt-6 text-2xs font-bold uppercase tracking-wide text-muted">¿Dónde se usa esto en la vida real?</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {apps.map(({ icon: Icon, titulo, desc }) => (
               <div key={titulo} className="rounded-xl border border-line bg-subtle/60 p-4" style={{ borderTop: `3px solid ${cU}` }}>
                 <div className="mb-2 grid h-10 w-10 place-items-center rounded-xl" style={{ color: cU, backgroundColor: `${cU}1f` }}><Icon className="h-5 w-5" /></div>
                 <p className="text-sm font-bold text-fg">{titulo}</p>
-                <p className="mt-1 text-[13px] leading-snug text-muted">{desc}</p>
+                <p className="mt-1 text-sm leading-snug text-muted">{desc}</p>
               </div>
             ))}
           </div>
@@ -167,15 +167,15 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
               <div className="min-w-0 space-y-3">
                 {mapa.temas.map((t) => (
                   <div key={t.id}>
-                    <div className={`inline-flex max-w-full flex-wrap items-center gap-2 rounded-xl border px-3.5 py-2 text-[15px] font-semibold ${NODO[t.nivel]}`}>
+                    <div className={`inline-flex max-w-full flex-wrap items-center gap-2 rounded-xl border px-3.5 py-2 text-base font-semibold ${NODO[t.nivel]}`}>
                       <span className="opacity-70">{t.numero}</span> {t.titulo}
-                      <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[10px] font-bold uppercase dark:bg-white/10">{t.nivel_label}</span>
+                      <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-2xs font-bold uppercase dark:bg-white/10">{t.nivel_label}</span>
                     </div>
                     {(mapa.hijos.get(t.id) ?? []).map((s) => (
                       <div key={s.id} className="ml-3 mt-2 flex flex-wrap items-center gap-1.5 sm:ml-5">
                         <span className="text-muted">└─</span>
-                        <span className="text-[10px] font-medium text-muted">se compone de</span>
-                        <span className={`inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[13px] font-medium ${NODO[s.nivel]}`}>{s.numero} {s.titulo}</span>
+                        <span className="text-2xs font-medium text-muted">se compone de</span>
+                        <span className={`inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-medium ${NODO[s.nivel]}`}>{s.numero} {s.titulo}</span>
                       </div>
                     ))}
                   </div>
@@ -214,7 +214,7 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
               <FlowDiagram source={e.diagrama} color={colorUnidad(data.unidad.numero)} />
             </Bloque>
             <Bloque etiqueta="Salida">
-              <pre className="overflow-x-auto rounded-xl bg-[#04162E] p-3.5 font-mono text-[13px] leading-relaxed text-green-300">{e.salida}</pre>
+              <pre className="overflow-x-auto rounded-xl bg-[#04162E] p-3.5 font-mono text-sm leading-relaxed text-green-300">{e.salida}</pre>
             </Bloque>
           </div>
         ),
@@ -290,7 +290,7 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
                 ? 'border-prexi-blue bg-prexi-blue text-accent-on'
                 : 'border-line bg-card text-muted hover:border-prexi-blue/40 hover:text-fg'}`}
           >
-            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] ${i === activa ? 'bg-black/10' : 'bg-subtle'}`}>{i + 1}</span>
+            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-2xs ${i === activa ? 'bg-black/10' : 'bg-subtle'}`}>{i + 1}</span>
             <span className="max-w-[9rem] truncate">{p.titulo}</span>
           </button>
         ))}
@@ -324,7 +324,7 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
 function Bloque({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">{etiqueta}</p>
+      <p className="mb-1.5 text-2xs font-bold uppercase tracking-wide text-muted">{etiqueta}</p>
       {children}
     </div>
   );

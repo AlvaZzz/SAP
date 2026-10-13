@@ -88,7 +88,7 @@ function TabActividad() {
               <div className="w-full max-w-[48px] rounded-t-lg bg-prexi-blue transition-all duration-700" style={{ height: `${(x.intentos / max) * 100}%`, minHeight: x.intentos ? '6px' : '0' }} />
             </div>
             <span className="text-xs font-semibold text-fg">{x.intentos}</span>
-            <span className="text-[10px] capitalize text-muted">{dia(x.dia)}</span>
+            <span className="text-2xs capitalize text-muted">{dia(x.dia)}</span>
           </div>
         ))}
       </div>

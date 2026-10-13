@@ -71,7 +71,7 @@ export function NotificacionesBell() {
         className="relative grid h-9 w-9 place-items-center rounded-xl text-muted transition hover:bg-subtle hover:text-fg">
         <Bell className="h-[18px] w-[18px]" />
         {noLeidas > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-prexi-red px-1 text-[10px] font-bold text-white ring-2 ring-card">
+          <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-prexi-red px-1 text-2xs font-bold text-white ring-2 ring-card">
             {noLeidas > 9 ? '9+' : noLeidas}
           </span>
         )}
@@ -104,7 +104,7 @@ export function NotificacionesBell() {
                       {!n.leida && <span className="h-2 w-2 shrink-0 rounded-full bg-prexi-blue" />}
                     </div>
                     <p className="line-clamp-2 text-xs text-muted">{n.mensaje}</p>
-                    <p className="mt-0.5 text-[11px] text-muted/70">{haceRato(n.fecha)}</p>
+                    <p className="mt-0.5 text-2xs text-muted/70">{haceRato(n.fecha)}</p>
                   </div>
                 </button>
               ))

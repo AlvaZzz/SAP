@@ -113,7 +113,7 @@ export default function RegistroPage() {
             <div className="mb-5 flex justify-center lg:hidden"><PrexiLogo subtitle /></div>
 
             <h1 className="font-display text-3xl font-extrabold text-fg">Crear mi cuenta</h1>
-            <p className="mt-1 text-[15px] leading-relaxed text-muted">Regístrate con tus datos de estudiante y elige tu curso.</p>
+            <p className="mt-1 text-base leading-relaxed text-muted">Regístrate con tus datos de estudiante y elige tu curso.</p>
 
             <p className="mb-5 mt-4 flex items-start gap-2.5 rounded-xl border border-prexi-blue/30 bg-prexi-blue/10 px-3.5 py-3 text-sm text-fg">
               <Clock className="mt-0.5 h-4 w-4 shrink-0 text-prexi-blue-deep" />

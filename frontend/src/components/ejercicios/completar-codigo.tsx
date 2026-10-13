@@ -96,7 +96,7 @@ export function CompletarCodigo({ ejercicio, resultado, onChange }: ExerciseProp
       {/* Modo TEXTO: el hueco está en el enunciado → un único campo de respuesta. */}
       {modo === 'texto' && (
         <div className="rounded-xl border border-line bg-subtle p-4">
-          <label htmlFor="respuesta-completar" className="mb-2 block text-[11px] font-bold uppercase tracking-wide text-muted">
+          <label htmlFor="respuesta-completar" className="mb-2 block text-2xs font-bold uppercase tracking-wide text-muted">
             Completa el espacio en blanco
           </label>
           <input
@@ -106,7 +106,7 @@ export function CompletarCodigo({ ejercicio, resultado, onChange }: ExerciseProp
             disabled={enviado}
             spellCheck={false} autoComplete="off" autoCapitalize="off" autoCorrect="off"
             placeholder="Escribe tu respuesta…"
-            className={`w-full rounded-lg border-2 bg-card px-3 py-2.5 font-mono text-[15px] text-fg outline-none transition-colors placeholder:font-sans placeholder:text-muted focus:border-prexi-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.25)] disabled:opacity-70 ${
+            className={`w-full rounded-lg border-2 bg-card px-3 py-2.5 font-mono text-base text-fg outline-none transition-colors placeholder:font-sans placeholder:text-muted focus:border-prexi-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.25)] disabled:opacity-70 ${
               !enviado ? 'border-line'
               : correcto ? 'border-[#22C55E] bg-[#22C55E]/10'
               : 'border-amber-400 bg-amber-500/10'
@@ -125,7 +125,7 @@ export function CompletarCodigo({ ejercicio, resultado, onChange }: ExerciseProp
           <span className="ml-2 font-mono text-xs text-slate-400">completar.py</span>
         </div>
         <div className="overflow-x-auto p-4">
-          <pre className="font-mono text-[13px] leading-7 text-slate-100">
+          <pre className="font-mono text-sm leading-7 text-slate-100">
             <code className="grid">
               {lineas.map((segs, li) => (
                 <span key={li} className="whitespace-pre">
@@ -158,7 +158,7 @@ export function CompletarCodigo({ ejercicio, resultado, onChange }: ExerciseProp
       {/* Fichas (chips) arrastrables */}
       {ejercicio.opciones.length > 0 && (
         <div className="mt-4">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted">Arrastra una ficha al hueco (o tócala)</p>
+          <p className="mb-2 text-2xs font-bold uppercase tracking-wide text-muted">Arrastra una ficha al hueco (o tócala)</p>
           {/* data-sonido-off: las fichas ya suenan al colocarse. */}
           <div className="flex flex-wrap gap-2" role="group" aria-label="Fichas de código" data-sonido-off>
             {ejercicio.opciones.map((o) => (
@@ -202,7 +202,7 @@ function Hueco({ idx, value, ancho, enviado, estado, esperado, pop, onInput, onF
         aria-label={`Hueco ${idx + 1}`}
         title={enviado && estado === 'mal' ? `Esperado: ${esperado}` : undefined}
         style={{ width: `${ancho}ch` }}
-        className={`rounded-md border-b-2 px-1 text-center font-mono text-[13px] text-white outline-none transition-colors focus:border-prexi-blue focus:bg-prexi-blue/25 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.35)] ${borde}`}
+        className={`rounded-md border-b-2 px-1 text-center font-mono text-sm text-white outline-none transition-colors focus:border-prexi-blue focus:bg-prexi-blue/25 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.35)] ${borde}`}
       />
       {estado === 'ok' && <CheckCircle className="pointer-events-none absolute -right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#22C55E]" />}
       {estado === 'mal' && <AlertCircle className="pointer-events-none absolute -right-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-amber-400" />}

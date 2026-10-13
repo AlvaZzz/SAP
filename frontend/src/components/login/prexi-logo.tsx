@@ -14,7 +14,7 @@ export function PrexiLogo({ subtitle = false, className = '' }: { subtitle?: boo
         <p className="font-display text-2xl font-extrabold tracking-tight text-fg">
           PRE<span className="bg-gradient-to-r from-[#F97316] to-[#FB923C] bg-clip-text text-transparent">XI</span>
         </p>
-        {subtitle && <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">Plataforma adaptativa con IA</p>}
+        {subtitle && <p className="mt-1 text-2xs font-bold uppercase tracking-[0.18em] text-muted">Plataforma adaptativa con IA</p>}
       </div>
     </div>
   );

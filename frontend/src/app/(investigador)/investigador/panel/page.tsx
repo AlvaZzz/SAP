@@ -155,7 +155,7 @@ export default function PanelEstudioPage() {
               <SectionTitle className="mb-3">Variables</SectionTitle>
               <Dato etiqueta="Independiente" valor={ficha.variables.independiente} />
               <div className="mb-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted">Dependientes</p>
+                <p className="text-2xs uppercase tracking-wide text-muted">Dependientes</p>
                 <ul className="mt-1 space-y-0.5">
                   {ficha.variables.dependientes.map((v) => (
                     <li key={v} className="flex gap-1.5 text-sm text-fg"><span className="text-prexi-blue-deep">•</span> {v}</li>
@@ -192,7 +192,7 @@ export default function PanelEstudioPage() {
 function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <div className="mb-2">
-      <p className="text-[10px] uppercase tracking-wide text-muted">{etiqueta}</p>
+      <p className="text-2xs uppercase tracking-wide text-muted">{etiqueta}</p>
       <p className="text-sm leading-relaxed text-fg">{valor}</p>
     </div>
   );

@@ -190,7 +190,7 @@ export default function ExamenUnidadPage() {
                   return (
                     <button key={tm.id} onClick={() => abrir(i)}
                       className={`flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition ${sel ? 'border-prexi-blue bg-prexi-blue text-white' : 'border-line bg-card text-muted hover:border-prexi-blue/40'}`}>
-                      <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${sel ? 'bg-white/25' : leido ? 'bg-prexi-green/15 text-prexi-green' : 'bg-subtle text-muted'}`}>{leido && !sel ? <Check className="h-3 w-3" /> : i + 1}</span>
+                      <span className={`grid h-5 w-5 place-items-center rounded-full text-2xs ${sel ? 'bg-white/25' : leido ? 'bg-prexi-green/15 text-prexi-green' : 'bg-subtle text-muted'}`}>{leido && !sel ? <Check className="h-3 w-3" /> : i + 1}</span>
                       {tm.numero}
                     </button>
                   );

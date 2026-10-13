@@ -48,7 +48,7 @@ export function resaltarLinea(linea: string): ReactNode {
 export function CodigoResaltado({ code, className = '' }: { code: string; className?: string }) {
   const lineas = code.replace(/\s+$/, '').split('\n');
   return (
-    <pre className={`overflow-x-auto font-mono text-[13px] leading-6 text-slate-100 ${className}`}>
+    <pre className={`overflow-x-auto font-mono text-sm leading-6 text-slate-100 ${className}`}>
       <code className="grid">
         {lineas.map((l, i) => (
           <span key={i} className="whitespace-pre">{resaltarLinea(l)}</span>

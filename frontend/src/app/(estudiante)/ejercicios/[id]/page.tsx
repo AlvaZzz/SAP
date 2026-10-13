@@ -204,7 +204,7 @@ export default function DetallePage() {
             <CabeceraPregunta tipo={ej.tipo} tema={unidadTema ?? ej.categoria}
               extra={<>
                 <NivelBadge nivel={ej.nivelDificultad} estrellas={ej.estrellas} />
-                <span className="inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-[11px] font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-2xs font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>
               </>} />
             <Enunciado tipo={ej.tipo}>{ej.enunciado}</Enunciado>
 

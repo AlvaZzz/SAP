@@ -53,8 +53,8 @@ export function MazoLoader({ tipo, id, volverHref }: {
     <div className="animate-fade-up">
       <button onClick={() => router.push(volverHref)} className="btn-ghost mb-4"><ChevronLeft className="h-4 w-4" /> Volver</button>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide" style={{ color, backgroundColor: `${color}22` }}>Flashcards · repaso</span>
-        <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: nivelSesion.color, backgroundColor: `${nivelSesion.color}22` }}>{nivelSesion.label}</span>
+        <span className="rounded-full px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wide" style={{ color, backgroundColor: `${color}22` }}>Flashcards · repaso</span>
+        <span className="rounded-full px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wide" style={{ color: nivelSesion.color, backgroundColor: `${nivelSesion.color}22` }}>{nivelSesion.label}</span>
       </div>
 
       {cards === null ? (

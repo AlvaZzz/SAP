@@ -152,7 +152,7 @@ export default function FiabilidadPage() {
                             <div className="grid grid-cols-3 gap-1.5 text-center">
                               {[['Dificultad', num(i.dificultad, 2)], ['Discrim.', num(i.discriminacion, 3)], ['D 27%', num(i.d27, 2)]].map(([l, v]) => (
                                 <div key={l} className="rounded-lg bg-subtle px-1 py-1.5">
-                                  <p className="text-[10px] uppercase text-muted">{l}</p>
+                                  <p className="text-2xs uppercase text-muted">{l}</p>
                                   <p className="text-sm font-semibold text-fg">{v}</p>
                                 </div>
                               ))}

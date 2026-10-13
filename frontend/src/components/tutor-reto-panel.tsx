@@ -163,7 +163,7 @@ export function TutorRetoPanel({ retoId, contextoTema, enunciado, codigo, esBugH
 
         {/* Pistas progresivas (acordeón). Para retos NO restan XP: se registran. */}
         <div className="!mt-4 rounded-xl border border-line bg-subtle/50 p-2.5">
-          <p className="mb-1.5 flex items-center gap-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+          <p className="mb-1.5 flex items-center gap-1.5 px-1 text-2xs font-bold uppercase tracking-wide text-muted">
             <Lightbulb className="h-3.5 w-3.5 text-prexi-amber" /> Pistas progresivas
           </p>
           <div className="space-y-1.5">
@@ -181,15 +181,15 @@ export function TutorRetoPanel({ retoId, contextoTema, enunciado, codigo, esBugH
                     </span>
                     {desbloqueada
                       ? <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
-                      : bloqueada ? <span className="shrink-0 text-[10px] font-semibold text-muted">pide la {nivel - 1}</span>
-                        : <span className="shrink-0 rounded-full bg-prexi-blue/15 px-2 py-0.5 text-[10px] font-bold text-prexi-blue-deep">pedir</span>}
+                      : bloqueada ? <span className="shrink-0 text-2xs font-semibold text-muted">pide la {nivel - 1}</span>
+                        : <span className="shrink-0 rounded-full bg-prexi-blue/15 px-2 py-0.5 text-2xs font-bold text-prexi-blue-deep">pedir</span>}
                   </button>
                   {open && <div className="border-t border-line px-3 py-2.5 text-sm leading-relaxed text-fg"><Markdown content={pistas[nivel]} /></div>}
                 </div>
               );
             })}
           </div>
-          <p className="mt-1.5 px-1 text-[11px] leading-snug text-muted">Las pistas no restan XP del reto, pero quedan registradas y cuentan para tu <b className="text-fg">Autonomía</b>. Úsalas cuando de verdad las necesites.</p>
+          <p className="mt-1.5 px-1 text-2xs leading-snug text-muted">Las pistas no restan XP del reto, pero quedan registradas y cuentan para tu <b className="text-fg">Autonomía</b>. Úsalas cuando de verdad las necesites.</p>
         </div>
 
         {error && <p className="!mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-prexi-red">{error}</p>}
@@ -197,7 +197,7 @@ export function TutorRetoPanel({ retoId, contextoTema, enunciado, codigo, esBugH
 
       {/* Sugerencias rápidas */}
       <div className="shrink-0 border-t border-line px-3 pt-2.5">
-        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-[11px] font-semibold text-muted"><Sparkles className="h-3 w-3 text-prexi-blue-deep" /> Pregúntame rápido:</p>
+        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-2xs font-semibold text-muted"><Sparkles className="h-3 w-3 text-prexi-blue-deep" /> Pregúntame rápido:</p>
         <div className="flex flex-wrap gap-1.5">
           {chips.map((c) => (
             <button key={c.texto} disabled={cargando} onClick={c.accion}
@@ -223,7 +223,7 @@ export function TutorRetoPanel({ retoId, contextoTema, enunciado, codigo, esBugH
           <Send className="h-[18px] w-[18px]" />
         </button>
       </div>
-      <p className="shrink-0 px-3 pb-2 text-center text-[11px] text-muted">PREXI te guía, no resuelve por ti</p>
+      <p className="shrink-0 px-3 pb-2 text-center text-2xs text-muted">PREXI te guía, no resuelve por ti</p>
     </div>
   );
 }

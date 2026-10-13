@@ -22,7 +22,7 @@ export function PredecirSalida({ ejercicio, resultado, onChange }: ExerciseProps
           el rótulo solo aparece cuando hay algo que rotular. */}
       {ejercicio.codigoPython && (
         <>
-          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">Entrada · código</p>
+          <p className="mb-1.5 text-2xs font-bold uppercase tracking-wide text-muted">Entrada · código</p>
           <div className="mb-5"><CodeViewer code={ejercicio.codigoPython} /></div>
         </>
       )}
@@ -150,13 +150,13 @@ function ConsolaEscrita({ resultado, onChange }: ExerciseProps) {
         </div>
         {enviado && (
           <div className="mt-3 border-t border-white/10 pt-3">
-            <p className="text-[11px] uppercase tracking-wide text-slate-500">Salida correcta</p>
+            <p className="text-2xs uppercase tracking-wide text-slate-500">Salida correcta</p>
             <p className="mt-1 flex items-start gap-2">
               <span aria-hidden className="select-none font-bold text-[#27C93F]">&gt;&gt;&gt;</span>
               <SalidaTecleada texto={esperado} />
             </p>
             {(distintoSoloCase || distintoComillas) && (
-              <p className="mt-2 text-[11px] text-amber-300">
+              <p className="mt-2 text-2xs text-amber-300">
                 {distintoSoloCase && 'Ojo: coincide salvo por MAYÚSCULAS/minúsculas. '}
                 {distintoComillas && 'Ojo: coincide salvo por el tipo de comillas.'}
               </p>

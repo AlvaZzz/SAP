@@ -10,7 +10,7 @@ import { Layers, CheckCircle, Lock, ArrowRight, Lightbulb, GraduationCap } from 
 /** Badge sutil (fondo del color al 12% + texto del color) — regla 60-30-10. */
 function ColorPill({ color, children }: { color: string; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide"
+    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wide"
       style={{ color, backgroundColor: `${color}1F` }}>
       {children}
     </span>
@@ -73,7 +73,7 @@ export default function EjerciciosPage() {
   return (
     <div className="animate-fade-up">
       <h1 className="font-display text-2xl font-extrabold text-fg sm:text-3xl">Unidades del curso</h1>
-      <p className="mb-6 text-[15px] text-muted">Programación I — UPEA · Cada unidad tiene su color; el nivel indica tu dificultad actual.</p>
+      <p className="mb-6 text-base text-muted">Programación I — UPEA · Cada unidad tiene su color; el nivel indica tu dificultad actual.</p>
 
       {/* Tu avance general: barra de acento a la izquierda + resumen numérico */}
       <div className="card mb-6 border-l-4 border-l-prexi-blue">
@@ -127,7 +127,7 @@ export default function EjerciciosPage() {
                           ? <ColorPill color="#10B981"><CheckCircle className="h-3 w-3" /> Completada</ColorPill>
                           : abierta
                             ? <ColorPill color={color}>En progreso</ColorPill>
-                            : <span className="inline-flex items-center gap-1 rounded-full bg-subtle px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>}
+                            : <span className="inline-flex items-center gap-1 rounded-full bg-subtle px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wide text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>}
                         {abierta && <ColorPill color={domColor}>Dominio: {u.nivel_dominio_label}</ColorPill>}
                         {abierta
                           ? <span className="text-xs font-semibold text-muted">{r.temasOk}/{r.temas} temas</span>

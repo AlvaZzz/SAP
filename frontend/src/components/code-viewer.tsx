@@ -48,7 +48,7 @@ export function CodeViewer({ code, titulo = 'ejercicio.py' }: { code: string; ti
       </div>
       {/* Código con números de línea */}
       <div className="overflow-x-auto">
-        <pre className="min-w-full p-0 font-mono text-[13px] leading-6">
+        <pre className="min-w-full p-0 font-mono text-sm leading-6">
           <code className="grid">
             {lineas.map((linea, li) => {
               const tokens = linea.match(/("[^"]*"|'[^']*'|#.*$|[A-Za-zÁ-ÿ_][A-Za-zÁ-ÿ0-9_]*|\d+(?:\.\d+)?|\s+|[^\sA-Za-z0-9"']+)/g) ?? [];

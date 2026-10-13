@@ -133,9 +133,9 @@ export function FlashcardsTema({ tema, onCambio }: { tema: TemaDocente; onCambio
                 <Badge tone="slate">{NIVEL_LABEL[f.nivel]}</Badge>
                 {!f.activo && <Badge tone="slate">Oculta</Badge>}
               </div>
-              <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Frente</p>
+              <p className="text-2xs font-bold uppercase tracking-wide text-muted">Frente</p>
               <p className="line-clamp-3 text-sm text-fg">{f.frente}</p>
-              <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-muted">Reverso</p>
+              <p className="mt-2 text-2xs font-bold uppercase tracking-wide text-muted">Reverso</p>
               <p className="line-clamp-2 text-sm font-semibold text-prexi-green">{f.reverso}</p>
               <div className="mt-auto flex items-center justify-end gap-1 pt-2">
                 <button onClick={() => { setBorrador({ id: f.id, frente: f.frente, reverso: f.reverso, explicacion: f.explicacion ?? '', nivel: f.nivel }); setError(''); }} className="btn-ghost !px-2.5 !py-1 text-xs"><Edit className="h-3.5 w-3.5" /> Editar</button>

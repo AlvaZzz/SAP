@@ -153,7 +153,7 @@ export function OrdenarLineas({ ejercicio, resultado, onChange }: ExerciseProps)
         </Zona>
       </div>
 
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         Arrastra desde el <GripVertical className="inline h-3 w-3 align-[-2px]" />, usa ▲▼ para mover, o toca <Plus className="inline h-3 w-3 align-[-2px]" /> para enviar a la solución. La sangría se aplica sola.
       </p>
 
@@ -171,7 +171,7 @@ function Zona({ id, titulo, fondo, oscura, vacio, children }: {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div>
-      <p className={`mb-2 text-[11px] font-bold uppercase tracking-wide ${oscura ? 'text-prexi-blue-deep' : 'text-muted'}`}>{titulo}</p>
+      <p className={`mb-2 text-2xs font-bold uppercase tracking-wide ${oscura ? 'text-prexi-blue-deep' : 'text-muted'}`}>{titulo}</p>
       <div ref={setNodeRef} title={vacio} className={`relative min-h-[7rem] rounded-xl border p-3 shadow-lift transition-colors ${fondo} ${isOver ? 'ring-2 ring-prexi-blue/50' : ''}`}>
         {children}
       </div>
@@ -192,7 +192,7 @@ function Bloque({ opcion, zona, pos, index, total, onMover, onAccion, accionLabe
   return (
     <li ref={setNodeRef} style={style} className={`relative flex items-stretch gap-2 ${isDragging ? 'z-10 opacity-40' : ''}`}>
       {enSolucion && (
-        <span className="relative z-10 mt-[9px] grid h-5 w-5 shrink-0 place-items-center self-start rounded-full bg-[#0E3F7E] text-[11px] font-bold text-white ring-2 ring-[#04162E]" style={{ fontVariantNumeric: 'tabular-nums' }}>{pos}</span>
+        <span className="relative z-10 mt-[9px] grid h-5 w-5 shrink-0 place-items-center self-start rounded-full bg-[#0E3F7E] text-2xs font-bold text-white ring-2 ring-[#04162E]" style={{ fontVariantNumeric: 'tabular-nums' }}>{pos}</span>
       )}
 
       {/* ▲▼ solo en solución (táctil) */}
@@ -234,7 +234,7 @@ function TarjetaBloque({ opcion, handleProps, arrastrando, estado }: {
       {handleProps
         ? <button type="button" {...handleProps} aria-label={`Arrastrar: ${texto}`} className="shrink-0 cursor-grab touch-none rounded text-slate-500 transition hover:text-slate-200 focus-visible:text-sky-300 active:cursor-grabbing"><GripVertical className="h-4 w-4" /></button>
         : <GripVertical className="h-4 w-4 shrink-0 text-slate-500" />}
-      <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre font-mono text-[13px] leading-6 text-slate-100">{resaltarLinea(texto)}</pre>
+      <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre font-mono text-sm leading-6 text-slate-100">{resaltarLinea(texto)}</pre>
       {estado === 'ok' && <CheckCircle className="h-4 w-4 shrink-0 text-[#22C55E]" />}
       {estado === 'mal' && <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />}
     </div>
@@ -261,7 +261,7 @@ function Revision({ opciones, correctas, reduce }: { opciones: Opcion[]; correct
 
   return (
     <div>
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-prexi-blue-deep">Tu solución</p>
+      <p className="mb-2 text-2xs font-bold uppercase tracking-wide text-prexi-blue-deep">Tu solución</p>
       <div className="relative rounded-xl border border-[#0E3F7E] bg-[#04162E] p-3 shadow-lift">
         {orden.length > 1 && <span aria-hidden className="pointer-events-none absolute bottom-5 left-[26px] top-5 w-px bg-white/12" />}
         <ol className="space-y-2">
@@ -269,14 +269,14 @@ function Revision({ opciones, correctas, reduce }: { opciones: Opcion[]; correct
             const ok = correctOrder[i] === o.id.trim().toUpperCase();
             return (
               <motion.li key={o.id} layout={!reduce} transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="relative flex items-stretch gap-2">
-                <span className="relative z-10 mt-[9px] grid h-5 w-5 shrink-0 place-items-center self-start rounded-full bg-[#0E3F7E] text-[11px] font-bold text-white ring-2 ring-[#04162E]" style={{ fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
+                <span className="relative z-10 mt-[9px] grid h-5 w-5 shrink-0 place-items-center self-start rounded-full bg-[#0E3F7E] text-2xs font-bold text-white ring-2 ring-[#04162E]" style={{ fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
                 <TarjetaBloque opcion={o} estado={ok ? 'ok' : 'mal'} />
               </motion.li>
             );
           })}
         </ol>
       </div>
-      <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted">
+      <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted">
         <span className="inline-flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5 text-[#22C55E]" /> En su lugar</span>
         <span className="inline-flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5 text-amber-400" /> Fuera de lugar {todoBien ? '' : '· se reacomodan al orden correcto'}</span>
       </p>

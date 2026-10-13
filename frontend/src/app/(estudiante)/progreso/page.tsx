@@ -150,7 +150,7 @@ function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | nul
     <section className="card border-0 bg-gradient-to-r from-prexi-navy-deep to-prexi-navy text-white" data-tour="progreso-banner">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
-          <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide">① Progreso de aprendizaje</span>
+          <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-2xs font-semibold uppercase tracking-wide">① Progreso de aprendizaje</span>
           <h1 className="mt-2 font-display text-2xl font-extrabold">Tu crecimiento en el curso</h1>
           <p className="text-sm text-blue-100/80">Tu punto de partida y cómo avanzas unidad por unidad.</p>
         </div>
@@ -179,9 +179,9 @@ function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | nul
               <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/15">
                 <div className="h-full rounded-full bg-prexi-amber transition-all" style={{ width: `${Math.min(100, Math.round((rangos.global.puntaje / rangos.global.siguiente.umbral) * 100))}%` }} />
               </div>
-              <span className="min-w-0 text-[11px] text-blue-100/70">{rangos.global.puntaje}/{rangos.global.siguiente.umbral} pts → {rangos.global.siguiente.nombre}</span>
+              <span className="min-w-0 text-2xs text-blue-100/70">{rangos.global.puntaje}/{rangos.global.siguiente.umbral} pts → {rangos.global.siguiente.nombre}</span>
             </div>
-          ) : <span className="text-[11px] text-amber-200/90">¡Rango máximo alcanzado!</span>}
+          ) : <span className="text-2xs text-amber-200/90">¡Rango máximo alcanzado!</span>}
         </div>
       )}
     </section>
@@ -191,7 +191,7 @@ function BannerAprendizaje({ d, rangos }: { d: Datos; rangos: RangoResumen | nul
 function Marcador({ etiqueta, valor }: { etiqueta: string; valor: number | string }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-200/70">{etiqueta}</p>
+      <p className="text-2xs font-semibold uppercase tracking-wide text-blue-200/70">{etiqueta}</p>
       <p className="font-display text-3xl font-extrabold">{valor}</p>
     </div>
   );
@@ -223,14 +223,14 @@ function DominioUnidad({ unidad, rangos }: { unidad: UnidadDet; rangos: RangoRes
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colorUnidadNivel }} />
             {unidad.nivel_dominio_label}
           </p>
-          <p className="mt-1 text-[11px] text-muted">Combina tu nivel en cada tema · no cuántos ejercicios hiciste</p>
+          <p className="mt-1 text-2xs text-muted">Combina tu nivel en cada tema · no cuántos ejercicios hiciste</p>
         </div>
 
         {ru && (
           <div className="flex items-center gap-2.5 rounded-xl border border-line bg-subtle px-3 py-2">
             <RangoIcon svgKey={ru.rango.svgKey} color={ru.rango.color} className="h-8 w-8 shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">Rango</p>
+              <p className="text-2xs font-semibold uppercase tracking-wide text-muted">Rango</p>
               <p className="truncate text-sm font-bold text-fg">{ru.rango.nombre}</p>
             </div>
           </div>
@@ -238,7 +238,7 @@ function DominioUnidad({ unidad, rangos }: { unidad: UnidadDet; rangos: RangoRes
 
         <div className="w-full sm:w-64">
           <div className="mb-1.5 flex items-baseline justify-between gap-2">
-            <span className="text-[11px] font-medium text-muted">Dominio de la unidad</span>
+            <span className="text-2xs font-medium text-muted">Dominio de la unidad</span>
             <span className="font-display text-sm font-extrabold text-fg" style={{ fontVariantNumeric: 'tabular-nums' }}>{dominioUnidad}%</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full" style={{ backgroundColor: `${colorUnidadNivel}22` }}
@@ -246,7 +246,7 @@ function DominioUnidad({ unidad, rangos }: { unidad: UnidadDet; rangos: RangoRes
             <motion.div className="h-full rounded-full" style={{ backgroundColor: colorUnidadNivel }}
               initial={{ width: reduce ? `${dominioUnidad}%` : 0 }} animate={{ width: `${dominioUnidad}%` }} transition={{ duration: 0.9, ease: 'easeOut' }} />
           </div>
-          <p className="mt-1.5 text-[11px] text-muted">Alcanza <b className="text-fg">Intermedio</b> para desbloquear la siguiente unidad.</p>
+          <p className="mt-1.5 text-2xs text-muted">Alcanza <b className="text-fg">Intermedio</b> para desbloquear la siguiente unidad.</p>
         </div>
       </div>
 
@@ -259,7 +259,7 @@ function DominioUnidad({ unidad, rangos }: { unidad: UnidadDet; rangos: RangoRes
       </div>
 
       {/* Leyenda con las marcas reales */}
-      <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted">
+      <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-2xs text-muted">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2 w-6 rounded-full" style={{ background: `linear-gradient(90deg, ${NIVEL_COLOR.basico}, ${NIVEL_COLOR.intermedio}, ${NIVEL_COLOR.avanzado})` }} />
           Tu dominio <span className="text-faint">(el color indica tu nivel)</span>
@@ -292,10 +292,10 @@ function FilaTema({ t, reduce }: { t: TemaDet; reduce: boolean }) {
     <div className="py-3.5 first:pt-0 last:pb-0">
       <div className="mb-2 flex items-center justify-between gap-3">
         <span className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0 rounded-md bg-subtle px-1.5 py-0.5 text-[11px] font-bold text-muted" style={{ fontVariantNumeric: 'tabular-nums' }}>{t.numero}</span>
+          <span className="shrink-0 rounded-md bg-subtle px-1.5 py-0.5 text-2xs font-bold text-muted" style={{ fontVariantNumeric: 'tabular-nums' }}>{t.numero}</span>
           <span className="truncate text-sm font-semibold text-fg" title={t.titulo}>{t.titulo}</span>
           <span
-            className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${NIVEL_BADGE[t.nivel_alcanzado]}`}
+            className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-wide ${NIVEL_BADGE[t.nivel_alcanzado]}`}
             title={`Tu nivel de dificultad en este tema: ${t.nivel_alcanzado_label}`}
           >
             <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> {t.nivel_alcanzado_label}
@@ -304,7 +304,7 @@ function FilaTema({ t, reduce }: { t: TemaDet; reduce: boolean }) {
         {/* Porcentaje grande + etiqueta que aclara QUÉ es. */}
         <span className="shrink-0 text-right leading-none">
           <span className="block font-display text-base font-extrabold text-fg" style={{ fontVariantNumeric: 'tabular-nums' }}>{dominio}%</span>
-          <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-wide text-muted">dominio</span>
+          <span className="mt-0.5 block text-2xs font-medium uppercase tracking-wide text-muted">dominio</span>
         </span>
       </div>
 
@@ -360,13 +360,13 @@ function Constancia({ h }: { h: Habitos }) {
       <div className="mt-4 flex h-24 items-end justify-between gap-1.5" role="img" aria-label={`Ejercicios resueltos por día: ${dias.map((x) => `${diaCorto(x.dia)} ${x.resueltos}`).join(', ')}`}>
         {dias.map((x) => (
           <div key={x.dia} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-            <span className="text-[10px] font-semibold text-muted">{x.resueltos || ''}</span>
+            <span className="text-2xs font-semibold text-muted">{x.resueltos || ''}</span>
             <div
               className={`w-full rounded-t-md transition-all ${x.resueltos ? 'bg-prexi-blue' : 'bg-subtle'}`}
               style={{ height: `${x.resueltos ? Math.max(8, (x.resueltos / max) * 100) : 4}%` }}
               title={`${diaCorto(x.dia)}: ${x.resueltos} resueltos`}
             />
-            <span className="w-full truncate text-center text-[10px] text-muted">{diaCorto(x.dia)}</span>
+            <span className="w-full truncate text-center text-2xs text-muted">{diaCorto(x.dia)}</span>
           </div>
         ))}
       </div>
@@ -400,15 +400,15 @@ function Autonomia({ h }: { h: Habitos }) {
     >
       {valores.length >= 2 && (
         <div className="mt-4">
-          <p className="mb-1 text-[11px] font-semibold text-muted">Ejercicios sin pistas, conforme avanzas</p>
+          <p className="mb-1 text-2xs font-semibold text-muted">Ejercicios sin pistas, conforme avanzas</p>
           <div className="flex items-end gap-2">
             <Sparkline values={valores} color={VERDE} className="!w-full" />
           </div>
-          <div className="mt-0.5 flex justify-between text-[10px] text-muted"><span>Primeros</span><span>Últimos</span></div>
+          <div className="mt-0.5 flex justify-between text-2xs text-muted"><span>Primeros</span><span>Últimos</span></div>
         </div>
       )}
       <p className="mt-3 text-xs leading-relaxed text-muted">{mensaje}</p>
-      <p className="mt-2 text-[11px] text-muted">
+      <p className="mt-2 text-2xs text-muted">
         {total_pistas} {total_pistas === 1 ? 'pista' : 'pistas'} · {total_consultas} {total_consultas === 1 ? 'consulta' : 'consultas'} a PREXI
       </p>
     </IndicadorCard>
@@ -438,9 +438,9 @@ function Eficiencia({ h }: { h: Habitos }) {
     >
       {valores.length >= 2 && (
         <div className="mt-4">
-          <p className="mb-1 text-[11px] font-semibold text-muted">Tasa de acierto, conforme avanzas</p>
+          <p className="mb-1 text-2xs font-semibold text-muted">Tasa de acierto, conforme avanzas</p>
           <Sparkline values={valores} color={AZUL} className="!w-full" />
-          <div className="mt-0.5 flex justify-between text-[10px] text-muted"><span>Primeros</span><span>Últimos</span></div>
+          <div className="mt-0.5 flex justify-between text-2xs text-muted"><span>Primeros</span><span>Últimos</span></div>
         </div>
       )}
       <p className="mt-3 text-xs leading-relaxed text-muted">{mensaje}</p>
@@ -450,7 +450,7 @@ function Eficiencia({ h }: { h: Habitos }) {
       {tiempo_medio_seg != null && (
         <div className="mt-3 flex items-start gap-2 rounded-xl bg-subtle p-3">
           <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted" />
-          <p className="text-[11px] leading-relaxed text-muted">
+          <p className="text-2xs leading-relaxed text-muted">
             Dedicas <b className="text-fg">{formatoTiempo(tiempo_medio_seg)}</b> a cada ejercicio, en promedio.
             No es una marca que batir: conforme dominas un tema lo resuelves con más soltura. Tomarte tu tiempo para pensar es parte de aprender.
           </p>
@@ -503,14 +503,14 @@ function ChipTendencia({ t, bueno, etiquetaBuena, etiquetaMala }: {
   if (t === 'sin_datos') return null;
   if (t === 'estable') {
     return (
-      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-subtle px-2 py-0.5 text-[10px] font-bold text-muted">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-subtle px-2 py-0.5 text-2xs font-bold text-muted">
         <Minus className="h-3 w-3" /> Estable
       </span>
     );
   }
   const positivo = t === bueno;
   return (
-    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold ${
       positivo ? 'bg-emerald-500/15 text-prexi-green' : 'bg-amber-500/15 text-prexi-amber'}`}>
       {t === 'baja' ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
       {positivo ? etiquetaBuena : etiquetaMala}

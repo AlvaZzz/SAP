@@ -72,7 +72,7 @@ export function UnidadBanner({
               {numero}
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-white/85 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">Unidad {numero}</p>
+              <p className="text-2xs font-bold uppercase tracking-wide text-white/85 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">Unidad {numero}</p>
               <h1 className="font-display text-2xl font-extrabold leading-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.55)] sm:text-3xl">{titulo}</h1>
             </div>
           </div>

@@ -96,7 +96,7 @@ function NodeBox({ node, color }: { node: Node; color: string }) {
   if (node.kind === 'start' || node.kind === 'end') {
     return (
       <div
-        className="max-w-[90%] rounded-full px-5 py-1.5 text-center text-[13px] font-bold uppercase tracking-wide text-fg"
+        className="max-w-[90%] rounded-full px-5 py-1.5 text-center text-sm font-bold uppercase tracking-wide text-fg"
         style={{ backgroundColor: tint, border: `1.5px solid ${color}` }}
       >
         {node.text}
@@ -119,7 +119,7 @@ function NodeBox({ node, color }: { node: Node; color: string }) {
 
   return (
     <div
-      className="max-w-[92%] rounded-xl px-4 py-2.5 text-center font-mono text-[13px] text-fg"
+      className="max-w-[92%] rounded-xl px-4 py-2.5 text-center font-mono text-sm text-fg"
       style={{ backgroundColor: tint, border: `1px solid ${line}` }}
     >
       <span className="whitespace-pre-wrap break-words">{node.text}</span>

@@ -203,7 +203,7 @@ export default function FichaEstudiantePage() {
               <div key={n.nivel} className="rounded-xl bg-subtle px-3 py-2 text-center">
                 <NivelChip nivel={n.nivel} />
                 <p className="mt-1 font-display text-lg font-bold text-fg">{n.tasa_acierto === null ? '—' : `${n.tasa_acierto} %`}</p>
-                <p className="text-[11px] text-muted">{n.intentos} intentos</p>
+                <p className="text-2xs text-muted">{n.intentos} intentos</p>
               </div>
             ))}
           </div>
@@ -238,7 +238,7 @@ export default function FichaEstudiantePage() {
                 <div className="flex w-full flex-1 items-end overflow-hidden rounded bg-subtle">
                   <div className="w-full rounded bg-prexi-blue" style={{ height: `${(a.intentos / maxDia) * 100}%` }} />
                 </div>
-                <span className="text-[10px] text-muted">{new Date(`${a.dia}T12:00:00`).toLocaleDateString('es-BO', { weekday: 'short' })}</span>
+                <span className="text-2xs text-muted">{new Date(`${a.dia}T12:00:00`).toLocaleDateString('es-BO', { weekday: 'short' })}</span>
               </div>
             ))}
           </div>
@@ -312,7 +312,7 @@ export default function FichaEstudiantePage() {
 function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <div className="rounded-xl bg-subtle px-3 py-2">
-      <p className="text-[10px] uppercase tracking-wide text-muted">{etiqueta}</p>
+      <p className="text-2xs uppercase tracking-wide text-muted">{etiqueta}</p>
       <p className="truncate text-sm font-semibold text-fg" title={valor}>{valor}</p>
     </div>
   );

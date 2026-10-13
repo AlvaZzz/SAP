@@ -110,7 +110,7 @@ function TourOverlay({ tour, onCerrar }: { tour: Tour; onCerrar: () => void }) {
       {/* Tooltip / tarjeta del paso */}
       <div ref={tooltipRef} style={estiloTooltip} className="rounded-2xl border border-line bg-card p-5 shadow-lift">
         <div className="mb-1 flex items-center justify-between gap-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Paso {i + 1} de {tour.pasos.length}</p>
+          <p className="text-2xs font-bold uppercase tracking-wider text-muted">Paso {i + 1} de {tour.pasos.length}</p>
           <button onClick={onCerrar} className="text-xs font-semibold text-muted transition hover:text-fg">Saltar tutorial</button>
         </div>
         <h3 className="font-display text-lg font-bold text-fg">{paso.titulo}</h3>

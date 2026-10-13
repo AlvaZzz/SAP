@@ -99,8 +99,8 @@ export function TraceViewer({ codigo, pasos, error }: { codigo: string; pasos: P
       <div className="grid grid-cols-1 gap-3 2xl:grid-cols-[1.35fr_1fr]">
         {/* Código, con la línea en ejecución marcada */}
         <div>
-          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">Se está ejecutando la línea {paso.linea}</p>
-          <pre className="max-h-80 overflow-auto rounded-xl bg-[#04162E] py-2 font-mono text-[13px] leading-relaxed">
+          <p className="mb-1.5 text-2xs font-bold uppercase tracking-wide text-muted">Se está ejecutando la línea {paso.linea}</p>
+          <pre className="max-h-80 overflow-auto rounded-xl bg-[#04162E] py-2 font-mono text-sm leading-relaxed">
             {lineas.map((l, n) => {
               const activa = n + 1 === paso.linea;
               return (
@@ -116,7 +116,7 @@ export function TraceViewer({ codigo, pasos, error }: { codigo: string; pasos: P
 
         {/* Variables: lo que vale cada una en este paso */}
         <div>
-          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">Variables en este momento</p>
+          <p className="mb-1.5 text-2xs font-bold uppercase tracking-wide text-muted">Variables en este momento</p>
           {vars.length === 0 ? <p className="rounded-xl bg-subtle px-3 py-3 text-sm text-muted">Todavía no se creó ninguna variable.</p> : (
             <ul className="space-y-1.5">
               {vars.map(([nombre, valor]) => {
@@ -130,8 +130,8 @@ export function TraceViewer({ codigo, pasos, error }: { codigo: string; pasos: P
                       {cambio && <span className="mr-1.5 text-muted line-through">{legible(antes[nombre])}</span>}
                       {legible(valor)}
                     </span>
-                    {nueva && <span className="shrink-0 text-[10px] font-bold uppercase text-prexi-green">nueva</span>}
-                    {cambio && <span className="shrink-0 text-[10px] font-bold uppercase text-prexi-amber">cambió</span>}
+                    {nueva && <span className="shrink-0 text-2xs font-bold uppercase text-prexi-green">nueva</span>}
+                    {cambio && <span className="shrink-0 text-2xs font-bold uppercase text-prexi-amber">cambió</span>}
                   </li>
                 );
               })}

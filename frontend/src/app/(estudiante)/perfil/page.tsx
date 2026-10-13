@@ -105,9 +105,9 @@ export default function PerfilPage() {
               )}
 
               <div className="mt-4 flex border-t border-line pt-4 text-center">
-                <div className="flex-1"><p className="font-display text-lg font-bold text-fg"><CountUp value={res?.puntos ?? 0} /></p><p className="text-[11px] text-muted">XP</p></div>
-                <div className="flex-1 border-l border-line"><p className="flex items-center justify-center gap-1 font-display text-lg font-bold text-prexi-amber"><Flame className="h-4 w-4" /> {res?.racha_dias ?? 0}</p><p className="text-[11px] text-muted">Racha</p></div>
-                <div className="flex-1 border-l border-line"><p className="font-display text-lg font-bold text-fg">{res?.posicion ? `#${res.posicion}` : '—'}</p><p className="text-[11px] text-muted">Posición</p></div>
+                <div className="flex-1"><p className="font-display text-lg font-bold text-fg"><CountUp value={res?.puntos ?? 0} /></p><p className="text-2xs text-muted">XP</p></div>
+                <div className="flex-1 border-l border-line"><p className="flex items-center justify-center gap-1 font-display text-lg font-bold text-prexi-amber"><Flame className="h-4 w-4" /> {res?.racha_dias ?? 0}</p><p className="text-2xs text-muted">Racha</p></div>
+                <div className="flex-1 border-l border-line"><p className="font-display text-lg font-bold text-fg">{res?.posicion ? `#${res.posicion}` : '—'}</p><p className="text-2xs text-muted">Posición</p></div>
               </div>
 
               <button onClick={abrir} className="btn-primary mt-4 w-full">
@@ -152,7 +152,7 @@ export default function PerfilPage() {
           <Card hover>
             <p className="mb-3 text-sm font-semibold text-fg">Tu nivel</p>
             <ProgressBar value={progresoNivel} />
-            <div className="mt-2.5 flex justify-between text-[11px] text-muted">
+            <div className="mt-2.5 flex justify-between text-2xs text-muted">
               <span>Nivel {nivelActual}</span>
               <span className="font-semibold text-prexi-blue-deep">{faltan > 0 ? `${faltan} ejercicio${faltan > 1 ? 's' : ''} para Nivel ${nivelActual + 1}` : '¡Nivel completo!'}</span>
             </div>
@@ -219,7 +219,7 @@ export default function PerfilPage() {
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-fg">Correo electrónico</span>
                 <div className="flex items-center justify-between rounded-xl border border-line bg-subtle px-3 py-2.5 text-sm text-muted">{usuario?.email} <Lock className="h-4 w-4" /></div>
-                <span className="text-[11px] text-muted">El correo no se puede modificar.</span>
+                <span className="text-2xs text-muted">El correo no se puede modificar.</span>
               </label>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-fg">Carrera</span>
@@ -234,7 +234,7 @@ export default function PerfilPage() {
                 <input type="password" autoComplete="current-password" placeholder="Contraseña actual" className="input mb-2 text-sm" value={pass.actual} onChange={(e) => setPass((p) => ({ ...p, actual: e.target.value }))} />
                 <input type="password" autoComplete="new-password" placeholder="Nueva contraseña" className="input text-sm" value={pass.nueva} onChange={(e) => setPass((p) => ({ ...p, nueva: e.target.value }))} />
                 {pass.nueva && (
-                  <span className={`mt-1 flex items-center gap-1 text-[11px] ${pass.nueva.length >= 6 ? 'text-prexi-green' : 'text-prexi-amber'}`}>
+                  <span className={`mt-1 flex items-center gap-1 text-2xs ${pass.nueva.length >= 6 ? 'text-prexi-green' : 'text-prexi-amber'}`}>
                     {pass.nueva.length >= 6 ? <><CheckCircle className="h-3.5 w-3.5" /> Contraseña válida</> : 'Mínimo 6 caracteres'}
                   </span>
                 )}
@@ -261,7 +261,7 @@ function Interruptor({ titulo, detalle, activo, onChange }: {
       className="flex w-full items-start gap-3 rounded-xl border border-line bg-subtle/60 p-3 text-left transition hover:border-prexi-blue/40">
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-semibold text-fg">{titulo}</span>
-        <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">{detalle}</span>
+        <span className="mt-0.5 block text-2xs leading-relaxed text-muted">{detalle}</span>
       </span>
       <span aria-hidden className={`mt-0.5 grid h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition ${activo ? 'bg-prexi-blue' : 'bg-line'}`}>
         <span className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${activo ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -275,7 +275,7 @@ function MiniStat({ icon, tone, label, children }: { icon: React.ReactNode; tone
     <div className="rounded-xl bg-subtle p-3">
       <div className={tone}>{icon}</div>
       <p className="mt-1.5 font-display text-lg font-bold text-fg">{children}</p>
-      <p className="text-[11px] text-muted">{label}</p>
+      <p className="text-2xs text-muted">{label}</p>
     </div>
   );
 }

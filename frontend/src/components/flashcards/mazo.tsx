@@ -196,14 +196,14 @@ function Contador({ n, texto, color }: { n: number; texto: string; color: string
   return (
     <div className="rounded-xl border border-line bg-card px-2 py-2">
       <p className="font-display text-xl font-extrabold leading-none" style={{ color, fontVariantNumeric: 'tabular-nums' }}>{n}</p>
-      <p className="mt-1 text-[11px] font-semibold text-muted">{texto}</p>
+      <p className="mt-1 text-2xs font-semibold text-muted">{texto}</p>
     </div>
   );
 }
 
 /** Tecla de atajo, solo en pantallas con teclado. */
 function Tecla({ children }: { children: React.ReactNode }) {
-  return <kbd className="hidden rounded-md border border-current px-1.5 py-0.5 text-[11px] font-bold opacity-70 sm:inline">{children}</kbd>;
+  return <kbd className="hidden rounded-md border border-current px-1.5 py-0.5 text-2xs font-bold opacity-70 sm:inline">{children}</kbd>;
 }
 
 /** Tarjeta superior arrastrable: x propio (se reinicia por tarjeta), rotación y

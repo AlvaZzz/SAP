@@ -182,7 +182,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
 
         {/* Pistas progresivas (acordeón con candado + costo XP honesto) */}
         <div className="!mt-4 rounded-xl border border-line bg-subtle/50 p-2.5">
-          <p className="mb-1.5 flex items-center gap-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+          <p className="mb-1.5 flex items-center gap-1.5 px-1 text-2xs font-bold uppercase tracking-wide text-muted">
             <Lightbulb className="h-3.5 w-3.5 text-prexi-amber" /> Pistas progresivas
           </p>
           <div className="space-y-1.5">
@@ -200,14 +200,14 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
                     </span>
                     {desbloqueada
                       ? <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
-                      : <span className="shrink-0 rounded-full bg-prexi-amber/15 px-2 py-0.5 text-[10px] font-bold text-prexi-amber">cuesta XP</span>}
+                      : <span className="shrink-0 rounded-full bg-prexi-amber/15 px-2 py-0.5 text-2xs font-bold text-prexi-amber">cuesta XP</span>}
                   </button>
                   {open && <div className="border-t border-line px-3 py-2.5 text-sm leading-relaxed text-fg"><Markdown content={pistas[nivel]} /></div>}
                 </div>
               );
             })}
           </div>
-          <p className="mt-1.5 px-1 text-[11px] leading-snug text-muted">Cada pista que abras reduce un poco el XP del ejercicio. Úsalas cuando de verdad lo necesites.</p>
+          <p className="mt-1.5 px-1 text-2xs leading-snug text-muted">Cada pista que abras reduce un poco el XP del ejercicio. Úsalas cuando de verdad lo necesites.</p>
         </div>
 
         {error && <p className="!mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-xs text-prexi-red">{error}</p>}
@@ -215,7 +215,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
 
       {/* Sugerencias rápidas (bajan la barrera de uso) */}
       <div className="shrink-0 border-t border-line px-3 pt-2.5">
-        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-[11px] font-semibold text-muted"><Sparkles className="h-3 w-3 text-prexi-blue-deep" /> Pregúntame rápido:</p>
+        <p className="mb-1.5 flex items-center gap-1 px-0.5 text-2xs font-semibold text-muted"><Sparkles className="h-3 w-3 text-prexi-blue-deep" /> Pregúntame rápido:</p>
         <div className="flex flex-wrap gap-1.5">
           {chips.map((c) => (
             <button key={c} disabled={cargando} onClick={() => enviar(c)}

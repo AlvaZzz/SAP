@@ -81,7 +81,7 @@ export default function IntroduccionPage() {
                 onClick={() => abrir(i)}
                 className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${sel ? 'border-prexi-blue bg-prexi-blue text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
               >
-                <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${sel ? 'bg-white/25' : leida ? 'bg-green-100 text-prexi-green' : 'bg-slate-100 text-slate-500'}`}>
+                <span className={`grid h-5 w-5 place-items-center rounded-full text-2xs ${sel ? 'bg-white/25' : leida ? 'bg-green-100 text-prexi-green' : 'bg-slate-100 text-slate-500'}`}>
                   {leida && !sel ? <Check className="h-3 w-3" /> : un.numero}
                 </span>
                 <span className="hidden sm:inline">Unidad {un.numero}</span>

@@ -68,29 +68,29 @@ export function OrigenEjercicio({ origen }: { origen: OrigenReto }) {
         <div id="detalle-origen" className="border-t border-line px-4 py-3">
           {/* Metadatos del ejercicio origen */}
           <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
-            <span className="rounded-md bg-prexi-blue/15 px-2 py-0.5 text-[11px] font-bold text-prexi-blue-deep"
+            <span className="rounded-md bg-prexi-blue/15 px-2 py-0.5 text-2xs font-bold text-prexi-blue-deep"
               title={tipo.nombre}>
               {tipo.sigla} · {tipo.nombre}
             </span>
-            <span className="rounded-md bg-card px-2 py-0.5 text-[11px] font-semibold text-muted">
+            <span className="rounded-md bg-card px-2 py-0.5 text-2xs font-semibold text-muted">
               {NIVEL_LABEL[origen.nivel] ?? origen.nivel}
             </span>
           </div>
 
-          <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-muted">Enunciado original</p>
+          <p className="mb-1 text-2xs font-bold uppercase tracking-wide text-muted">Enunciado original</p>
           {/* Completo, sin recortar: es el material de repaso. */}
           <p className="whitespace-pre-wrap text-sm text-fg">{origen.enunciado}</p>
 
           {origen.codigo_python && (
             <div className="mt-3">
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-muted">Código del ejercicio</p>
+              <p className="mb-1 text-2xs font-bold uppercase tracking-wide text-muted">Código del ejercicio</p>
               <CodeViewer code={origen.codigo_python} titulo={`${origen.codigo ?? 'ejercicio'}.py`} />
             </div>
           )}
 
           {origen.opciones && origen.opciones.length > 0 && (
             <div className="mt-3">
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+              <p className="mb-1 text-2xs font-bold uppercase tracking-wide text-muted">
                 Opciones que se planteaban
               </p>
               <ul className="space-y-1">

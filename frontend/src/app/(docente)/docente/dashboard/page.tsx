@@ -53,7 +53,7 @@ export default function DocenteDashboardPage() {
   return (
     <div className="animate-fade-up">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
-      <p className="mb-6 mt-1 text-[15px] text-muted">Estos son tus paralelos. Entra a uno para ver a tus estudiantes por nivel.</p>
+      <p className="mb-6 mt-1 text-base text-muted">Estos son tus paralelos. Entra a uno para ver a tus estudiantes por nivel.</p>
 
       <AvisoSolicitudes />
       <TarjetaEvaluarPrexi href="/docente/evaluar-prexi" />
@@ -90,7 +90,7 @@ export default function DocenteDashboardPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-display text-3xl font-extrabold text-prexi-blue-deep">{p.total}</p>
-                    <p className="text-[11px] text-muted">estudiantes</p>
+                    <p className="text-2xs text-muted">estudiantes</p>
                   </div>
                 </div>
                 <p className="mt-1 text-sm text-muted">{p.es_mio ? 'Tú eres el docente' : p.docente ? `Docente: ${p.docente}` : 'Sin docente asignado'}</p>

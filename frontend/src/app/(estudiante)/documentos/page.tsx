@@ -154,12 +154,12 @@ export default function DocumentosPage() {
                 <div className="min-w-0 flex-1">
                   {g.unidad ? (
                     <>
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-prexi-blue-deep">Unidad {g.unidad.numero}</p>
+                      <p className="text-2xs font-bold uppercase tracking-wide text-prexi-blue-deep">Unidad {g.unidad.numero}</p>
                       <h2 className="font-display text-lg font-extrabold text-fg">{g.unidad.titulo}</h2>
                     </>
                   ) : (
                     <>
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Sin categoría</p>
+                      <p className="text-2xs font-bold uppercase tracking-wide text-muted">Sin categoría</p>
                       <h2 className="font-display text-lg font-extrabold text-fg">{GENERAL.titulo}</h2>
                     </>
                   )}

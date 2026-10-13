@@ -182,8 +182,8 @@ export default function RankingPage() {
                     <div className="min-w-0 flex-1">
                       <p className="flex flex-wrap items-center gap-x-2 font-semibold text-fg">
                         <span className="truncate">{r.nombre}</span>
-                        {r.es_yo && <span className="rounded-full bg-prexi-blue px-2 py-0.5 text-[10px] font-bold uppercase text-accent-on">Tú</span>}
-                        {esRival && <span className="rounded-full bg-prexi-green/15 px-2 py-0.5 text-[10px] font-bold uppercase text-prexi-green">A quien alcanzar</span>}
+                        {r.es_yo && <span className="rounded-full bg-prexi-blue px-2 py-0.5 text-2xs font-bold uppercase text-accent-on">Tú</span>}
+                        {esRival && <span className="rounded-full bg-prexi-green/15 px-2 py-0.5 text-2xs font-bold uppercase text-prexi-green">A quien alcanzar</span>}
                       </p>
                       <p className="flex items-center gap-1 truncate text-xs text-muted">
                         <span style={{ color: r.rango.color }}>{r.rango.nombre}</span>

@@ -17,8 +17,8 @@ export function FeatureItem({ icon: Icon, title, desc, glow }: {
         <Icon className="h-[22px] w-[22px] lg:h-7 lg:w-7" />
       </div>
       <div className="min-w-0">
-        <p className="text-[15px] font-semibold text-fg lg:text-[17px]">{title}</p>
-        <p className="mt-0.5 text-[13px] leading-snug text-muted lg:mt-1 lg:text-sm">{desc}</p>
+        <p className="text-base font-semibold text-fg lg:text-base">{title}</p>
+        <p className="mt-0.5 text-sm leading-snug text-muted lg:mt-1 lg:text-sm">{desc}</p>
       </div>
     </div>
   );

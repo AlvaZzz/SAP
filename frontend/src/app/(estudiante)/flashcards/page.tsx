@@ -66,7 +66,7 @@ export default function FlashcardsPage() {
         <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-white shadow-lift" style={{ backgroundColor: COLOR_FLASHCARD }}><IconoFlashcard className="h-8 w-8" /></span>
         <div>
           <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">Flashcards</h1>
-          <p className="mt-0.5 max-w-2xl text-[15px] text-muted">Tarjetas de pregunta y respuesta para repasar antes de un tema o de un examen. Vienen <b className="text-fg">a tu nivel</b> en cada tema y no afectan tu nota.</p>
+          <p className="mt-0.5 max-w-2xl text-base text-muted">Tarjetas de pregunta y respuesta para repasar antes de un tema o de un examen. Vienen <b className="text-fg">a tu nivel</b> en cada tema y no afectan tu nota.</p>
         </div>
       </div>
 

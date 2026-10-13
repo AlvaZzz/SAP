@@ -118,7 +118,7 @@ export function CuestionarioInstrumento({ clave, volver }: { clave: 'SUS' | 'ISO
               return (
                 <Card key={item.id}>
                   <fieldset>
-                    <legend className="mb-3 text-[15px] font-medium leading-snug text-fg">
+                    <legend className="mb-3 text-base font-medium leading-snug text-fg">
                       <span className="mr-1.5 text-muted">{numero}.</span>{item.texto}
                     </legend>
                     <div className="flex items-center justify-between gap-2">

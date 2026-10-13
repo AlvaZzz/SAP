@@ -107,7 +107,7 @@ function FilaDescriptivos({ d }: { d: Descriptivos }) {
           ['EE', num(d.ee, 2)], ['Mín', num(d.min, 0)], ['Máx', num(d.max, 0)],
         ].map(([l, v]) => (
           <div key={String(l)} className="rounded-lg bg-subtle px-1 py-1.5">
-            <p className="text-[10px] uppercase text-muted">{l}</p>
+            <p className="text-2xs uppercase text-muted">{l}</p>
             <p className="text-sm font-semibold text-fg">{v}</p>
           </div>
         ))}
@@ -215,7 +215,7 @@ export function ContrasteCard({ c, titulo }: { c: Comparacion; titulo?: string }
 export function Metrica({ etiqueta, valor, destacado = false }: { etiqueta: string; valor: string; destacado?: boolean }) {
   return (
     <div className={`rounded-xl border p-3 text-center ${destacado ? 'border-prexi-green/40 bg-prexi-green/10' : 'border-line'}`}>
-      <p className="text-[10px] uppercase tracking-wide text-muted">{etiqueta}</p>
+      <p className="text-2xs uppercase tracking-wide text-muted">{etiqueta}</p>
       <p className={`mt-0.5 font-display text-sm font-bold ${destacado ? 'text-prexi-green' : 'text-fg'}`}>{valor}</p>
     </div>
   );

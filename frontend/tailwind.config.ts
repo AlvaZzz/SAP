@@ -43,6 +43,9 @@ const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      // Tamaño para rótulos y chips pequeños. Va en rem, como el resto de la
+      // escala, para que crezca con la letra base de cada pantalla (ver globals.css).
+      fontSize: { '2xs': ['0.6875rem', { lineHeight: '1rem' }] },
       colors: {
         // Tokens semánticos (light/dark) — resueltos vía CSS vars (tripletas RGB).
         app: 'rgb(var(--app) / <alpha-value>)',
