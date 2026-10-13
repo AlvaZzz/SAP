@@ -5,6 +5,7 @@ import { useEffect, useId, useMemo, useState, ReactNode, ComponentType } from 'r
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
+import { LogoPinguino } from '@/components/logo-pinguino';
 import { api } from '@/lib/api';
 import { ThemeToggle } from './theme-toggle';
 import { SonidoToggle } from './sonido-toggle';
@@ -228,7 +229,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
     <>
       <div className="mb-5 flex items-center justify-between gap-3 border-b border-white/[0.07] px-1 pb-4 pt-1">
         <Link href={homeHref} className="flex items-center gap-2.5">
-          <div className="grid h-[44px] w-[44px] place-items-center rounded-[14px] bg-gradient-to-br from-prexi-blue to-blue-600 text-[21px] font-extrabold text-white shadow-lg shadow-blue-900/50 ring-1 ring-white/15">P</div>
+          <LogoPinguino size={48} />
           <div>
             <p className="font-display text-[22px] font-extrabold leading-none tracking-tight text-white">PRE<span className="text-amber-300">XI</span></p>
             <p className="mt-1 text-[12px] font-medium text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
