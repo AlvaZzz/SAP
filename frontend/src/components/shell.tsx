@@ -221,14 +221,17 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   const rolTexto = area === 'docente' ? 'Docente' : area === 'investigador' ? 'Investigador' : area === 'admin' ? 'Administrador' : nivelActual ? `Nivel ${nivelActual}` : 'Estudiante';
   async function salir() { await logout(); router.replace('/login'); }
 
+  // MENÚ LATERAL COMPACTO. Sus tamaños van en PÍXELES a propósito: el contenido
+  // crece con la letra base de la pantalla (hasta 135 %), pero el menú es
+  // navegación y no debe quitarle espacio ni protagonismo.
   const sidebar = (
     <>
-      <div className="mb-8 flex items-center justify-between gap-3 px-2 pt-2">
-        <Link href={homeHref} className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-prexi-blue text-xl font-extrabold text-white shadow-lg shadow-blue-900/40">P</div>
+      <div className="mb-6 flex items-center justify-between gap-3 px-1.5 pt-1">
+        <Link href={homeHref} className="flex items-center gap-2.5">
+          <div className="grid h-[38px] w-[38px] place-items-center rounded-xl bg-prexi-blue text-[18px] font-extrabold text-white shadow-lg shadow-blue-900/40">P</div>
           <div>
-            <p className="font-display text-xl font-extrabold leading-none text-white">PREXI</p>
-            <p className="text-2xs text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
+            <p className="font-display text-[19px] font-extrabold leading-none text-white">PREXI</p>
+            <p className="mt-0.5 text-[11px] text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
           </div>
         </Link>
         <button onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 hover:bg-white/10 lg:hidden"><X className="h-5 w-5" /></button>
@@ -238,27 +241,27 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
       <div className="mb-3 px-1 lg:hidden">
         <BuscadorNav items={nav} onNavegar={() => setMenuAbierto(false)} />
       </div>
-      <nav aria-label="Secciones" className="flex flex-1 flex-col gap-5 overflow-y-auto pb-2">
+      <nav aria-label="Secciones" className="flex flex-1 flex-col gap-4 overflow-y-auto pb-2">
         {grupos.map((grupo, i) => {
           // El encabezado NO es un enlace: es una etiqueta. Va como <h2> (fuera
           // del orden de tabulación) y la lista lo referencia para que el lector
           // de pantalla anuncie el grupo al que pertenece cada ítem.
           const tituloId = `${navId}-${i}`;
           return (
-            <div key={grupo.titulo} className={i > 0 ? 'border-t border-[rgb(var(--sidebar-ink))]/15 pt-4' : ''}>
-              <h2 id={tituloId} className="px-3.5 pb-2 text-2xs font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]">
+            <div key={grupo.titulo} className={i > 0 ? 'border-t border-[rgb(var(--sidebar-ink))]/15 pt-3' : ''}>
+              <h2 id={tituloId} className="px-[12px] pb-[6px] text-[10.5px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]">
                 {grupo.titulo}
               </h2>
-              <ul aria-labelledby={tituloId} className="flex flex-col gap-1">
+              <ul aria-labelledby={tituloId} className="flex flex-col gap-0.5">
                 {grupo.items.map(({ href, label, icon: Icon }) => {
                   const activo = href === hrefActivo;
                   return (
                     <li key={href}>
                       <Link href={href} aria-current={activo ? 'page' : undefined}
-                        className={`group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-base font-medium transition ${activo
+                        className={`group flex items-center gap-[10px] rounded-[10px] px-[12px] py-[8px] text-[15px] font-medium transition ${activo
                           ? 'bg-[rgb(var(--sidebar-active))] text-[rgb(var(--sidebar-active-ink))] shadow-[0_0_22px_-6px_rgb(var(--sidebar-bar)/0.7)]'
                           : 'text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.06] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
-                        <Icon className={`h-[20px] w-[20px] shrink-0 transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} />
+                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} />
                         <span className="truncate">{label}</span>
                       </Link>
                     </li>
@@ -269,10 +272,10 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
           );
         })}
       </nav>
-      <div className="mt-auto rounded-2xl bg-white/5 p-3 ring-1 ring-white/5">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-prexi-blue to-blue-400 font-bold text-white">{inicial}</div>
-          <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-white">{usuario.nombre}</p><p className="text-xs text-blue-200/60">{rolTexto} · <span className="capitalize">{usuario.rol}</span></p></div>
+      <div className="mt-auto rounded-xl bg-white/5 p-[10px] ring-1 ring-white/5">
+        <div className="flex items-center gap-[10px]">
+          <div className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-prexi-blue to-blue-400 text-[14px] font-bold text-white">{inicial}</div>
+          <div className="min-w-0 flex-1"><p className="truncate text-[13.5px] font-semibold text-white">{usuario.nombre}</p><p className="truncate text-[11.5px] text-blue-200/60">{rolTexto} · <span className="capitalize">{usuario.rol}</span></p></div>
           <button onClick={salir} title="Cerrar sesión" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 transition hover:bg-white/10 hover:text-white"><LogOut className="h-[18px] w-[18px]" /></button>
         </div>
       </div>
@@ -282,11 +285,11 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   return (
     <div className="flex min-h-screen bg-app">
       {/* Sidebar fija en escritorio */}
-      <aside className={`sticky top-0 hidden h-screen w-64 shrink-0 flex-col p-4 text-white lg:flex ${SIDEBAR_BG}`}>{sidebar}</aside>
+      <aside className={`sticky top-0 hidden h-screen w-[236px] shrink-0 flex-col p-[14px] text-white lg:flex ${SIDEBAR_BG}`}>{sidebar}</aside>
 
       {/* Drawer en móvil/tablet */}
       {menuAbierto && <div className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden" onClick={() => setMenuAbierto(false)} aria-hidden="true" />}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col p-4 text-white transition-transform duration-300 lg:hidden ${SIDEBAR_BG} ${menuAbierto ? 'translate-x-0' : '-translate-x-full'}`}>{sidebar}</aside>
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-[264px] max-w-[85vw] flex-col p-[14px] text-white transition-transform duration-300 lg:hidden ${SIDEBAR_BG} ${menuAbierto ? 'translate-x-0' : '-translate-x-full'}`}>{sidebar}</aside>
 
       {/* Contenido */}
       <div className="flex min-w-0 flex-1 flex-col">

@@ -67,21 +67,21 @@
  * Escala base RESPONSIVA de la interfaz (mobile-first).
  * Tailwind usa rem, por lo que ajustar el font-size del root escala texto,
  * espaciados, gaps y anchos de forma proporcional, sin tocar cada clase.
- *  · Móvil   (<640px): 100%   (16px).
- *  · Tablet  (≥640px): 106.25% (17px).
- *  · Desktop (≥1024px): 112.5% (18px).
- * (Antes llegaba a 135 %: los textos y los botones se veían sobredimensionados.)
+ *  · Móvil   (<640px): 112.5% (18px) — cómodo de leer sin desbordar 375px.
+ *  · Tablet  (≥640px): 125%   (20px).
+ *  · Desktop (≥1024px): 135%  (21.6px) — la escala generosa original.
+ * El MENÚ LATERAL no sigue esta escala: usa tamaños fijos más compactos (ver shell.tsx).
  * (Las media queries se evalúan contra el tamaño inicial del navegador, no
  *  contra este font-size, así que los breakpoints de Tailwind no se mueven.)
  */
 html {
-  font-size: 100%;
+  font-size: 112.5%;
 }
 @media (min-width: 640px) {
-  html { font-size: 106.25%; }
+  html { font-size: 125%; }
 }
 @media (min-width: 1024px) {
-  html { font-size: 112.5%; }
+  html { font-size: 135%; }
 }
 
 body {
