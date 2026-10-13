@@ -1,5 +1,6 @@
 'use client';
 
+import { IconoFlashcard } from '@/components/flashcards/boton-flashcards';
 import { useEffect, useId, useMemo, useState, ReactNode, ComponentType } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -51,7 +52,7 @@ const NAV_ESTUDIANTE: NavGrupo[] = [
       // El editor de código vive dentro de un reto (ya no hay "Práctica" suelta).
       { href: '/retos', label: 'Retos', icon: Target },
       // Repaso libre con flashcards (apoyo; no puntúa ni afecta al θ).
-      { href: '/flashcards', label: 'Flashcards', icon: Sparkles },
+      { href: '/flashcards', label: 'Flashcards', icon: IconoFlashcard },
     ],
   },
   {

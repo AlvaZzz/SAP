@@ -1,5 +1,6 @@
 'use client';
 
+import { IconoFlashcard } from '@/components/flashcards/boton-flashcards';
 import { useMemo, useState, type ComponentType } from 'react';
 import Link from 'next/link';
 import { Markdown } from '@/components/markdown';
@@ -234,7 +235,7 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
           </p>
           <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
             <Link href={`/flashcards/unidad/${data.unidad.id}?volver=/ejercicios/unidad/${data.unidad.id}`} className="btn-primary justify-center">
-              Repasar con flashcards
+              <IconoFlashcard className="h-5 w-5" /> Repasar con flashcards
             </Link>
             <button onClick={onSalir} className="btn-ghost justify-center">Ir a los temas <ArrowRight className="h-4 w-4" /></button>
           </div>

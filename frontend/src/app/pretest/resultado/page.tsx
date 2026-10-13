@@ -1,5 +1,6 @@
 'use client';
 
+import { BotonFlashcards } from '@/components/flashcards/boton-flashcards';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -93,10 +94,7 @@ export default function ResultadoPage() {
                       <li key={c} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                         <span>• {c}</span>
                         {tema && (
-                          <Link href={`/flashcards/tema/${tema.tema_id}?volver=/pretest/resultado`}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-prexi-blue-deep hover:underline">
-                            <Sparkles className="h-3.5 w-3.5" /> Repasar con flashcards
-                          </Link>
+                          <BotonFlashcards compacto href={`/flashcards/tema/${tema.tema_id}?volver=/pretest/resultado`} />
                         )}
                       </li>
                     );

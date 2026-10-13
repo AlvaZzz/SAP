@@ -1,5 +1,6 @@
 'use client';
 
+import { BotonFlashcards } from '@/components/flashcards/boton-flashcards';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -182,12 +183,8 @@ function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
             <h3 className="font-display text-lg font-bold text-fg">{tema.titulo}</h3>
             {tema.descripcion && <p className="mt-0.5 max-w-2xl text-sm text-muted">{tema.descripcion}</p>}
             {tema.desbloqueado && (
-              <Link href={`/flashcards/tema/${tema.id}?volver=/ejercicios/unidad/${unidadId}`}
-                className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition hover:-translate-y-0.5 hover:shadow-md"
-                style={{ color: nivelColor, borderColor: `${nivelColor}66`, backgroundColor: `${nivelColor}14` }}>
-                <Sparkles className="h-3.5 w-3.5" /> Flashcards de nivel {tema.nivel_actual_label}
-                <span className="font-medium opacity-80">· repasa antes de practicar</span>
-              </Link>
+              <BotonFlashcards className="mt-2.5" href={`/flashcards/tema/${tema.id}?volver=/ejercicios/unidad/${unidadId}`}
+                detalle={`Tarjetas de nivel ${tema.nivel_actual_label} para repasar antes de practicar`} />
             )}
           </div>
         </div>

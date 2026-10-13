@@ -1,5 +1,6 @@
 'use client';
 
+import { IconoFlashcard } from '@/components/flashcards/boton-flashcards';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
@@ -100,7 +101,7 @@ export function CierreTema({ temaId, tituloTema, progreso }: {
               {siguiente ? <>Siguiente tema: {siguiente.tema.titulo} <ArrowRight className="h-4 w-4" /></> : <>Volver a la unidad <ArrowRight className="h-4 w-4" /></>}
             </button>
             <button onClick={() => router.push(`/flashcards/tema/${temaId}`)} className="btn-ghost w-full justify-center sm:w-auto">
-              <Sparkles className="h-4 w-4" /> Repasar con flashcards
+              <IconoFlashcard className="h-5 w-5" /> Repasar con flashcards
             </button>
           </div>
 
@@ -168,7 +169,7 @@ export function AvisoRacha({ tipo, aciertos, temaId, onSeguir }: {
       <div className="mt-3 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap">
         {temaId != null && (
           <button onClick={() => router.push(`/flashcards/tema/${temaId}`)} className="btn-primary w-full justify-center !py-2 !text-xs sm:w-auto sm:!py-1.5">
-            <RotateCcw className="h-3.5 w-3.5" /> Repasar el tema
+            <IconoFlashcard className="h-4 w-4" /> Flashcards del tema
           </button>
         )}
         <button onClick={() => router.push('/dashboard')} className="btn-ghost w-full justify-center !py-2 !text-xs sm:w-auto sm:!py-1.5">
