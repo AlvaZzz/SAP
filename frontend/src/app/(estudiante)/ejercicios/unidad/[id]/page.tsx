@@ -101,6 +101,8 @@ export default function UnidadPage() {
             <><p className="font-display text-xl font-bold text-fg">¡Unidad aprobada!</p><p className="text-sm text-muted">Puedes repasar cualquier tema o seguir con la siguiente unidad.</p></>
           ) : examen === 'listo' ? (
             <><p className="font-display text-xl font-bold text-fg">Rendir el examen de la unidad</p><p className="text-sm text-muted">Completaste todos los temas. Son 10 preguntas y apruebas con 80 sobre 100.</p></>
+          ) : sig && sig.puede_subir ? (
+            <><p className="font-display text-xl font-bold text-fg">Rinde la prueba de nivel: {sig.numero} {sig.titulo}</p><p className="text-sm text-muted">Ya resolviste los ejercicios de nivel {sig.nivel_actual_label}. Con 80 sobre 100 pasas a {sig.nivel_objetivo_label} y se abren ejercicios nuevos.</p></>
           ) : sig ? (
             <><p className="font-display text-xl font-bold text-fg">{sig.ejercicios_completados > 0 ? 'Continuar' : 'Empezar'}: {sig.numero} {sig.titulo}</p><p className="text-sm text-muted">Llevas {sig.ejercicios_completados} de {sig.umbral} ejercicios en este tema.</p></>
           ) : porSubir.length > 0 ? (
@@ -115,6 +117,10 @@ export default function UnidadPage() {
           <Link href={`/examen-unidad/${unidad.id}`} className="btn-accion text-base">
             <GraduationCap className="h-5 w-5" /> Rendir el examen <ArrowRight className="h-5 w-5" />
           </Link>
+        ) : sig && sig.puede_subir ? (
+          <button onClick={() => subir(sig.id)} className="btn-accion text-base">
+            <TrendingUp className="h-5 w-5" /> Rendir la prueba de nivel <ArrowRight className="h-5 w-5" />
+          </button>
         ) : sig ? (
           <button onClick={() => iniciar(sig.id, sig.total_ejercicios_nivel)} disabled={yendo === sig.id}
             className="btn-accion text-base">

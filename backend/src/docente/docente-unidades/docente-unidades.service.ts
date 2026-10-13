@@ -54,10 +54,10 @@ export class DocenteUnidadesService {
           where: { padreId: null },
           orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
           include: {
-            _count: { select: { ejercicios: { where: { activo: true } } } },
+            _count: { select: { ejercicios: { where: { activo: true, banco: 'practica' } } } },
             subtemas: {
               orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
-              include: { _count: { select: { ejercicios: { where: { activo: true } } } } },
+              include: { _count: { select: { ejercicios: { where: { activo: true, banco: 'practica' } } } } },
             },
           },
         },

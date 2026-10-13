@@ -135,4 +135,44 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
       await expect(service.dashboard(7, 999)).rejects.toThrow('Unidad no encontrada');
     });
   });
+
+  describe('prueba de nivel: la pantalla cuenta igual que el backend', () => {
+    const unidadCon = (t: unknown) => [{ id: 1, numero: 1, titulo: 'U1', descripcion: null, xp: 100, temas: [t] }];
+
+    it('solo pide ejercicios del banco de PRÁCTICA (los del diagnóstico y del examen no se pueden resolver practicando)', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
+      prisma.unidad.findMany.mockResolvedValue([]);
+      await service.listar(7);
+      const include = prisma.unidad.findMany.mock.calls[0][0].include.temas.include;
+      expect(include.ejercicios.where).toEqual({ activo: true, banco: 'practica' });
+      expect(include.subtemas.include.ejercicios.where).toEqual({ activo: true, banco: 'practica' });
+    });
+
+    it('con 9 ejercicios de su nivel y los 9 resueltos, ya puede rendir la prueba (no exige 10)', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
+      const ejercicios = [
+        ...Array.from({ length: 9 }, (_, i) => ({ id: i + 1, nivelDificultad: 'basico' })),
+        { id: 50, nivelDificultad: 'intermedio' },
+      ];
+      prisma.unidad.findMany.mockResolvedValue(unidadCon(tema(1, {
+        ejercicios, progreso: [{ nivelActual: 'basico', ejerciciosCompletados: 9 }],
+      })));
+      prisma.intento.findMany.mockResolvedValue(ejercicios.slice(0, 9).map((e) => ({ ejercicioId: e.id })));
+
+      const [u] = await service.listar(7);
+      const t = u.temas[0];
+      expect(t.minimo_nivel).toBe(9);
+      expect(t.resueltos_nivel).toBe(9);
+      expect(t.faltan_nivel).toBe(0);
+      expect(t.puede_subir).toBe(true);
+    });
+
+    it('el tema se muestra completo con la misma regla que abre el siguiente (80 % del umbral)', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
+      prisma.unidad.findMany.mockResolvedValue(unidadCon(tema(1, { progreso: [{ nivelActual: 'basico', ejerciciosCompletados: 8 }] })));
+      const [u] = await service.listar(7);
+      expect(u.temas[0].umbral).toBe(8);
+      expect(u.temas[0].estado).toBe('completado');
+    });
+  });
 });

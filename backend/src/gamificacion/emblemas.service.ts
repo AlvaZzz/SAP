@@ -102,7 +102,7 @@ export class EmblemasService {
 
   /** Requisitos que se disparan al COMPLETAR un tema (y su unidad). */
   private async evaluarTema(tx: Prisma.TransactionClient, usuarioId: number, temaId: number, fecha: Date): Promise<string[]> {
-    const tema = await tx.tema.findUnique({ where: { id: temaId }, include: { ejercicios: { where: { activo: true }, select: { id: true } } } });
+    const tema = await tx.tema.findUnique({ where: { id: temaId }, include: { ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true } } } });
     if (!tema) return [];
     const ejercicioIds = tema.ejercicios.map((e) => e.id);
     if (ejercicioIds.length === 0) return [];

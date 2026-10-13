@@ -25,7 +25,7 @@ export class ProgresoService {
           where: { padreId: null, publicado: true },
           orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
           include: {
-            ejercicios: { where: { activo: true }, select: { id: true } },
+            ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true } },
             progreso: { where: { usuarioId }, select: { nivelActual: true } },
           },
         },

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ETIQUETA_NIVEL, siguienteNivel, nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
-import { desbloqueoSecuencial } from '../../common/niveles/desbloqueo';
+import { desbloqueoSecuencial, requeridosTema } from '../../common/niveles/desbloqueo';
 
 /** Nodo del mapa conceptual del Dashboard de Destino (tema o subtema). */
 interface NodoMapa {
@@ -38,13 +38,13 @@ export class UnidadesService {
             where: { padreId: null, publicado: true },
             orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
             include: {
-              ejercicios: { where: { activo: true }, select: { id: true, nivelDificultad: true } },
+              ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true, nivelDificultad: true } },
               progreso: { where: { usuarioId } },
               subtemas: {
                 where: { publicado: true },
                 orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
                 include: {
-                  ejercicios: { where: { activo: true }, select: { id: true, nivelDificultad: true } },
+                  ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true, nivelDificultad: true } },
                   progreso: { where: { usuarioId } },
                 },
               },
@@ -98,12 +98,12 @@ export class UnidadesService {
         const subAbiertos = desbloqueoSecuencial(avance(t.subtemas), umbralPct, desbloqueado);
         const nivelActual: NivelDificultad = pr?.nivelActual ?? nivelInicial;
         return {
-          ...this.mapTema(t, nivelActual, desbloqueado, resueltosIds, minimos),
+          ...this.mapTema(t, nivelActual, desbloqueado, resueltosIds, minimos, umbralPct),
           subtemas: t.subtemas.map((s, is) => {
             const prs = s.progreso[0];
             const desbSub = subAbiertos[is];
             const nivelSub: NivelDificultad = prs?.nivelActual ?? nivelInicial;
-            return this.mapTema(s, nivelSub, desbSub, resueltosIds, minimos);
+            return this.mapTema(s, nivelSub, desbSub, resueltosIds, minimos, umbralPct);
           }),
         };
       });
@@ -149,9 +149,14 @@ export class UnidadesService {
     desbloqueado: boolean,
     resueltosIds: Set<number>,
     minimos: Record<NivelDificultad, number>,
+    umbralPct: number,
   ) {
     const completados = t.progreso[0]?.ejerciciosCompletados ?? 0;
-    const completo = completados >= t.umbral;
+    // "Completo" con la MISMA regla que abre el tema siguiente y el examen de la
+    // unidad (umbral × porcentaje configurado): la pantalla no puede pedir más
+    // ejercicios que los que el sistema exige de verdad.
+    const requeridos = requeridosTema(t.umbral, umbralPct);
+    const completo = completados >= requeridos;
     const delNivel = t.ejercicios.filter((e) => e.nivelDificultad === nivelActual);
     const totalNivel = delNivel.length;
     const objetivo = siguienteNivel(nivelActual);
@@ -173,7 +178,7 @@ export class UnidadesService {
 
     return {
       id: t.id, numero: t.numero, titulo: t.titulo, descripcion: t.descripcion,
-      umbral: t.umbral, total_ejercicios: t.ejercicios.length,
+      umbral: requeridos, total_ejercicios: t.ejercicios.length,
       total_ejercicios_nivel: totalNivel,
       ejercicios_completados: completados, desbloqueado,
       nivel_actual: nivelActual, nivel_actual_label: ETIQUETA_NIVEL[nivelActual],
@@ -207,13 +212,13 @@ export class UnidadesService {
             where: { padreId: null, publicado: true },
             orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
             include: {
-              ejercicios: { where: { activo: true }, select: { id: true } },
+              ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true } },
               progreso: { where: { usuarioId }, select: { nivelActual: true, ejerciciosCompletados: true } },
               subtemas: {
                 where: { publicado: true },
                 orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
                 include: {
-                  ejercicios: { where: { activo: true }, select: { id: true } },
+                  ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true } },
                   progreso: { where: { usuarioId }, select: { nivelActual: true, ejerciciosCompletados: true } },
                 },
               },

@@ -37,7 +37,7 @@ export class RangosService {
     const unidades = await db.unidad.findMany({
       where: unidadId ? { id: unidadId } : {},
       include: {
-        temas: { where: { publicado: true }, include: { ejercicios: { where: { activo: true }, select: { id: true } } } },
+        temas: { where: { publicado: true }, include: { ejercicios: { where: { activo: true, banco: 'practica' }, select: { id: true } } } },
       },
     });
 
