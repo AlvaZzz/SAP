@@ -54,7 +54,7 @@ export default function EjerciciosPage() {
         <div aria-hidden className="pointer-events-none absolute -bottom-28 right-24 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
         <div className="relative flex flex-wrap items-center gap-6">
           <div className="min-w-[240px] flex-1">
-            <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200"><span className="h-1.5 w-6 rounded-full bg-amber-500" /> Tu camino en Programación I</p>
+            <p className="inline-flex items-center gap-2 text-sm font-bold text-amber-400"><span className="h-1.5 w-6 rounded-full bg-amber-500" /> Tu camino en Programación I</p>
             {actual ? (
               <>
                 <h1 className="mt-1 font-display text-2xl font-extrabold leading-tight sm:text-3xl">

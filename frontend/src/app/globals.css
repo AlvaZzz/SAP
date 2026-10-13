@@ -139,9 +139,14 @@ body {
     background-image: linear-gradient(180deg, #F7A91F 0%, #E9920A 100%);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 12px 24px -10px rgb(217 133 10 / 0.85);
   }
-  /* Etiqueta cálida suave ("Estás aquí", "Sigue aquí"). */
+  /* Etiqueta de posición ("Estás aquí", "Sigue aquí"): el mismo ámbar pleno del
+     botón de acción, con texto blanco. Antes era un tinte al 15 % que se veía
+     apagado junto al resto. */
   .chip-accion {
-    @apply rounded-full bg-amber-500/15 px-2 py-0.5 text-2xs font-bold text-amber-700 dark:text-amber-300;
+    @apply rounded-full px-2.5 py-0.5 text-2xs font-bold text-white;
+    background-image: linear-gradient(180deg, #F59E0B 0%, #E38A05 100%);
+    text-shadow: 0 1px 1px rgb(120 60 0 / 0.4);
+    box-shadow: 0 2px 6px -2px rgb(217 133 10 / 0.6);
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-card

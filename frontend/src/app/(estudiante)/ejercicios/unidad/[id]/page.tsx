@@ -96,7 +96,7 @@ export default function UnidadPage() {
           {examen === 'aprobado' ? <Trophy className="h-6 w-6" /> : examen === 'listo' ? <GraduationCap className="h-6 w-6" /> : <Play className="h-6 w-6" />}
         </span>
         <div className="min-w-[220px] flex-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">Tu siguiente paso</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">Tu siguiente paso</p>
           {examen === 'aprobado' ? (
             <><p className="font-display text-xl font-bold text-fg">¡Unidad aprobada!</p><p className="text-sm text-muted">Puedes repasar cualquier tema o seguir con la siguiente unidad.</p></>
           ) : examen === 'listo' ? (
