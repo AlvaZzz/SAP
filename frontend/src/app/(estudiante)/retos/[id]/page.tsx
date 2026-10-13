@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { CodeEditor } from '@/components/code-editor';
@@ -9,6 +9,8 @@ import { ejecutarPython, trazarPython, precargarPython, onCargaRuntime } from '@
 import { TutorRetoPanel } from '@/components/tutor-reto-panel';
 import { OrigenEjercicio, type OrigenReto } from '@/components/origen-ejercicio';
 import { useAnimo } from '@/components/animo-tutor';
+import { TIPOS_RETO } from '@/components/docente/retos/tipos';
+import { NIVEL_COLOR, NIVEL_LABEL } from '@/lib/types';
 import { Play, RotateCcw, Upload, CheckCircle, Clock, AlertTriangle, ChevronLeft, Layers } from '@/components/icons';
 
 type EstadoEntrega = 'sin_entregar' | 'pendiente_revision' | 'aprobado' | 'necesita_mejorar';
@@ -44,7 +46,8 @@ export default function RetoEditorPage() {
   const [entregando, setEntregando] = useState(false);
   const [avisoEntrega, setAvisoEntrega] = useState('');
   // Visualizador de traza
-  const [traza, setTraza] = useState<{ pasos: PasoTraza[]; error: string | null } | null>(null);
+  const [traza, setTraza] = useState<{ pasos: PasoTraza[]; error: string | null; codigo: string } | null>(null);
+  const refTraza = useRef<HTMLElement>(null);
   const [trazando, setTrazando] = useState(false);
   // Bug‑hunt: resultado de la auto‑validación
   const [verif, setVerif] = useState<{ correcto: boolean; salida: string; esperado: string; xp: number; emblemas: Emblema[] } | null>(null);
@@ -112,9 +115,11 @@ export default function RetoEditorPage() {
     setTrazando(true); setTraza(null);
     try {
       const r = await trazarPython(codigo);
-      setTraza({ pasos: r.pasos, error: r.error });
+      setTraza({ pasos: r.pasos, error: r.error, codigo });
+      // Aparece debajo del editor: se lleva la vista hasta allí.
+      setTimeout(() => refTraza.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
     } catch {
-      setTraza({ pasos: [], error: 'No se pudo generar la traza.' });
+      setTraza({ pasos: [], error: 'No se pudo generar el paso a paso.', codigo });
     } finally { setTrazando(false); }
   }
 
@@ -151,78 +156,103 @@ export default function RetoEditorPage() {
   );
 
   const est = entrega?.estado;
+  const esAuto = !!(reto.esBugHunt || reto.autoCalificable);
+  const tipoReto = reto.esBugHunt ? 'bug' : 'codigo';
+  const infoTipo = TIPOS_RETO[tipoReto];
   const bloqueoEntrega = est === 'pendiente_revision' || est === 'aprobado';
 
   return (
     <div className="animate-fade-up">
       <div className="mb-5">
-        <button onClick={() => router.push('/retos')} className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition hover:text-fg"><ChevronLeft className="h-4 w-4" /> Retos</button>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{reto.titulo}</h1>
-          {reto.esBugHunt && <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">Misión de depuración</span>}
-        </div>
-        <p className="mt-2 rounded-xl bg-prexi-blue/10 px-4 py-2.5 text-sm text-fg"><b className="text-prexi-blue-deep">{reto.esBugHunt ? 'Encuentra y corrige el bug:' : 'Reto:'}</b> {reto.enunciado}</p>
+        <button onClick={() => router.push(`/retos?tipo=${tipoReto}`)} className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition hover:text-fg"><ChevronLeft className="h-4 w-4" /> Volver a los retos</button>
 
-        {(reto.ejemploEntrada || reto.ejemploSalida || reto.fechaLimite) && (
-          <div className="mt-2 flex flex-wrap items-stretch gap-2 text-sm">
-            {reto.ejemploEntrada && (
-              <div className="rounded-xl border border-line bg-card px-3 py-2">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Entrada</p>
-                <pre className="whitespace-pre-wrap font-mono text-xs text-fg">{reto.ejemploEntrada}</pre>
-              </div>
-            )}
-            {reto.ejemploSalida && (
-              <div className="rounded-xl border border-line bg-card px-3 py-2">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Salida esperada</p>
-                <pre className="whitespace-pre-wrap font-mono text-xs text-fg">{reto.ejemploSalida}</pre>
-              </div>
-            )}
-            {reto.fechaLimite && (
-              <div className="flex items-center gap-1.5 rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                <Clock className="h-3.5 w-3.5" /> Límite: {new Date(reto.fechaLimite).toLocaleDateString('es-BO', { day: 'numeric', month: 'short', year: 'numeric' })}
+        {/* Qué reto es */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold" style={{ color: infoTipo.color, backgroundColor: `${infoTipo.color}1F` }}>
+            <infoTipo.Icono className="h-3.5 w-3.5" /> {infoTipo.nombre}
+          </span>
+          {reto.nivelDificultad && <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ color: NIVEL_COLOR[reto.nivelDificultad], backgroundColor: `${NIVEL_COLOR[reto.nivelDificultad]}1F` }}>Nivel {NIVEL_LABEL[reto.nivelDificultad]}</span>}
+          {reto.contextoTema && <span className="text-xs font-medium text-muted">{reto.contextoTema}</span>}
+          {reto.fechaLimite && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+              <Clock className="h-3.5 w-3.5" /> Hasta el {new Date(reto.fechaLimite).toLocaleDateString('es-BO', { day: 'numeric', month: 'long' })}
+            </span>
+          )}
+        </div>
+        <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{reto.titulo}</h1>
+
+        {/* Qué hay que hacer */}
+        <div className="mt-3 grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+          <div className="card border-l-4" style={{ borderLeftColor: infoTipo.color }}>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">{esAuto ? 'Tu misión' : 'Lo que tienes que programar'}</p>
+            <p className="mt-1 whitespace-pre-line text-[15px] leading-relaxed text-fg">{reto.enunciado}</p>
+            {(reto.ejemploEntrada || reto.ejemploSalida) && (
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {reto.ejemploEntrada && (
+                  <div className="rounded-xl bg-subtle px-3 py-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Ejemplo de entrada</p>
+                    <pre className="mt-0.5 whitespace-pre-wrap font-mono text-sm text-fg">{reto.ejemploEntrada}</pre>
+                  </div>
+                )}
+                {reto.ejemploSalida && (
+                  <div className="rounded-xl bg-prexi-green/10 px-3 py-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-prexi-green">{esAuto ? 'Debe imprimir exactamente' : 'Salida esperada'}</p>
+                    <pre className="mt-0.5 whitespace-pre-wrap font-mono text-sm text-fg">{reto.ejemploSalida}</pre>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+
+          {/* Cómo se resuelve, en tres pasos */}
+          <div className="card">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Cómo resolverlo</p>
+            <ol className="mt-2 space-y-2.5 text-sm">
+            {[
+              reto.esBugHunt ? 'Lee el código: tiene un error escondido.' : 'Escribe tu programa en el editor.',
+              'Pulsa «Ejecutar» para probarlo. Si no entiendes qué pasa, usa «Ver paso a paso».',
+              esAuto ? 'Cuando la salida sea la correcta, pulsa «Comprobar»: sabrás al instante si lo lograste.' : 'Cuando funcione, pulsa «Entregar»: tu docente lo revisará.',
+            ].map((texto, i) => (
+              <li key={texto} className="flex items-start gap-2.5">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-prexi-blue/15 text-xs font-bold text-prexi-blue-deep">{i + 1}</span>
+                <span className="text-muted">{texto}</span>
+              </li>
+            ))}
+            </ol>
+          </div>
+        </div>
 
         {/* TRAZABILIDAD: de qué ejercicio del banco salió este reto. Si falla, es
             el material que debe repasar — no una explicación genérica. */}
         {reto.origen && <OrigenEjercicio origen={reto.origen} />}
 
         {entrega && entrega.estado !== 'sin_entregar' && (
-          <div className={`mt-3 flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm ${
-            entrega.estado === 'aprobado' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-            : entrega.estado === 'necesita_mejorar' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
-            : 'bg-prexi-blue/10 text-prexi-blue-deep'}`}>
-            {entrega.estado === 'aprobado' ? <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              : entrega.estado === 'necesita_mejorar' ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              : <Clock className="mt-0.5 h-4 w-4 shrink-0" />}
+          <div className={`mt-3 flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${
+            entrega.estado === 'aprobado' ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+            : entrega.estado === 'necesita_mejorar' ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+            : 'border-prexi-blue/40 bg-prexi-blue/10 text-prexi-blue-deep'}`} role="status">
+            {entrega.estado === 'aprobado' ? <CheckCircle className="mt-0.5 h-5 w-5 shrink-0" />
+              : entrega.estado === 'necesita_mejorar' ? <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+              : <Clock className="mt-0.5 h-5 w-5 shrink-0" />}
             <div>
-              <p className="font-semibold">
-                {entrega.estado === 'aprobado' ? `¡Aprobado! +${entrega.xp_obtenido} XP`
-                  : entrega.estado === 'necesita_mejorar' ? 'El docente pide mejoras — corrige y vuelve a entregar.'
-                  : 'Entregado — esperando la revisión del docente.'}
+              <p className="font-bold">
+                {entrega.estado === 'aprobado' ? `Reto aprobado${entrega.xp_obtenido > 0 ? `: ganaste ${entrega.xp_obtenido} XP` : ''}`
+                  : entrega.estado === 'necesita_mejorar' ? 'Tu docente te pide mejorarlo. Corrige y vuelve a entregar.'
+                  : 'Entregado. Falta que tu docente lo revise.'}
               </p>
-              {entrega.feedback && <p className="mt-0.5 opacity-90"><b>Feedback:</b> {entrega.feedback}</p>}
+              {entrega.feedback && <p className="mt-0.5 text-fg"><b>Tu docente dice:</b> {entrega.feedback}</p>}
             </div>
           </div>
         )}
-        {avisoEntrega && <p className="mt-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-prexi-red">{avisoEntrega}</p>}
+        {avisoEntrega && <p className="mt-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-prexi-red" role="alert">{avisoEntrega}</p>}
       </div>
-
-      {/* La traza se muestra antes del espacio de trabajo para que sea visible de inmediato. */}
-      {traza && (
-        <div className="mb-5">
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-fg"><Layers className="h-4 w-4 text-prexi-blue-deep" /> Traza paso a paso</h3>
-          <TraceViewer codigo={codigo} pasos={traza.pasos} error={traza.error} />
-        </div>
-      )}
 
       {/* Escritorio amplio (xl): editor ancho + panel de PREXI cómodo. Por debajo
           de xl, el panel de PREXI se apila DEBAJO del editor, a todo el ancho. */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(360px,1fr)]">
-        {/* Editor + consola */}
-        <div className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#04162E] shadow-soft xl:min-h-[72vh]">
+        {/* Editor + consola, y debajo la ejecución paso a paso */}
+        <div className="min-w-0">
+        <div className="flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-[#04162E] shadow-soft xl:min-h-[68vh]">
           <div className="flex items-center justify-between border-b border-slate-700/80 px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full bg-red-400" /><span className="h-3 w-3 rounded-full bg-amber-400" /><span className="h-3 w-3 rounded-full bg-green-400" />
@@ -236,12 +266,12 @@ export default function RetoEditorPage() {
             <button onClick={ejecutar} disabled={ejecutando || cargandoPython} className="inline-flex items-center gap-2 rounded-xl bg-prexi-green px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-[0.98] disabled:opacity-60">
               <Play className="h-4 w-4" /> {cargandoPython ? 'Preparando Python…' : ejecutando ? 'Ejecutando…' : 'Ejecutar'}
             </button>
-            <button onClick={verTraza} disabled={trazando} title="Ejecuta paso a paso mostrando las variables"
+            <button onClick={verTraza} disabled={trazando || cargandoPython} title="Ejecuta el programa línea por línea y muestra cuánto vale cada variable"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800 disabled:opacity-60">
-              <Layers className="h-4 w-4" /> {trazando ? 'Trazando…' : 'Ver traza'}
+              <Layers className="h-4 w-4" /> {trazando ? 'Preparando…' : 'Ver paso a paso'}
             </button>
-            <button onClick={() => setCodigo(reto.codigoInicial || '# Escribe tu solución aquí\n')} className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">
-              <RotateCcw className="h-4 w-4" /> Reiniciar
+            <button onClick={() => { if (confirm('¿Borrar lo que escribiste y volver al código inicial?')) setCodigo(reto.codigoInicial || '# Escribe tu solución aquí\n'); }} title="Vuelve al código con el que empezó el reto" className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">
+              <RotateCcw className="h-4 w-4" /> Empezar de nuevo
             </button>
             {/* Los retos DERIVADOS del banco (y los bug-hunt) se autocalifican
                 comparando la salida; el resto va a revisión del docente. */}
@@ -252,20 +282,20 @@ export default function RetoEditorPage() {
                 <CheckCircle className="h-4 w-4" />
                 {verificando ? 'Verificando…'
                   : est === 'aprobado' ? (reto.esBugHunt ? 'Bug corregido' : 'Resuelto')
-                  : reto.esBugHunt ? 'Verificar corrección' : 'Comprobar solución'}
+                  : 'Comprobar'}
               </button>
             ) : (
               <button onClick={entregarReto} disabled={entregando || bloqueoEntrega}
                 title={bloqueoEntrega ? 'Ya entregaste este reto' : 'Enviar tu solución al docente'}
                 className="ml-auto inline-flex items-center gap-2 rounded-xl bg-prexi-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
-                <Upload className="h-4 w-4" /> {entregando ? 'Entregando…' : est === 'necesita_mejorar' ? 'Reenviar reto' : est === 'aprobado' ? 'Aprobado' : est === 'pendiente_revision' ? 'En revisión' : 'Entregar reto'}
+                <Upload className="h-4 w-4" /> {entregando ? 'Entregando…' : est === 'necesita_mejorar' ? 'Volver a entregar' : est === 'aprobado' ? 'Aprobado' : est === 'pendiente_revision' ? 'En revisión' : 'Entregar'}
               </button>
             )}
           </div>
           <div className="border-t border-slate-700/80 px-4 py-3">
-            <p className="mb-1.5 font-mono text-xs text-slate-400">▸ Consola</p>
+            <p className="mb-1.5 flex items-center gap-2 font-mono text-xs text-slate-400">▸ Lo que imprime tu programa {salida && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${salida.ok ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>{salida.ok ? 'Terminó bien' : 'Hubo un error'}</span>}</p>
             <pre className={`max-h-44 overflow-auto whitespace-pre-wrap font-mono text-sm ${salida ? (salida.ok ? 'text-green-300' : 'text-red-300') : 'text-slate-500'}`}>
-              {salida ? salida.texto : cargandoPython ? 'Preparando el entorno de Python… (solo la primera vez)' : 'Esperando ejecución…'}
+              {salida ? salida.texto : cargandoPython ? 'Preparando el entorno de Python… (solo la primera vez)' : 'Aquí verás el resultado cuando pulses «Ejecutar».'}
             </pre>
           </div>
           {verif && (
@@ -274,8 +304,8 @@ export default function RetoEditorPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle className="mt-0.5 h-6 w-6 shrink-0 text-emerald-300" />
                   <div>
-                    <p className="font-bold text-emerald-200">Corrección verificada {verif.xp > 0 ? `+${verif.xp} XP` : ''}</p>
-                    <p className="text-sm text-emerald-100/80">La salida coincide con la esperada. ¡Misión superada!</p>
+                    <p className="font-bold text-emerald-200">¡Lo lograste! {verif.xp > 0 ? `+${verif.xp} XP` : ''}</p>
+                    <p className="text-sm text-emerald-100/80">Tu programa imprime exactamente lo que se esperaba.</p>
                     {verif.emblemas.map((e) => (
                       <p key={e.clave} className="mt-1 text-sm font-semibold text-emerald-100">Emblema desbloqueado: {e.nombre}</p>
                     ))}
@@ -285,8 +315,8 @@ export default function RetoEditorPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 h-6 w-6 shrink-0 text-amber-300" />
                   <div className="min-w-0">
-                    <p className="font-bold text-amber-100">Todavía no. Revisa la lógica.</p>
-                    <p className="mt-0.5 text-sm text-amber-100/75">Compara ambas salidas y ajusta el código antes de volver a verificar.</p>
+                    <p className="font-bold text-amber-100">Todavía no coincide.</p>
+                    <p className="mt-0.5 text-sm text-amber-100/75">Compara las dos salidas: fíjate en qué se diferencian. «Ver paso a paso» te ayuda a encontrar dónde se desvía.</p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       <div className="rounded-xl border border-rose-300/20 bg-rose-950/30 p-2.5"><p className="text-[11px] font-bold uppercase tracking-wide text-rose-200">Tu salida</p><pre className="mt-1 overflow-x-auto rounded-lg border border-rose-200/10 bg-[#120d16] px-3 py-2 font-mono text-base leading-6 text-rose-100">{verif.salida || '(vacía)'}</pre></div>
                       <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/30 p-2.5"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-200">Salida esperada</p><pre className="mt-1 overflow-x-auto rounded-lg border border-emerald-200/10 bg-[#091710] px-3 py-2 font-mono text-base leading-6 text-emerald-100">{verif.esperado}</pre></div>
@@ -296,6 +326,20 @@ export default function RetoEditorPage() {
               )}
             </div>
           )}
+        </div>
+
+        {traza && (
+          <section ref={refTraza} className="mt-5 scroll-mt-24" aria-label="Ejecución paso a paso">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="flex items-center gap-2 font-display text-lg font-bold text-fg"><Layers className="h-5 w-5 text-prexi-blue-deep" /> Tu programa, paso a paso</h2>
+                <p className="text-sm text-muted">Avanza con las flechas o pulsa «Reproducir». Mira qué línea se ejecuta y cómo cambian las variables.</p>
+              </div>
+              <button onClick={() => setTraza(null)} className="btn-ghost text-sm">Cerrar</button>
+            </div>
+            <TraceViewer codigo={traza.codigo} pasos={traza.pasos} error={traza.error} />
+          </section>
+        )}
         </div>
 
         {/* Tutor PREXI completo (chat con streaming + pistas + chips), igual que en ejercicios */}
