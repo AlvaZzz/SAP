@@ -226,12 +226,12 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   // navegación y no debe quitarle espacio ni protagonismo.
   const sidebar = (
     <>
-      <div className="mb-6 flex items-center justify-between gap-3 px-1.5 pt-1">
+      <div className="mb-5 flex items-center justify-between gap-3 border-b border-white/[0.07] px-1 pb-4 pt-1">
         <Link href={homeHref} className="flex items-center gap-2.5">
-          <div className="grid h-[38px] w-[38px] place-items-center rounded-xl bg-prexi-blue text-[18px] font-extrabold text-white shadow-lg shadow-blue-900/40">P</div>
+          <div className="grid h-[44px] w-[44px] place-items-center rounded-[14px] bg-gradient-to-br from-prexi-blue to-blue-600 text-[21px] font-extrabold text-white shadow-lg shadow-blue-900/50 ring-1 ring-white/15">P</div>
           <div>
-            <p className="font-display text-[19px] font-extrabold leading-none text-white">PREXI</p>
-            <p className="mt-0.5 text-[11px] text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
+            <p className="font-display text-[22px] font-extrabold leading-none tracking-tight text-white">PREXI</p>
+            <p className="mt-1 text-[12px] font-medium text-blue-200/70">{area === 'docente' ? 'Panel docente' : area === 'investigador' ? 'Panel de investigación' : area === 'admin' ? 'Administración' : 'UPEA · Ing. Sistemas'}</p>
           </div>
         </Link>
         <button onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 hover:bg-white/10 lg:hidden"><X className="h-5 w-5" /></button>
@@ -248,20 +248,23 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
           // de pantalla anuncie el grupo al que pertenece cada ítem.
           const tituloId = `${navId}-${i}`;
           return (
-            <div key={grupo.titulo} className={i > 0 ? 'border-t border-[rgb(var(--sidebar-ink))]/15 pt-3' : ''}>
-              <h2 id={tituloId} className="px-[12px] pb-[6px] text-[10.5px] font-bold uppercase tracking-widest text-[rgb(var(--sidebar-ink))]">
+            <div key={grupo.titulo} className={i > 0 ? 'pt-1' : ''}>
+              <h2 id={tituloId} className="px-[10px] pb-[8px] text-[11.5px] font-bold uppercase tracking-[0.14em] text-[rgb(var(--sidebar-ink))]/80">
                 {grupo.titulo}
               </h2>
-              <ul aria-labelledby={tituloId} className="flex flex-col gap-0.5">
+              <ul aria-labelledby={tituloId} className="flex flex-col gap-[3px]">
                 {grupo.items.map(({ href, label, icon: Icon }) => {
                   const activo = href === hrefActivo;
                   return (
                     <li key={href}>
                       <Link href={href} aria-current={activo ? 'page' : undefined}
-                        className={`group flex items-center gap-[10px] rounded-[10px] px-[12px] py-[8px] text-[15px] font-medium transition ${activo
-                          ? 'bg-[rgb(var(--sidebar-active))] text-[rgb(var(--sidebar-active-ink))] shadow-[0_0_22px_-6px_rgb(var(--sidebar-bar)/0.7)]'
-                          : 'text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.06] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
-                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-transform group-hover:scale-110 ${activo ? 'text-[rgb(var(--sidebar-bar))]' : 'group-hover:text-[rgb(var(--sidebar-active-ink))]'}`} />
+                        className={`group relative flex items-center gap-[12px] rounded-[12px] py-[7px] pl-[11px] pr-[8px] text-[16.5px] transition ${activo
+                          ? 'bg-[rgb(var(--sidebar-active))] font-semibold text-[rgb(var(--sidebar-active-ink))] ring-1 ring-white/[0.06]'
+                          : 'font-medium text-[rgb(var(--sidebar-ink))] hover:bg-white/[0.05] hover:text-[rgb(var(--sidebar-active-ink))]'}`}>
+                        {activo && <span aria-hidden className="absolute left-0 top-1/2 h-[20px] w-[3px] -translate-y-1/2 rounded-r-full bg-[rgb(var(--sidebar-bar))]" />}
+                        <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] transition ${activo ? 'bg-[rgb(var(--sidebar-bar))] text-white shadow-[0_6px_16px_-6px_rgb(var(--sidebar-bar))]' : 'bg-white/[0.05] group-hover:bg-white/[0.09]'}`}>
+                          <Icon className="h-[19px] w-[19px]" />
+                        </span>
                         <span className="truncate">{label}</span>
                       </Link>
                     </li>
@@ -272,10 +275,10 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
           );
         })}
       </nav>
-      <div className="mt-auto rounded-xl bg-white/5 p-[10px] ring-1 ring-white/5">
+      <div className="mt-3 rounded-[14px] bg-white/[0.05] p-[12px] ring-1 ring-white/[0.07]">
         <div className="flex items-center gap-[10px]">
-          <div className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-prexi-blue to-blue-400 text-[14px] font-bold text-white">{inicial}</div>
-          <div className="min-w-0 flex-1"><p className="truncate text-[13.5px] font-semibold text-white">{usuario.nombre}</p><p className="truncate text-[11.5px] text-blue-200/60">{rolTexto} · <span className="capitalize">{usuario.rol}</span></p></div>
+          <div className="grid h-[40px] w-[40px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-prexi-blue to-blue-400 text-[16px] font-bold text-white ring-2 ring-white/10">{inicial}</div>
+          <div className="min-w-0 flex-1"><p className="truncate text-[15px] font-semibold text-white">{usuario.nombre}</p><p className="truncate text-[12.5px] text-blue-200/60">{rolTexto} · <span className="capitalize">{usuario.rol}</span></p></div>
           <button onClick={salir} title="Cerrar sesión" className="grid h-8 w-8 place-items-center rounded-lg text-blue-200/70 transition hover:bg-white/10 hover:text-white"><LogOut className="h-[18px] w-[18px]" /></button>
         </div>
       </div>
@@ -285,11 +288,11 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   return (
     <div className="flex min-h-screen bg-app">
       {/* Sidebar fija en escritorio */}
-      <aside className={`sticky top-0 hidden h-screen w-[236px] shrink-0 flex-col p-[14px] text-white lg:flex ${SIDEBAR_BG}`}>{sidebar}</aside>
+      <aside className={`sticky top-0 hidden h-screen w-[268px] shrink-0 flex-col border-r border-white/[0.06] p-[16px] text-white lg:flex ${SIDEBAR_BG}`}>{sidebar}</aside>
 
       {/* Drawer en móvil/tablet */}
       {menuAbierto && <div className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden" onClick={() => setMenuAbierto(false)} aria-hidden="true" />}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-[264px] max-w-[85vw] flex-col p-[14px] text-white transition-transform duration-300 lg:hidden ${SIDEBAR_BG} ${menuAbierto ? 'translate-x-0' : '-translate-x-full'}`}>{sidebar}</aside>
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-[288px] max-w-[86vw] flex-col p-[16px] text-white transition-transform duration-300 lg:hidden ${SIDEBAR_BG} ${menuAbierto ? 'translate-x-0' : '-translate-x-full'}`}>{sidebar}</aside>
 
       {/* Contenido */}
       <div className="flex min-w-0 flex-1 flex-col">
