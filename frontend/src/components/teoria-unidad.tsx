@@ -73,13 +73,6 @@ export interface TeoriaData {
   mapa: { nodos: NodoMapa[]; aristas: { de: number; a: number; tipo: string }[] };
 }
 
-// Color del nodo del mapa según el nivel IRT del estudiante en ese tema.
-const NODO: Record<Nivel, string> = {
-  basico: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  intermedio: 'border-prexi-blue/40 bg-prexi-blue/10 text-prexi-blue-deep',
-  avanzado: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-};
-
 interface Pagina { clave: string; titulo: string; icono: React.ReactNode; voz?: string; contenido: React.ReactNode }
 
 /**
@@ -94,17 +87,6 @@ interface Pagina { clave: string; titulo: string; icono: React.ReactNode; voz?: 
  */
 export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () => void }) {
   const [activa, setActiva] = useState(0);
-
-  // Agrupa subtemas bajo su tema (para el mapa jerárquico) usando las aristas.
-  const mapa = useMemo(() => {
-    const temas = data.mapa.nodos.filter((n) => n.tipo === 'tema');
-    const hijos = new Map<number, NodoMapa[]>();
-    for (const a of data.mapa.aristas) {
-      const sub = data.mapa.nodos.find((n) => n.id === a.a && n.tipo === 'subtema');
-      if (sub) { const arr = hijos.get(a.de) ?? []; arr.push(sub); hijos.set(a.de, arr); }
-    }
-    return { temas, hijos };
-  }, [data.mapa]);
 
   // Objetivos: quita los marcadores [ ]/[x] para renderizar una lista limpia.
   const objetivos = data.objetivos_md?.replace(/-\s*\[[ xX]\]\s*/g, '- ') ?? '';
@@ -147,50 +129,9 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
             </details>
           )}
 
-          <p className="mt-4 rounded-xl bg-subtle px-4 py-3 text-sm leading-relaxed text-muted">
-            Meta: alcanzar nivel <b className="text-fg">Intermedio</b> para desbloquear la siguiente unidad.
-          </p>
         </>
       ),
     });
-
-    if (mapa.temas.length) {
-      p.push({
-        clave: 'mapa', titulo: 'Mapa conceptual', icono: <Layers className="h-5 w-5" />,
-        contenido: (
-          <>
-            <p className="mb-4 text-sm leading-relaxed text-muted">
-              Así se conectan los temas de la unidad. El color indica <b className="text-fg">tu nivel</b> actual en cada uno.
-            </p>
-            {/* Scroll horizontal propio: los títulos largos no desbordan la página en móvil. */}
-            <div className="-mx-1 overflow-x-auto px-1 pb-1">
-              <div className="min-w-0 space-y-3">
-                {mapa.temas.map((t) => (
-                  <div key={t.id}>
-                    <div className={`inline-flex max-w-full flex-wrap items-center gap-2 rounded-xl border px-3.5 py-2 text-base font-semibold ${NODO[t.nivel]}`}>
-                      <span className="opacity-70">{t.numero}</span> {t.titulo}
-                      <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-2xs font-bold uppercase dark:bg-white/10">{t.nivel_label}</span>
-                    </div>
-                    {(mapa.hijos.get(t.id) ?? []).map((s) => (
-                      <div key={s.id} className="ml-3 mt-2 flex flex-wrap items-center gap-1.5 sm:ml-5">
-                        <span className="text-muted">└─</span>
-                        <span className="text-2xs font-medium text-muted">se compone de</span>
-                        <span className={`inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-lg border px-2.5 py-1 text-sm font-medium ${NODO[s.nivel]}`}>{s.numero} {s.titulo}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted">
-              <Leyenda color="bg-amber-500" texto="Básico" />
-              <Leyenda color="bg-prexi-blue" texto="Intermedio" />
-              <Leyenda color="bg-emerald-500" texto="Avanzado" />
-            </div>
-          </>
-        ),
-      });
-    }
 
     if (data.analogias_md) {
       p.push({
@@ -209,13 +150,17 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
         icono: <Code className="h-5 w-5" />,
         contenido: (
           <div className="space-y-4">
-            <Bloque etiqueta="Código"><CodeBlock code={e.codigo} /></Bloque>
-            <Bloque etiqueta="Flujo">
-              <FlowDiagram source={e.diagrama} color={colorUnidad(data.unidad.numero)} />
-            </Bloque>
-            <Bloque etiqueta="Salida">
+            <Bloque etiqueta="El código"><CodeBlock code={e.codigo} /></Bloque>
+            <Bloque etiqueta="Lo que muestra al ejecutarse">
               <pre className="overflow-x-auto rounded-xl bg-[#04162E] p-3.5 font-mono text-sm leading-relaxed text-green-300">{e.salida}</pre>
             </Bloque>
+            <details className="group rounded-xl border border-line bg-subtle/60 px-4 py-3">
+              <summary className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold text-fg [&::-webkit-details-marker]:hidden">
+                <Layers className="h-4 w-4 text-prexi-blue-deep" /> Ver el diagrama de flujo
+                <ChevronDown className="ml-auto h-4 w-4 text-muted transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="mt-3 border-t border-line pt-3"><FlowDiagram source={e.diagrama} color={colorUnidad(data.unidad.numero)} /></div>
+            </details>
           </div>
         ),
       });
@@ -244,7 +189,7 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
     });
 
     return p;
-  }, [data.analogias_md, data.ejemplos, data.unidad.numero, data.unidad.id, mapa, objetivos, onSalir]);
+  }, [data.analogias_md, data.ejemplos, data.unidad.numero, data.unidad.id, objetivos, onSalir]);
 
   if (!paginas.length) {
     return (
@@ -264,43 +209,26 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
   return (
     <div className="mx-auto max-w-3xl">
       {/* Saltar la teoría es SIEMPRE posible (no se fuerza en cada visita). */}
-      <button onClick={onSalir} className="btn-ghost mb-4"><ChevronLeft className="h-4 w-4" /> Ir a los temas</button>
+      <button onClick={onSalir} className="btn-ghost mb-4"><ChevronLeft className="h-4 w-4" /> Saltar la teoría e ir a los temas</button>
 
-      {/* Cabecera: unidad + progreso de lectura */}
-      <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-wide text-prexi-blue-deep">Material de estudio</p>
-        <h1 className="font-display text-xl font-extrabold text-fg sm:text-2xl">Unidad {data.unidad.numero}: {data.unidad.titulo}</h1>
-        <div className="mt-3 flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-subtle">
-            <div className="h-full rounded-full bg-prexi-blue transition-all" style={{ width: `${((activa + 1) / total) * 100}%` }} />
-          </div>
-          <span className="shrink-0 text-xs font-semibold text-muted">{activa + 1} de {total}</span>
+      {/* Cabecera: qué unidad es y por dónde voy. Los puntos también sirven para saltar. */}
+      <div className="mb-5">
+        <p className="text-xs font-bold uppercase tracking-wide text-prexi-blue-deep">Teoría · Unidad {data.unidad.numero}</p>
+        <h1 className="font-display text-xl font-extrabold text-fg sm:text-2xl">{data.unidad.titulo}</h1>
+        <div className="mt-4 flex items-center gap-1.5" role="tablist" aria-label="Partes de la teoría">
+          {paginas.map((p, i) => (
+            <button key={p.clave} role="tab" aria-selected={i === activa} aria-label={`Parte ${i + 1}: ${p.titulo}`} title={p.titulo} onClick={() => ir(i)}
+              className={`h-2 rounded-full transition-all ${i === activa ? 'w-10 bg-prexi-blue' : i < activa ? 'w-5 bg-prexi-blue/50' : 'w-5 bg-subtle hover:bg-line'}`} />
+          ))}
+          <span className="ml-2 text-xs font-semibold text-muted">Parte {activa + 1} de {total}</span>
         </div>
       </div>
 
-      {/* Pestañas (scroll horizontal en móvil) */}
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
-        {paginas.map((p, i) => (
-          <button
-            key={p.clave}
-            onClick={() => ir(i)}
-            aria-current={i === activa ? 'page' : undefined}
-            className={`flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold transition sm:text-sm ${
-              i === activa
-                ? 'border-prexi-blue bg-prexi-blue text-accent-on'
-                : 'border-line bg-card text-muted hover:border-prexi-blue/40 hover:text-fg'}`}
-          >
-            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-2xs ${i === activa ? 'bg-black/10' : 'bg-subtle'}`}>{i + 1}</span>
-            <span className="max-w-[9rem] truncate">{p.titulo}</span>
-          </button>
-        ))}
-      </div>
-
       {/* Página activa — una sola columna, texto grande, cómodo en teléfono */}
-      <article key={pag.clave} className="card animate-fade-up">
-        <div className="mb-4 flex flex-wrap items-start gap-3 border-b border-line pb-4">
+      <article key={pag.clave} className="card animate-fade-up !p-6 sm:!p-8">
+        <div className="mb-5 flex flex-wrap items-center gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-prexi-blue/10 text-prexi-blue-deep">{pag.icono}</div>
-          <h2 className="min-w-0 flex-1 font-display text-lg font-bold text-fg sm:text-xl">{pag.titulo}</h2>
+          <h2 className="min-w-0 flex-1 font-display text-xl font-bold text-fg sm:text-2xl">{pag.titulo}</h2>
           {/* Escuchar la página (accesibilidad; oculto si el navegador no soporta voz) */}
           {pag.voz && <BotonVoz texto={pag.voz} variante="boton" className="shrink-0" />}
         </div>
@@ -312,10 +240,9 @@ export function TeoriaUnidad({ data, onSalir }: { data: TeoriaData; onSalir: () 
         <button onClick={() => ir(Math.max(0, activa - 1))} disabled={activa === 0} className="btn-ghost disabled:opacity-40">
           <ChevronLeft className="h-4 w-4" /> Anterior
         </button>
-        <span className="text-xs font-semibold text-muted">{activa + 1} / {total}</span>
         {activa === total - 1
-          ? <button onClick={onSalir} className="btn-primary">Terminar <ArrowRight className="h-4 w-4" /></button>
-          : <button onClick={() => ir(activa + 1)} className="btn-primary">Siguiente <ArrowRight className="h-4 w-4" /></button>}
+          ? <button onClick={onSalir} className="btn-primary !px-6">Ir a practicar <ArrowRight className="h-4 w-4" /></button>
+          : <button onClick={() => ir(activa + 1)} className="btn-primary !px-6">Siguiente: {paginas[activa + 1].titulo.length > 26 ? 'continuar' : paginas[activa + 1].titulo.toLowerCase()} <ArrowRight className="h-4 w-4" /></button>}
       </div>
     </div>
   );
@@ -328,7 +255,4 @@ function Bloque({ etiqueta, children }: { etiqueta: string; children: React.Reac
       {children}
     </div>
   );
-}
-function Leyenda({ color, texto }: { color: string; texto: string }) {
-  return <span className="inline-flex items-center gap-1.5"><span className={`h-2.5 w-2.5 rounded-full ${color}`} /> {texto}</span>;
 }

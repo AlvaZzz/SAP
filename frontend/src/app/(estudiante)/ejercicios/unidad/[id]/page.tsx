@@ -1,21 +1,21 @@
 'use client';
 
-import { BotonFlashcards } from '@/components/flashcards/boton-flashcards';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { UnidadEstudiante, TemaEstudiante, NIVEL_COLOR, colorUnidad } from '@/lib/types';
-import { Skeleton, Badge } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { TeoriaData } from '@/components/teoria-unidad';
 import { UnidadBanner } from '@/components/unidad-banner';
-import { ChevronLeft, CheckCircle, Lock, Play, ArrowRight, RotateCcw, Layers, TrendingUp, BookOpen, Clock, Sparkles } from '@/components/icons';
+import { BotonFlashcards } from '@/components/flashcards/boton-flashcards';
+import { resumenUnidad, estadoExamen, temasEnOrden } from '@/components/ejercicios/camino';
+import { ChevronLeft, CheckCircle, Lock, Play, ArrowRight, RotateCcw, Layers, TrendingUp, BookOpen, GraduationCap, Trophy, Star } from '@/components/icons';
 
 /**
- * MÓDULO DE EJERCICIOS — Vista 2: DENTRO de una unidad.
- * Los TEMAS se presentan como NIVELES (Nivel 1 = primer tema…) y los SUBTEMAS
- * como extensión del nivel al que pertenecen. Se respeta el desbloqueo y la
- * adaptatividad ya existentes (la ruta la ordena el backend por dificultad).
+ * EJERCICIOS — dentro de una unidad. De arriba abajo: qué hacer ahora (un botón
+ * grande), la teoría, los temas como pasos numerados y, al final, el examen de
+ * la unidad, que es la puerta a la siguiente.
  */
 export default function UnidadPage() {
   const router = useRouter();
@@ -35,20 +35,17 @@ export default function UnidadPage() {
     ]).catch(() => undefined).finally(() => setCargando(false));
   }, [unidadId]);
 
-  // PRIMERA VISITA a la unidad: la teoría unificada es la PUERTA DE ENTRADA (se
-  // muestra antes de los temas). Después queda accesible en el acceso de arriba y
-  // no se fuerza: la propia página de teoría marca `prexi_teoria_vista_u{id}`.
+  // PRIMERA VISITA a la unidad: la teoría es la puerta de entrada. Después queda
+  // accesible desde su tarjeta y no se fuerza (la propia página la marca vista).
   useEffect(() => {
     if (!dash || typeof window === 'undefined') return;
     try {
-      if (!localStorage.getItem(`prexi_teoria_vista_u${unidadId}`)) {
-        router.replace(`/ejercicios/unidad/${unidadId}/teoria`);
-      }
+      if (!localStorage.getItem(`prexi_teoria_vista_u${unidadId}`)) router.replace(`/ejercicios/unidad/${unidadId}/teoria`);
     } catch { /* localStorage inaccesible → no forzar */ }
   }, [dash, unidadId, router]);
 
-  // Arranca la ruta ADAPTATIVA del tema: el backend ordena por dificultad y deja
-  // los pendientes primero. Navegamos al primer ejercicio no resuelto.
+  // Arranca la ruta ADAPTATIVA del tema: el backend la ordena y deja los
+  // pendientes primero. Se abre el primer ejercicio sin resolver.
   async function iniciar(temaId: number, total: number) {
     if (!total) return;
     setYendo(temaId);
@@ -60,17 +57,11 @@ export default function UnidadPage() {
     setYendo(null);
   }
 
-  const progreso = useMemo(() => {
-    if (!unidad) return { pct: 0, comp: 0, total: 0 };
-    let total = 0, comp = 0;
-    const walk = (t: TemaEstudiante) => { total += t.total_ejercicios; comp += Math.min(t.ejercicios_completados, t.total_ejercicios || t.ejercicios_completados); (t.subtemas ?? []).forEach(walk); };
-    unidad.temas.forEach(walk);
-    return { pct: total ? Math.round((comp / total) * 100) : 0, comp, total };
-  }, [unidad]);
+  const r = useMemo(() => (unidad ? resumenUnidad(unidad) : null), [unidad]);
 
-  if (cargando) return <div className="space-y-5"><Skeleton className="h-20" />{[0, 1, 2].map((i) => <Skeleton key={i} className="h-24" />)}</div>;
+  if (cargando) return <div className="space-y-5"><Skeleton className="h-44" />{[0, 1, 2].map((i) => <Skeleton key={i} className="h-24" />)}</div>;
 
-  if (!unidad) return (
+  if (!unidad || !r) return (
     <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-card py-20 text-center">
       <Layers className="mb-3 h-10 w-10 text-muted" />
       <h2 className="font-display text-lg font-bold text-fg">Unidad no disponible</h2>
@@ -79,210 +70,234 @@ export default function UnidadPage() {
     </div>
   );
 
-  const color = colorUnidad(unidad.numero); // acento distintivo de esta unidad
+  const color = colorUnidad(unidad.numero);
+  const examen = estadoExamen(unidad);
+  const sig = r.siguiente;
+  const subir = (id: number) => router.push(`/ejercicios/subir-nivel/${id}`);
+  // Temas completos pero aún en nivel Básico: lo que falta para el examen.
+  const porSubir = temasEnOrden(unidad).filter((t) => t.estado === 'completado' && t.nivel_actual === 'basico');
 
   return (
     <div className="animate-fade-up">
-      <button onClick={() => router.push('/ejercicios')} className="btn-ghost mb-4"><ChevronLeft className="h-4 w-4" /> Unidades</button>
+      <button onClick={() => router.push('/ejercicios')} className="btn-ghost mb-4"><ChevronLeft className="h-4 w-4" /> Todas las unidades</button>
 
-      {/* Banner de la unidad: fondo neutro + acento del color de la unidad + progreso */}
       <UnidadBanner numero={unidad.numero} titulo={unidad.titulo} descripcion={unidad.descripcion} imagenUrl={unidad.imagen_url} color={color}
         footer={
-          <div className="mt-1">
-            <div className="mb-1 flex justify-between text-xs text-muted"><span>Progreso de la unidad</span><span>{progreso.comp}/{progreso.total} ejercicios</span></div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all" style={{ width: `${progreso.pct}%`, backgroundColor: color }} /></div>
+          <div className="mt-1 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <div className="min-w-[180px] flex-1"><div className="h-2.5 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all" style={{ width: `${r.pct}%`, backgroundColor: color }} /></div></div>
+            <span className="text-sm font-semibold text-fg">{r.completos} <span className="font-normal text-muted">de {r.temas} temas</span></span>
+            <span className="text-sm font-semibold text-fg">{r.hechos} <span className="font-normal text-muted">de {r.total} ejercicios</span></span>
           </div>
         } />
-      <div className="mb-6">
 
-        {/* Dominio agregado → avance a la siguiente unidad (mínimo Intermedio) */}
-        <div className="mt-4 rounded-xl border border-line bg-subtle/60 p-3.5">
-          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-fg"><TrendingUp className="h-4 w-4 text-prexi-blue-deep" /> Dominio de la unidad: <b style={{ color: NIVEL_COLOR[unidad.nivel_dominio] }}>{unidad.nivel_dominio_label}</b></span>
-            {unidad.habilita_siguiente
-              ? <Badge tone="green"><CheckCircle className="h-3 w-3" /> Puedes avanzar de unidad</Badge>
-              : <span className="text-xs text-muted">Alcanza <b>{unidad.requiere_nivel_label}</b> para avanzar</span>}
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all" style={{ width: `${unidad.dominio_pct}%`, backgroundColor: NIVEL_COLOR[unidad.nivel_dominio] }} /></div>
-          <p className="mt-1.5 text-xs text-muted">El dominio combina tu <b>nivel</b> en todos los temas de la unidad (no cuántos ejercicios hiciste). Sube de nivel en los temas para aumentarlo.</p>
+      {/* ── Qué hacer ahora: un solo botón grande ── */}
+      <section className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border-2 p-5" style={{ borderColor: examen === 'listo' ? '#F59E0B' : color, backgroundColor: examen === 'listo' ? '#F59E0B14' : `${color}0F` }}>
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white" style={{ backgroundColor: examen === 'aprobado' ? '#10B981' : examen === 'listo' ? '#F59E0B' : color }}>
+          {examen === 'aprobado' ? <Trophy className="h-6 w-6" /> : examen === 'listo' ? <GraduationCap className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+        </span>
+        <div className="min-w-[220px] flex-1">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Tu siguiente paso</p>
+          {examen === 'aprobado' ? (
+            <><p className="font-display text-xl font-bold text-fg">¡Unidad aprobada!</p><p className="text-sm text-muted">Puedes repasar cualquier tema o seguir con la siguiente unidad.</p></>
+          ) : examen === 'listo' ? (
+            <><p className="font-display text-xl font-bold text-fg">Rendir el examen de la unidad</p><p className="text-sm text-muted">Completaste todos los temas. Son 10 preguntas y apruebas con 80 sobre 100.</p></>
+          ) : sig ? (
+            <><p className="font-display text-xl font-bold text-fg">{sig.ejercicios_completados > 0 ? 'Continuar' : 'Empezar'}: {sig.numero} {sig.titulo}</p><p className="text-sm text-muted">Llevas {sig.ejercicios_completados} de {sig.umbral} ejercicios en este tema.</p></>
+          ) : porSubir.length > 0 ? (
+            <><p className="font-display text-xl font-bold text-fg">Sube de nivel para llegar al examen</p><p className="text-sm text-muted">Te {porSubir.length === 1 ? 'falta 1 tema' : `faltan ${porSubir.length} temas`} en nivel Intermedio: {porSubir.slice(0, 2).map((t) => t.numero).join(', ')}{porSubir.length > 2 ? '…' : ''}.</p></>
+          ) : (
+            <><p className="font-display text-xl font-bold text-fg">Sigue practicando</p><p className="text-sm text-muted">Elige un tema de la lista de abajo.</p></>
+          )}
         </div>
-      </div>
+        {examen === 'aprobado' ? (
+          <Link href="/ejercicios" className="btn-primary !px-6 !py-3 text-base">Ver las unidades <ArrowRight className="h-5 w-5" /></Link>
+        ) : examen === 'listo' ? (
+          <Link href={`/examen-unidad/${unidad.id}`} className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 text-base font-extrabold text-[#3a2500] shadow-[0_10px_28px_-8px_rgba(251,191,36,0.95)] transition hover:-translate-y-0.5 hover:bg-amber-300">
+            <GraduationCap className="h-5 w-5" /> Rendir el examen <ArrowRight className="h-5 w-5" />
+          </Link>
+        ) : sig ? (
+          <button onClick={() => iniciar(sig.id, sig.total_ejercicios_nivel)} disabled={yendo === sig.id}
+            className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-base font-extrabold text-white shadow-lift transition hover:-translate-y-0.5 disabled:opacity-60" style={{ backgroundColor: color }}>
+            <Play className="h-5 w-5" /> {yendo === sig.id ? 'Abriendo…' : 'Practicar ahora'} <ArrowRight className="h-5 w-5" />
+          </button>
+        ) : porSubir[0] && porSubir[0].puede_subir ? (
+          <button onClick={() => subir(porSubir[0].id)} className="btn-primary !px-6 !py-3 text-base"><TrendingUp className="h-5 w-5" /> Subir de nivel en {porSubir[0].numero}</button>
+        ) : null}
+      </section>
 
-      {/* ÚNICO acceso a la TEORÍA UNIFICADA de la unidad (qué lograrás + conceptos
-          + flashcards de consolidación integradas al final). La primera visita a
-          la unidad redirige allí (puerta de entrada); después es opcional. */}
+      {/* ── Teoría ── */}
       {dash && (
-        <button
-          onClick={() => router.push(`/ejercicios/unidad/${unidadId}/teoria`)}
-          className="card card-hover mb-6 flex w-full items-center gap-4 border-l-4 text-left"
-          style={{ borderLeftColor: color }}
-        >
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl" style={{ color, backgroundColor: `${color}26` }}><BookOpen className="h-5 w-5" /></div>
-          <div className="min-w-0 flex-1">
-            <p className="font-display text-base font-bold text-fg">Teoría de la unidad</p>
-            <p className="mt-0.5 text-sm leading-snug text-muted">Qué vas a lograr, conceptos con ejemplos y flashcards para fijarlo</p>
-          </div>
-          <span className="hidden shrink-0 items-center gap-1.5 text-xs font-semibold text-muted sm:inline-flex"><Clock className="h-3.5 w-3.5" /> ~{dash.minutos} min</span>
-          <ArrowRight className="h-5 w-5 shrink-0 text-muted" />
-        </button>
+        <Link href={`/ejercicios/unidad/${unidadId}/teoria`} className="card card-hover mb-6 flex items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl" style={{ color, backgroundColor: `${color}26` }}><BookOpen className="h-6 w-6" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-lg font-bold text-fg">Teoría de la unidad</span>
+            <span className="block text-sm text-muted">Para qué sirve, analogías y ejemplos con código.</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold" style={{ color, backgroundColor: `${color}1F` }}>Leer <ArrowRight className="h-4 w-4" /></span>
+        </Link>
       )}
 
-      <h2 className="mb-3 font-display text-lg font-extrabold text-fg">Temas (niveles)</h2>
-
-      <div className="space-y-4">
+      {/* ── Temas, como pasos ── */}
+      <h2 className="mb-1 font-display text-xl font-extrabold text-fg">Temas de la unidad</h2>
+      <p className="mb-4 text-sm text-muted">Van en orden: al completar uno se abre el siguiente.</p>
+      <ol className="space-y-3">
         {unidad.temas.map((t, i) => (
-          <TemaFila key={t.id} tema={t} nivel={i + 1} unidadId={unidadId} yendo={yendo} onIniciar={iniciar} onSubir={(id) => router.push(`/ejercicios/subir-nivel/${id}`)} />
+          <li key={t.id}><TemaPaso tema={t} paso={i + 1} unidadId={unidadId} esSiguiente={sig?.id === t.id} siguienteId={sig?.id ?? null} yendo={yendo} onIniciar={iniciar} onSubir={subir} /></li>
         ))}
-      </div>
+      </ol>
+
+      {/* ── Examen de la unidad ── */}
+      {examen !== 'sin_examen' && (
+        <section className={`mt-6 overflow-hidden rounded-3xl border-2 p-6 sm:p-7 ${examen === 'listo' ? 'border-amber-400 bg-gradient-to-br from-amber-400/20 via-amber-300/10 to-transparent' : examen === 'aprobado' ? 'border-prexi-green/50 bg-prexi-green/10' : 'border-line bg-card'}`}>
+          <div className="flex flex-wrap items-center gap-5">
+            <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-white ${examen === 'listo' ? 'bg-amber-400' : examen === 'aprobado' ? 'bg-prexi-green' : 'bg-prexi-blue'}`}>
+              {examen === 'aprobado' ? <Trophy className="h-8 w-8" /> : <GraduationCap className="h-8 w-8" />}
+            </span>
+            <div className="min-w-[220px] flex-1">
+              <h2 className="font-display text-2xl font-extrabold text-fg">Examen de la Unidad {unidad.numero}</h2>
+              <p className="mt-0.5 text-sm text-muted">10 preguntas que combinan los temas de la unidad. Se aprueba con <b className="text-fg">80 sobre 100</b> y abre la siguiente unidad.</p>
+              {examen === 'aprobado' ? (
+                <p className="mt-2 flex items-center gap-1.5 font-semibold text-prexi-green"><CheckCircle className="h-5 w-5" /> Lo aprobaste. La siguiente unidad ya está abierta.</p>
+              ) : (
+                <ul className="mt-3 space-y-1.5 text-sm">
+                  <Requisito ok={r.completos === r.temas} texto={`Completar todos los temas (${r.completos} de ${r.temas})`} />
+                  <Requisito ok={r.enNivel === r.temas} texto={`Estar en nivel Intermedio o más en cada uno (${r.enNivel} de ${r.temas})`} />
+                </ul>
+              )}
+            </div>
+            {examen === 'listo' ? (
+              <Link href={`/examen-unidad/${unidad.id}`} className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-7 py-4 text-lg font-extrabold text-[#3a2500] shadow-[0_12px_32px_-8px_rgba(251,191,36,0.95)] transition hover:-translate-y-0.5 hover:bg-amber-300">
+                <Star className="h-5 w-5" /> Rendir el examen <ArrowRight className="h-5 w-5" />
+              </Link>
+            ) : examen === 'falta' ? (
+              <div className="text-right">
+                <Link href={`/examen-unidad/${unidad.id}`} className="btn-ghost !px-5 !py-3 text-base"><Lock className="h-5 w-5" /> Ver el examen</Link>
+                <p className="mt-1.5 max-w-[16rem] text-xs text-muted">Si tu docente te lo habilitó, puedes rendirlo desde ahí.</p>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
-/** Chip del nivel adaptativo del estudiante en un tema (distinto del RANGO de gamificación).
- *  Badge sutil: color del nivel sobre un tinte del mismo color (regla 60-30-10). */
-function NivelChip({ label, nivel }: { label: string; nivel: TemaEstudiante['nivel_actual'] }) {
-  const color = NIVEL_COLOR[nivel];
+function Requisito({ ok, texto }: { ok: boolean; texto: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold" style={{ color, backgroundColor: `${color}26` }} title="Tu nivel de dificultad en este tema">
-      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> Tu nivel: {label}
-    </span>
+    <li className={`flex items-center gap-2 ${ok ? 'font-semibold text-prexi-green' : 'text-muted'}`}>
+      {ok ? <CheckCircle className="h-4 w-4 shrink-0" /> : <span className="h-4 w-4 shrink-0 rounded-full border-2 border-line" />} {texto}
+    </li>
   );
 }
 
-/** Una fila de tema (nivel), con sus subtemas como extensión debajo. */
-function TemaFila({ tema, nivel, unidadId, yendo, onIniciar, onSubir }: {
-  tema: TemaEstudiante; nivel: number; unidadId: number; yendo: number | null;
-  onIniciar: (temaId: number, total: number) => void;
-  onSubir: (temaId: number) => void;
+function NivelChip({ tema }: { tema: TemaEstudiante }) {
+  const c = NIVEL_COLOR[tema.nivel_actual];
+  return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold" style={{ color: c, backgroundColor: `${c}26` }} title="Tu nivel de dificultad en este tema"><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: c }} /> Nivel {tema.nivel_actual_label}</span>;
+}
+
+/** Botón principal de un tema o subtema, según su estado. */
+function AccionTema({ t, destacado, yendo, onIniciar, pequeno = false }: { t: TemaEstudiante; destacado: boolean; yendo: number | null; onIniciar: (id: number, total: number) => void; pequeno?: boolean }) {
+  const tam = pequeno ? '!px-3.5 !py-1.5 text-sm' : '!px-5 !py-2.5';
+  if (t.total_ejercicios === 0) return <span className="text-xs italic text-muted">Aún sin ejercicios</span>;
+  if (!t.desbloqueado) return <span className="inline-flex items-center gap-1.5 text-sm text-muted"><Lock className="h-4 w-4" /> Bloqueado</span>;
+  const abriendo = yendo === t.id;
+  if (t.estado === 'completado') {
+    return <button onClick={() => onIniciar(t.id, t.total_ejercicios_nivel)} disabled={abriendo} className={`btn-ghost ${tam} disabled:opacity-60`}><RotateCcw className="h-4 w-4" /> {abriendo ? 'Abriendo…' : 'Repasar'}</button>;
+  }
+  return (
+    <button onClick={() => onIniciar(t.id, t.total_ejercicios_nivel)} disabled={abriendo} className={`${destacado ? 'btn-primary' : 'btn-ghost'} ${tam} disabled:opacity-60`}>
+      <Play className="h-4 w-4" /> {abriendo ? 'Abriendo…' : t.ejercicios_completados > 0 ? 'Continuar' : 'Practicar'}
+    </button>
+  );
+}
+
+/** Un tema como paso del recorrido, con sus subtemas debajo. */
+function TemaPaso({ tema, paso, unidadId, esSiguiente, siguienteId, yendo, onIniciar, onSubir }: {
+  tema: TemaEstudiante; paso: number; unidadId: number; esSiguiente: boolean; siguienteId: number | null; yendo: number | null;
+  onIniciar: (id: number, total: number) => void; onSubir: (id: number) => void;
 }) {
   const completo = tema.estado === 'completado';
-  const Icono = completo ? CheckCircle : tema.desbloqueado ? Play : Lock;
-  // Color por NIVEL de dominio del tema (unificado con su badge y su barra).
-  const nivelColor = NIVEL_COLOR[tema.nivel_actual];
   const bloqueado = !tema.desbloqueado;
-  // Acento del tema: verde si está completo, color de su nivel si está activo,
-  // atenuado (línea) si está bloqueado.
-  const acento = completo ? '#10B981' : tema.desbloqueado ? nivelColor : null;
-  const restantes = Math.max(0, tema.umbral - tema.ejercicios_completados);
+  const acento = completo ? '#10B981' : bloqueado ? null : NIVEL_COLOR[tema.nivel_actual];
+  const pct = Math.min(100, Math.round((tema.ejercicios_completados / Math.max(1, tema.umbral)) * 100));
   const subtemas = tema.subtemas ?? [];
 
   return (
-    <div className={`card border-l-4 ${bloqueado ? 'border-l-line opacity-70' : ''}`} style={acento ? { borderLeftColor: acento } : undefined}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-4">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl"
-            style={acento ? { color: acento, backgroundColor: `${acento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}>
-            <Icono className="h-5 w-5" /></div>
-          <div>
-            <div className="mb-1 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-prexi-navy/10 px-2 py-0.5 text-2xs font-bold text-prexi-navy dark:bg-white/10 dark:text-blue-200">Nivel {nivel}</span>
-              <span className="text-2xs font-semibold text-muted">Tema {tema.numero}</span>
-              {tema.desbloqueado && <NivelChip label={tema.nivel_actual_label} nivel={tema.nivel_actual} />}
-              {completo && <Badge tone="green"><CheckCircle className="h-3 w-3" /> Completado</Badge>}
-            </div>
-            <h3 className="font-display text-lg font-bold text-fg">{tema.titulo}</h3>
-            {tema.descripcion && <p className="mt-0.5 max-w-2xl text-sm text-muted">{tema.descripcion}</p>}
-            {tema.desbloqueado && (
-              <BotonFlashcards className="mt-2.5" href={`/flashcards/tema/${tema.id}?volver=/ejercicios/unidad/${unidadId}`}
-                detalle={`Tarjetas de nivel ${tema.nivel_actual_label} para repasar antes de practicar`} />
+    <div className={`rounded-2xl border bg-card p-4 transition sm:p-5 ${esSiguiente ? 'border-2 border-prexi-blue shadow-lift' : 'border-line shadow-soft'} ${bloqueado ? 'opacity-60' : ''}`}>
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full font-display text-lg font-extrabold"
+          style={acento ? { color: completo ? '#fff' : acento, backgroundColor: completo ? acento : `${acento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}>
+          {completo ? <CheckCircle className="h-6 w-6" /> : bloqueado ? <Lock className="h-5 w-5" /> : paso}
+        </span>
+        <div className="min-w-[200px] flex-1">
+          <p className="flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
+            Tema {tema.numero}
+            {!bloqueado && <NivelChip tema={tema} />}
+            {esSiguiente && <span className="rounded-full bg-prexi-blue px-2 py-0.5 text-2xs font-bold text-accent-on">Sigue aquí</span>}
+            {completo && <span className="font-bold text-prexi-green">Completado</span>}
+          </p>
+          <h3 className="font-display text-lg font-bold text-fg">{tema.titulo}</h3>
+          {bloqueado
+            ? <p className="text-sm text-muted">Se abre al completar el tema anterior.</p>
+            : tema.total_ejercicios > 0 && (
+              <div className="mt-1.5 flex max-w-md items-center gap-3">
+                <span className="h-2 flex-1 overflow-hidden rounded-full bg-subtle"><span className="block h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: acento ?? undefined }} /></span>
+                <span className="shrink-0 text-xs font-semibold text-muted">{Math.min(tema.ejercicios_completados, tema.umbral)} de {tema.umbral}</span>
+              </div>
             )}
-          </div>
         </div>
-        <div className="text-right">
-          {tema.total_ejercicios === 0 ? (
-            <span className="text-xs italic text-muted">Aún no hay ejercicios en este tema</span>
-          ) : !tema.desbloqueado ? (
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted"><Lock className="h-3.5 w-3.5" /> Completa el tema anterior</span>
-          ) : completo ? (
-            <button onClick={() => onIniciar(tema.id, tema.total_ejercicios_nivel)} disabled={yendo === tema.id}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-prexi-blue-deep hover:underline disabled:opacity-50"><RotateCcw className="h-4 w-4" /> Repasar</button>
-          ) : (
-            <button onClick={() => onIniciar(tema.id, tema.total_ejercicios_nivel)} disabled={yendo === tema.id}
-              className="btn-primary !py-2 disabled:opacity-60">{yendo === tema.id ? 'Abriendo…' : <>Continuar <ArrowRight className="h-4 w-4" /></>}</button>
-          )}
-        </div>
+        <AccionTema t={tema} destacado={esSiguiente} yendo={yendo} onIniciar={onIniciar} />
       </div>
 
-      {/* Progreso del tema (ejercicios completados) — dato DISTINTO del nivel/dominio */}
-      {tema.desbloqueado && tema.total_ejercicios > 0 && (
-        <div className="mt-4">
-          <div className="mb-1 flex justify-between text-2xs text-muted">
-            <span>Progreso: {tema.ejercicios_completados} de {tema.umbral} para completar el tema</span>
-            <span>{tema.total_ejercicios_nivel} ejercicios en tu nivel</span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, Math.round((tema.ejercicios_completados / tema.umbral) * 100))}%`, backgroundColor: nivelColor }} /></div>
-          {!completo && restantes > 0 && <p className="mt-1.5 text-xs text-muted">Te faltan {restantes} ejercicios para completar el tema.</p>}
-          {/* Nivel de dificultad del tema: subir al siguiente, o aviso de nivel máximo */}
-          {/* Progreso DENTRO del nivel: es el requisito real del mini-diagnóstico.
-              Antes el botón "¿Intentar subir?" salía desde el primer momento;
-              ahora, mientras no se cumpla el mínimo, se dice qué falta en vez de
-              esconder la opción sin explicación. */}
-          {!tema.nivel_maximo && !tema.cumple_minimo_nivel && tema.total_ejercicios_nivel > 0 && (
-            <p className="mt-2 text-xs text-muted">
-              Nivel {tema.nivel_actual_label}: {tema.resueltos_nivel} de {tema.minimo_nivel} resueltos ·
-              te faltan <b className="text-fg">{tema.faltan_nivel}</b> para intentar subir de nivel.
-            </p>
-          )}
-          {tema.puede_subir && tema.nivel_objetivo_label ? (
-            <button onClick={() => onSubir(tema.id)}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-prexi-blue-deep/40 bg-prexi-blue/10 px-3 py-1.5 text-xs font-semibold text-prexi-blue-deep transition hover:bg-prexi-blue/20">
-              <TrendingUp className="h-3.5 w-3.5" /> ¿Intentar subir a nivel {tema.nivel_objetivo_label}?
-            </button>
-          ) : tema.nivel_maximo ? (
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-prexi-green">
-              <TrendingUp className="h-3.5 w-3.5" /> Estás en el nivel máximo (Avanzado) de este tema.
-            </p>
-          ) : null}
+      {/* Apoyos del tema: flashcards y subir de nivel */}
+      {!bloqueado && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 pl-0 sm:pl-[3.75rem]">
+          <BotonFlashcards compacto href={`/flashcards/tema/${tema.id}?volver=/ejercicios/unidad/${unidadId}`} />
+          <SubirNivel t={tema} onSubir={onSubir} />
         </div>
       )}
 
-      {/* Subtemas = extensión del nivel */}
       {subtemas.length > 0 && (
-        <div className="mt-4 space-y-2 border-t border-line pt-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Subtemas de este nivel</p>
+        <ul className="mt-4 space-y-2 border-t border-line pt-3 sm:pl-[3.75rem]">
           {subtemas.map((s) => {
-            const sCompleto = s.estado === 'completado';
-            const SIcon = sCompleto ? CheckCircle : s.desbloqueado ? Play : Lock;
-            const sAcento = sCompleto ? '#10B981' : s.desbloqueado ? NIVEL_COLOR[s.nivel_actual] : null;
+            const sOk = s.estado === 'completado';
+            const sAcento = sOk ? '#10B981' : s.desbloqueado ? NIVEL_COLOR[s.nivel_actual] : null;
             return (
-              <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-subtle/50 px-3.5 py-2.5">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg"
-                    style={sAcento ? { color: sAcento, backgroundColor: `${sAcento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}><SIcon className="h-4 w-4" /></div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <p className="text-sm font-semibold text-fg">{s.numero} {s.titulo}</p>
-                      {s.desbloqueado && <NivelChip label={s.nivel_actual_label} nivel={s.nivel_actual} />}
-                    </div>
-                    <p className="text-2xs text-muted">
-                      {s.ejercicios_completados}/{s.umbral} · {s.total_ejercicios_nivel} en tu nivel
-                      {!s.nivel_maximo && !s.cumple_minimo_nivel && s.total_ejercicios_nivel > 0 && <> · faltan {s.faltan_nivel} para subir</>}
-                    </p>
-                  </div>
+              <li key={s.id} className={`flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2.5 ${siguienteId === s.id ? 'border-prexi-blue bg-prexi-blue/5' : 'border-line bg-subtle/40'} ${s.desbloqueado ? '' : 'opacity-60'}`}>
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full" style={sAcento ? { color: sAcento, backgroundColor: `${sAcento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}>
+                  {sOk ? <CheckCircle className="h-4 w-4" /> : s.desbloqueado ? <Play className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                </span>
+                <div className="min-w-[180px] flex-1">
+                  <p className="font-semibold text-fg">{s.numero} {s.titulo}</p>
+                  <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                    {s.desbloqueado && <NivelChip tema={s} />}
+                    {s.total_ejercicios > 0 && <span>{Math.min(s.ejercicios_completados, s.umbral)} de {s.umbral} ejercicios</span>}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  {s.desbloqueado && s.puede_subir && s.nivel_objetivo_label ? (
-                    <button onClick={() => onSubir(s.id)} title={`Subir a nivel ${s.nivel_objetivo_label}`}
-                      className="inline-flex items-center gap-1 text-2xs font-semibold text-prexi-blue-deep hover:underline"><TrendingUp className="h-3 w-3" /> Subir</button>
-                  ) : s.desbloqueado && s.nivel_maximo ? (
-                    <span title="Estás en el nivel máximo (Avanzado)" className="inline-flex items-center gap-1 text-2xs font-semibold text-prexi-green"><TrendingUp className="h-3 w-3" /> Nivel máx.</span>
-                  ) : null}
-                  {s.total_ejercicios === 0 ? (
-                    <span className="text-2xs italic text-muted">Sin ejercicios aún</span>
-                  ) : !s.desbloqueado ? (
-                    <span className="inline-flex items-center gap-1 text-2xs text-muted"><Lock className="h-3 w-3" /> Bloqueado</span>
-                  ) : (
-                    <button onClick={() => onIniciar(s.id, s.total_ejercicios_nivel)} disabled={yendo === s.id}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-prexi-blue-deep hover:underline disabled:opacity-50">
-                      {sCompleto ? <><RotateCcw className="h-3.5 w-3.5" /> Repasar</> : <>{yendo === s.id ? 'Abriendo…' : <>Practicar <ArrowRight className="h-3.5 w-3.5" /></>}</>}
-                    </button>
-                  )}
-                </div>
-              </div>
+                <SubirNivel t={s} onSubir={onSubir} />
+                <AccionTema t={s} destacado={siguienteId === s.id} yendo={yendo} onIniciar={onIniciar} pequeno />
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );
+}
+
+/** "Subir de nivel": visible y llamativo cuando ya se puede; si falta, dice cuánto. */
+function SubirNivel({ t, onSubir }: { t: TemaEstudiante; onSubir: (id: number) => void }) {
+  if (!t.desbloqueado || t.total_ejercicios === 0) return null;
+  if (t.nivel_maximo) return <span className="inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-3 py-1.5 text-xs font-bold text-prexi-green"><TrendingUp className="h-3.5 w-3.5" /> Nivel máximo</span>;
+  if (t.puede_subir && t.nivel_objetivo_label) {
+    return (
+      <button onClick={() => onSubir(t.id)} className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-prexi-blue px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition hover:-translate-y-0.5">
+        <TrendingUp className="h-3.5 w-3.5" /> Subir a nivel {t.nivel_objetivo_label}
+      </button>
+    );
+  }
+  if (!t.cumple_minimo_nivel && t.total_ejercicios_nivel > 0) {
+    return <span className="text-xs text-muted">Te {t.faltan_nivel === 1 ? 'falta 1 ejercicio' : `faltan ${t.faltan_nivel} ejercicios`} para poder subir de nivel</span>;
+  }
+  return null;
 }
