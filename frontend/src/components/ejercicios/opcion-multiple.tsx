@@ -25,6 +25,8 @@ export function MultipleChoice({ ejercicio, resultado, onChange }: ExerciseProps
   const enviado = !!resultado;
   const correcta = (resultado?.respuesta_correcta ?? '').trim().toUpperCase();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Con respuestas largas, dos columnas las parten en cuatro líneas: mejor una.
+  const textoLargo = ejercicio.opciones.some((o) => o.texto.length > 32);
 
   const ripple = (id: string, e: PointerEvent<HTMLButtonElement>) => {
     if (reduce) return;
@@ -58,7 +60,7 @@ export function MultipleChoice({ ejercicio, resultado, onChange }: ExerciseProps
       {ejercicio.codigoPython && <div className="mb-5"><CodeViewer code={ejercicio.codigoPython} /></div>}
 
       {/* data-sonido-off: estas opciones ya reproducen su propio click. */}
-      <div role="radiogroup" aria-label="Opciones de respuesta" data-sonido-off onKeyDown={onKey} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div role="radiogroup" aria-label="Opciones de respuesta" data-sonido-off onKeyDown={onKey} className={`grid grid-cols-1 gap-3 ${textoLargo ? "" : "sm:grid-cols-2"}`}>
         {ejercicio.opciones.map((o, i) => {
           const idU = o.id.trim().toUpperCase();
           const elegido = sel === o.id;

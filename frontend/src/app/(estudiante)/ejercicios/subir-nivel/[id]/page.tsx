@@ -6,6 +6,8 @@ import confetti from 'canvas-confetti';
 import { api, ApiError } from '@/lib/api';
 import { Ejercicio, Opcion } from '@/lib/types';
 import { CodeViewer } from '@/components/code-viewer';
+import { CabeceraPregunta, Enunciado } from '@/components/ejercicios/pregunta';
+import { OptionCard } from '@/components/pretest/option-card';
 import { Skeleton } from '@/components/ui';
 import { useAuth } from '@/providers/auth-provider';
 import { reproducir } from '@/lib/sonidos';
@@ -156,11 +158,9 @@ export default function SubirNivelPage() {
       <div className="space-y-5">
         {diag.preguntas.map((p, i) => (
           <div key={p.id} className="card">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-prexi-blue/10 text-sm font-bold text-prexi-blue-deep">{i + 1}</span>
-              <span className="rounded-full bg-prexi-blue/10 px-2.5 py-0.5 text-[11px] font-bold text-prexi-blue-deep">{p.categoria}</span>
-            </div>
-            <h3 className="mb-3 font-display text-lg font-bold leading-snug text-fg">{p.enunciado}</h3>
+            <CabeceraPregunta numero={i + 1} total={diag.total} tipo={p.tipo} tema={p.categoria}
+              extra={respuestas[p.id] ? <span className="inline-flex items-center gap-1 text-xs font-bold text-prexi-green"><CheckCircle className="h-4 w-4" /> Respondida</span> : undefined} />
+            <Enunciado tipo={p.tipo} como="h3">{p.enunciado}</Enunciado>
             {p.codigoPython && <div className="mb-4"><CodeViewer code={p.codigoPython} /></div>}
 
             {p.tipo === 'completar_codigo' ? (
@@ -181,17 +181,12 @@ export default function SubirNivelPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {p.opciones.map((o) => {
-                  const elegido = respuestas[p.id] === o.id;
-                  return (
-                    <button key={o.id} onClick={() => setRespuestas((r) => ({ ...r, [p.id]: o.id }))}
-                      className={`flex items-center gap-3 rounded-xl border-2 p-3.5 text-left transition active:scale-[0.99] ${elegido ? 'border-prexi-blue bg-prexi-blue/10' : 'border-line hover:border-prexi-blue/40 hover:bg-subtle'}`}>
-                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-bold ${elegido ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>{o.id}</span>
-                      <span className="whitespace-pre-line font-medium text-fg">{o.texto}</span>
-                    </button>
-                  );
-                })}
+              <div role="radiogroup" aria-label={`Opciones de la pregunta ${i + 1}`} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {p.opciones.map((o, j) => (
+                  <OptionCard key={o.id} letra={o.id} texto={o.texto} selected={respuestas[p.id] === o.id}
+                    tabbable={respuestas[p.id] ? respuestas[p.id] === o.id : j === 0}
+                    onSelect={() => setRespuestas((r) => ({ ...r, [p.id]: o.id }))} />
+                ))}
               </div>
             )}
           </div>

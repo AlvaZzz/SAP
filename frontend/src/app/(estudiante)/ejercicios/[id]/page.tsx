@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti';
 import { api, ApiError } from '@/lib/api';
 import { Ejercicio, ResultadoIntento, RutaTema } from '@/lib/types';
 import { VistaEjercicio } from '@/components/ejercicios';
+import { CabeceraPregunta, Enunciado } from '@/components/ejercicios/pregunta';
 import { useRachaSesion } from '@/components/ejercicios/racha-sesion';
 import { CierreTema, AvisoRacha } from '@/components/ejercicios/cierre-tema';
 import { TutorPanel } from '@/components/tutor-panel';
@@ -200,15 +201,12 @@ export default function DetallePage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <div className="min-w-0">
           <div className={`card ${resultado && !resultado.correcto ? 'animate-shake' : ''}`}>
-            {/* Badges del ejercicio */}
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              {unidadTema && <span className="inline-flex items-center gap-1.5 rounded-full bg-prexi-navy/10 px-2.5 py-1 text-[11px] font-bold text-prexi-navy dark:bg-white/10 dark:text-blue-200"><Layers className="h-3.5 w-3.5" /> {unidadTema}</span>}
-              <span className="rounded-full bg-prexi-blue/10 px-2.5 py-1 text-[11px] font-bold text-prexi-blue-deep">{ej.categoria}</span>
-              <NivelBadge nivel={ej.nivelDificultad} estrellas={ej.estrellas} />
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-[11px] font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>
-            </div>
-
-            <h1 className="mb-5 font-display text-2xl font-bold leading-snug text-fg">{ej.enunciado}</h1>
+            <CabeceraPregunta tipo={ej.tipo} tema={unidadTema ?? ej.categoria}
+              extra={<>
+                <NivelBadge nivel={ej.nivelDificultad} estrellas={ej.estrellas} />
+                <span className="inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-[11px] font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>
+              </>} />
+            <Enunciado tipo={ej.tipo}>{ej.enunciado}</Enunciado>
 
             {/* Cada tipo renderiza su interacción y reporta la respuesta con onChange.
                 `key={ej.id}` remonta el componente (estado limpio) al cambiar de ejercicio. */}
@@ -228,8 +226,8 @@ export default function DetallePage() {
             {resultado && (
               <div className="mt-6">
                 {resultado.correcto ? (
-                  <div className="relative flex items-start gap-3 overflow-hidden rounded-xl bg-emerald-500/10 p-4 animate-fade-up">
-                    <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-prexi-green" />
+                  <div className="relative flex items-start gap-3 overflow-hidden rounded-2xl border border-prexi-green/40 bg-emerald-500/10 p-4 animate-fade-up" role="status">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-prexi-green text-white"><CheckCircle className="h-6 w-6" /></span>
                     <div>
                       <p className="font-bold text-prexi-green">¡Correcto! <span className="ml-1 text-prexi-amber">+{resultado.xp.xpOtorgado} XP</span></p>
                       <p className="text-sm text-muted">base × {resultado.xp.multiplicador} por racha de {resultado.xp.rachaDias} días.</p>
@@ -239,8 +237,8 @@ export default function DetallePage() {
                     {xpVuela != null && <span className="xp-fly pointer-events-none absolute right-6 top-4 font-display text-2xl font-extrabold text-prexi-amber">+{xpVuela}</span>}
                   </div>
                 ) : (
-                  <div className="rounded-xl bg-red-500/10 p-4 animate-fade-up">
-                    <p className="font-bold text-red-500">No es correcta esta vez.</p>
+                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 animate-fade-up" role="status">
+                    <p className="flex items-center gap-2 font-bold text-red-500"><span className="grid h-8 w-8 place-items-center rounded-full bg-red-500 text-white"><X className="h-5 w-5" /></span> No es correcta esta vez. Mira por qué:</p>
                     {retro && (
                       <p className="mt-1 text-sm text-muted">
                         <span className="font-semibold text-fg">{iaPedida ? 'PREXI:' : 'Explicación:'}</span> {retro}

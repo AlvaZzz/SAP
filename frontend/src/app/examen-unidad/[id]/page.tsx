@@ -8,6 +8,9 @@ import { Markdown } from '@/components/markdown';
 import { CodeBlock } from '@/components/code-block';
 import { BotonVoz } from '@/components/boton-voz';
 import { Mazo } from '@/components/flashcards/mazo';
+import { CabeceraPregunta, Enunciado } from '@/components/ejercicios/pregunta';
+import { OptionCard } from '@/components/pretest/option-card';
+import { QuestionNavigator } from '@/components/pretest/question-navigator';
 import { fetchFlashcardsExamen, mostrarRepasoPrevio, type Flashcard } from '@/lib/flashcards';
 import { colorUnidad } from '@/lib/types';
 import { reproducir } from '@/lib/sonidos';
@@ -307,32 +310,42 @@ export default function ExamenUnidadPage() {
     return (
       <div className="min-h-screen bg-app">
         {header(`${respondidas} de ${total} respondidas`)}
-        <div className="mx-auto max-w-3xl px-4 py-6">
-          <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full bg-prexi-blue transition-all" style={{ width: `${(respondidas / total) * 100}%` }} /></div>
-          <div className="card">
-            <span className="text-xs font-bold uppercase tracking-wide text-prexi-blue-deep">{p.categoria} · Pregunta {idx + 1} de {total}</span>
-            <h1 className="mb-4 mt-1 text-lg font-bold text-fg">{p.enunciado}</h1>
-            {p.codigoPython && <div className="mb-5"><CodeBlock code={p.codigoPython} /></div>}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {p.opciones.map((o) => {
-                const sel = resp[p.id] === o.id;
-                return (
-                  <button key={o.id} onClick={() => setResp((r) => ({ ...r, [p.id]: o.id }))}
-                    className={`flex items-center gap-3 rounded-xl border-2 p-4 text-left transition active:scale-[0.99] ${sel ? 'border-prexi-blue bg-prexi-blue/10' : 'border-line hover:border-prexi-blue/40'}`}>
-                    <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-bold ${sel ? 'bg-prexi-blue text-white' : 'bg-subtle text-muted'}`}>{o.id}</span>
-                    <span className="whitespace-pre-line font-medium text-fg">{o.texto}</span>
-                  </button>
-                );
-              })}
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-subtle"><div className="h-full rounded-full bg-prexi-blue transition-all" style={{ width: `${(respondidas / total) * 100}%` }} /></div>
+            <div className="card">
+              <CabeceraPregunta numero={idx + 1} total={total} tipo={p.tipo} tema={p.categoria} />
+              <Enunciado tipo={p.tipo}>{p.enunciado}</Enunciado>
+              {p.codigoPython && <div className="mb-5"><CodeBlock code={p.codigoPython} /></div>}
+              <div role="radiogroup" aria-label="Opciones de respuesta" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {p.opciones.map((o, i) => (
+                  <OptionCard key={o.id} letra={o.id} texto={o.texto} selected={resp[p.id] === o.id}
+                    tabbable={resp[p.id] ? resp[p.id] === o.id : i === 0}
+                    onSelect={() => setResp((r) => ({ ...r, [p.id]: o.id }))} />
+                ))}
+              </div>
+              <div className="mt-6 flex items-center justify-between border-t border-line pt-5">
+                <button onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0} className="btn-ghost disabled:opacity-40"><ChevronLeft className="h-4 w-4" /> Anterior</button>
+                {idx < total - 1
+                  ? <button onClick={() => setIdx((i) => i + 1)} className="btn-primary">Siguiente <ChevronRight className="h-4 w-4" /></button>
+                  : <button onClick={enviarManual} disabled={enviando} className="btn-primary disabled:opacity-60">{enviando ? 'Calculando…' : <>Enviar examen <CheckCircle className="h-4 w-4" /></>}</button>}
+              </div>
+              {error && <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-600">{error}</p>}
             </div>
-            <div className="mt-6 flex items-center justify-between border-t border-line pt-5">
-              <button onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0} className="btn-ghost disabled:opacity-40"><ChevronLeft className="h-4 w-4" /> Anterior</button>
-              {idx < total - 1
-                ? <button onClick={() => setIdx((i) => i + 1)} className="btn-primary">Siguiente <ChevronRight className="h-4 w-4" /></button>
-                : <button onClick={enviarManual} disabled={enviando} className="btn-primary disabled:opacity-60">{enviando ? 'Calculando…' : <>Enviar examen <CheckCircle className="h-4 w-4" /></>}</button>}
-            </div>
-            {error && <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-600">{error}</p>}
           </div>
+
+          {/* Mapa del examen: saltar a cualquier pregunta y ver cuáles faltan */}
+          <aside className="space-y-4">
+            <div className="card">
+              <h2 className="mb-3 font-display text-sm font-bold text-fg">Tus preguntas</h2>
+              <QuestionNavigator total={total} current={idx} onJump={setIdx}
+                answered={new Set(preguntas.map((q, i) => (resp[q.id] ? i : -1)).filter((i) => i >= 0))} />
+            </div>
+            <div className="card text-sm text-muted">
+              <p><b className="text-fg">Se aprueba con 80 sobre 100.</b> Puedes volver a cualquier pregunta y cambiar tu respuesta antes de enviar.</p>
+              {respondidas < total && <p className="mt-2 font-semibold text-prexi-amber">Te faltan {total - respondidas} por responder.</p>}
+            </div>
+          </aside>
         </div>
       </div>
     );
