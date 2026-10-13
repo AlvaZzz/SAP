@@ -91,8 +91,8 @@ export default function UnidadPage() {
         } />
 
       {/* ── Qué hacer ahora: un solo botón grande ── */}
-      <section className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border-2 p-5" style={{ borderColor: examen === 'aprobado' ? '#10B98199' : '#F7C255', backgroundColor: examen === 'aprobado' ? '#10B9810F' : '#F7C2551A' }}>
-        <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${examen === 'aprobado' ? 'bg-prexi-green text-white' : 'bg-amber-300 text-amber-900'}`}>
+      <section className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border-2 p-5" style={{ borderColor: examen === 'aprobado' ? '#10B98199' : '#F59E0BB3', backgroundColor: examen === 'aprobado' ? '#10B9810F' : '#F59E0B14' }}>
+        <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${examen === 'aprobado' ? 'bg-prexi-green text-white' : 'bg-amber-500 text-white'}`}>
           {examen === 'aprobado' ? <Trophy className="h-6 w-6" /> : examen === 'listo' ? <GraduationCap className="h-6 w-6" /> : <Play className="h-6 w-6" />}
         </span>
         <div className="min-w-[220px] flex-1">
@@ -148,9 +148,9 @@ export default function UnidadPage() {
 
       {/* ── Examen de la unidad ── */}
       {examen !== 'sin_examen' && (
-        <section className={`mt-6 overflow-hidden rounded-3xl border-2 p-6 sm:p-7 ${examen === 'listo' ? 'border-amber-300 bg-amber-300/10' : examen === 'aprobado' ? 'border-prexi-green/50 bg-prexi-green/10' : 'border-line bg-card'}`}>
+        <section className={`mt-6 overflow-hidden rounded-3xl border-2 p-6 sm:p-7 ${examen === 'listo' ? 'border-amber-500/70 bg-amber-500/10' : examen === 'aprobado' ? 'border-prexi-green/50 bg-prexi-green/10' : 'border-line bg-card'}`}>
           <div className="flex flex-wrap items-center gap-5">
-            <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${examen === 'listo' ? 'bg-amber-300 text-amber-900' : examen === 'aprobado' ? 'bg-prexi-green text-white' : 'bg-prexi-blue/15 text-prexi-blue-deep'}`}>
+            <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl ${examen === 'listo' ? 'bg-amber-500 text-white' : examen === 'aprobado' ? 'bg-prexi-green text-white' : 'bg-prexi-blue/15 text-prexi-blue-deep'}`}>
               {examen === 'aprobado' ? <Trophy className="h-8 w-8" /> : <GraduationCap className="h-8 w-8" />}
             </span>
             <div className="min-w-[220px] flex-1">
@@ -223,7 +223,7 @@ function TemaPaso({ tema, paso, unidadId, esSiguiente, siguienteId, yendo, onIni
   const subtemas = tema.subtemas ?? [];
 
   return (
-    <div className={`rounded-2xl border bg-card p-4 transition sm:p-5 ${esSiguiente ? 'border-2 border-amber-300 shadow-soft' : 'border-line shadow-soft'} ${bloqueado ? 'opacity-60' : ''}`}>
+    <div className={`rounded-2xl border bg-card p-4 transition sm:p-5 ${esSiguiente ? 'border-2 border-amber-500/70 shadow-soft' : 'border-line shadow-soft'} ${bloqueado ? 'opacity-60' : ''}`}>
       <div className="flex flex-wrap items-center gap-4">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full font-display text-lg font-extrabold"
           style={acento ? { color: completo ? '#fff' : acento, backgroundColor: completo ? acento : `${acento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}>
@@ -263,7 +263,7 @@ function TemaPaso({ tema, paso, unidadId, esSiguiente, siguienteId, yendo, onIni
             const sOk = s.estado === 'completado';
             const sAcento = sOk ? '#10B981' : s.desbloqueado ? NIVEL_COLOR[s.nivel_actual] : null;
             return (
-              <li key={s.id} className={`flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2.5 ${siguienteId === s.id ? 'border-amber-300 bg-amber-300/10' : 'border-line bg-subtle/40'} ${s.desbloqueado ? '' : 'opacity-60'}`}>
+              <li key={s.id} className={`flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2.5 ${siguienteId === s.id ? 'border-amber-500/70 bg-amber-500/10' : 'border-line bg-subtle/40'} ${s.desbloqueado ? '' : 'opacity-60'}`}>
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full" style={sAcento ? { color: sAcento, backgroundColor: `${sAcento}26` } : { backgroundColor: 'rgb(var(--subtle))', color: 'rgb(var(--muted))' }}>
                   {sOk ? <CheckCircle className="h-4 w-4" /> : s.desbloqueado ? <Play className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                 </span>

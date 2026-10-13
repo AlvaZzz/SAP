@@ -51,10 +51,10 @@ export default function EjerciciosPage() {
       {/* ── Por dónde seguir ── */}
       <section className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-prexi-navy via-[#12356B] to-prexi-blue p-6 text-white shadow-lift sm:p-8">
         <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-24 h-64 w-64 rounded-full bg-amber-300/15 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-24 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
         <div className="relative flex flex-wrap items-center gap-6">
           <div className="min-w-[240px] flex-1">
-            <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200"><span className="h-1.5 w-6 rounded-full bg-amber-300" /> Tu camino en Programación I</p>
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200"><span className="h-1.5 w-6 rounded-full bg-amber-500" /> Tu camino en Programación I</p>
             {actual ? (
               <>
                 <h1 className="mt-1 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
@@ -171,7 +171,7 @@ function PuertaExamen({ unidad, estado, completos, temas }: { unidad: UnidadEstu
   }
   if (estado === 'listo') {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-300/50 bg-amber-300/10 px-4 py-3.5 sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-amber-500/40 bg-amber-500/10 px-4 py-3.5 sm:px-5">
         <p className="flex items-center gap-2.5 text-sm font-semibold text-fg"><Star className="h-5 w-5 shrink-0 text-amber-500" /> Completaste todos los temas. ¡El examen te espera!</p>
         <Link href={`/examen-unidad/${unidad.id}`} className="btn-accion !rounded-xl !px-5 !py-2.5 text-sm">
           <GraduationCap className="h-5 w-5" /> Rendir el examen <ArrowRight className="h-4 w-4" />
@@ -198,7 +198,7 @@ function Anillo({ pct }: { pct: number }) {
     <div className="relative h-[88px] w-[88px] shrink-0" role="img" aria-label={`${pct} % del curso completado`}>
       <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
         <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="8" />
-        <circle cx="40" cy="40" r={r} fill="none" stroke="#F7C255" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100} className="transition-all duration-700" />
+        <circle cx="40" cy="40" r={r} fill="none" stroke="#F59E0B" strokeWidth="8" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100} className="transition-all duration-700" />
       </svg>
       <span className="absolute inset-0 grid place-items-center font-display text-lg font-extrabold">{pct}%</span>
     </div>

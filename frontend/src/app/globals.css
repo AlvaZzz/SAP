@@ -126,16 +126,18 @@ body {
   .btn-accion {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-bold transition
            hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:opacity-60 disabled:hover:translate-y-0;
-    /* Dorado en degradado con un borde un punto más oscuro y brillo superior:
-       se ve como un botón "de verdad", cálido pero sobrio. */
-    color: #3F2A05;
-    background-image: linear-gradient(180deg, #FCCB63 0%, #F4A72C 100%);
-    border: 1px solid #DC941C;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 8px 18px -9px rgb(217 133 10 / 0.7);
+    /* El MISMO ámbar de las barras de avance y del nivel (#F59E0B), con texto
+       blanco. El degradado baja apenas a un tono más profundo y el texto lleva
+       una sombra fina: así el blanco se lee bien sobre el ámbar. */
+    color: #fff;
+    text-shadow: 0 1px 1px rgb(120 60 0 / 0.45);
+    background-image: linear-gradient(180deg, #F59E0B 0%, #E38A05 100%);
+    border: 1px solid #D07C04;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 8px 18px -9px rgb(217 133 10 / 0.75);
   }
   .btn-accion:hover:not(:disabled) {
-    background-image: linear-gradient(180deg, #FDD377 0%, #F7B23D 100%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55), 0 12px 24px -10px rgb(217 133 10 / 0.8);
+    background-image: linear-gradient(180deg, #F7A91F 0%, #E9920A 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 12px 24px -10px rgb(217 133 10 / 0.85);
   }
   /* Etiqueta cálida suave ("Estás aquí", "Sigue aquí"). */
   .chip-accion {
