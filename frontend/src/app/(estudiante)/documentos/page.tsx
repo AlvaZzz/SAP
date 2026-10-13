@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 import { DocumentoEstudiante } from '@/lib/types';
-import { PageHeader, Skeleton, Badge } from '@/components/ui';
-import { Search, FileText, Download, Eye, Lightbulb, X, Layers } from '@/components/icons';
+import { PageHeader, Skeleton } from '@/components/ui';
+import { Search, FileText, Download, Eye, Lightbulb, X } from '@/components/icons';
 
 /** Documento sin tema: cae en un grupo "General" al final del listado. */
-const GENERAL = { clave: 'general', titulo: 'General / Sin categoría', numero: null as number | null };
+const GENERAL = { clave: 'general' };
 
 interface Grupo {
   clave: string;
@@ -128,7 +128,7 @@ export default function DocumentosPage() {
       )}
 
       {cargando ? (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-44" />)}</div>
+        <div className="space-y-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-16" />)}</div>
       ) : filtrados.length === 0 ? (
         <div className="grid place-items-center rounded-2xl border border-dashed border-line bg-card px-4 py-16 text-center">
           <Search className="mb-3 h-9 w-9 text-muted" />
@@ -143,41 +143,21 @@ export default function DocumentosPage() {
           {hayFiltro && docs.length > 0 && <button onClick={limpiar} className="btn-ghost mt-4">Quitar filtros</button>}
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-5">
           {grupos.map((g) => (
-            <section key={g.clave}>
-              {/* Encabezado de UNIDAD */}
-              <div className="mb-3 flex flex-wrap items-center gap-3 border-b border-line pb-2">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-prexi-blue/10 text-prexi-blue-deep">
-                  <Layers className="h-[18px] w-[18px]" />
+            <section key={g.clave} className="card !p-0">
+              <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+                <h2 className="font-display text-lg font-bold text-fg">{g.unidad ? `Unidad ${g.unidad.numero}: ${g.unidad.titulo}` : 'Material general del curso'}</h2>
+                <span className="text-xs font-semibold text-muted">{g.total} {g.total === 1 ? 'documento' : 'documentos'}</span>
+              </header>
+              {g.temas.map((t) => (
+                <div key={t.clave}>
+                  {t.titulo && <h3 className="bg-subtle/60 px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted">{t.titulo}</h3>}
+                  <ul className="divide-y divide-line">
+                    {t.docs.map((d) => <FilaDoc key={d.id} d={d} />)}
+                  </ul>
                 </div>
-                <div className="min-w-0 flex-1">
-                  {g.unidad ? (
-                    <>
-                      <p className="text-2xs font-bold uppercase tracking-wide text-prexi-blue-deep">Unidad {g.unidad.numero}</p>
-                      <h2 className="font-display text-lg font-extrabold text-fg">{g.unidad.titulo}</h2>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-2xs font-bold uppercase tracking-wide text-muted">Sin categoría</p>
-                      <h2 className="font-display text-lg font-extrabold text-fg">{GENERAL.titulo}</h2>
-                    </>
-                  )}
-                </div>
-                <span className="shrink-0 text-xs font-semibold text-muted">{g.total} {g.total === 1 ? 'documento' : 'documentos'}</span>
-              </div>
-
-              {/* TEMAS dentro de la unidad */}
-              <div className="space-y-5">
-                {g.temas.map((t) => (
-                  <div key={t.clave}>
-                    {t.titulo && <h3 className="mb-2.5 text-sm font-bold text-fg">{t.titulo}</h3>}
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                      {t.docs.map((d) => <TarjetaDoc key={d.id} d={d} />)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </section>
           ))}
         </div>
@@ -185,7 +165,7 @@ export default function DocumentosPage() {
 
       <div className="mt-8 flex items-start gap-3 rounded-2xl border border-prexi-blue/20 bg-prexi-blue/[0.06] p-4 text-sm text-fg">
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-prexi-blue-deep" />
-        <p>Todos los documentos están disponibles para descarga. Se recomienda revisarlos antes de las sesiones prácticas de laboratorio.</p>
+        <p>«Abrir» muestra el PDF en una pestaña nueva; «Descargar» lo guarda en tu dispositivo.</p>
       </div>
     </div>
   );
@@ -228,48 +208,25 @@ function Chip({ children, activo, onClick, title }: {
   );
 }
 
-function TarjetaDoc({ d }: { d: DocumentoEstudiante }) {
-  const mb = (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`;
+function FilaDoc({ d }: { d: DocumentoEstudiante }) {
+  const mb = (b: number) => (b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
   const fecha = (f: string) => new Date(f).toLocaleDateString('es-BO', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  // Sin descripción propia, la ubicación académica es más útil que un texto
-  // genérico repetido en todas las tarjetas.
-  const ubicacion = d.subtema
-    ? `${d.subtema.numero} ${d.subtema.titulo}`
-    : d.tema
-      ? `${d.tema.numero} ${d.tema.titulo}`
-      : d.unidad
-        ? `Unidad ${d.unidad.numero} · ${d.unidad.titulo}`
-        : 'Material general del curso';
-
   return (
-    <div className="card card-hover flex flex-col">
-      <div className="mb-3 flex items-start gap-3">
-        <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-red-500/10 text-red-500"><FileText className="h-7 w-7" /></div>
-        <div className="min-w-0">
-          {/* Título COMPLETO (2 líneas máx.) + tooltip: antes se cortaba con "…" */}
-          <p className="line-clamp-2 font-display font-bold leading-snug text-fg" title={d.titulo}>{d.titulo}</p>
-          <p className="mt-1 text-xs text-muted">Por <b className="font-semibold text-fg">{d.subido_por}</b></p>
-          <p className="text-xs text-muted">{fecha(d.fecha)} · <span className="font-medium text-prexi-blue-deep">{mb(d.tamano_bytes)}</span></p>
-        </div>
+    <li className="flex flex-wrap items-center gap-3 px-4 py-3">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-500/10 text-red-500"><FileText className="h-5 w-5" /></span>
+      <div className="min-w-[200px] flex-1">
+        <p className="font-semibold text-fg">{d.titulo}</p>
+        {d.descripcion && <p className="line-clamp-2 text-sm text-muted">{d.descripcion}</p>}
+        <p className="mt-0.5 text-xs text-muted">
+          {d.subtema && <span className="font-semibold text-fg">{d.subtema.numero} {d.subtema.titulo} · </span>}
+          PDF · {mb(d.tamano_bytes)} · {d.subido_por} · {fecha(d.fecha)}
+        </p>
       </div>
-
-      {/* Badge de ubicación: a qué unidad/tema pertenece */}
-      {(d.unidad || d.subtema) && (
-        <div className="mb-2.5 flex flex-wrap gap-1.5">
-          {d.unidad && <Badge tone="blue">U{d.unidad.numero}</Badge>}
-          {d.subtema && <Badge tone="green">{d.subtema.numero}</Badge>}
-        </div>
-      )}
-
-      <p className="mb-4 line-clamp-3 flex-1 text-sm text-muted" title={d.descripcion ?? ubicacion}>
-        {d.descripcion ?? ubicacion}
-      </p>
-
-      <div className="mt-auto flex gap-2">
-        <a href={d.archivo} target="_blank" rel="noreferrer" className="btn-primary flex-1 !py-2 text-sm"><Eye className="h-4 w-4" /> Ver</a>
-        <a href={d.archivo} download className="btn-ghost flex-1 !py-2 text-sm"><Download className="h-4 w-4" /> Descargar</a>
+      <div className="flex shrink-0 gap-2">
+        <a href={d.archivo} target="_blank" rel="noreferrer" className="btn-primary !py-1.5 text-sm"><Eye className="h-4 w-4" /> Abrir</a>
+        <a href={d.archivo} download title="Descargar" aria-label={`Descargar ${d.titulo}`} className="btn-ghost !px-3 !py-1.5 text-sm"><Download className="h-4 w-4" /><span className="hidden sm:inline"> Descargar</span></a>
       </div>
-    </div>
+    </li>
   );
 }
