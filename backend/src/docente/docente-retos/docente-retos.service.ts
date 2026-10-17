@@ -3,6 +3,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
 import { CrearRetoDto, EditarRetoDto, SugerirRetosDto } from './dto/reto.dto';
 import { nivelDesdeEstrellas } from '../../common/niveles/nivel-dificultad';
+import { retosDelDocente, puedeGestionarReto } from './alcance';
 
 /** Cuántas propuestas trae PREXI cada vez que el docente le pide ayuda. */
 export const RETOS_POR_PEDIDO = 3;
@@ -60,7 +61,7 @@ export class DocenteRetosService {
 
   async listar(autorId: number) {
     const retos = await this.prisma.reto.findMany({
-      where: { autorId },
+      where: retosDelDocente(autorId),
       orderBy: { creadoEn: 'desc' },
       include: {
         nivel: { select: { numero: true, titulo: true } },
@@ -71,7 +72,7 @@ export class DocenteRetosService {
     // Conteo de entregas pendientes por reto (para el badge "por revisar").
     const pendientesPorReto = await this.prisma.retoUsuario.groupBy({
       by: ['retoId'],
-      where: { estado: 'pendiente_revision', reto: { autorId } },
+      where: { estado: 'pendiente_revision', reto: retosDelDocente(autorId) },
       _count: { _all: true },
     });
     const pendMap = new Map(pendientesPorReto.map((p) => [p.retoId, p._count._all]));
@@ -86,11 +87,11 @@ export class DocenteRetosService {
     }));
   }
 
-  /** Obtiene un reto verificando que pertenezca al docente. */
+  /** Obtiene un reto verificando que el docente pueda gestionarlo (suyo o del banco del curso). */
   private async propio(id: number, autorId: number) {
     const r = await this.prisma.reto.findUnique({ where: { id } });
     if (!r) throw new NotFoundException('Reto no encontrado');
-    if (r.autorId !== autorId) throw new ForbiddenException('No puedes gestionar retos de otro docente');
+    if (!puedeGestionarReto(r, autorId)) throw new ForbiddenException('No puedes gestionar retos de otro docente');
     return r;
   }
 

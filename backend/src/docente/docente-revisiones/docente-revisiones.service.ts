@@ -3,6 +3,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { NotificacionesService } from '../../modulos/notificaciones/notificaciones.service';
 import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
 import { RevisarEntregaDto } from './dto/revision.dto';
+import { retosDelDocente, puedeGestionarReto } from '../docente-retos/alcance';
 
 /**
  * Revisión y calificación de entregas de retos (rol docente). Un docente solo
@@ -17,11 +18,11 @@ export class DocenteRevisionesService {
     private readonly tutorIa: TutorIaService,
   ) {}
 
-  /** Verifica que el reto exista y pertenezca al docente. */
+  /** Verifica que el reto exista y que el docente pueda revisarlo (suyo o del banco del curso). */
   private async retoPropio(retoId: number, autorId: number) {
     const reto = await this.prisma.reto.findUnique({ where: { id: retoId } });
     if (!reto) throw new NotFoundException('Reto no encontrado');
-    if (reto.autorId !== autorId) throw new ForbiddenException('No puedes revisar entregas de retos de otro docente');
+    if (!puedeGestionarReto(reto, autorId)) throw new ForbiddenException('No puedes revisar entregas de retos de otro docente');
     return reto;
   }
 
@@ -29,7 +30,7 @@ export class DocenteRevisionesService {
   async listar(autorId: number, soloPendientes = true) {
     const entregas = await this.prisma.retoUsuario.findMany({
       where: {
-        reto: { autorId },
+        reto: retosDelDocente(autorId),
         ...(soloPendientes ? { estado: 'pendiente_revision' } : { estado: { not: 'sin_entregar' } }),
       },
       orderBy: [{ entregadoEn: 'asc' }],
@@ -66,7 +67,7 @@ export class DocenteRevisionesService {
 
   /** Conteo de entregas pendientes (para el stat card del dashboard). */
   async conteoPendientes(autorId: number): Promise<number> {
-    return this.prisma.retoUsuario.count({ where: { estado: 'pendiente_revision', reto: { autorId } } });
+    return this.prisma.retoUsuario.count({ where: { estado: 'pendiente_revision', reto: retosDelDocente(autorId) } });
   }
 
   /**
