@@ -1,0 +1,4031 @@
+{
+ "fuente": "PRACTICA_NRO_1_PROGRAMACION_I.pdf (PRG-111, II/2026) - banco propuesto para las Unidades 1 y 2",
+ "unidades": {
+  "1": {
+   "ejercicios": [
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Camila guarda tres datos de una estudiante: su nombre (\"Ana\"), su nota (87.5) y si aprobó (True). ¿Qué tipos de dato de Python corresponden, en ese orden?",
+     "xp": 10,
+     "explicacion": "El nombre es texto (str), la nota tiene decimales (float) y \"aprobó\" solo puede ser verdadero o falso (bool). Elegir bien el tipo evita errores más adelante.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Método de la Práctica Nro. 1, paso (b) Análisis del problema: identificar los datos de entrada y su tipo (Secuenciales, ejercicio 1)",
+      "codigo": "U1-P01-B"
+     },
+     "temasCombinados": [
+      "1.5 Tipos de datos y variables"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "str, float, bool"
+      },
+      {
+       "id": "B",
+       "texto": "int, int, str"
+      },
+      {
+       "id": "C",
+       "texto": "str, int, float"
+      },
+      {
+       "id": "D",
+       "texto": "bool, float, str"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Observa el programa. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "nota vale 80 (un entero, int). La comparación nota >= 51 da True y se guarda en aprobo. print muestra los tres valores separados por un espacio.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1: nota mínima de aprobación 51",
+      "codigo": "U1-P01-I"
+     },
+     "temasCombinados": [
+      "1.5 Tipos de datos y variables",
+      "1.5.2 Operadores relacionales"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": true,
+     "codigoPython": "nombre = \"Luis\"\nnota = 80\naprobo = nota >= 51\nprint(nombre, type(nota).__name__, aprobo)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Luis int True"
+      },
+      {
+       "id": "B",
+       "texto": "Luis float True"
+      },
+      {
+       "id": "C",
+       "texto": "Luis 80 True"
+      },
+      {
+       "id": "D",
+       "texto": "Luis int 80"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Atención al tipo de dato. ¿Qué imprime este programa?",
+     "xp": 20,
+     "explicacion": "Con un texto, \"5\" * 3 repite el texto tres veces (\"555\"). Solo después de convertir con int() la multiplicación es numérica (15). Por eso input() siempre debe convertirse cuando se necesita calcular.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1: la nota se lee con input() y debe convertirse a número",
+      "codigo": "U1-P01-A"
+     },
+     "temasCombinados": [
+      "1.5 Tipos de datos y variables",
+      "1.6 Expresiones"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "codigoPython": "a = \"5\"\nb = 3\nprint(a * b, int(a) * b)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "15 15"
+      },
+      {
+       "id": "B",
+       "texto": "555 15"
+      },
+      {
+       "id": "C",
+       "texto": "555 555"
+      },
+      {
+       "id": "D",
+       "texto": "15 555"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "En Python, ¿qué resultado da la expresión 7 // 2? (Es la división entera que usarás para el residuo sin módulo.)",
+     "xp": 10,
+     "explicacion": "El operador // entrega solo la parte entera de la división: 7 entre 2 es 3 y sobra 1. El 3.5 sería 7 / 2.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 8: residuo de una división sin usar el operador módulo (A=7, B=2)",
+      "codigo": "U1-P02-B"
+     },
+     "temasCombinados": [
+      "1.5.2 Operadores aritméticos"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3.5"
+      },
+      {
+       "id": "B",
+       "texto": "3"
+      },
+      {
+       "id": "C",
+       "texto": "4"
+      },
+      {
+       "id": "D",
+       "texto": "1"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué imprime el programa?",
+     "xp": 15,
+     "explicacion": "17 % 5 es el residuo (2), 17 // 5 es el cociente entero (3) y 2 ** 3 es potencia (8).",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicios 4 y 8: uso de // y % para descomponer cantidades",
+      "codigo": "U1-P02-I"
+     },
+     "temasCombinados": [
+      "1.5.2 Operadores aritméticos",
+      "1.6 Expresiones"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": true,
+     "codigoPython": "print(17 % 5, 17 // 5, 2 ** 3)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2 3 8"
+      },
+      {
+       "id": "B",
+       "texto": "3 2 6"
+      },
+      {
+       "id": "C",
+       "texto": "2 3 6"
+      },
+      {
+       "id": "D",
+       "texto": "3 2 8"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Aplica la precedencia de operadores (primero **, luego * // % de izquierda a derecha, y al final + -). ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Paso a paso: 3 ** 2 = 9; 2 * 9 = 18; 18 // 4 = 4; 4 % 5 = 4; finalmente 10 - 4 = 6. Cuando dudes, usa paréntesis para dejar clara tu intención.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 5: expresiones aritméticas con varios operadores",
+      "codigo": "U1-P02-A"
+     },
+     "temasCombinados": [
+      "1.5.2 Operadores aritméticos",
+      "1.6 Expresiones (precedencia)"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "print(10 - 2 * 3 ** 2 // 4 % 5)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6"
+      },
+      {
+       "id": "B",
+       "texto": "4"
+      },
+      {
+       "id": "C",
+       "texto": "-2"
+      },
+      {
+       "id": "D",
+       "texto": "2"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Quieres preguntar si la nota de un estudiante es exactamente 51. ¿Qué operador usas?",
+     "xp": 10,
+     "explicacion": "== compara (pregunta si son iguales). El signo = solo asigna un valor a una variable.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1: nota mínima de aprobación 51",
+      "codigo": "U1-P03-B"
+     },
+     "temasCombinados": [
+      "1.5.2 Operadores relacionales"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "="
+      },
+      {
+       "id": "B",
+       "texto": "=="
+      },
+      {
+       "id": "C",
+       "texto": "!="
+      },
+      {
+       "id": "D",
+       "texto": "=>"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué imprime el programa?",
+     "xp": 15,
+     "explicacion": "nota >= 51 es True y nota <= 100 es True, así que \"and\" da True. Además nota > 51 es False y not False es True.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1: validar que la nota esté en el rango de 0 a 100",
+      "codigo": "U1-P03-I"
+     },
+     "temasCombinados": [
+      "1.5.2 Operadores relacionales y lógicos",
+      "1.6 Expresiones"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": true,
+     "codigoPython": "nota = 51\nprint(nota >= 51 and nota <= 100, not (nota > 51))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "True True"
+      },
+      {
+       "id": "B",
+       "texto": "True False"
+      },
+      {
+       "id": "C",
+       "texto": "False True"
+      },
+      {
+       "id": "D",
+       "texto": "False False"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Recuerda que \"and\" se evalúa antes que \"or\". ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "En la primera, x % 5 == 0 and x > 20 es False, pero x % 3 == 0 ya es True y \"or\" da True. En la segunda, los paréntesis obligan a evaluar primero el \"or\" (True) y luego True and False = False.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.5.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicios 1 y 4: condiciones compuestas con y/o",
+      "codigo": "U1-P03-A"
+     },
+     "temasCombinados": [
+      "1.5.2 Operadores lógicos",
+      "1.6 Expresiones (precedencia lógica)"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "codigoPython": "x = 15\nprint(x % 3 == 0 or x % 5 == 0 and x > 20, (x % 3 == 0 or x % 5 == 0) and x > 20)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "True False"
+      },
+      {
+       "id": "B",
+       "texto": "False False"
+      },
+      {
+       "id": "C",
+       "texto": "True True"
+      },
+      {
+       "id": "D",
+       "texto": "False True"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un programa lee la distancia y la velocidad, calcula el tiempo de viaje y lo muestra. ¿En qué parte de la estructura Entrada–Proceso–Salida está el cálculo del tiempo?",
+     "xp": 10,
+     "explicacion": "Leer los datos es la entrada, calcular con ellos es el proceso y mostrar el resultado es la salida. El cálculo del tiempo es proceso.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.10",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 6 (Salar de Uyuni): entradas distancia y velocidad, salida tiempo en minutos",
+      "codigo": "U1-P04-B"
+     },
+     "temasCombinados": [
+      "1.10 Estructura general de un algoritmo"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Entrada"
+      },
+      {
+       "id": "B",
+       "texto": "Proceso"
+      },
+      {
+       "id": "C",
+       "texto": "Salida"
+      },
+      {
+       "id": "D",
+       "texto": "No pertenece a ninguna"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "El usuario escribe 4 y luego 5 cuando el programa se lo pide. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "input() siempre devuelve texto, así que \"4\" + \"5\" se une como texto: \"45\". Para sumar deberías escribir int(a) + int(b).",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.10",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 6: los datos leídos deben convertirse antes de calcular",
+      "codigo": "U1-P04-I"
+     },
+     "temasCombinados": [
+      "1.10 Estructura general",
+      "1.5 Tipos de datos (conversión)"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": true,
+     "codigoPython": "a = input()\nb = input()\nprint(a + b)",
+     "entradaPrueba": "4\n5\n",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "9"
+      },
+      {
+       "id": "B",
+       "texto": "45"
+      },
+      {
+       "id": "C",
+       "texto": "4 5"
+      },
+      {
+       "id": "D",
+       "texto": "Da error"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "ordenar_lineas",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Ordena las líneas para convertir una cantidad de segundos en horas, minutos y segundos (8000 segundos son 2 h, 13 min y 20 s). Fíjate en qué dato necesita cada línea.",
+     "xp": 20,
+     "explicacion": "Primero se lee el dato (entrada). Luego se obtienen las horas con //, se calcula lo que sobra (resto) y con ese resto salen minutos y segundos. Al final se muestra todo. Si calculas minutos antes que resto, la variable aún no existe.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.10",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 4: convertir segundos en horas, minutos y segundos",
+      "codigo": "U1-P04-A"
+     },
+     "temasCombinados": [
+      "1.10 Estructura general",
+      "1.5.2 Operadores aritméticos",
+      "1.11 Diseño de un algoritmo"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "print(horas, minutos, segundos)"
+      },
+      {
+       "id": "B",
+       "texto": "minutos = resto // 60"
+      },
+      {
+       "id": "C",
+       "texto": "total = int(input(\"Segundos: \"))"
+      },
+      {
+       "id": "D",
+       "texto": "segundos = resto % 60"
+      },
+      {
+       "id": "E",
+       "texto": "horas = total // 3600"
+      },
+      {
+       "id": "F",
+       "texto": "resto = total % 3600"
+      }
+     ],
+     "respuestaCorrecta": "C,E,F,B,D,A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "En un diagrama de flujo escribes la pregunta \"¿nota >= 51?\". ¿Qué símbolo debes usar?",
+     "xp": 10,
+     "explicacion": "Toda pregunta con respuesta Sí/No se dibuja con un rombo y de él salen dos caminos.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.8",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Método de la Práctica Nro. 1, paso (c): diseño del programa en DFD (Secuenciales, ejercicio 1)",
+      "codigo": "U1-P05-B"
+     },
+     "temasCombinados": [
+      "1.8 Diagramas de flujo"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Óvalo (inicio/fin)"
+      },
+      {
+       "id": "B",
+       "texto": "Paralelogramo (entrada/salida)"
+      },
+      {
+       "id": "C",
+       "texto": "Rectángulo (proceso)"
+      },
+      {
+       "id": "D",
+       "texto": "Rombo (decisión)"
+      }
+     ],
+     "respuestaCorrecta": "D"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Un DFD tiene este flujo: Inicio → Leer distancia → Leer velocidad → tiempo = distancia / velocidad * 60 → Mostrar tiempo → Fin. ¿Cuántos símbolos de cada tipo necesita?",
+     "xp": 15,
+     "explicacion": "Dos lecturas y una impresión son 3 paralelogramos (entrada/salida); el cálculo es 1 rectángulo; Inicio y Fin son 2 óvalos. No hay preguntas, así que no hay rombos.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.8",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 6 (Salar de Uyuni)",
+      "codigo": "U1-P05-I"
+     },
+     "temasCombinados": [
+      "1.8 Diagramas de flujo",
+      "1.10 Estructura general"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": true,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3 paralelogramos, 1 rectángulo, 2 óvalos, 0 rombos"
+      },
+      {
+       "id": "B",
+       "texto": "2 paralelogramos, 2 rectángulos, 2 óvalos, 0 rombos"
+      },
+      {
+       "id": "C",
+       "texto": "3 paralelogramos, 1 rectángulo, 1 óvalo, 1 rombo"
+      },
+      {
+       "id": "D",
+       "texto": "2 paralelogramos, 1 rectángulo, 2 óvalos, 1 rombo"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Un compañero dibuja el DFD de \"leer un entero y, si es positivo, imprimir su doble\". Puso un rombo \"¿numero > 0?\" con una sola flecha de salida. ¿Qué le falta?",
+     "xp": 20,
+     "explicacion": "Un rombo siempre tiene dos caminos (Sí y No). Aunque en el camino \"No\" no se haga nada, la flecha debe existir y llegar al Fin; así el diagrama tiene un solo punto de salida.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.8",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 7: leer un entero y, si es positivo, imprimir el doble",
+      "codigo": "U1-P05-A"
+     },
+     "temasCombinados": [
+      "1.8 Diagramas de flujo",
+      "1.10 Estructura general"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Un segundo símbolo de Inicio"
+      },
+      {
+       "id": "B",
+       "texto": "Dos salidas rotuladas Sí y No: una por cada camino, que luego se unen antes del Fin"
+      },
+      {
+       "id": "C",
+       "texto": "Cambiar el rombo por un rectángulo"
+      },
+      {
+       "id": "D",
+       "texto": "Nada, el rombo con una salida es correcto"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "En pseudocódigo escribes \"Leer nombre\". ¿Cuál es la línea equivalente en Python?",
+     "xp": 10,
+     "explicacion": "En Python, input() lee lo que escribe el usuario y la asignación = lo guarda en la variable nombre.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.8",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1: solicitar el nombre del estudiante",
+      "codigo": "U1-P06-B"
+     },
+     "temasCombinados": [
+      "1.8 Pseudocódigo"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "nombre = input()"
+      },
+      {
+       "id": "B",
+       "texto": "input = nombre"
+      },
+      {
+       "id": "C",
+       "texto": "print(nombre)"
+      },
+      {
+       "id": "D",
+       "texto": "leer(nombre)"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "completar_codigo",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Pseudocódigo: \"Si nota es mayor o igual que 51 entonces Mostrar Aprobó, sino Mostrar Reprobó\". Completa el operador que falta en Python.",
+     "xp": 15,
+     "explicacion": "\"Mayor o igual\" se escribe >= en Python. Con > solamente, un estudiante con exactamente 51 quedaría reprobado por error.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.8",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1: determinar si aprobó o reprobó (mínimo 51)",
+      "codigo": "U1-P06-I"
+     },
+     "temasCombinados": [
+      "1.8 Pseudocódigo",
+      "1.5.2 Operadores relacionales"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": true,
+     "codigoPython": "nota = 70\nif nota ____ 51:\n    print(\"Aprobó\")\nelse:\n    print(\"Reprobó\")",
+     "respuestaCorrecta": ">="
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Pseudocódigo: i ← 1; s ← 0; Mientras i <= 4 hacer: s ← s + i; i ← i + 1; FinMientras; Mostrar s, i. Este es su equivalente en Python. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Se suman 1+2+3+4 = 10. El ciclo termina cuando i vale 5, y por eso se imprime 5 (no 4): la variable de control queda un paso más allá.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.8",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 9: ciclo con while",
+      "codigo": "U1-P06-A"
+     },
+     "temasCombinados": [
+      "1.8 Pseudocódigo",
+      "1.11 Diseño de un algoritmo"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "i = 1\ns = 0\nwhile i <= 4:\n    s = s + i\n    i = i + 1\nprint(s, i)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "10 4"
+      },
+      {
+       "id": "B",
+       "texto": "10 5"
+      },
+      {
+       "id": "C",
+       "texto": "4 5"
+      },
+      {
+       "id": "D",
+       "texto": "15 5"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Quieres saber cuántos alumnos del grupo aprobaron la materia. ¿Qué variable necesitas?",
+     "xp": 10,
+     "explicacion": "Un contador cuenta cuántas veces ocurre algo (+1 cada vez). Un acumulador suma valores distintos, como las notas.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 1: calificaciones de un grupo de N alumnos",
+      "codigo": "U1-P07-B"
+     },
+     "temasCombinados": [
+      "1.11 Contadores y acumuladores"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Un acumulador, que suma las notas"
+      },
+      {
+       "id": "B",
+       "texto": "Un contador, que aumenta de 1 en 1 por cada aprobado"
+      },
+      {
+       "id": "C",
+       "texto": "Una constante con la nota 51"
+      },
+      {
+       "id": "D",
+       "texto": "Una variable de tipo texto"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué imprime el programa? (cont cuenta aprobados y acum suma sus notas)",
+     "xp": 15,
+     "explicacion": "Aprueban 80, 90 y 51 (45 no). Son 3 aprobados y 80 + 90 + 51 = 221.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 1: cálculo con las notas de un grupo",
+      "codigo": "U1-P07-I"
+     },
+     "temasCombinados": [
+      "1.11 Contadores y acumuladores",
+      "1.5.2 Operadores relacionales"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": true,
+     "codigoPython": "notas = [80, 45, 90, 51]\ncont = 0\nacum = 0\nfor n in notas:\n    if n >= 51:\n        cont = cont + 1\n        acum = acum + n\nprint(cont, acum)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3 221"
+      },
+      {
+       "id": "B",
+       "texto": "4 266"
+      },
+      {
+       "id": "C",
+       "texto": "3 170"
+      },
+      {
+       "id": "D",
+       "texto": "2 170"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Este programa quiere el promedio de 4, 6 y 10 (que es 6.67), pero tiene un error escondido. ¿Qué imprime en realidad?",
+     "xp": 20,
+     "explicacion": "cont = 0 está dentro del ciclo, así que se reinicia en cada vuelta y al final vale 1. Se imprime 20 / 1 = 20.0. Los contadores y acumuladores se inicializan ANTES del ciclo.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 1: calificación media del grupo",
+      "codigo": "U1-P07-A"
+     },
+     "temasCombinados": [
+      "1.11 Contadores y acumuladores",
+      "1.5 Variables (inicialización)"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "codigoPython": "suma = 0\nfor n in [4, 6, 10]:\n    cont = 0\n    cont = cont + 1\n    suma = suma + n\nprint(suma / cont)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6.666666666666667"
+      },
+      {
+       "id": "B",
+       "texto": "20.0"
+      },
+      {
+       "id": "C",
+       "texto": "3.0"
+      },
+      {
+       "id": "D",
+       "texto": "1.0"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "La Práctica Nro. 1 pide resolver cada ejercicio con cuatro pasos. ¿Cuál es el orden correcto?",
+     "xp": 10,
+     "explicacion": "Primero se entiende qué se pide (definición), luego qué datos y fórmulas hay (análisis), después se diseña la solución y al final se prueba con casos.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Instrucciones generales de la Práctica Nro. 1: pasos a) a d)",
+      "codigo": "U1-P08-B"
+     },
+     "temasCombinados": [
+      "1.11 Diseño de un algoritmo"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Diseño, definición, análisis, prueba"
+      },
+      {
+       "id": "B",
+       "texto": "Definición del problema, análisis, diseño (DFD y Python), prueba"
+      },
+      {
+       "id": "C",
+       "texto": "Prueba, diseño, análisis, definición"
+      },
+      {
+       "id": "D",
+       "texto": "Análisis, prueba, diseño, definición"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Haz la prueba de escritorio con A = 7 y B = 2. ¿Qué imprime? (es la idea del residuo sin usar el operador módulo)",
+     "xp": 15,
+     "explicacion": "a // b = 3; 3 * 2 = 6; 7 - 6 = 1. Ese 1 es el residuo, el mismo valor que daría 7 % 2.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 8: residuo de una división sin utilizar el operador módulo",
+      "codigo": "U1-P08-I"
+     },
+     "temasCombinados": [
+      "1.11 Diseño de un algoritmo (prueba de escritorio)",
+      "1.5.2 Operadores aritméticos"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": true,
+     "codigoPython": "a = 7\nb = 2\nc = a - (a // b) * b\nprint(c)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "0"
+      },
+      {
+       "id": "B",
+       "texto": "1"
+      },
+      {
+       "id": "C",
+       "texto": "3"
+      },
+      {
+       "id": "D",
+       "texto": "3.5"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "La práctica exige mínimo 3 pruebas por ejercicio. Para el programa \"validar que la nota esté entre 0 y 100 y decir si aprueba con 51\", ¿qué conjunto de tres notas prueba mejor los casos límite?",
+     "xp": 20,
+     "explicacion": "50 (justo debajo de aprobar), 51 (justo el mínimo) y 101 (fuera del rango) son los lugares donde un programa suele fallar. Probar solo valores \"cómodos\" no descubre esos errores.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1 y pasos de la práctica: prueba de software y de escritorio (mínimo 3)",
+      "codigo": "U1-P08-A"
+     },
+     "temasCombinados": [
+      "1.11 Diseño de un algoritmo (casos de prueba)",
+      "1.5.2 Operadores relacionales"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "70, 80, 90"
+      },
+      {
+       "id": "B",
+       "texto": "50, 51, 101"
+      },
+      {
+       "id": "C",
+       "texto": "60, 60, 60"
+      },
+      {
+       "id": "D",
+       "texto": "100, 100, 99"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Para resolver un problema grande lo divides en partes pequeñas y resuelves cada una por separado. ¿Cómo se llama esta forma de trabajar?",
+     "xp": 10,
+     "explicacion": "Partir un problema en subproblemas más simples es la base del diseño descendente y de \"divide y vencerás\".",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.9",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Método de la Práctica Nro. 1, paso (b) Análisis del problema",
+      "codigo": "U1-P09-B"
+     },
+     "temasCombinados": [
+      "1.9 Metodologías de la programación"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Diseño descendente (top-down) / divide y vencerás"
+      },
+      {
+       "id": "B",
+       "texto": "Prueba y error sin planificar"
+      },
+      {
+       "id": "C",
+       "texto": "Programación en código máquina"
+      },
+      {
+       "id": "D",
+       "texto": "Copiar y pegar soluciones"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Para el ejercicio del Parque Madidi, Marta lo divide en: (1) leer tipo de visitante y cantidades, (2) calcular el subtotal, (3) aplicar el descuento por grupo, (4) mostrar el total. ¿Qué técnica aplicó?",
+     "xp": 15,
+     "explicacion": "Descomponer el problema en pasos cada vez más concretos es refinamiento por pasos. Es lo que se pide en el análisis y diseño de cada ejercicio.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.9",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 8: total a pagar por visitar el Parque Nacional Madidi",
+      "codigo": "U1-P09-I"
+     },
+     "temasCombinados": [
+      "1.9 Metodologías de la programación",
+      "1.11 Refinamiento por pasos"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": true,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Refinamiento por pasos (diseño descendente)"
+      },
+      {
+       "id": "B",
+       "texto": "Recursividad"
+      },
+      {
+       "id": "C",
+       "texto": "Ordenamiento de vectores"
+      },
+      {
+       "id": "D",
+       "texto": "Interfaz gráfica"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "¿Cuál de estas afirmaciones sobre dividir un programa en módulos NO es una ventaja real?",
+     "xp": 20,
+     "explicacion": "La modularidad mejora la organización, la reutilización y el mantenimiento, pero no garantiza velocidad de ejecución.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.9",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Método de la Práctica Nro. 1, paso (c) Diseño del programa",
+      "codigo": "U1-P09-A"
+     },
+     "temasCombinados": [
+      "1.9 Metodologías de la programación",
+      "1.11 Diseño de un algoritmo"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Facilita reutilizar partes en otros programas"
+      },
+      {
+       "id": "B",
+       "texto": "Permite que varias personas trabajen en partes distintas"
+      },
+      {
+       "id": "C",
+       "texto": "Hace que el programa siempre se ejecute el doble de rápido"
+      },
+      {
+       "id": "D",
+       "texto": "Facilita encontrar y corregir errores"
+      }
+     ],
+     "respuestaCorrecta": "C"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un estudiante con promedio 100 recibe Bs. 1000 más Bs. 800 por cada hermano inscrito. Si tiene 3 hermanos, ¿cuánto recibe?",
+     "xp": 10,
+     "explicacion": "1000 + 3 × 800 = 1000 + 2400 = 3400.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.7.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 1: bono para los mejores estudiantes de Ingeniería de Sistemas",
+      "codigo": "U1-P10-B"
+     },
+     "temasCombinados": [
+      "1.7.2 Razonamiento matemático"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Bs. 1800"
+      },
+      {
+       "id": "B",
+       "texto": "Bs. 3400"
+      },
+      {
+       "id": "C",
+       "texto": "Bs. 2400"
+      },
+      {
+       "id": "D",
+       "texto": "Bs. 3000"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Para convertir 8000 segundos en horas, minutos y segundos (2 h, 13 min, 20 s), ¿qué expresión da correctamente los 13 minutos?",
+     "xp": 15,
+     "explicacion": "8000 % 3600 = 800 son los segundos que sobran después de sacar las horas; 800 // 60 = 13. Usar 8000 // 60 daría 133 (minutos totales).",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.7.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 4: conversión de segundos a horas, minutos y segundos",
+      "codigo": "U1-P10-I"
+     },
+     "temasCombinados": [
+      "1.7.2 Razonamiento matemático",
+      "1.6 Expresiones"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": true,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "8000 // 60"
+      },
+      {
+       "id": "B",
+       "texto": "(8000 % 3600) // 60"
+      },
+      {
+       "id": "C",
+       "texto": "8000 % 60"
+      },
+      {
+       "id": "D",
+       "texto": "8000 // 3600"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Fundamentos de la Programación",
+     "tipo": "opcion_multiple",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Regla del bono: lo recibe quien tiene hermanos inscritos Y promedio >= 90. Juan tiene promedio 92 y 0 hermanos; Ana tiene promedio 88 y 2 hermanos; Rosa tiene promedio 95 y 1 hermano. ¿Quiénes reciben bono?",
+     "xp": 20,
+     "explicacion": "La regla usa \"Y\": se deben cumplir las dos condiciones. Juan no tiene hermanos y Ana no llega a 90, así que solo Rosa cumple ambas.",
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.7.1",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 1: el estudiante no recibe bono si no tiene hermanos inscritos",
+      "codigo": "U1-P10-A"
+     },
+     "temasCombinados": [
+      "1.7.1 Razonamiento lógico-heurístico",
+      "1.5.2 Operadores lógicos"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Juan, Ana y Rosa"
+      },
+      {
+       "id": "B",
+       "texto": "Solo Rosa"
+      },
+      {
+       "id": "C",
+       "texto": "Juan y Rosa"
+      },
+      {
+       "id": "D",
+       "texto": "Ana y Rosa"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    }
+   ],
+   "retos": [
+    {
+     "codigo": "RP1-SEC04",
+     "titulo": "Práctica 1 · Secuenciales 4: Segundos a horas, minutos y segundos",
+     "categoria": "Secuenciales",
+     "tema": "1.11",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Crear un programa que permita convertir una cantidad de segundos en horas, minutos y segundos.\nPor ejemplo, en 8000 segundos hay 2 horas, 13 minutos y 20 segundos.",
+     "ejemploEntrada": "8000\n",
+     "ejemploSalida": "Cantidad de segundos: 8000\n8000 segundos = 2 horas, 13 minutos y 20 segundos",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "8000\n",
+       "salida": "Cantidad de segundos: 8000\n8000 segundos = 2 horas, 13 minutos y 20 segundos"
+      },
+      {
+       "label": "Menos de un minuto",
+       "stdin": "59\n",
+       "salida": "Cantidad de segundos: 59\n59 segundos = 0 horas, 0 minutos y 59 segundos"
+      },
+      {
+       "label": "Exactamente una hora",
+       "stdin": "3600\n",
+       "salida": "Cantidad de segundos: 3600\n3600 segundos = 1 horas, 0 minutos y 0 segundos"
+      }
+     ],
+     "solucionReferencia": "total = int(input(\"Cantidad de segundos: \"))\nhoras = total // 3600\nresto = total % 3600\nminutos = resto // 60\nsegundos = resto % 60\nprint(f\"{total} segundos = {horas} horas, {minutos} minutos y {segundos} segundos\")",
+     "criteriosEvaluacion": [
+      "Obtiene horas con // 3600 y guarda el resto.",
+      "Obtiene minutos y segundos a partir del resto.",
+      "Reproduce el ejemplo: 8000 → 2 h 13 min 20 s."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 4",
+      "codigo": "RP1-SEC04"
+     }
+    },
+    {
+     "codigo": "RP1-SEC05",
+     "titulo": "Práctica 1 · Secuenciales 5: Área sombreada de la figura de círculos",
+     "categoria": "Secuenciales",
+     "tema": "1.6",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular el área sombreada de la siguiente figura. (La figura es un cuadrado de lado 2a dividido en cuatro cuadrados de lado a; en cada uno hay un círculo inscrito dividido en cuatro sectores, y están sombreados 1, 2, 2 y 1 sectores, es decir 6 sectores en total.)\nPista de análisis: cada círculo tiene radio a/2, así que un sector (cuarto de círculo) mide π·(a/2)²/4 = π·a²/16. Con 6 sectores sombreados el área es 6·π·a²/16 = 3·π·a²/8. Confirmar con el docente el conteo de sectores de la figura.",
+     "ejemploEntrada": "2\n",
+     "ejemploSalida": "Lado a: 2\nÁrea sombreada: 4.71",
+     "pruebas": [
+      {
+       "label": "a = 2",
+       "stdin": "2\n",
+       "salida": "Lado a: 2\nÁrea sombreada: 4.71"
+      },
+      {
+       "label": "a = 4",
+       "stdin": "4\n",
+       "salida": "Lado a: 4\nÁrea sombreada: 18.85"
+      },
+      {
+       "label": "a = 1",
+       "stdin": "1\n",
+       "salida": "Lado a: 1\nÁrea sombreada: 1.18"
+      }
+     ],
+     "solucionReferencia": "import math\na = float(input(\"Lado a: \"))\nradio = a / 2\nsector = math.pi * radio ** 2 / 4\narea = 6 * sector\nprint(f\"Área sombreada: {area:.2f}\")",
+     "criteriosEvaluacion": [
+      "Calcula el radio como a/2 y el área de un sector como π·r²/4.",
+      "Multiplica por 6 sectores sombreados.",
+      "Importa math (o usa 3.1416) y da el resultado con 2 decimales."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.6",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 5",
+      "codigo": "RP1-SEC05"
+     }
+    },
+    {
+     "codigo": "RP1-SEC06",
+     "titulo": "Práctica 1 · Secuenciales 6: Tiempo de viaje por el Salar de Uyuni",
+     "categoria": "Secuenciales",
+     "tema": "1.10",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Un vehículo turístico realiza un recorrido en línea recta a través del Salar de Uyuni, desde la localidad de Colchani hasta la isla Incahuasi. Escribe un programa que pida al usuario la distancia a recorrer en kilómetros (distancia) y la velocidad constante del vehículo en km/h (velocidad). El programa debe calcular y mostrar el tiempo estimado de viaje en minutos.\nTiempo (minutos) = (distancia / velocidad) × 60",
+     "ejemploEntrada": "72\n50\n",
+     "ejemploSalida": "Ingrese la distancia a recorrer en km: 72\nIngrese la velocidad constante del vehículo (km/h): 50\nTiempo estimado de viaje 86.40 minutos",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (86.40 min)",
+       "stdin": "72\n50\n",
+       "salida": "Ingrese la distancia a recorrer en km: 72\nIngrese la velocidad constante del vehículo (km/h): 50\nTiempo estimado de viaje 86.40 minutos"
+      },
+      {
+       "label": "Recorrido largo",
+       "stdin": "300\n60\n",
+       "salida": "Ingrese la distancia a recorrer en km: 300\nIngrese la velocidad constante del vehículo (km/h): 60\nTiempo estimado de viaje 300.00 minutos"
+      },
+      {
+       "label": "Recorrido corto",
+       "stdin": "10\n40\n",
+       "salida": "Ingrese la distancia a recorrer en km: 10\nIngrese la velocidad constante del vehículo (km/h): 40\nTiempo estimado de viaje 15.00 minutos"
+      }
+     ],
+     "solucionReferencia": "distancia = float(input(\"Ingrese la distancia a recorrer en km: \"))\nvelocidad = float(input(\"Ingrese la velocidad constante del vehículo (km/h): \"))\ntiempo = distancia / velocidad * 60\nprint(f\"Tiempo estimado de viaje {tiempo:.2f} minutos\")",
+     "criteriosEvaluacion": [
+      "Aplica la fórmula distancia / velocidad × 60.",
+      "Convierte las entradas a número (float).",
+      "Muestra el tiempo con 2 decimales como en el ejemplo."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.10",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 6",
+      "codigo": "RP1-SEC06"
+     }
+    },
+    {
+     "codigo": "RP1-SEC07",
+     "titulo": "Práctica 1 · Secuenciales 7: Presupuesto por Carrera con sanción",
+     "categoria": "Secuenciales",
+     "tema": "1.11",
+     "nivelSugerido": "intermedio",
+     "enunciado": "En el Área de Ciencias Económicas y Financieras de la UPEA el presupuesto anual se asigna a sus cuatro Carreras según la tabla: Economía 19 %, Administración de Empresas 25 %, Contaduría Pública 32 %, Comercio Internacional 24 %.\nObtener la cantidad de dinero que recibirá cada Carrera para cualquier monto presupuestal, tomando en cuenta que se debe sancionar a la Carrera de Contaduría Pública por incumplimiento de normativas descontando 10 % del dinero que le corresponde.\nEjemplo: mp = 20000 → de = 3.800, dae = 5.000, dcp = 6400, dci = 4.800.\nObservación para el docente: en el ejemplo de la práctica Contaduría Pública figura con 6400, que es el 32 % SIN sanción. Si se aplica el descuento pedido en el enunciado, corresponde 5760. La solución de referencia aplica la sanción; confirmar cuál de los dos criterios se tomará.",
+     "ejemploEntrada": "20000\n",
+     "ejemploSalida": "Monto presupuestal: 20000\nEconomía: 3800.00\nAdministración de Empresas: 5000.00\nContaduría Pública (con sanción): 5760.00\nComercio Internacional: 4800.00",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "20000\n",
+       "salida": "Monto presupuestal: 20000\nEconomía: 3800.00\nAdministración de Empresas: 5000.00\nContaduría Pública (con sanción): 5760.00\nComercio Internacional: 4800.00"
+      },
+      {
+       "label": "Otro monto",
+       "stdin": "50000\n",
+       "salida": "Monto presupuestal: 50000\nEconomía: 9500.00\nAdministración de Empresas: 12500.00\nContaduría Pública (con sanción): 14400.00\nComercio Internacional: 12000.00"
+      },
+      {
+       "label": "Monto pequeño",
+       "stdin": "1000\n",
+       "salida": "Monto presupuestal: 1000\nEconomía: 190.00\nAdministración de Empresas: 250.00\nContaduría Pública (con sanción): 288.00\nComercio Internacional: 240.00"
+      }
+     ],
+     "solucionReferencia": "mp = float(input(\"Monto presupuestal: \"))\nde = mp * 0.19\ndae = mp * 0.25\ndcp = mp * 0.32\ndcp = dcp - dcp * 0.10\ndci = mp * 0.24\nprint(f\"Economía: {de:.2f}\")\nprint(f\"Administración de Empresas: {dae:.2f}\")\nprint(f\"Contaduría Pública (con sanción): {dcp:.2f}\")\nprint(f\"Comercio Internacional: {dci:.2f}\")",
+     "criteriosEvaluacion": [
+      "Aplica cada porcentaje al monto presupuestal.",
+      "Descuenta el 10 % solo a Contaduría Pública.",
+      "Muestra los cuatro montos con 2 decimales."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.11",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 7",
+      "codigo": "RP1-SEC07"
+     }
+    },
+    {
+     "codigo": "RP1-SEC08",
+     "titulo": "Práctica 1 · Secuenciales 8: Residuo sin usar el operador módulo",
+     "categoria": "Secuenciales",
+     "tema": "1.6",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Obtener el residuo de una división de dos números enteros, sin utilizar el operador módulo.\nEjemplo: A = 7, B = 2 → 7 ÷ 2 = 3 y el residuo es 1.",
+     "ejemploEntrada": "7\n2\n",
+     "ejemploSalida": "Dividendo A: 7\nDivisor B: 2\nResiduo: 1",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "7\n2\n",
+       "salida": "Dividendo A: 7\nDivisor B: 2\nResiduo: 1"
+      },
+      {
+       "label": "División exacta",
+       "stdin": "20\n5\n",
+       "salida": "Dividendo A: 20\nDivisor B: 5\nResiduo: 0"
+      },
+      {
+       "label": "Dividendo menor que el divisor",
+       "stdin": "5\n9\n",
+       "salida": "Dividendo A: 5\nDivisor B: 9\nResiduo: 5"
+      }
+     ],
+     "solucionReferencia": "a = int(input(\"Dividendo A: \"))\nb = int(input(\"Divisor B: \"))\nif b == 0:\n    print(\"Error: el divisor no puede ser 0\")\nelse:\n    residuo = a - (a // b) * b\n    print(\"Residuo:\", residuo)",
+     "criteriosEvaluacion": [
+      "No usa el operador %.",
+      "Usa la relación residuo = A − (A // B) × B.",
+      "Controla que B no sea 0."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "1",
+      "tema": "1.6",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 8",
+      "codigo": "RP1-SEC08"
+     }
+    }
+   ]
+  },
+  "2": {
+   "ejercicios": [
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "La programación estructurada se construye con tres estructuras básicas. ¿Cuáles son?",
+     "xp": 10,
+     "explicacion": "Secuencia (instrucciones una tras otra), selección (elegir con if) y repetición (ciclos for y while). Todos los ejercicios de la práctica se resuelven combinándolas.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.1",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secciones Secuenciales, Condicionales e Iterativas de la Práctica Nro. 1 (las tres estructuras)",
+      "codigo": "U2-P01-B"
+     },
+     "temasCombinados": [
+      "2.1 Conceptos de programación estructurada"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Secuencia, selección y repetición"
+      },
+      {
+       "id": "B",
+       "texto": "Variable, constante y operador"
+      },
+      {
+       "id": "C",
+       "texto": "Entrada, memoria y pantalla"
+      },
+      {
+       "id": "D",
+       "texto": "Compilar, ejecutar y depurar"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué muestra el programa en pantalla?",
+     "xp": 15,
+     "explicacion": "Las líneas se ejecutan en orden (secuencia). La condición 3 > 5 es falsa, así que el bloque con print(\"B\") se salta, y el programa continúa con \"C\".",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.1",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 7: ejecutar una instrucción solo si se cumple una condición",
+      "codigo": "U2-P01-I"
+     },
+     "temasCombinados": [
+      "2.1 Secuencia y selección",
+      "2.2 Estructuras secuenciales"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": true,
+     "codigoPython": "print(\"A\")\nif 3 > 5:\n    print(\"B\")\nprint(\"C\")",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "A y luego C"
+      },
+      {
+       "id": "B",
+       "texto": "A, B y C"
+      },
+      {
+       "id": "C",
+       "texto": "Solo A"
+      },
+      {
+       "id": "D",
+       "texto": "B y luego C"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Este programa combina secuencia, selección y repetición. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "El ciclo recorre i = 1, 2, 3, 4, 5. Solo se suman los impares: 1 + 3 + 5 = 9.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.1",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 9: números impares con ciclo",
+      "codigo": "U2-P01-A"
+     },
+     "temasCombinados": [
+      "2.1 Las tres estructuras",
+      "2.3 Selección",
+      "2.4 Repetición"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "codigoPython": "total = 0\nfor i in range(1, 6):\n    if i % 2 == 1:\n        total += i\nprint(total)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "15"
+      },
+      {
+       "id": "B",
+       "texto": "9"
+      },
+      {
+       "id": "C",
+       "texto": "6"
+      },
+      {
+       "id": "D",
+       "texto": "5"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un vehículo recorre 72 km a 50 km/h por el Salar de Uyuni. ¿Qué imprime el programa?",
+     "xp": 10,
+     "explicacion": "72 / 50 = 1.44 horas y 1.44 × 60 = 86.4 minutos. El formato :.2f muestra siempre dos decimales (86.40).",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 6 (Salar de Uyuni): tiempo = (distancia / velocidad) × 60",
+      "codigo": "U2-P02-B"
+     },
+     "temasCombinados": [
+      "2.2 Estructuras secuenciales",
+      "2.2 Formato de salida"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "distancia = 72\nvelocidad = 50\ntiempo = distancia / velocidad * 60\nprint(f\"Tiempo estimado: {tiempo:.2f} minutos\")",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Tiempo estimado: 86.40 minutos"
+      },
+      {
+       "id": "B",
+       "texto": "Tiempo estimado: 1.44 minutos"
+      },
+      {
+       "id": "C",
+       "texto": "Tiempo estimado: 86 minutos"
+      },
+      {
+       "id": "D",
+       "texto": "Tiempo estimado: 8640.00 minutos"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "completar_codigo",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Completa para calcular lo que recibe la Carrera de Economía (19 % del presupuesto).",
+     "xp": 15,
+     "explicacion": "El 19 % se escribe como 0.19 (19 / 100). Multiplicar el presupuesto por 0.19 da su porción: con 20000 son 3800.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 7: presupuesto de las Carreras del Área de Ciencias Económicas",
+      "codigo": "U2-P02-I"
+     },
+     "temasCombinados": [
+      "2.2 Estructuras secuenciales",
+      "2.2 Porcentajes"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": true,
+     "codigoPython": "mp = float(input(\"Presupuesto: \"))\nde = mp * ____\nprint(de)",
+     "respuestaCorrecta": "0.19|19 / 100|19/100|0.19*1"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Contaduría Pública recibe el 32 % del presupuesto, pero es sancionada con un descuento del 10 % de lo que le corresponde. Con mp = 20000, ¿qué imprime?",
+     "xp": 20,
+     "explicacion": "Primero 20000 × 0.32 = 6400. Luego se descuenta el 10 % de 6400 (640): 6400 − 640 = 5760. Descontar sobre lo que le corresponde (no sobre el total) es la clave.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.2",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 7: sanción del 10 % a Contaduría Pública",
+      "codigo": "U2-P02-A"
+     },
+     "temasCombinados": [
+      "2.2 Estructuras secuenciales",
+      "2.2 Porcentajes encadenados"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "mp = 20000\ndcp = mp * 0.32\ndcp = dcp - dcp * 0.10\nprint(f\"{dcp:.2f}\")",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6400.00"
+      },
+      {
+       "id": "B",
+       "texto": "5760.00"
+      },
+      {
+       "id": "C",
+       "texto": "6080.00"
+      },
+      {
+       "id": "D",
+       "texto": "640.00"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "El programa clasifica la hora del día. Con hora = 8, ¿qué imprime?",
+     "xp": 10,
+     "explicacion": "8 no es <= 5, pero sí <= 11, y en ese momento se elige \"Mañana\". En un if-elif-else solo se ejecuta la primera rama verdadera, las demás ya no se revisan.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 9: momento del día según la hora",
+      "codigo": "U2-P03-B"
+     },
+     "temasCombinados": [
+      "2.3 if-elif-else",
+      "2.3 Condiciones por rangos"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "codigoPython": "hora = 8\nif hora <= 5:\n    print(\"Madrugada\")\nelif hora <= 11:\n    print(\"Mañana\")\nelif hora <= 13:\n    print(\"Mediodía\")\nelif hora <= 19:\n    print(\"Tarde\")\nelse:\n    print(\"Noche\")",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Madrugada"
+      },
+      {
+       "id": "B",
+       "texto": "Mañana"
+      },
+      {
+       "id": "C",
+       "texto": "Mediodía"
+      },
+      {
+       "id": "D",
+       "texto": "Tarde"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Una empresa descuenta 3 % (1000–2000), 5 % (2001–5000), 7 % (5001–10000) y 10 % (más de 10000). Con compra = 5000, ¿qué imprime?",
+     "xp": 15,
+     "explicacion": "5000 está en el tramo 2001–5000, así que el descuento es 5 %: 5000 × 0.95 = 4750.0. El valor 5000 NO entra al tramo del 7 % porque ese empieza en 5001.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 4: descuentos según el total de compra",
+      "codigo": "U2-P03-I"
+     },
+     "temasCombinados": [
+      "2.3 if-elif-else",
+      "2.2 Cálculo de porcentajes"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": true,
+     "codigoPython": "compra = 5000\nif compra > 10000:\n    d = 0.10\nelif compra > 5000:\n    d = 0.07\nelif compra > 2000:\n    d = 0.05\nelif compra >= 1000:\n    d = 0.03\nelse:\n    d = 0\nprint(compra * (1 - d))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "4650.0"
+      },
+      {
+       "id": "B",
+       "texto": "4750.0"
+      },
+      {
+       "id": "C",
+       "texto": "5000.0"
+      },
+      {
+       "id": "D",
+       "texto": "4500.0"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Un estudiante programó los grupos etarios así, pero el resultado no es el esperado. Con edad = 15, ¿qué imprime?",
+     "xp": 20,
+     "explicacion": "Como 15 >= 0 es verdadero, se entra a la primera rama y las demás nunca se evalúan. Cuando los rangos se escriben con >=, hay que empezar por el mayor (>= 12 antes que >= 6 antes que >= 0).",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 12: grupo etario con condicionales anidadas",
+      "codigo": "U2-P03-A"
+     },
+     "temasCombinados": [
+      "2.3 Orden de las condiciones",
+      "2.3 Rangos"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "codigoPython": "edad = 15\nif edad >= 0:\n    g = \"Infancia\"\nelif edad >= 6:\n    g = \"Niñez\"\nelif edad >= 12:\n    g = \"Adolescencia\"\nprint(g)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Adolescencia"
+      },
+      {
+       "id": "B",
+       "texto": "Niñez"
+      },
+      {
+       "id": "C",
+       "texto": "Infancia"
+      },
+      {
+       "id": "D",
+       "texto": "Da error"
+      }
+     ],
+     "respuestaCorrecta": "C"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Clasificación de un triángulo con lados a = 5, b = 5, c = 8. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "No son los tres iguales, pero a y b sí coinciden, así que el triángulo es isósceles (dos lados iguales).",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 3: equilátero, isósceles o escaleno",
+      "codigo": "U2-P04-B"
+     },
+     "temasCombinados": [
+      "2.3 Operadores lógicos",
+      "2.3 if-elif-else"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "codigoPython": "a, b, c = 5, 5, 8\nif a == b and b == c:\n    print(\"Equilátero\")\nelif a == b or b == c or a == c:\n    print(\"Isósceles\")\nelse:\n    print(\"Escaleno\")",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Equilátero"
+      },
+      {
+       "id": "B",
+       "texto": "Isósceles"
+      },
+      {
+       "id": "C",
+       "texto": "Escaleno"
+      },
+      {
+       "id": "D",
+       "texto": "No imprime nada"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Bono para estudiantes con hermanos inscritos. Con promedio = 95 y hermanos = 2, ¿qué imprime?",
+     "xp": 15,
+     "explicacion": "Tiene hermanos, así que entra al if externo. Con promedio 95 aplica la rama de 900 + 700 por hermano: 900 + 2 × 700 = 2300.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 1: bono por promedio y hermanos inscritos",
+      "codigo": "U2-P04-I"
+     },
+     "temasCombinados": [
+      "2.3 Condicionales anidadas",
+      "2.2 Expresiones aritméticas"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": true,
+     "codigoPython": "promedio = 95\nhermanos = 2\nbono = 0\nif hermanos > 0:\n    if promedio == 100:\n        bono = 1000 + 800 * hermanos\n    elif promedio >= 95:\n        bono = 900 + 700 * hermanos\n    elif promedio >= 90:\n        bono = 800 + 600 * hermanos\nprint(bono)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2300"
+      },
+      {
+       "id": "B",
+       "texto": "2400"
+      },
+      {
+       "id": "C",
+       "texto": "1600"
+      },
+      {
+       "id": "D",
+       "texto": "0"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Entrada al Parque Madidi: si el grupo supera los 5 integrantes se descuenta el 10 % del total. Con tipo = \"E\", 3 adultos y 3 niños, ¿qué imprime? (Extranjero: adulto 200 Bs, niño 100 Bs)",
+     "xp": 20,
+     "explicacion": "Subtotal: 3 × 200 + 3 × 100 = 900. El grupo tiene 6 personas (más de 5), así que el descuento es 90.0 y se paga 900 − 90.0 = 810.0 (el resultado queda decimal porque 0.10 es decimal).",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 8: total a pagar por visitar el Parque Nacional Madidi",
+      "codigo": "U2-P04-A"
+     },
+     "temasCombinados": [
+      "2.3 Condicionales anidadas",
+      "2.3 Operadores lógicos",
+      "2.2 Porcentajes"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "codigoPython": "tipo = \"E\"\nadultos = 3\nninos = 3\nif tipo == \"N\":\n    subtotal = adultos * 30 + ninos * 15\nelse:\n    subtotal = adultos * 200 + ninos * 100\ndescuento = 0\nif adultos + ninos > 5:\n    descuento = subtotal * 0.10\nprint(subtotal - descuento)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "900"
+      },
+      {
+       "id": "B",
+       "texto": "810.0"
+      },
+      {
+       "id": "C",
+       "texto": "850.0"
+      },
+      {
+       "id": "D",
+       "texto": "900.0"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime este ciclo? (end=\" \" hace que los valores salgan en la misma línea)",
+     "xp": 10,
+     "explicacion": "El ciclo se repite mientras n sea mayor que 0: imprime 3, luego 2, luego 1. Cuando n llega a 0 la condición es falsa y termina (el 0 no se imprime).",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 9: ciclo con while",
+      "codigo": "U2-P05-B"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo while",
+      "2.4 Contador"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "codigoPython": "n = 3\nwhile n > 0:\n    print(n, end=\" \")\n    n = n - 1",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3 2 1"
+      },
+      {
+       "id": "B",
+       "texto": "1 2 3"
+      },
+      {
+       "id": "C",
+       "texto": "3 2 1 0"
+      },
+      {
+       "id": "D",
+       "texto": "0 1 2"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "El usuario escribe 4, -2, 7 y 0 (el 0 cierra el programa). ¿Qué imprime? (el programa cuenta positivos y negativos)",
+     "xp": 15,
+     "explicacion": "4 y 7 son positivos (2) y -2 es negativo (1). El 0 es el centinela: corta el ciclo y no se cuenta.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 2: contar positivos y negativos hasta que se ingrese 0",
+      "codigo": "U2-P05-I"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo while con centinela",
+      "2.3 Selección dentro de ciclos"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": true,
+     "codigoPython": "pos = 0\nneg = 0\nn = int(input())\nwhile n != 0:\n    if n > 0:\n        pos += 1\n    else:\n        neg += 1\n    n = int(input())\nprint(pos, neg)",
+     "entradaPrueba": "4\n-2\n7\n0\n",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2 1"
+      },
+      {
+       "id": "B",
+       "texto": "3 1"
+      },
+      {
+       "id": "C",
+       "texto": "1 2"
+      },
+      {
+       "id": "D",
+       "texto": "2 2"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "completar_codigo",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Lee y suma números mientras no se ingrese uno negativo. Completa la condición del ciclo. (Si se ingresa 2, 5, 6 y -1, debe imprimir 13.)",
+     "xp": 20,
+     "explicacion": "El ciclo debe repetirse mientras el número NO sea negativo, es decir, n >= 0. El negativo corta el ciclo y nunca se suma.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 7: leer y sumar números positivos hasta que se ingrese uno negativo",
+      "codigo": "U2-P05-A"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo while",
+      "2.4 Acumulador",
+      "2.3 Condición de parada"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "codigoPython": "suma = 0\nn = int(input())\nwhile ____:\n    suma += n\n    n = int(input())\nprint(suma)",
+     "entradaPrueba": "2\n5\n6\n-1\n",
+     "respuestaCorrecta": "n >= 0|n>=0|0 <= n|0<=n|n > -1|n>-1"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "completar_codigo",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Completa para mostrar la tabla de multiplicar del 7 del 1 al 5 (7 * 1 = 7 … 7 * 5 = 35). Recuerda: range(1, N) llega hasta N - 1.",
+     "xp": 10,
+     "explicacion": "range(1, 6) genera 1, 2, 3, 4 y 5. El límite superior no se incluye, por eso se escribe 6.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 3: tabla de multiplicar hasta el 5",
+      "codigo": "U2-P06-B"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo for",
+      "2.4 range"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "numero = 7\nfor i in range(1, ____):\n    print(numero, \"*\", i, \"=\", numero * i)",
+     "respuestaCorrecta": "6"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué imprime el programa? (continue salta a la siguiente vuelta; break termina el ciclo)",
+     "xp": 15,
+     "explicacion": "Se suman 1, 2, 4, 5, 7 y 8 (los múltiplos de 3 se saltan con continue). En i = 9 se salta por ser múltiplo de 3 y en i = 10 se corta con break. Total: 27.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicios 3 y 4: ciclo for con control de valores",
+      "codigo": "U2-P06-I"
+     },
+     "temasCombinados": [
+      "2.4 for y range",
+      "2.4 continue y break",
+      "2.3 Selección"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": true,
+     "codigoPython": "suma = 0\nfor i in range(1, 11):\n    if i % 3 == 0:\n        continue\n    if i > 8:\n        break\n    suma += i\nprint(suma)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "27"
+      },
+      {
+       "id": "B",
+       "texto": "37"
+      },
+      {
+       "id": "C",
+       "texto": "36"
+      },
+      {
+       "id": "D",
+       "texto": "55"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Los ejercicios de figuras usan texto repetido. ¿Qué dibuja este programa?",
+     "xp": 20,
+     "explicacion": "En la fila i hay (4 − i) espacios y luego i asteriscos. Los espacios van empujando la figura hacia la derecha, formando un triángulo alineado a la derecha.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicios 4 y 5: generar figuras con ciclo for",
+      "codigo": "U2-P06-A"
+     },
+     "temasCombinados": [
+      "2.4 for anidados / figuras",
+      "2.2 Operaciones con cadenas"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "for i in range(1, 5):\n    print(\" \" * (4 - i) + \"*\" * i)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "   *\n  **\n ***\n****"
+      },
+      {
+       "id": "B",
+       "texto": "*\n**\n***\n****"
+      },
+      {
+       "id": "C",
+       "texto": "****\n ***\n  **\n   *"
+      },
+      {
+       "id": "D",
+       "texto": "   *\n  ***\n *****\n*******"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un menú tiene las opciones 1. Sumar, 2. Restar, 3. Multiplicar y 4. Salir. ¿Qué condición hace que el menú se repita hasta que el usuario elija salir?",
+     "xp": 10,
+     "explicacion": "El ciclo continúa mientras la opción sea distinta de 4. Cuando el usuario elige 4, la condición es falsa y el programa termina.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 2: menú que se repite hasta elegir salir",
+      "codigo": "U2-P07-B"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo while",
+      "2.4 Menús"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "while opcion != 4:"
+      },
+      {
+       "id": "B",
+       "texto": "while opcion == 4:"
+      },
+      {
+       "id": "C",
+       "texto": "if opcion != 4:"
+      },
+      {
+       "id": "D",
+       "texto": "for opcion in 4:"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Con a = 6 y b = 3, el usuario elige las opciones 1, 3 y 4 (en ese orden). ¿Qué imprime el programa?",
+     "xp": 15,
+     "explicacion": "La opción 1 suma (9), la 3 multiplica (18) y la 4 no entra a ningún if, pero hace que el ciclo termine y se imprima \"Fin\".",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 2: menú sumar, restar, multiplicar y salir",
+      "codigo": "U2-P07-I"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo while (menú)",
+      "2.3 if-elif"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": true,
+     "codigoPython": "a, b = 6, 3\nopcion = 0\nwhile opcion != 4:\n    opcion = int(input())\n    if opcion == 1:\n        print(a + b)\n    elif opcion == 2:\n        print(a - b)\n    elif opcion == 3:\n        print(a * b)\nprint(\"Fin\")",
+     "entradaPrueba": "1\n3\n4\n",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "9 18 Fin"
+      },
+      {
+       "id": "B",
+       "texto": "9 18 0 Fin"
+      },
+      {
+       "id": "C",
+       "texto": "3 18 Fin"
+      },
+      {
+       "id": "D",
+       "texto": "9 3 Fin"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "ordenar_lineas",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Ordena el programa del menú: debe pedir una opción, mostrar un mensaje según la opción y repetirse hasta elegir 3 (Salir). Respeta la sangría (los espacios al inicio).",
+     "xp": 20,
+     "explicacion": "Primero se inicializa opcion (para que el while pueda evaluarse), luego el while, dentro se lee la opción y se decide con if/elif. Si el while estuviera antes de inicializar la variable, Python daría error.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 2: menú con opciones y salida",
+      "codigo": "U2-P07-A"
+     },
+     "temasCombinados": [
+      "2.4 Ciclo while",
+      "2.3 Selección",
+      "2.1 Estructura de un programa"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "    elif opcion == 2:"
+      },
+      {
+       "id": "B",
+       "texto": "opcion = 0"
+      },
+      {
+       "id": "C",
+       "texto": "        print(\"Restando\")"
+      },
+      {
+       "id": "D",
+       "texto": "    if opcion == 1:"
+      },
+      {
+       "id": "E",
+       "texto": "while opcion != 3:"
+      },
+      {
+       "id": "F",
+       "texto": "        print(\"Sumando\")"
+      },
+      {
+       "id": "G",
+       "texto": "    opcion = int(input(\"Opción: \"))"
+      }
+     ],
+     "respuestaCorrecta": "B,E,G,D,F,A,C"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Para separar los dígitos de un número se usan % 10 y // 10. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "n % 10 es el último dígito (6) y n // 10 es el número sin ese último dígito (45). Repitiendo esto se recorren todos los dígitos.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 10 y Series, ejercicios 5–7: trabajo con los dígitos de un número",
+      "codigo": "U2-P08-B"
+     },
+     "temasCombinados": [
+      "2.5 Descomposición de números",
+      "2.2 Operadores % y //"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "codigoPython": "n = 456\nprint(n % 10, n // 10)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6 45"
+      },
+      {
+       "id": "B",
+       "texto": "4 56"
+      },
+      {
+       "id": "C",
+       "texto": "45 6"
+      },
+      {
+       "id": "D",
+       "texto": "56 4"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Obtener un nuevo número con los dígitos pares de 529564 (resultado esperado: 264). ¿Qué imprime este programa?",
+     "xp": 15,
+     "explicacion": "De derecha a izquierda los pares son 4, 6 y 2. Con \"mult\" cada par se coloca en su lugar: 4·1 + 6·10 + 2·100 = 264, que conserva el orden original.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 7: nuevo número con los dígitos pares (529564 → 264)",
+      "codigo": "U2-P08-I"
+     },
+     "temasCombinados": [
+      "2.5 Dígitos pares",
+      "2.4 while",
+      "2.3 Selección"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": true,
+     "codigoPython": "n = 529564\nnuevo = 0\nmult = 1\nwhile n > 0:\n    d = n % 10\n    if d % 2 == 0:\n        nuevo = nuevo + d * mult\n        mult = mult * 10\n    n = n // 10\nprint(nuevo)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "264"
+      },
+      {
+       "id": "B",
+       "texto": "462"
+      },
+      {
+       "id": "C",
+       "texto": "2"
+      },
+      {
+       "id": "D",
+       "texto": "2064"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Este programa arma el número con los dígitos pares de 3482 en cada vuelta usando nuevo * 10 + d. ¿Qué imprime? (Mira bien el orden)",
+     "xp": 20,
+     "explicacion": "Los dígitos se leen de derecha a izquierda: 2, luego 8, luego 4 (el 3 es impar). Como cada uno se agrega al final, queda 284, el orden invertido. Es el caso del ejemplo \"456 → 64\" de la práctica.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 10: dígitos pares de un número de 3 dígitos (456 → 64)",
+      "codigo": "U2-P08-A"
+     },
+     "temasCombinados": [
+      "2.5 Dígitos pares",
+      "2.4 while",
+      "2.5 Armado de números"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "codigoPython": "n = 3482\nnuevo = 0\nwhile n > 0:\n    d = n % 10\n    if d % 2 == 0:\n        nuevo = nuevo * 10 + d\n    n = n // 10\nprint(nuevo)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "482"
+      },
+      {
+       "id": "B",
+       "texto": "284"
+      },
+      {
+       "id": "C",
+       "texto": "2"
+      },
+      {
+       "id": "D",
+       "texto": "3482"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Serie 1, 4, 7, 10, 13… (suma 3 cada vez). ¿Qué imprime el programa?",
+     "xp": 10,
+     "explicacion": "El término número i (empezando en 0) vale 1 + 3·i: 1, 4, 7, 10, 13. Es una progresión aritmética de razón 3.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 9: serie 1, 4, 7, 10, 13, 16…",
+      "codigo": "U2-P09-B"
+     },
+     "temasCombinados": [
+      "2.5 Series y sucesiones",
+      "2.4 for"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "codigoPython": "for i in range(5):\n    print(1 + 3 * i, end=\" \")",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1 4 7 10 13"
+      },
+      {
+       "id": "B",
+       "texto": "3 6 9 12 15"
+      },
+      {
+       "id": "C",
+       "texto": "1 3 6 9 12"
+      },
+      {
+       "id": "D",
+       "texto": "4 7 10 13 16"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "La serie 1, 2, 4, 7, 11, 16… aumenta cada vez un poco más. ¿Qué imprime este programa?",
+     "xp": 15,
+     "explicacion": "El salto crece 1, 2, 3, 4…: 1 → 2 (+1) → 4 (+2) → 7 (+3) → 11 (+4). Se imprime t antes de aumentarlo.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 4: serie 1, 2, 4, 7, 11, 16, 22…",
+      "codigo": "U2-P09-I"
+     },
+     "temasCombinados": [
+      "2.5 Series y sucesiones",
+      "2.4 for",
+      "2.2 Variables auxiliares"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": true,
+     "codigoPython": "t = 1\nfor i in range(5):\n    print(t, end=\" \")\n    t += i + 1",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1 2 4 7 11"
+      },
+      {
+       "id": "B",
+       "texto": "1 3 6 10 15"
+      },
+      {
+       "id": "C",
+       "texto": "1 2 3 4 5"
+      },
+      {
+       "id": "D",
+       "texto": "2 4 7 11 16"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Serie con signos alternados S = x/1! − x²/2! + x³/3! − … Con x = 2 y n = 3 la práctica da 1.33. ¿Qué imprime este programa?",
+     "xp": 20,
+     "explicacion": "f guarda k! y p guarda x^k, y (-1) ** (k + 1) alterna el signo (+, −, +). Los términos son 2 − 2 + 1.33 = 1.33. Acumular f y p en cada vuelta evita calcular el factorial desde cero.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 3: S = x/1! − x²/2! + x³/3! − …",
+      "codigo": "U2-P09-A"
+     },
+     "temasCombinados": [
+      "2.5 Sumatorias",
+      "2.4 for",
+      "2.5 Factorial y potencias"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "codigoPython": "x = 2\nn = 3\ns = 0\nf = 1\np = 1\nfor k in range(1, n + 1):\n    f *= k\n    p *= x\n    s += (-1) ** (k + 1) * p / f\nprint(round(s, 2))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1.33"
+      },
+      {
+       "id": "B",
+       "texto": "2.67"
+      },
+      {
+       "id": "C",
+       "texto": "-1.33"
+      },
+      {
+       "id": "D",
+       "texto": "0.67"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un número primo tiene exactamente dos divisores (1 y él mismo). ¿Qué imprime este programa, que cuenta los divisores de 7?",
+     "xp": 10,
+     "explicacion": "Solo 1 y 7 dividen exactamente a 7, así que el contador termina en 2: 7 es primo.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 8: números primos",
+      "codigo": "U2-P10-B"
+     },
+     "temasCombinados": [
+      "2.5 Números primos",
+      "2.4 for",
+      "2.3 Selección"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "codigoPython": "n = 7\ndiv = 0\nfor d in range(1, n + 1):\n    if n % d == 0:\n        div += 1\nprint(div)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1"
+      },
+      {
+       "id": "B",
+       "texto": "2"
+      },
+      {
+       "id": "C",
+       "texto": "7"
+      },
+      {
+       "id": "D",
+       "texto": "0"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Dividir 17 entre 5 usando solo restas. ¿Qué imprime? (q = cociente, a = lo que sobra)",
+     "xp": 15,
+     "explicacion": "Se resta 5 tres veces (17 → 12 → 7 → 2) y se para porque 2 < 5. El contador q vale 3 (cociente entero) y a vale 2 (residuo).",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 10: división entera con restas sucesivas",
+      "codigo": "U2-P10-I"
+     },
+     "temasCombinados": [
+      "2.4 while",
+      "2.5 División por restas sucesivas"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": true,
+     "codigoPython": "a = 17\nb = 5\nq = 0\nwhile a >= b:\n    a -= b\n    q += 1\nprint(q, a)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3 2"
+      },
+      {
+       "id": "B",
+       "texto": "2 3"
+      },
+      {
+       "id": "C",
+       "texto": "4 -3"
+      },
+      {
+       "id": "D",
+       "texto": "5 17"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Estructurada",
+     "tipo": "completar_codigo",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Muestra los primos menores que 15 (2 3 5 7 11 13). Completa el valor que debe tomar la bandera cuando se encuentra un divisor.",
+     "xp": 20,
+     "explicacion": "es_primo empieza en True y pasa a False en cuanto se halla un divisor distinto de 1 y del número. El break evita seguir probando divisores innecesarios.",
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 8: todos los primos menores a un número (15 → 2, 3, 5, 7, 11, 13)",
+      "codigo": "U2-P10-A"
+     },
+     "temasCombinados": [
+      "2.4 for anidados",
+      "2.5 Números primos",
+      "2.3 Banderas (bandera booleana)"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "codigoPython": "n = 15\nfor num in range(2, n):\n    es_primo = True\n    for d in range(2, num):\n        if num % d == 0:\n            es_primo = ____\n            break\n    if es_primo:\n        print(num, end=\" \")",
+     "respuestaCorrecta": "False"
+    }
+   ],
+   "retos": [
+    {
+     "codigo": "RP1-SEC01",
+     "titulo": "Práctica 1 · Secuenciales 1: Nota de la materia: aprobó o reprobó",
+     "categoria": "Secuenciales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Desarrolle un programa en Python que realice las siguientes tareas:\n• Solicite el nombre y la nota de la materia del estudiante.\n• Valide que la nota ingresada esté en el rango de 0 a 100.\n• Determine si el estudiante aprobó o reprobó, considerando que la nota mínima de aprobación es 51.\n• Al finalizar, muestre el nombre del estudiante, la nota del estudiante y si aprobó la materia.",
+     "ejemploEntrada": "Ana\n80\n",
+     "ejemploSalida": "Nombre del estudiante: Ana\nNota de la materia: 80\nEstudiante: Ana\nNota: 80\nResultado: Aprobó",
+     "pruebas": [
+      {
+       "label": "Caso normal (aprueba)",
+       "stdin": "Ana\n80\n",
+       "salida": "Nombre del estudiante: Ana\nNota de la materia: 80\nEstudiante: Ana\nNota: 80\nResultado: Aprobó"
+      },
+      {
+       "label": "Caso límite (reprueba por 1 punto)",
+       "stdin": "Luis\n50\n",
+       "salida": "Nombre del estudiante: Luis\nNota de la materia: 50\nEstudiante: Luis\nNota: 50\nResultado: Reprobó"
+      },
+      {
+       "label": "Nota fuera de rango",
+       "stdin": "Marta\n101\n",
+       "salida": "Nombre del estudiante: Marta\nNota de la materia: 101\nError: la nota debe estar entre 0 y 100"
+      }
+     ],
+     "solucionReferencia": "nombre = input(\"Nombre del estudiante: \")\nnota = float(input(\"Nota de la materia: \"))\nif nota < 0 or nota > 100:\n    print(\"Error: la nota debe estar entre 0 y 100\")\nelse:\n    estado = \"Aprobó\" if nota >= 51 else \"Reprobó\"\n    print(\"Estudiante:\", nombre)\n    print(f\"Nota: {nota:g}\")\n    print(\"Resultado:\", estado)",
+     "criteriosEvaluacion": [
+      "Valida el rango 0–100 antes de decidir si aprobó.",
+      "Usa 51 como nota mínima (51 aprueba, 50 reprueba).",
+      "Muestra nombre, nota y resultado."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 1",
+      "codigo": "RP1-SEC01"
+     }
+    },
+    {
+     "codigo": "RP1-SEC02",
+     "titulo": "Práctica 1 · Secuenciales 2: Contar positivos y negativos hasta ingresar 0",
+     "categoria": "Secuenciales",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Ingrese una serie de números, esto puede ser positivos o negativos, hasta que el usuario ingrese 0 (cero) para cerrar el programa. El programa debe contar cuántos números son positivos hay y cuántos son negativos hay.",
+     "ejemploEntrada": "5\n-3\n8\n0\n",
+     "ejemploSalida": "Número (0 para terminar): 5\nNúmero (0 para terminar): -3\nNúmero (0 para terminar): 8\nNúmero (0 para terminar): 0\nPositivos: 2\nNegativos: 1",
+     "pruebas": [
+      {
+       "label": "Mezcla de positivos y negativos",
+       "stdin": "5\n-3\n8\n0\n",
+       "salida": "Número (0 para terminar): 5\nNúmero (0 para terminar): -3\nNúmero (0 para terminar): 8\nNúmero (0 para terminar): 0\nPositivos: 2\nNegativos: 1"
+      },
+      {
+       "label": "Solo negativos",
+       "stdin": "-1\n-2\n0\n",
+       "salida": "Número (0 para terminar): -1\nNúmero (0 para terminar): -2\nNúmero (0 para terminar): 0\nPositivos: 0\nNegativos: 2"
+      },
+      {
+       "label": "El usuario cierra de inmediato",
+       "stdin": "0\n",
+       "salida": "Número (0 para terminar): 0\nPositivos: 0\nNegativos: 0"
+      }
+     ],
+     "solucionReferencia": "pos = 0\nneg = 0\nn = int(input(\"Número (0 para terminar): \"))\nwhile n != 0:\n    if n > 0:\n        pos += 1\n    else:\n        neg += 1\n    n = int(input(\"Número (0 para terminar): \"))\nprint(\"Positivos:\", pos)\nprint(\"Negativos:\", neg)",
+     "criteriosEvaluacion": [
+      "El 0 funciona como centinela y no se cuenta.",
+      "Usa un ciclo while que se repite hasta recibir 0.",
+      "Cuenta por separado positivos y negativos (dos contadores)."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 2",
+      "codigo": "RP1-SEC02"
+     }
+    },
+    {
+     "codigo": "RP1-SEC03",
+     "titulo": "Práctica 1 · Secuenciales 3: Calculadora con símbolo de operación",
+     "categoria": "Secuenciales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Realizar un programa para que desde teclado ingrese un carácter, símbolo u operador aritmético, ejemplo “ + ”, “ - ”, “ * ”, “ / ”, y con este símbolo debe realizar la operación aritmética correcta.\nEjemplo: si el símbolo es + debe sumar dos números; - debe restar dos números; * debe multiplicar dos números; / debe dividir dos números.",
+     "ejemploEntrada": "+\n8\n2\n",
+     "ejemploSalida": "Operador (+, -, *, /): +\nPrimer número: 8\nSegundo número: 2\nResultado: 10",
+     "pruebas": [
+      {
+       "label": "Suma",
+       "stdin": "+\n8\n2\n",
+       "salida": "Operador (+, -, *, /): +\nPrimer número: 8\nSegundo número: 2\nResultado: 10"
+      },
+      {
+       "label": "División entre cero",
+       "stdin": "/\n7\n0\n",
+       "salida": "Operador (+, -, *, /): /\nPrimer número: 7\nSegundo número: 0\nError: no se puede dividir entre cero"
+      },
+      {
+       "label": "Símbolo no válido",
+       "stdin": "%\n1\n1\n",
+       "salida": "Operador (+, -, *, /): %\nPrimer número: 1\nSegundo número: 1\nOperador no válido"
+      }
+     ],
+     "solucionReferencia": "op = input(\"Operador (+, -, *, /): \")\na = float(input(\"Primer número: \"))\nb = float(input(\"Segundo número: \"))\nif op == \"+\":\n    print(f\"Resultado: {a + b:g}\")\nelif op == \"-\":\n    print(f\"Resultado: {a - b:g}\")\nelif op == \"*\":\n    print(f\"Resultado: {a * b:g}\")\nelif op == \"/\":\n    if b == 0:\n        print(\"Error: no se puede dividir entre cero\")\n    else:\n        print(f\"Resultado: {a / b:g}\")\nelse:\n    print(\"Operador no válido\")",
+     "criteriosEvaluacion": [
+      "Elige la operación según el símbolo (if / elif).",
+      "Controla la división entre cero.",
+      "Avisa cuando el símbolo no es válido."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Secuenciales, ejercicio 3",
+      "codigo": "RP1-SEC03"
+     }
+    },
+    {
+     "codigo": "RP1-CON01",
+     "titulo": "Práctica 1 · Condicionales 1: Bono para los mejores estudiantes",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular el bono que recibe un estudiante, si el Rector de la UPEA ofrece bonos a los mejores estudiantes de la Carrera de Ingeniería de Sistemas, que tengan hermanos inscritos en la universidad bajo las siguientes condiciones:\n• Si el estudiante tiene un promedio de 100, recibe Bs. 1000, además Bs. 800 por cada hermano.\n• Si tiene un promedio menor a 100 y mayor o igual a 95, recibe Bs. 900, además Bs. 700 por hermano.\n• Si tiene un promedio menor a 95 y mayor o igual a 90, recibe Bs. 800, además Bs. 600 por hermano.\nNOTA: El estudiante no recibe ningún bono si no tiene hermanos inscritos en la universidad.",
+     "ejemploEntrada": "100\n2\n",
+     "ejemploSalida": "Promedio: 100\nHermanos inscritos: 2\nBono: Bs. 2600",
+     "pruebas": [
+      {
+       "label": "Promedio 100 con 2 hermanos",
+       "stdin": "100\n2\n",
+       "salida": "Promedio: 100\nHermanos inscritos: 2\nBono: Bs. 2600"
+      },
+      {
+       "label": "Promedio 92 con 3 hermanos",
+       "stdin": "92\n3\n",
+       "salida": "Promedio: 92\nHermanos inscritos: 3\nBono: Bs. 2600"
+      },
+      {
+       "label": "Sin hermanos: no hay bono",
+       "stdin": "97\n0\n",
+       "salida": "Promedio: 97\nHermanos inscritos: 0\nBono: Bs. 0"
+      }
+     ],
+     "solucionReferencia": "promedio = float(input(\"Promedio: \"))\nhermanos = int(input(\"Hermanos inscritos: \"))\nbono = 0\nif hermanos > 0:\n    if promedio == 100:\n        bono = 1000 + 800 * hermanos\n    elif promedio >= 95:\n        bono = 900 + 700 * hermanos\n    elif promedio >= 90:\n        bono = 800 + 600 * hermanos\nprint(f\"Bono: Bs. {bono}\")",
+     "criteriosEvaluacion": [
+      "Verifica primero que tenga hermanos inscritos.",
+      "Elige la escala según el promedio (100, ≥95, ≥90).",
+      "Suma el monto base más el monto por hermano."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 1",
+      "codigo": "RP1-CON01"
+     }
+    },
+    {
+     "codigo": "RP1-CON02",
+     "titulo": "Práctica 1 · Condicionales 2: Promedio de prácticas eliminando la nota menor",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "El promedio de prácticas de un curso se calcula con base en cuatro prácticas calificadas de las cuales se elimina la nota menor y se promedian las tres notas más altas. Diseñe un algoritmo que determine la nota eliminada y el promedio de prácticas de un estudiante.",
+     "ejemploEntrada": "70\n85\n90\n60\n",
+     "ejemploSalida": "Práctica 1: 70\nPráctica 2: 85\nPráctica 3: 90\nPráctica 4: 60\nNota eliminada: 60\nPromedio de prácticas: 81.67",
+     "pruebas": [
+      {
+       "label": "La menor es la última",
+       "stdin": "70\n85\n90\n60\n",
+       "salida": "Práctica 1: 70\nPráctica 2: 85\nPráctica 3: 90\nPráctica 4: 60\nNota eliminada: 60\nPromedio de prácticas: 81.67"
+      },
+      {
+       "label": "Todas iguales",
+       "stdin": "100\n100\n100\n100\n",
+       "salida": "Práctica 1: 100\nPráctica 2: 100\nPráctica 3: 100\nPráctica 4: 100\nNota eliminada: 100\nPromedio de prácticas: 100.00"
+      },
+      {
+       "label": "La menor es la primera",
+       "stdin": "40\n55\n55\n100\n",
+       "salida": "Práctica 1: 40\nPráctica 2: 55\nPráctica 3: 55\nPráctica 4: 100\nNota eliminada: 40\nPromedio de prácticas: 70.00"
+      }
+     ],
+     "solucionReferencia": "n1 = float(input(\"Práctica 1: \"))\nn2 = float(input(\"Práctica 2: \"))\nn3 = float(input(\"Práctica 3: \"))\nn4 = float(input(\"Práctica 4: \"))\nmenor = n1\nif n2 < menor:\n    menor = n2\nif n3 < menor:\n    menor = n3\nif n4 < menor:\n    menor = n4\npromedio = (n1 + n2 + n3 + n4 - menor) / 3\nprint(f\"Nota eliminada: {menor:g}\")\nprint(f\"Promedio de prácticas: {promedio:.2f}\")",
+     "criteriosEvaluacion": [
+      "Encuentra la menor de las cuatro notas con condicionales.",
+      "Promedia solo las tres notas restantes (suma − menor) / 3.",
+      "Muestra la nota eliminada y el promedio."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 2",
+      "codigo": "RP1-CON02"
+     }
+    },
+    {
+     "codigo": "RP1-CON03",
+     "titulo": "Práctica 1 · Condicionales 3: Tipo de triángulo según sus lados",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Leer las longitudes de los tres lados de un triángulo y determinar si es equilátero, isósceles o escaleno.\nEjemplo: a = 5, b = 5, c = 5 → Triángulo Equilátero; a = 5, b = 5, c = 8 → Triángulo Isósceles; a = 3, b = 4, c = 5 → Triángulo Escaleno.",
+     "ejemploEntrada": "5\n5\n5\n",
+     "ejemploSalida": "Lado a: 5\nLado b: 5\nLado c: 5\nTriángulo Equilátero",
+     "pruebas": [
+      {
+       "label": "Equilátero",
+       "stdin": "5\n5\n5\n",
+       "salida": "Lado a: 5\nLado b: 5\nLado c: 5\nTriángulo Equilátero"
+      },
+      {
+       "label": "Isósceles",
+       "stdin": "5\n5\n8\n",
+       "salida": "Lado a: 5\nLado b: 5\nLado c: 8\nTriángulo Isósceles"
+      },
+      {
+       "label": "Escaleno",
+       "stdin": "3\n4\n5\n",
+       "salida": "Lado a: 3\nLado b: 4\nLado c: 5\nTriángulo Escaleno"
+      }
+     ],
+     "solucionReferencia": "a = float(input(\"Lado a: \"))\nb = float(input(\"Lado b: \"))\nc = float(input(\"Lado c: \"))\nif a == b and b == c:\n    print(\"Triángulo Equilátero\")\nelif a == b or b == c or a == c:\n    print(\"Triángulo Isósceles\")\nelse:\n    print(\"Triángulo Escaleno\")",
+     "criteriosEvaluacion": [
+      "Prueba primero los tres lados iguales.",
+      "Luego prueba si al menos dos son iguales.",
+      "Si ninguno se repite, es escaleno."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 3",
+      "codigo": "RP1-CON03"
+     }
+    },
+    {
+     "codigo": "RP1-CON04",
+     "titulo": "Práctica 1 · Condicionales 4: Descuento según el total de compra",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Una empresa ofrece descuentos de acuerdo al total de compra, estos descuentos son de acuerdo a las siguientes condiciones:\na) si la compra está entre 1000 y 2000 un descuento del 3 %\nb) si la compra está entre 2001 y 5000 un descuento del 5 %\nc) si la compra está entre 5001 y 10000 un descuento del 7 %\nd) si la compra es más de 10000 un descuento del 10 %\nCalcular el descuento y el total a pagar.",
+     "ejemploEntrada": "1500\n",
+     "ejemploSalida": "Total de la compra: 1500\nDescuento: 45.00\nTotal a pagar: 1455.00",
+     "pruebas": [
+      {
+       "label": "Tramo del 3 %",
+       "stdin": "1500\n",
+       "salida": "Total de la compra: 1500\nDescuento: 45.00\nTotal a pagar: 1455.00"
+      },
+      {
+       "label": "Límite del tramo del 5 %",
+       "stdin": "5000\n",
+       "salida": "Total de la compra: 5000\nDescuento: 250.00\nTotal a pagar: 4750.00"
+      },
+      {
+       "label": "Más de 10000 (10 %)",
+       "stdin": "12000\n",
+       "salida": "Total de la compra: 12000\nDescuento: 1200.00\nTotal a pagar: 10800.00"
+      }
+     ],
+     "solucionReferencia": "compra = float(input(\"Total de la compra: \"))\nif compra > 10000:\n    tasa = 0.10\nelif compra > 5000:\n    tasa = 0.07\nelif compra > 2000:\n    tasa = 0.05\nelif compra >= 1000:\n    tasa = 0.03\nelse:\n    tasa = 0\ndescuento = compra * tasa\nprint(f\"Descuento: {descuento:.2f}\")\nprint(f\"Total a pagar: {compra - descuento:.2f}\")",
+     "criteriosEvaluacion": [
+      "Cada tramo aplica el porcentaje correcto.",
+      "Los valores límite (2000, 5000, 10000) caen en el tramo que corresponde.",
+      "Muestra el descuento y el total a pagar."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 4",
+      "codigo": "RP1-CON04"
+     }
+    },
+    {
+     "codigo": "RP1-CON05",
+     "titulo": "Práctica 1 · Condicionales 5: Convertir bolivianos a dólares, euros o yuanes",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Convertir un monto en moneda local (Bs) a diferentes divisas: dólares, euros y yuanes. Utilizar la estructura selectiva.\nEjemplo: monto = 1000; tipo de cambio en dólares = 11.71; resultado = monto / tipo de cambio = 1000 / 11.71 = 85,39.\nObservación para el docente: la práctica solo da el tipo de cambio del dólar (11.71). Para euros y yuanes se usan valores referenciales (13.50 y 1.65) definidos como constantes en la solución; el docente puede reemplazarlos por los de la clase. El ejemplo de la práctica muestra 85,39 (el valor 85,397… recortado a dos decimales), por eso la solución recorta en lugar de redondear.",
+     "ejemploEntrada": "1000\n1\n",
+     "ejemploSalida": "Monto en Bs: 1000\n1. Dólares  2. Euros  3. Yuanes\nDivisa: 1\nResultado: 85.39 dólares",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (85.39 USD)",
+       "stdin": "1000\n1\n",
+       "salida": "Monto en Bs: 1000\n1. Dólares  2. Euros  3. Yuanes\nDivisa: 1\nResultado: 85.39 dólares"
+      },
+      {
+       "label": "Euros",
+       "stdin": "500\n2\n",
+       "salida": "Monto en Bs: 500\n1. Dólares  2. Euros  3. Yuanes\nDivisa: 2\nResultado: 37.03 euros"
+      },
+      {
+       "label": "Yuanes",
+       "stdin": "200\n3\n",
+       "salida": "Monto en Bs: 200\n1. Dólares  2. Euros  3. Yuanes\nDivisa: 3\nResultado: 121.21 yuanes"
+      }
+     ],
+     "solucionReferencia": "USD = 11.71\nEUR = 13.50\nCNY = 1.65\nmonto = float(input(\"Monto en Bs: \"))\nprint(\"1. Dólares  2. Euros  3. Yuanes\")\nopcion = int(input(\"Divisa: \"))\nif opcion == 1:\n    print(f\"Resultado: {int(monto / USD * 100) / 100:.2f} dólares\")\nelif opcion == 2:\n    print(f\"Resultado: {int(monto / EUR * 100) / 100:.2f} euros\")\nelif opcion == 3:\n    print(f\"Resultado: {int(monto / CNY * 100) / 100:.2f} yuanes\")\nelse:\n    print(\"Opción no válida\")",
+     "criteriosEvaluacion": [
+      "Usa una estructura selectiva (if/elif) para elegir la divisa.",
+      "Divide el monto entre el tipo de cambio de la divisa elegida.",
+      "Reproduce el ejemplo: 1000 Bs → 85.39 dólares."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 5",
+      "codigo": "RP1-CON05"
+     }
+    },
+    {
+     "codigo": "RP1-CON06",
+     "titulo": "Práctica 1 · Condicionales 6: Alerta por inundación del río Mamoré",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "La gobernación del Beni toma dos lecturas de nivel del río Mamoré (mañana y tarde) para calcular el nivel promedio. Si el nivel promedio supera los 7.5 metros, se calcula automáticamente el presupuesto de auxilio requerido según la población afectada. Suponer que la ayuda por familia debe ser de 450.50 Bs. El programa debe mostrar el nivel promedio del río en metros y, si supera los 7.5, un mensaje de alerta roja por inundación y el presupuesto de emergencia a activar en Bs.",
+     "ejemploEntrada": "7.8\n8.2\n120\n",
+     "ejemploSalida": "Ingrese el nivel del río en la mañana en metros: 7.8\nIngrese el nivel del río en la tarde en metros: 8.2\nIngrese el número de familias cercanas al río: 120\nNivel promedio del río: 8.00 metros\nALERTA ROJA POR INUNDACIÓN\nPresupuesto de emergencia a activar 54.060,00 Bs",
+     "pruebas": [
+      {
+       "label": "Ejemplo 1 de la práctica (alerta)",
+       "stdin": "7.8\n8.2\n120\n",
+       "salida": "Ingrese el nivel del río en la mañana en metros: 7.8\nIngrese el nivel del río en la tarde en metros: 8.2\nIngrese el número de familias cercanas al río: 120\nNivel promedio del río: 8.00 metros\nALERTA ROJA POR INUNDACIÓN\nPresupuesto de emergencia a activar 54.060,00 Bs"
+      },
+      {
+       "label": "Ejemplo 2 de la práctica (sin alerta)",
+       "stdin": "5.1\n6.2\n120\n",
+       "salida": "Ingrese el nivel del río en la mañana en metros: 5.1\nIngrese el nivel del río en la tarde en metros: 6.2\nIngrese el número de familias cercanas al río: 120\nNivel promedio del río: 5.65 metros"
+      },
+      {
+       "label": "Justo en 7.5 (no supera)",
+       "stdin": "7.5\n7.5\n10\n",
+       "salida": "Ingrese el nivel del río en la mañana en metros: 7.5\nIngrese el nivel del río en la tarde en metros: 7.5\nIngrese el número de familias cercanas al río: 10\nNivel promedio del río: 7.50 metros"
+      }
+     ],
+     "solucionReferencia": "manana = float(input(\"Ingrese el nivel del río en la mañana en metros: \"))\ntarde = float(input(\"Ingrese el nivel del río en la tarde en metros: \"))\nfamilias = int(input(\"Ingrese el número de familias cercanas al río: \"))\npromedio = (manana + tarde) / 2\nprint(f\"Nivel promedio del río: {promedio:.2f} metros\")\nif promedio > 7.5:\n    presupuesto = familias * 450.50\n    texto = f\"{presupuesto:,.2f}\".replace(\",\", \"X\").replace(\".\", \",\").replace(\"X\", \".\")\n    print(\"ALERTA ROJA POR INUNDACIÓN\")\n    print(f\"Presupuesto de emergencia a activar {texto} Bs\")",
+     "criteriosEvaluacion": [
+      "Calcula el promedio de las dos lecturas.",
+      "Solo activa la alerta si el promedio SUPERA 7.5 (7.5 exacto no la activa).",
+      "Presupuesto = familias × 450.50, mostrado con separadores como 54.060,00 Bs."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 6",
+      "codigo": "RP1-CON06"
+     }
+    },
+    {
+     "codigo": "RP1-CON07",
+     "titulo": "Práctica 1 · Condicionales 7: Doble de un número positivo",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Leer un número entero y verificar si el número es positivo; si lo es, imprimir el doble del número.\nEjemplo: Ingrese un número… 7 → el doble es 14.",
+     "ejemploEntrada": "7\n",
+     "ejemploSalida": "Ingrese un número: 7\nel doble es 14",
+     "pruebas": [
+      {
+       "label": "Positivo",
+       "stdin": "7\n",
+       "salida": "Ingrese un número: 7\nel doble es 14"
+      },
+      {
+       "label": "Negativo (no muestra nada)",
+       "stdin": "-3\n",
+       "salida": "Ingrese un número: -3"
+      },
+      {
+       "label": "Cero (no es positivo)",
+       "stdin": "0\n",
+       "salida": "Ingrese un número: 0"
+      }
+     ],
+     "solucionReferencia": "numero = int(input(\"Ingrese un número: \"))\nif numero > 0:\n    print(\"el doble es\", numero * 2)",
+     "criteriosEvaluacion": [
+      "Solo imprime el doble cuando el número es positivo.",
+      "El 0 no se considera positivo.",
+      "Reproduce el ejemplo: 7 → el doble es 14."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 7",
+      "codigo": "RP1-CON07"
+     }
+    },
+    {
+     "codigo": "RP1-CON08",
+     "titulo": "Práctica 1 · Condicionales 8: Total a pagar por visitar el Parque Madidi",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Escribir un programa para calcular el total a pagar por visitar el Parque Nacional Madidi, sabiendo que el costo de ingreso varía según la nacionalidad. Además, se aplican tarifas diferenciadas para adultos y niños. Si la compra supera los 5 integrantes, se aplica un descuento del 10 % del total. Las tarifas base son:\n• Nacional: Adulto = 30 Bs, Niño = 15 Bs.\n• Extranjero: Adulto = 200 Bs, Niño = 100 Bs.",
+     "ejemploEntrada": "N\n4\n2\n",
+     "ejemploSalida": "Tipo de visitante (N=Nacional / E=Extranjero): N\nCantidad de adultos: 4\nCantidad de niños: 2\nSubtotal: 150.00 Bs\nDescuento por grupo: 15.00 Bs.\nTotal a pagar: 135 Bs",
+     "pruebas": [
+      {
+       "label": "Ejemplo 1 de la práctica (con descuento)",
+       "stdin": "N\n4\n2\n",
+       "salida": "Tipo de visitante (N=Nacional / E=Extranjero): N\nCantidad de adultos: 4\nCantidad de niños: 2\nSubtotal: 150.00 Bs\nDescuento por grupo: 15.00 Bs.\nTotal a pagar: 135 Bs"
+      },
+      {
+       "label": "Ejemplo 2 de la práctica (sin descuento)",
+       "stdin": "E\n2\n1\n",
+       "salida": "Tipo de visitante (N=Nacional / E=Extranjero): E\nCantidad de adultos: 2\nCantidad de niños: 1\nSubtotal: 500.00 Bs\nDescuento por grupo: 0.00 Bs.\nTotal a pagar: 500 Bs"
+      },
+      {
+       "label": "Extranjeros en grupo de 6",
+       "stdin": "E\n3\n3\n",
+       "salida": "Tipo de visitante (N=Nacional / E=Extranjero): E\nCantidad de adultos: 3\nCantidad de niños: 3\nSubtotal: 900.00 Bs\nDescuento por grupo: 90.00 Bs.\nTotal a pagar: 810 Bs"
+      }
+     ],
+     "solucionReferencia": "tipo = input(\"Tipo de visitante (N=Nacional / E=Extranjero): \").upper()\nadultos = int(input(\"Cantidad de adultos: \"))\nninos = int(input(\"Cantidad de niños: \"))\nif tipo == \"N\":\n    subtotal = adultos * 30 + ninos * 15\nelse:\n    subtotal = adultos * 200 + ninos * 100\ndescuento = 0\nif adultos + ninos > 5:\n    descuento = subtotal * 0.10\nprint(f\"Subtotal: {subtotal:.2f} Bs\")\nprint(f\"Descuento por grupo: {descuento:.2f} Bs.\")\nprint(f\"Total a pagar: {subtotal - descuento:.0f} Bs\")",
+     "criteriosEvaluacion": [
+      "Elige la tarifa según nacionalidad y tipo de visitante.",
+      "El descuento del 10 % solo se aplica si el grupo es de MÁS de 5 personas.",
+      "Muestra subtotal, descuento y total como en el ejemplo."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 8",
+      "codigo": "RP1-CON08"
+     }
+    },
+    {
+     "codigo": "RP1-CON09",
+     "titulo": "Práctica 1 · Condicionales 9: Momento del día según la hora",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Realizar un programa que permita ingresar una hora del día (entre 0 y 23, sino informar un error). El programa debe mostrar a qué momento del día pertenece según lo siguiente: Madrugada: entre 0 y 5; Mañana: entre 6 y 11; Mediodía: entre 12 y 13; Tarde: entre 14 y 19; Noche: entre 20 y 23.\nEjemplo: hora = 8 → mostrar Mañana.",
+     "ejemploEntrada": "8\n",
+     "ejemploSalida": "Hora del día (0-23): 8\nMañana",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "8\n",
+       "salida": "Hora del día (0-23): 8\nMañana"
+      },
+      {
+       "label": "Primera hora de la noche",
+       "stdin": "20\n",
+       "salida": "Hora del día (0-23): 20\nNoche"
+      },
+      {
+       "label": "Hora inválida",
+       "stdin": "25\n",
+       "salida": "Hora del día (0-23): 25\nError: la hora debe estar entre 0 y 23"
+      }
+     ],
+     "solucionReferencia": "hora = int(input(\"Hora del día (0-23): \"))\nif hora < 0 or hora > 23:\n    print(\"Error: la hora debe estar entre 0 y 23\")\nelif hora <= 5:\n    print(\"Madrugada\")\nelif hora <= 11:\n    print(\"Mañana\")\nelif hora <= 13:\n    print(\"Mediodía\")\nelif hora <= 19:\n    print(\"Tarde\")\nelse:\n    print(\"Noche\")",
+     "criteriosEvaluacion": [
+      "Informa un error si la hora no está entre 0 y 23.",
+      "Cada hora cae en un solo momento del día.",
+      "Los límites 5, 11, 13 y 19 se clasifican bien."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 9",
+      "codigo": "RP1-CON09"
+     }
+    },
+    {
+     "codigo": "RP1-CON10",
+     "titulo": "Práctica 1 · Condicionales 10: Nuevo número con los dígitos pares",
+     "categoria": "Condicionales",
+     "tema": "2.5",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Realizar un algoritmo que lea un número entero positivo de 3 dígitos (validar la entrada). Obtener un nuevo número con los dígitos pares.\nEjemplo: 456 → mostrar 64.\nObservación: en el ejemplo de la práctica (456 → 64) los pares se colocan en el orden en que se extraen (de derecha a izquierda). En Series y sumatorias, ejercicio 7, el ejemplo conserva el orden original (529564 → 264).",
+     "ejemploEntrada": "456\n",
+     "ejemploSalida": "Número de 3 dígitos: 456\nNuevo número: 64",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (64)",
+       "stdin": "456\n",
+       "salida": "Número de 3 dígitos: 456\nNuevo número: 64"
+      },
+      {
+       "label": "Sin dígitos pares",
+       "stdin": "135\n",
+       "salida": "Número de 3 dígitos: 135\nEl número no tiene dígitos pares"
+      },
+      {
+       "label": "Entrada inválida",
+       "stdin": "99\n",
+       "salida": "Número de 3 dígitos: 99\nError: debe ser un número de 3 dígitos"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Número de 3 dígitos: \"))\nif n < 100 or n > 999:\n    print(\"Error: debe ser un número de 3 dígitos\")\nelse:\n    nuevo = 0\n    hay = False\n    while n > 0:\n        d = n % 10\n        if d % 2 == 0:\n            nuevo = nuevo * 10 + d\n            hay = True\n        n = n // 10\n    if hay:\n        print(\"Nuevo número:\", nuevo)\n    else:\n        print(\"El número no tiene dígitos pares\")",
+     "criteriosEvaluacion": [
+      "Valida que el número tenga exactamente 3 dígitos.",
+      "Extrae cada dígito con % 10 y // 10.",
+      "Arma el nuevo número solo con los pares y reproduce 456 → 64."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 10",
+      "codigo": "RP1-CON10"
+     }
+    },
+    {
+     "codigo": "RP1-CON11",
+     "titulo": "Práctica 1 · Condicionales 11: Incentivo semanal del operario",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Se tiene registrada la producción (unidades) lograda por un operario a lo largo de la semana (lunes a sábado). Elabore un algoritmo que nos muestre o nos diga si el operario recibirá incentivos sabiendo que el promedio de producción mínima es de 100 unidades. El salario semanal es de 825 Bs, al que se debe sumar el incentivo. Mostrar el salario total.\nObservación para el docente: la práctica no indica el monto del incentivo. La solución de referencia supone un incentivo fijo de 100 Bs (constante INCENTIVO); el docente puede fijar otro valor.",
+     "ejemploEntrada": "110\n100\n105\n95\n120\n100\n",
+     "ejemploSalida": "Producción del día 1: 110\nProducción del día 2: 100\nProducción del día 3: 105\nProducción del día 4: 95\nProducción del día 5: 120\nProducción del día 6: 100\nPromedio de producción: 105.00\nEl operario recibe incentivo\nSalario total: 925 Bs",
+     "pruebas": [
+      {
+       "label": "Promedio sobre el mínimo",
+       "stdin": "110\n100\n105\n95\n120\n100\n",
+       "salida": "Producción del día 1: 110\nProducción del día 2: 100\nProducción del día 3: 105\nProducción del día 4: 95\nProducción del día 5: 120\nProducción del día 6: 100\nPromedio de producción: 105.00\nEl operario recibe incentivo\nSalario total: 925 Bs"
+      },
+      {
+       "label": "Promedio bajo el mínimo",
+       "stdin": "80\n90\n100\n70\n85\n95\n",
+       "salida": "Producción del día 1: 80\nProducción del día 2: 90\nProducción del día 3: 100\nProducción del día 4: 70\nProducción del día 5: 85\nProducción del día 6: 95\nPromedio de producción: 86.67\nEl operario no recibe incentivo\nSalario total: 825 Bs"
+      },
+      {
+       "label": "Justo el mínimo (100)",
+       "stdin": "100\n100\n100\n100\n100\n100\n",
+       "salida": "Producción del día 1: 100\nProducción del día 2: 100\nProducción del día 3: 100\nProducción del día 4: 100\nProducción del día 5: 100\nProducción del día 6: 100\nPromedio de producción: 100.00\nEl operario recibe incentivo\nSalario total: 925 Bs"
+      }
+     ],
+     "solucionReferencia": "SALARIO = 825\nINCENTIVO = 100\ntotal_unidades = 0\nfor dia in range(1, 7):\n    total_unidades += int(input(f\"Producción del día {dia}: \"))\npromedio = total_unidades / 6\nprint(f\"Promedio de producción: {promedio:.2f}\")\nif promedio >= 100:\n    print(\"El operario recibe incentivo\")\n    print(\"Salario total:\", SALARIO + INCENTIVO, \"Bs\")\nelse:\n    print(\"El operario no recibe incentivo\")\n    print(\"Salario total:\", SALARIO, \"Bs\")",
+     "criteriosEvaluacion": [
+      "Promedia los 6 días (lunes a sábado).",
+      "Compara el promedio con el mínimo de 100 unidades.",
+      "Muestra si recibe incentivo y el salario total (825 Bs + incentivo)."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 11",
+      "codigo": "RP1-CON11"
+     }
+    },
+    {
+     "codigo": "RP1-CON12",
+     "titulo": "Práctica 1 · Condicionales 12: Grupo etario con condicionales anidadas",
+     "categoria": "Condicionales",
+     "tema": "2.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Elabore un algoritmo que permita ingresar la edad de una persona y, de acuerdo al valor de la misma, indicar a qué grupo etario corresponde: Infancia (0-5 años), Niñez (6-11 años), Adolescencia (12-18 años), Juventud (19 a 26 años), Adulto (27-59 años) y Adulto Mayor (60 años en adelante); caso contrario indicar “Edad incorrecta”. Utilizar estructuras condicionales anidadas para determinar la misma.",
+     "ejemploEntrada": "15\n",
+     "ejemploSalida": "Edad: 15\nAdolescencia",
+     "pruebas": [
+      {
+       "label": "Adolescencia",
+       "stdin": "15\n",
+       "salida": "Edad: 15\nAdolescencia"
+      },
+      {
+       "label": "Límite de Adulto Mayor",
+       "stdin": "60\n",
+       "salida": "Edad: 60\nAdulto Mayor"
+      },
+      {
+       "label": "Edad incorrecta",
+       "stdin": "-3\n",
+       "salida": "Edad: -3\nEdad incorrecta"
+      }
+     ],
+     "solucionReferencia": "edad = int(input(\"Edad: \"))\nif edad >= 0:\n    if edad <= 5:\n        print(\"Infancia\")\n    else:\n        if edad <= 11:\n            print(\"Niñez\")\n        else:\n            if edad <= 18:\n                print(\"Adolescencia\")\n            else:\n                if edad <= 26:\n                    print(\"Juventud\")\n                else:\n                    if edad <= 59:\n                        print(\"Adulto\")\n                    else:\n                        print(\"Adulto Mayor\")\nelse:\n    print(\"Edad incorrecta\")",
+     "criteriosEvaluacion": [
+      "Usa condicionales ANIDADAS, como pide el enunciado.",
+      "Los límites (5, 11, 18, 26, 59) se clasifican bien.",
+      "Una edad negativa muestra “Edad incorrecta”."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.3",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Condicionales, ejercicio 12",
+      "codigo": "RP1-CON12"
+     }
+    },
+    {
+     "codigo": "RP1-ITE01",
+     "titulo": "Práctica 1 · Iterativas 1: Media, mínima y máxima de un grupo",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Suponga que se tiene un conjunto de calificaciones de un grupo de N alumnos. Realizar un algoritmo para calcular la calificación media, la calificación más baja y la más alta de todo el grupo.",
+     "ejemploEntrada": "3\n70\n85\n90\n",
+     "ejemploSalida": "Número de alumnos: 3\nNota del alumno 1: 70\nNota del alumno 2: 85\nNota del alumno 3: 90\nMedia: 81.67\nNota más baja: 70\nNota más alta: 90",
+     "pruebas": [
+      {
+       "label": "Tres alumnos",
+       "stdin": "3\n70\n85\n90\n",
+       "salida": "Número de alumnos: 3\nNota del alumno 1: 70\nNota del alumno 2: 85\nNota del alumno 3: 90\nMedia: 81.67\nNota más baja: 70\nNota más alta: 90"
+      },
+      {
+       "label": "Cuatro alumnos",
+       "stdin": "4\n51\n100\n60\n80\n",
+       "salida": "Número de alumnos: 4\nNota del alumno 1: 51\nNota del alumno 2: 100\nNota del alumno 3: 60\nNota del alumno 4: 80\nMedia: 72.75\nNota más baja: 51\nNota más alta: 100"
+      },
+      {
+       "label": "Un solo alumno",
+       "stdin": "1\n55\n",
+       "salida": "Número de alumnos: 1\nNota del alumno 1: 55\nMedia: 55.00\nNota más baja: 55\nNota más alta: 55"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Número de alumnos: \"))\nif n <= 0:\n    print(\"Error: debe haber al menos un alumno\")\nelse:\n    suma = 0\n    for i in range(1, n + 1):\n        nota = float(input(f\"Nota del alumno {i}: \"))\n        suma += nota\n        if i == 1 or nota < minima:\n            minima = nota\n        if i == 1 or nota > maxima:\n            maxima = nota\n    print(f\"Media: {suma / n:.2f}\")\n    print(f\"Nota más baja: {minima:g}\")\n    print(f\"Nota más alta: {maxima:g}\")",
+     "criteriosEvaluacion": [
+      "Usa un acumulador para la suma y calcula la media entre N.",
+      "Actualiza la mínima y la máxima en cada vuelta.",
+      "Inicializa mínima y máxima con la primera nota (no con 0)."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 1",
+      "codigo": "RP1-ITE01"
+     }
+    },
+    {
+     "codigo": "RP1-ITE02",
+     "titulo": "Práctica 1 · Iterativas 2: Menú de operaciones que se repite",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Implemente un programa con un menú que permita lo siguiente:\n1. Sumar dos números\n2. Restar dos números\n3. Multiplicar dos números\n4. Salir\nEl menú debe repetirse hasta que el usuario elija salir.",
+     "ejemploEntrada": "1\n6\n3\n4\n",
+     "ejemploSalida": "1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 1\nPrimer número: 6\nSegundo número: 3\nResultado: 9\n1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 4\nPrograma finalizado",
+     "pruebas": [
+      {
+       "label": "Suma y salir",
+       "stdin": "1\n6\n3\n4\n",
+       "salida": "1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 1\nPrimer número: 6\nSegundo número: 3\nResultado: 9\n1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 4\nPrograma finalizado"
+      },
+      {
+       "label": "Multiplicar, restar y salir",
+       "stdin": "3\n7\n6\n2\n10\n4\n4\n",
+       "salida": "1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 3\nPrimer número: 7\nSegundo número: 6\nResultado: 42\n1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 2\nPrimer número: 10\nSegundo número: 4\nResultado: 6\n1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 4\nPrograma finalizado"
+      },
+      {
+       "label": "Opción no válida y salir",
+       "stdin": "9\n4\n",
+       "salida": "1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 9\nOpción no válida\n1. Sumar  2. Restar  3. Multiplicar  4. Salir\nOpción: 4\nPrograma finalizado"
+      }
+     ],
+     "solucionReferencia": "opcion = 0\nwhile opcion != 4:\n    print(\"1. Sumar  2. Restar  3. Multiplicar  4. Salir\")\n    opcion = int(input(\"Opción: \"))\n    if opcion in (1, 2, 3):\n        a = float(input(\"Primer número: \"))\n        b = float(input(\"Segundo número: \"))\n        if opcion == 1:\n            print(f\"Resultado: {a + b:g}\")\n        elif opcion == 2:\n            print(f\"Resultado: {a - b:g}\")\n        else:\n            print(f\"Resultado: {a * b:g}\")\n    elif opcion != 4:\n        print(\"Opción no válida\")\nprint(\"Programa finalizado\")",
+     "criteriosEvaluacion": [
+      "El menú se repite hasta elegir 4 (while).",
+      "Cada opción hace la operación correcta con dos números.",
+      "Avisa si la opción no es válida."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 2",
+      "codigo": "RP1-ITE02"
+     }
+    },
+    {
+     "codigo": "RP1-ITE03",
+     "titulo": "Práctica 1 · Iterativas 3: Tabla de multiplicar hasta el 5",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Leer un número y mostrar por pantalla su tabla de multiplicar hasta el 5.\nEjemplo: 7 * 1 = 7, 7 * 2 = 14, 7 * 3 = 21, 7 * 4 = 28, 7 * 5 = 35.",
+     "ejemploEntrada": "7\n",
+     "ejemploSalida": "Número: 7\n7 * 1 = 7\n7 * 2 = 14\n7 * 3 = 21\n7 * 4 = 28\n7 * 5 = 35",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "7\n",
+       "salida": "Número: 7\n7 * 1 = 7\n7 * 2 = 14\n7 * 3 = 21\n7 * 4 = 28\n7 * 5 = 35"
+      },
+      {
+       "label": "Número de dos cifras",
+       "stdin": "12\n",
+       "salida": "Número: 12\n12 * 1 = 12\n12 * 2 = 24\n12 * 3 = 36\n12 * 4 = 48\n12 * 5 = 60"
+      },
+      {
+       "label": "El cero",
+       "stdin": "0\n",
+       "salida": "Número: 0\n0 * 1 = 0\n0 * 2 = 0\n0 * 3 = 0\n0 * 4 = 0\n0 * 5 = 0"
+      }
+     ],
+     "solucionReferencia": "numero = int(input(\"Número: \"))\nfor i in range(1, 6):\n    print(numero, \"*\", i, \"=\", numero * i)",
+     "criteriosEvaluacion": [
+      "Usa un ciclo for con range(1, 6).",
+      "Muestra cada línea con el formato n * i = resultado.",
+      "Reproduce el ejemplo del 7."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 3",
+      "codigo": "RP1-ITE03"
+     }
+    },
+    {
+     "codigo": "RP1-ITE04",
+     "titulo": "Práctica 1 · Iterativas 4: Figura de pirámide numérica con for",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Utilizando la estructura for generar la siguiente figura.\nEjemplo: si N = 5, cada fila i muestra los números 1, 2, …, i y luego baja hasta 1 (1 / 1 2 1 / 1 2 3 2 1 / 1 2 3 4 3 2 1 / 1 2 3 4 5 4 3 2 1), centrados formando una pirámide.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "N: 5\n        1\n      1 2 1\n    1 2 3 2 1\n  1 2 3 4 3 2 1\n1 2 3 4 5 4 3 2 1",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (N = 5)",
+       "stdin": "5\n",
+       "salida": "N: 5\n        1\n      1 2 1\n    1 2 3 2 1\n  1 2 3 4 3 2 1\n1 2 3 4 5 4 3 2 1"
+      },
+      {
+       "label": "N = 3",
+       "stdin": "3\n",
+       "salida": "N: 3\n    1\n  1 2 1\n1 2 3 2 1"
+      },
+      {
+       "label": "N = 1",
+       "stdin": "1\n",
+       "salida": "N: 1\n1"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nfor i in range(1, n + 1):\n    subida = \" \".join(str(k) for k in range(1, i + 1))\n    bajada = \" \".join(str(k) for k in range(i - 1, 0, -1))\n    fila = subida + (\" \" + bajada if bajada else \"\")\n    print(\" \" * (2 * (n - i)) + fila)",
+     "criteriosEvaluacion": [
+      "Usa for para recorrer las filas.",
+      "Cada fila sube hasta i y baja hasta 1.",
+      "Centra la figura con espacios al inicio de cada fila."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 4",
+      "codigo": "RP1-ITE04"
+     }
+    },
+    {
+     "codigo": "RP1-ITE05",
+     "titulo": "Práctica 1 · Iterativas 5: Figura en forma de X con asteriscos",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Generar la siguiente figura.\nEjemplo: si N = 7 se dibuja una X de 7 filas: los asteriscos de cada fila están en las dos diagonales y se cruzan en la fila central.",
+     "ejemploEntrada": "7\n",
+     "ejemploSalida": "N: 7\n*           *\n  *       *\n    *   *\n      *\n    *   *\n  *       *\n*           *",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (N = 7)",
+       "stdin": "7\n",
+       "salida": "N: 7\n*           *\n  *       *\n    *   *\n      *\n    *   *\n  *       *\n*           *"
+      },
+      {
+       "label": "N = 5",
+       "stdin": "5\n",
+       "salida": "N: 5\n*       *\n  *   *\n    *\n  *   *\n*       *"
+      },
+      {
+       "label": "N = 3",
+       "stdin": "3\n",
+       "salida": "N: 3\n*   *\n  *\n*   *"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nfor i in range(n):\n    fila = [\" \"] * (2 * n - 1)\n    fila[2 * i] = \"*\"\n    fila[2 * (n - 1 - i)] = \"*\"\n    print(\"\".join(fila).rstrip())",
+     "criteriosEvaluacion": [
+      "Usa for para recorrer las N filas.",
+      "Coloca dos asteriscos por fila (diagonal principal y secundaria).",
+      "En la fila central ambos coinciden y queda un solo asterisco."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 5",
+      "codigo": "RP1-ITE05"
+     }
+    },
+    {
+     "codigo": "RP1-ITE06",
+     "titulo": "Práctica 1 · Iterativas 6: Generar los n primeros números primos",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Generar los números primos.\nEjemplo: si n = 10 → 2, 3, 5, 7, 11, 13, 17, 19, 23, 29.\nObservación para el docente: el ejemplo impreso en la práctica lista 11 valores (hasta 31) para n = 10. La solución de referencia genera los n primeros primos (para n = 10 llega a 29), igual que en Series y sumatorias, ejercicio 1.",
+     "ejemploEntrada": "10\n",
+     "ejemploSalida": "¿Cuántos primos? 10\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "10\n",
+       "salida": "¿Cuántos primos? 10\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29"
+      },
+      {
+       "label": "Cinco primos",
+       "stdin": "5\n",
+       "salida": "¿Cuántos primos? 5\n2, 3, 5, 7, 11"
+      },
+      {
+       "label": "Solo el primero",
+       "stdin": "1\n",
+       "salida": "¿Cuántos primos? 1\n2"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"¿Cuántos primos? \"))\nencontrados = 0\ncandidato = 2\nresultado = []\nwhile encontrados < n:\n    es_primo = True\n    for d in range(2, candidato):\n        if candidato % d == 0:\n            es_primo = False\n            break\n    if es_primo:\n        resultado.append(str(candidato))\n        encontrados += 1\n    candidato += 1\nprint(\", \".join(resultado))",
+     "criteriosEvaluacion": [
+      "Prueba si cada candidato es primo con un ciclo interno.",
+      "Cuenta cuántos primos lleva encontrados hasta llegar a n.",
+      "Muestra los primos separados por comas."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 6",
+      "codigo": "RP1-ITE06"
+     }
+    },
+    {
+     "codigo": "RP1-ITE07",
+     "titulo": "Práctica 1 · Iterativas 7: Sumar números positivos hasta ingresar un negativo",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Leer y sumar números positivos; el ciclo se repite hasta que se ingrese un número negativo.\nEjemplo: S = 2 + 5 + 6 = 13.",
+     "ejemploEntrada": "2\n5\n6\n-1\n",
+     "ejemploSalida": "Número: 2\nNúmero: 5\nNúmero: 6\nNúmero: -1\nSuma total: 13",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (13)",
+       "stdin": "2\n5\n6\n-1\n",
+       "salida": "Número: 2\nNúmero: 5\nNúmero: 6\nNúmero: -1\nSuma total: 13"
+      },
+      {
+       "label": "Negativo de inmediato",
+       "stdin": "-4\n",
+       "salida": "Número: -4\nSuma total: 0"
+      },
+      {
+       "label": "Incluye un cero",
+       "stdin": "10\n0\n3\n-2\n",
+       "salida": "Número: 10\nNúmero: 0\nNúmero: 3\nNúmero: -2\nSuma total: 13"
+      }
+     ],
+     "solucionReferencia": "suma = 0\nn = int(input(\"Número: \"))\nwhile n >= 0:\n    suma += n\n    n = int(input(\"Número: \"))\nprint(\"Suma total:\", suma)",
+     "criteriosEvaluacion": [
+      "El ciclo termina cuando se ingresa un número negativo.",
+      "El negativo NO se suma.",
+      "Reproduce el ejemplo: 2 + 5 + 6 = 13."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 7",
+      "codigo": "RP1-ITE07"
+     }
+    },
+    {
+     "codigo": "RP1-ITE08",
+     "titulo": "Práctica 1 · Iterativas 8: Primos menores que un número (DFD y Python)",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Se dice que un número N es primo si los únicos enteros positivos que lo dividen son exactamente 1 y N. Construye un diagrama de flujo y el correspondiente programa en Python que lea un número entero positivo y escriba todos los números primos menores a dicho número.\nEjemplo: dame un número… 15 → 2, 3, 5, 7, 11, 13.",
+     "ejemploEntrada": "15\n",
+     "ejemploSalida": "Dame un número: 15\n2, 3, 5, 7, 11, 13",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "15\n",
+       "salida": "Dame un número: 15\n2, 3, 5, 7, 11, 13"
+      },
+      {
+       "label": "No hay primos menores",
+       "stdin": "2\n",
+       "salida": "Dame un número: 2\nNo hay primos menores"
+      },
+      {
+       "label": "Hasta 30",
+       "stdin": "30\n",
+       "salida": "Dame un número: 30\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Dame un número: \"))\nprimos = []\nfor num in range(2, n):\n    es_primo = True\n    for d in range(2, num):\n        if num % d == 0:\n            es_primo = False\n            break\n    if es_primo:\n        primos.append(str(num))\nprint(\", \".join(primos) if primos else \"No hay primos menores\")",
+     "criteriosEvaluacion": [
+      "Recorre desde 2 hasta n − 1.",
+      "Usa una bandera (es_primo) y break al hallar un divisor.",
+      "Reproduce el ejemplo: 15 → 2, 3, 5, 7, 11, 13."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 8",
+      "codigo": "RP1-ITE08"
+     }
+    },
+    {
+     "codigo": "RP1-ITE09",
+     "titulo": "Práctica 1 · Iterativas 9: Impares hasta 15 y su cantidad (con while)",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Realizar un programa que imprima los números impares menores o iguales a 15 y muestre la cantidad de impares que hay (con while).",
+     "ejemploEntrada": "",
+     "ejemploSalida": "1 3 5 7 9 11 13 15 \nCantidad de impares: 8",
+     "pruebas": [
+      {
+       "label": "Límite 15 (el de la práctica)",
+       "stdin": "",
+       "salida": "1 3 5 7 9 11 13 15 \nCantidad de impares: 8"
+      },
+      {
+       "label": "Prueba extra: límite 10",
+       "stdin": "",
+       "salida": "1 3 5 7 9 \nCantidad de impares: 5"
+      },
+      {
+       "label": "Prueba extra: límite 1",
+       "stdin": "",
+       "salida": "1 \nCantidad de impares: 1"
+      }
+     ],
+     "solucionReferencia": "LIMITE = 15\nnumero = 1\ncantidad = 0\nwhile numero <= LIMITE:\n    print(numero, end=\" \")\n    cantidad += 1\n    numero += 2\nprint()\nprint(\"Cantidad de impares:\", cantidad)",
+     "criteriosEvaluacion": [
+      "Usa while (no for) como pide el enunciado.",
+      "Imprime 1, 3, 5, …, 15 y cuenta la cantidad (8).",
+      "Cambiando el límite sigue funcionando."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 9",
+      "codigo": "RP1-ITE09"
+     }
+    },
+    {
+     "codigo": "RP1-ITE10",
+     "titulo": "Práctica 1 · Iterativas 10: División entera con restas sucesivas",
+     "categoria": "Iterativas",
+     "tema": "2.4",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Obtener la división entera en base a restas sucesivas.",
+     "ejemploEntrada": "17\n5\n",
+     "ejemploSalida": "Dividendo: 17\nDivisor: 5\nCociente: 3\nResiduo: 2",
+     "pruebas": [
+      {
+       "label": "17 ÷ 5",
+       "stdin": "17\n5\n",
+       "salida": "Dividendo: 17\nDivisor: 5\nCociente: 3\nResiduo: 2"
+      },
+      {
+       "label": "División exacta",
+       "stdin": "20\n4\n",
+       "salida": "Dividendo: 20\nDivisor: 4\nCociente: 5\nResiduo: 0"
+      },
+      {
+       "label": "Dividendo menor que divisor",
+       "stdin": "3\n7\n",
+       "salida": "Dividendo: 3\nDivisor: 7\nCociente: 0\nResiduo: 3"
+      }
+     ],
+     "solucionReferencia": "a = int(input(\"Dividendo: \"))\nb = int(input(\"Divisor: \"))\nif b <= 0:\n    print(\"Error: el divisor debe ser mayor que 0\")\nelse:\n    cociente = 0\n    while a >= b:\n        a = a - b\n        cociente += 1\n    print(\"Cociente:\", cociente)\n    print(\"Residuo:\", a)",
+     "criteriosEvaluacion": [
+      "Resta el divisor mientras el dividendo sea mayor o igual.",
+      "Cuenta cuántas restas hizo (cociente).",
+      "Lo que queda al final es el residuo."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.4",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Iterativas, ejercicio 10",
+      "codigo": "RP1-ITE10"
+     }
+    },
+    {
+     "codigo": "RP1-SER01",
+     "titulo": "Práctica 1 · Series y sumatorias 1: Serie de los n primeros primos",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Generar la serie de los n primeros primos.\nSi n = 10 entonces: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, … (n términos).\nVersión para pensar en eficiencia: aquí se prueba cada candidato dividiéndolo solo entre los primos ya encontrados (hasta su raíz cuadrada), en lugar de entre todos los números.",
+     "ejemploEntrada": "10\n",
+     "ejemploSalida": "Cantidad de primos: 10\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "10\n",
+       "salida": "Cantidad de primos: 10\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29"
+      },
+      {
+       "label": "Quince primos",
+       "stdin": "15\n",
+       "salida": "Cantidad de primos: 15\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47"
+      },
+      {
+       "label": "Un solo término",
+       "stdin": "1\n",
+       "salida": "Cantidad de primos: 1\n2"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Cantidad de primos: \"))\nprimos = []\ncandidato = 2\nwhile len(primos) < n:\n    es_primo = True\n    for p in primos:\n        if p * p > candidato:\n            break\n        if candidato % p == 0:\n            es_primo = False\n            break\n    if es_primo:\n        primos.append(candidato)\n    candidato += 1\nprint(\", \".join(str(p) for p in primos))",
+     "criteriosEvaluacion": [
+      "Genera exactamente n términos.",
+      "Descarta compuestos con una bandera/break.",
+      "Reproduce el ejemplo: n = 10 → 2 … 29."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 1",
+      "codigo": "RP1-SER01"
+     }
+    },
+    {
+     "codigo": "RP1-SER02",
+     "titulo": "Práctica 1 · Series y sumatorias 2: Suma de la serie 1/2 − 2/2² + 3/2³ − …",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular e imprimir la suma de los primeros N términos de la serie:\nS = 1/2 − 2/2² + 3/2³ − 4/2⁴ + … + (−1)^(N+1) · N/2^N\nEjemplo: si N = 3 → S = 1/2 − 2/4 + 3/8 = 0.5 − 0.5 + 0.375 = 0.375.",
+     "ejemploEntrada": "3\n",
+     "ejemploSalida": "N: 3\nS = 0.375",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (0.375)",
+       "stdin": "3\n",
+       "salida": "N: 3\nS = 0.375"
+      },
+      {
+       "label": "Un solo término",
+       "stdin": "1\n",
+       "salida": "N: 1\nS = 0.5"
+      },
+      {
+       "label": "Diez términos",
+       "stdin": "10\n",
+       "salida": "N: 10\nS = 0.2188"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\ns = 0\nfor k in range(1, n + 1):\n    s += (-1) ** (k + 1) * k / 2 ** k\nprint(\"S =\", round(s, 4))",
+     "criteriosEvaluacion": [
+      "El signo alterna: + en los términos impares y − en los pares.",
+      "Cada término es k / 2^k.",
+      "Reproduce el ejemplo: N = 3 → 0.375."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 2",
+      "codigo": "RP1-SER02"
+     }
+    },
+    {
+     "codigo": "RP1-SER03",
+     "titulo": "Práctica 1 · Series y sumatorias 3: Serie x/1! − x²/2! + x³/3! − …",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular la siguiente serie:\nS = x/1! − x²/2! + x³/3! − x⁴/4! + … + (−1)^(n+1) · xⁿ/n!\nEjemplo: si n = 3 y x = 2 → S = 2/1 − 4/2 + 8/6 = 2 − 2 + 1.33 = 1.33.",
+     "ejemploEntrada": "2\n3\n",
+     "ejemploSalida": "x: 2\nn: 3\nS = 1.33",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (1.33)",
+       "stdin": "2\n3\n",
+       "salida": "x: 2\nn: 3\nS = 1.33"
+      },
+      {
+       "label": "x = 3, n = 4",
+       "stdin": "3\n4\n",
+       "salida": "x: 3\nn: 4\nS = -0.38"
+      },
+      {
+       "label": "x = 1, n = 1",
+       "stdin": "1\n1\n",
+       "salida": "x: 1\nn: 1\nS = 1.00"
+      }
+     ],
+     "solucionReferencia": "x = float(input(\"x: \"))\nn = int(input(\"n: \"))\ns = 0\nfact = 1\npot = 1\nfor k in range(1, n + 1):\n    fact *= k\n    pot *= x\n    s += (-1) ** (k + 1) * pot / fact\nprint(f\"S = {s:.2f}\")",
+     "criteriosEvaluacion": [
+      "Acumula el factorial y la potencia en cada vuelta (sin recalcular desde cero).",
+      "Alterna el signo de cada término.",
+      "Reproduce el ejemplo: x = 2, n = 3 → 1.33."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 3",
+      "codigo": "RP1-SER03"
+     }
+    },
+    {
+     "codigo": "RP1-SER04",
+     "titulo": "Práctica 1 · Series y sumatorias 4: Serie 1, 2, 4, 7, 11, 16, 22…",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Generar la siguiente serie: S = 1, 2, 4, 7, 11, 16, 22, …\nEjemplo: si n = 5 → S = 1, 2, 4, 7, 11.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "Cantidad de términos: 5\n1, 2, 4, 7, 11",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "5\n",
+       "salida": "Cantidad de términos: 5\n1, 2, 4, 7, 11"
+      },
+      {
+       "label": "Ocho términos",
+       "stdin": "8\n",
+       "salida": "Cantidad de términos: 8\n1, 2, 4, 7, 11, 16, 22, 29"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "Cantidad de términos: 1\n1"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Cantidad de términos: \"))\ntermino = 1\nsalto = 1\nresultado = []\nfor i in range(n):\n    resultado.append(str(termino))\n    termino += salto\n    salto += 1\nprint(\", \".join(resultado))",
+     "criteriosEvaluacion": [
+      "Detecta que el salto aumenta en 1 en cada término (+1, +2, +3, …).",
+      "Genera exactamente n términos.",
+      "Reproduce el ejemplo: n = 5 → 1, 2, 4, 7, 11."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 4",
+      "codigo": "RP1-SER04"
+     }
+    },
+    {
+     "codigo": "RP1-SER05",
+     "titulo": "Práctica 1 · Series y sumatorias 5: Dígito mayor y dígito menor de un número",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Dado un número entero encontrar el dígito menor y mayor.\nSi N = 582491 → Dígito Mayor = 9, Dígito Menor = 1.",
+     "ejemploEntrada": "582491\n",
+     "ejemploSalida": "Número entero: 582491\nDígito mayor: 9\nDígito menor: 1",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "582491\n",
+       "salida": "Número entero: 582491\nDígito mayor: 9\nDígito menor: 1"
+      },
+      {
+       "label": "Un solo dígito",
+       "stdin": "7\n",
+       "salida": "Número entero: 7\nDígito mayor: 7\nDígito menor: 7"
+      },
+      {
+       "label": "Con ceros",
+       "stdin": "1000\n",
+       "salida": "Número entero: 1000\nDígito mayor: 1\nDígito menor: 0"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Número entero: \"))\nn = abs(n)\nmayor = 0\nmenor = 9\nif n == 0:\n    menor = 0\nwhile n > 0:\n    d = n % 10\n    if d > mayor:\n        mayor = d\n    if d < menor:\n        menor = d\n    n = n // 10\nprint(\"Dígito mayor:\", mayor)\nprint(\"Dígito menor:\", menor)",
+     "criteriosEvaluacion": [
+      "Recorre los dígitos con % 10 y // 10.",
+      "Inicializa mayor en 0 y menor en 9 (o con el primer dígito).",
+      "Reproduce el ejemplo: 582491 → 9 y 1."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 5",
+      "codigo": "RP1-SER05"
+     }
+    },
+    {
+     "codigo": "RP1-SER06",
+     "titulo": "Práctica 1 · Series y sumatorias 6: Ordenar los dígitos de un número de forma ascendente",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Dado un número N desordenado, ordenar sus dígitos de forma ascendente.\nEjemplo: N = 5132 → NO = 1235.\nPista: se puede contar cuántas veces aparece cada dígito (0 a 9) y reconstruir el número de menor a mayor, sin usar listas. Los ceros iniciales desaparecen al formar un número (3102 → 0123 = 123).",
+     "ejemploEntrada": "5132\n",
+     "ejemploSalida": "Número N: 5132\nN ordenado: 1235",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "5132\n",
+       "salida": "Número N: 5132\nN ordenado: 1235"
+      },
+      {
+       "label": "Totalmente invertido",
+       "stdin": "4321\n",
+       "salida": "Número N: 4321\nN ordenado: 1234"
+      },
+      {
+       "label": "Con cero (el cero inicial desaparece)",
+       "stdin": "3102\n",
+       "salida": "Número N: 3102\nN ordenado: 123"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Número N: \"))\ncopia = abs(n)\nnuevo = 0\nfor digito in range(0, 10):\n    temp = copia\n    while temp > 0:\n        if temp % 10 == digito:\n            nuevo = nuevo * 10 + digito\n        temp = temp // 10\nprint(\"N ordenado:\", nuevo)",
+     "criteriosEvaluacion": [
+      "Para cada dígito de 0 a 9, recorre N y lo agrega al resultado si aparece.",
+      "Respeta los dígitos repetidos.",
+      "Reproduce el ejemplo: 5132 → 1235."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 6",
+      "codigo": "RP1-SER06"
+     }
+    },
+    {
+     "codigo": "RP1-SER07",
+     "titulo": "Práctica 1 · Series y sumatorias 7: Componer un número con los dígitos pares",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Leer un número entero, descomponer y componer un nuevo número con sus dígitos pares.\nEjemplo: Ingrese un número: 529564 → número original: 529564; nuevo número: 264.",
+     "ejemploEntrada": "529564\n",
+     "ejemploSalida": "Ingrese un número: 529564\nNúmero original: 529564\nNuevo número: 264",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "529564\n",
+       "salida": "Ingrese un número: 529564\nNúmero original: 529564\nNuevo número: 264"
+      },
+      {
+       "label": "Sin dígitos pares",
+       "stdin": "13579\n",
+       "salida": "Ingrese un número: 13579\nEl número no tiene dígitos pares"
+      },
+      {
+       "label": "Todos pares",
+       "stdin": "2468\n",
+       "salida": "Ingrese un número: 2468\nNúmero original: 2468\nNuevo número: 2468"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Ingrese un número: \"))\noriginal = n\nnuevo = 0\nmult = 1\nwhile n > 0:\n    d = n % 10\n    if d % 2 == 0:\n        nuevo = nuevo + d * mult\n        mult = mult * 10\n    n = n // 10\nif mult == 1:\n    print(\"El número no tiene dígitos pares\")\nelse:\n    print(\"Número original:\", original)\n    print(\"Nuevo número:\", nuevo)",
+     "criteriosEvaluacion": [
+      "Descompone el número con % 10 y // 10.",
+      "Conserva el orden original de los dígitos pares (usa un multiplicador de posición).",
+      "Reproduce el ejemplo: 529564 → 264."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 7",
+      "codigo": "RP1-SER07"
+     }
+    },
+    {
+     "codigo": "RP1-SER08",
+     "titulo": "Práctica 1 · Series y sumatorias 8: Serie 1, 22, 333, 4444, …",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Generar la siguiente serie para N términos: 1, 22, 333, 4444, 55555, 666666, …\nEjemplo: Ingrese el número de términos de la serie: 3 → 1, 22, 333.\nObservación: en el enunciado impreso aparece “444” en lugar de “4444”; por el patrón (el dígito k repetido k veces) el cuarto término es 4444.",
+     "ejemploEntrada": "3\n",
+     "ejemploSalida": "Ingrese el número de términos de la serie: 3\n1, 22, 333",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "3\n",
+       "salida": "Ingrese el número de términos de la serie: 3\n1, 22, 333"
+      },
+      {
+       "label": "Seis términos",
+       "stdin": "6\n",
+       "salida": "Ingrese el número de términos de la serie: 6\n1, 22, 333, 4444, 55555, 666666"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "Ingrese el número de términos de la serie: 1\n1"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Ingrese el número de términos de la serie: \"))\nterminos = []\nfor k in range(1, n + 1):\n    terminos.append(str(k) * k)\nprint(\", \".join(terminos))",
+     "criteriosEvaluacion": [
+      "Cada término repite su número k, k veces.",
+      "Genera exactamente N términos.",
+      "Reproduce el ejemplo: 3 → 1, 22, 333."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 8",
+      "codigo": "RP1-SER08"
+     }
+    },
+    {
+     "codigo": "RP1-SER09",
+     "titulo": "Práctica 1 · Series y sumatorias 9: Serie 1, 4, 7, 10, 13, 16…",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Generar la siguiente serie para N términos: 1, 4, 7, 10, 13, 16, …\nEjemplo: ¿Cuántos términos? 5 → 1, 4, 7, 10, 13.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "¿Cuántos términos? 5\n1, 4, 7, 10, 13",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "5\n",
+       "salida": "¿Cuántos términos? 5\n1, 4, 7, 10, 13"
+      },
+      {
+       "label": "Ocho términos",
+       "stdin": "8\n",
+       "salida": "¿Cuántos términos? 8\n1, 4, 7, 10, 13, 16, 19, 22"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "¿Cuántos términos? 1\n1"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"¿Cuántos términos? \"))\nterminos = []\nfor i in range(n):\n    terminos.append(str(1 + 3 * i))\nprint(\", \".join(terminos))",
+     "criteriosEvaluacion": [
+      "Cada término aumenta en 3 respecto al anterior.",
+      "Genera exactamente N términos.",
+      "Reproduce el ejemplo: 5 → 1, 4, 7, 10, 13."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 9",
+      "codigo": "RP1-SER09"
+     }
+    },
+    {
+     "codigo": "RP1-SER10",
+     "titulo": "Práctica 1 · Series y sumatorias 10: Serie de factoriales 1!, 2!, 3!, …, N!",
+     "categoria": "Series y sumatorias",
+     "tema": "2.5",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Generar la serie: 1!, 2!, 3!, 4!, 5!, …, N!\nEjemplo: N = 4 → 1!, 2!, 3!, 4! → mostrar 1, 2, 6, 24.",
+     "ejemploEntrada": "4\n",
+     "ejemploSalida": "N: 4\n1, 2, 6, 24",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "4\n",
+       "salida": "N: 4\n1, 2, 6, 24"
+      },
+      {
+       "label": "Hasta 6!",
+       "stdin": "6\n",
+       "salida": "N: 6\n1, 2, 6, 24, 120, 720"
+      },
+      {
+       "label": "Solo 1!",
+       "stdin": "1\n",
+       "salida": "N: 1\n1"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nfact = 1\nterminos = []\nfor k in range(1, n + 1):\n    fact *= k\n    terminos.append(str(fact))\nprint(\", \".join(terminos))",
+     "criteriosEvaluacion": [
+      "Acumula el factorial multiplicando por k en cada vuelta.",
+      "Muestra los N factoriales en orden.",
+      "Reproduce el ejemplo: N = 4 → 1, 2, 6, 24."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "2",
+      "tema": "2.5",
+      "citaBreve": "Práctica Nro. 1 PRG-111 (II/2026), Series y sumatorias, ejercicio 10",
+      "codigo": "RP1-SER10"
+     }
+    }
+   ]
+  }
+ }
+}

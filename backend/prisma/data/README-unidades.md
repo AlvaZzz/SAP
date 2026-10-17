@@ -101,3 +101,20 @@ y por eso **heredan la trazabilidad** del ejercicio origen. No puntúan ni afect
 Ítems con el mismo formato de ejercicio; `fuenteDoc.tema` debe existir en el temario
 (el examen se compone del banco sembrado, no se inventa fuera de él). Si el array
 `examen` va vacío, el banco de examen actual no se toca.
+
+## Banco de la Práctica Nro. 1 (Unidades 1 y 2) — carga ADITIVA
+
+`banco_unidades_1_y_2.json` (60 preguntas: 10 integradoras por unidad × 3 niveles, y 40
+retos de la práctica) y `retos_bugs_unidades_1_y_2.json` (30 retos "Encuentra el bug") se
+cargan con un script propio que **no borra nada** y se puede repetir:
+
+```bash
+npm run seed:practica              # simulación: valida y muestra qué entra en cada tema
+npm run seed:practica -- --aplicar # escribe en la base
+```
+
+- Las 60 preguntas van al banco de práctica, cada una en su "Tema en PREXI".
+- Las 10 versiones intermedias de cada unidad forman su examen (banco `examen`); las
+  preguntas de examen anteriores de U1 y U2 quedan **desactivadas**, no borradas.
+- Cada ítem se identifica por `fuenteDoc.codigo` (y cada reto por `codigo`): si ya existe
+  se actualiza; si no, se crea. Si un tema del archivo no existe en la base, no se escribe nada.

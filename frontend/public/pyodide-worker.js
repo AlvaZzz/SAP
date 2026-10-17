@@ -34,6 +34,13 @@ async function cargar() {
 }
 cargar();
 
+// Vacía lo que Python aún tenga en su búfer al terminar (o al fallar) la ejecución:
+// antes, un `print(x, end=" ")` final o el texto de un input() se perdía o aparecía
+// al inicio de la ejecución SIGUIENTE.
+function vaciarSalida() {
+  try { pyodide.runPython('import sys\nsys.stdout.flush()\nsys.stderr.flush()'); } catch (_) { /* sin salida pendiente */ }
+}
+
 self.onmessage = async (ev) => {
   const msg = ev.data;
   if (!msg || msg.tipo !== 'ejecutar') return;
@@ -49,8 +56,12 @@ self.onmessage = async (ev) => {
   try {
     // stdout/stderr se capturan por callback (no por redirección global), para
     // que la salida llegue completa aunque el programa termine con excepción.
-    pyodide.setStdout({ batched: (s) => { stdout += s + '\n'; } });
-    pyodide.setStderr({ batched: (s) => { stderr += s + '\n'; } });
+    // `write` recibe los bytes tal cual, sin partir por líneas: así no se pierde lo
+    // que queda sin salto de línea al final, como un print(x, end=" ").
+    const decOut = new TextDecoder();
+    const decErr = new TextDecoder();
+    pyodide.setStdout({ write: (b) => { stdout += decOut.decode(b, { stream: true }); return b.length; } });
+    pyodide.setStderr({ write: (b) => { stderr += decErr.decode(b, { stream: true }); return b.length; } });
 
     // `input()` lee del stdin que mande la UI, línea a línea. Sin esto, cualquier
     // programa con input() lanzaría una excepción distinta a la de Piston.
@@ -67,8 +78,10 @@ __b.input = __prexi_input
 `);
 
     await pyodide.runPythonAsync(codigo);
+    vaciarSalida();
     postMessage({ tipo: 'resultado', id, ok: true, stdout, stderr });
   } catch (e) {
+    vaciarSalida();
     // El texto de PythonError ya viene con el traceback, igual que el stderr de
     // Piston: la UI lo muestra sin cambios.
     const texto = String(e && e.message ? e.message : e);

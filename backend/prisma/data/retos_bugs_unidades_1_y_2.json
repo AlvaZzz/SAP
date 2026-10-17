@@ -1,0 +1,875 @@
+{
+ "fuente": "PRACTICA_NRO_1_PROGRAMACION_I.pdf (PRG-111, II/2026) - retos de depuración propuestos",
+ "retos": [
+  {
+   "codigo": "BUG-U1-01",
+   "unidad": 1,
+   "tema": "1.5",
+   "titulo": "🐛 Bug: La suma que sale pegada",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa sume dos números que llegan como texto (como pasa con input()) y muestre su suma matemática, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "a = \"5\"\nb = \"3\"\nsuma = a + b\nprint(\"La suma es\", suma)",
+   "ejemploSalida": "La suma es 8",
+   "salidaConBug": "La suma es 53",
+   "solucionReferencia": "a = \"5\"\nb = \"3\"\nsuma = int(a) + int(b)\nprint(\"La suma es\", suma)",
+   "tipoBug": null,
+   "pistas": [
+    "Mira lo que imprime: ¿es un número o dos números pegados?",
+    "Los valores a y b son texto (str). Con texto, el signo + une en lugar de sumar.",
+    "Convierte cada valor con int() antes de sumarlos."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.5",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 1",
+    "codigo": "BUG-U1-01"
+   }
+  },
+  {
+   "codigo": "BUG-U1-02",
+   "unidad": 1,
+   "tema": "1.11",
+   "titulo": "🐛 Bug: Segundos a horas, minutos y segundos",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa convierta 8000 segundos en horas, minutos y segundos, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "total = 8000\nhoras = total // 3600\nresto = total % 3600\nminutos = total // 60\nsegundos = resto % 60\nprint(horas, \"horas,\", minutos, \"minutos y\", segundos, \"segundos\")",
+   "ejemploSalida": "2 horas, 13 minutos y 20 segundos",
+   "salidaConBug": "2 horas, 133 minutos y 20 segundos",
+   "solucionReferencia": "total = 8000\nhoras = total // 3600\nresto = total % 3600\nminutos = resto // 60\nsegundos = resto % 60\nprint(horas, \"horas,\", minutos, \"minutos y\", segundos, \"segundos\")",
+   "tipoBug": "variable_trocada",
+   "pistas": [
+    "Las horas y los segundos están bien. El problema está en los minutos.",
+    "Para los minutos hay que usar lo que SOBRA después de sacar las horas, no el total.",
+    "Cambia total por resto en la línea de minutos."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.11",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 4",
+    "codigo": "BUG-U1-02"
+   }
+  },
+  {
+   "codigo": "BUG-U1-03",
+   "unidad": 1,
+   "tema": "1.10",
+   "titulo": "🐛 Bug: El viaje por el Salar de Uyuni",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el tiempo en minutos para recorrer 72 km a 50 km/h (tiempo = distancia / velocidad × 60), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "distancia = 72\nvelocidad = 50\ntiempo = distancia / velocidad / 60\nprint(f\"Tiempo estimado de viaje {tiempo:.2f} minutos\")",
+   "ejemploSalida": "Tiempo estimado de viaje 86.40 minutos",
+   "salidaConBug": "Tiempo estimado de viaje 0.02 minutos",
+   "solucionReferencia": "distancia = 72\nvelocidad = 50\ntiempo = distancia / velocidad * 60\nprint(f\"Tiempo estimado de viaje {tiempo:.2f} minutos\")",
+   "tipoBug": "operador_aritmetico_invertido",
+   "pistas": [
+    "El resultado es demasiado pequeño para un viaje de 72 km. Revisa la fórmula.",
+    "La fórmula del enunciado es distancia / velocidad y el resultado se multiplica por 60 (horas a minutos).",
+    "En la línea del tiempo, el último operador debe ser * y no /."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.10",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 6",
+    "codigo": "BUG-U1-03"
+   }
+  },
+  {
+   "codigo": "BUG-U1-04",
+   "unidad": 1,
+   "tema": "1.11",
+   "titulo": "🐛 Bug: La sanción que premia",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule lo que recibe Contaduría Pública con un presupuesto de 20000: el 32 % menos una sanción del 10 % de ese monto, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "mp = 20000\ndcp = mp * 0.32\ndcp = dcp + dcp * 0.10\nprint(f\"Contaduría Pública: {dcp:.2f}\")",
+   "ejemploSalida": "Contaduría Pública: 5760.00",
+   "salidaConBug": "Contaduría Pública: 7040.00",
+   "solucionReferencia": "mp = 20000\ndcp = mp * 0.32\ndcp = dcp - dcp * 0.10\nprint(f\"Contaduría Pública: {dcp:.2f}\")",
+   "tipoBug": "operador_aritmetico_invertido",
+   "pistas": [
+    "Contaduría recibe MÁS de lo que le corresponde, y debería recibir menos.",
+    "Una sanción es un descuento: se resta, no se suma.",
+    "En la segunda línea de cálculo, cambia + por -."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.11",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 7",
+    "codigo": "BUG-U1-04"
+   }
+  },
+  {
+   "codigo": "BUG-U1-05",
+   "unidad": 1,
+   "tema": "1.6",
+   "titulo": "🐛 Bug: Residuo sin módulo",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa obtenga el residuo de 7 ÷ 2 sin usar % (residuo = A − cociente entero × B), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "a = 7\nb = 2\nresiduo = a - (a / b) * b\nprint(\"Residuo:\", residuo)",
+   "ejemploSalida": "Residuo: 1",
+   "salidaConBug": "Residuo: 0.0",
+   "solucionReferencia": "a = 7\nb = 2\nresiduo = a - (a // b) * b\nprint(\"Residuo:\", residuo)",
+   "tipoBug": null,
+   "pistas": [
+    "Haz la prueba de escritorio: ¿cuánto vale (a / b) * b?",
+    "El operador / da decimales (3.5). Aquí necesitas la parte entera del cociente.",
+    "Usa // (división entera) en lugar de /."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.6",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 8",
+    "codigo": "BUG-U1-05"
+   }
+  },
+  {
+   "codigo": "BUG-U1-06",
+   "unidad": 1,
+   "tema": "1.5.2",
+   "titulo": "🐛 Bug: El 51 que no aprueba",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa indique si una nota de 51 aprueba (la nota mínima de aprobación es 51), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "nota = 51\nif nota > 51:\n    print(\"Aprobó\")\nelse:\n    print(\"Reprobó\")",
+   "ejemploSalida": "Aprobó",
+   "salidaConBug": "Reprobó",
+   "solucionReferencia": "nota = 51\nif nota >= 51:\n    print(\"Aprobó\")\nelse:\n    print(\"Reprobó\")",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Prueba con el valor exacto del límite: 51.",
+    "La nota mínima también aprueba: 51 debe contar como aprobado.",
+    "Cambia > por >= en la condición."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.5.2",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 1",
+    "codigo": "BUG-U1-06"
+   }
+  },
+  {
+   "codigo": "BUG-U1-07",
+   "unidad": 1,
+   "tema": "1.5.2",
+   "titulo": "🐛 Bug: La nota 101 que pasó",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa valide que la nota esté entre 0 y 100. Con 101 debe decir que es inválida, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "nota = 101\nif nota >= 0 or nota <= 100:\n    print(\"Nota válida\")\nelse:\n    print(\"Nota inválida\")",
+   "ejemploSalida": "Nota inválida",
+   "salidaConBug": "Nota válida",
+   "solucionReferencia": "nota = 101\nif nota >= 0 and nota <= 100:\n    print(\"Nota válida\")\nelse:\n    print(\"Nota inválida\")",
+   "tipoBug": null,
+   "pistas": [
+    "Prueba con 101 y luego con -5. ¿Alguna vez da \"inválida\"?",
+    "Con \"or\" basta que se cumpla UNA condición; casi cualquier número cumple al menos una.",
+    "Para estar dentro del rango se deben cumplir las dos condiciones a la vez: usa and."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.5.2",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 1",
+    "codigo": "BUG-U1-07"
+   }
+  },
+  {
+   "codigo": "BUG-U1-08",
+   "unidad": 1,
+   "tema": "1.11",
+   "titulo": "🐛 Bug: El promedio que se reinicia",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule el promedio de las notas 70, 85 y 90, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "notas = [70, 85, 90]\nsuma = 0\nfor n in notas:\n    suma = 0\n    suma = suma + n\nprint(f\"Promedio: {suma / len(notas):.2f}\")",
+   "ejemploSalida": "Promedio: 81.67",
+   "salidaConBug": "Promedio: 30.00",
+   "solucionReferencia": "notas = [70, 85, 90]\nsuma = 0\nfor n in notas:\n    suma = suma + n\nprint(f\"Promedio: {suma / len(notas):.2f}\")",
+   "tipoBug": null,
+   "pistas": [
+    "El promedio sale muy bajo. Sigue el valor de suma vuelta por vuelta.",
+    "La suma se está poniendo en 0 en cada vuelta, así que solo recuerda la última nota.",
+    "Quita la línea suma = 0 de dentro del ciclo: el acumulador se inicia solo una vez, antes del for."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.11",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 1",
+    "codigo": "BUG-U1-08"
+   }
+  },
+  {
+   "codigo": "BUG-U1-09",
+   "unidad": 1,
+   "tema": "1.6",
+   "titulo": "🐛 Bug: El área sombreada que no cabe",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule el área sombreada de la figura de la práctica para a = 2: son 6 sectores (cuartos de círculo) de radio a/2, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "import math\na = 2\nradio = a * 2\nsector = math.pi * radio ** 2 / 4\narea = 6 * sector\nprint(f\"Área sombreada: {area:.2f}\")",
+   "ejemploSalida": "Área sombreada: 4.71",
+   "salidaConBug": "Área sombreada: 75.40",
+   "solucionReferencia": "import math\na = 2\nradio = a / 2\nsector = math.pi * radio ** 2 / 4\narea = 6 * sector\nprint(f\"Área sombreada: {area:.2f}\")",
+   "tipoBug": "operador_aritmetico_invertido",
+   "pistas": [
+    "El área es enorme para un cuadrado de lado 2. Mira el radio.",
+    "Cada círculo está inscrito en un cuadrado de lado a, así que su radio es la mitad del lado.",
+    "En la línea del radio, cambia * por /."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.6",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 5",
+    "codigo": "BUG-U1-09"
+   }
+  },
+  {
+   "codigo": "BUG-U1-10",
+   "unidad": 1,
+   "tema": "1.10",
+   "titulo": "🐛 Bug: Primero se calcula, después se muestra",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule y muestre el tiempo de viaje de 72 km a 50 km/h, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "distancia = 72\nvelocidad = 50\nprint(f\"Tiempo: {tiempo:.2f} minutos\")\ntiempo = distancia / velocidad * 60",
+   "ejemploSalida": "Tiempo: 86.40 minutos",
+   "salidaConBug": "(el programa se detiene con un error y no muestra nada)",
+   "solucionReferencia": "distancia = 72\nvelocidad = 50\ntiempo = distancia / velocidad * 60\nprint(f\"Tiempo: {tiempo:.2f} minutos\")",
+   "tipoBug": "orden_lineas_intercambiado",
+   "pistas": [
+    "Python da un error de nombre: dice que \"tiempo\" no existe.",
+    "Python lee de arriba hacia abajo: el print usa tiempo antes de que se calcule.",
+    "Intercambia las dos últimas líneas: primero el cálculo y después el print (entrada, proceso, salida)."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "1",
+    "tema": "1.10",
+    "citaBreve": "Práctica Nro. 1 · Secuenciales, ejercicio 6",
+    "codigo": "BUG-U1-10"
+   }
+  },
+  {
+   "codigo": "BUG-U2-01",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: El bono que llega a medias",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule el bono de un estudiante con promedio 95 y 2 hermanos (promedio ≥ 95: Bs 900 más Bs 700 por hermano), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "promedio = 95\nhermanos = 2\nbono = 0\nif hermanos > 0:\n    if promedio == 100:\n        bono = 1000 + 800 * hermanos\n    elif promedio >= 90:\n        bono = 800 + 600 * hermanos\n    elif promedio >= 95:\n        bono = 900 + 700 * hermanos\nprint(\"Bono: Bs.\", bono)",
+   "ejemploSalida": "Bono: Bs. 2300",
+   "salidaConBug": "Bono: Bs. 2000",
+   "solucionReferencia": "promedio = 95\nhermanos = 2\nbono = 0\nif hermanos > 0:\n    if promedio == 100:\n        bono = 1000 + 800 * hermanos\n    elif promedio >= 95:\n        bono = 900 + 700 * hermanos\n    elif promedio >= 90:\n        bono = 800 + 600 * hermanos\nprint(\"Bono: Bs.\", bono)",
+   "tipoBug": "orden_lineas_intercambiado",
+   "pistas": [
+    "Con promedio 95 el bono sale como si fuera 90. Piensa qué condición se revisa primero.",
+    "En un if-elif solo se ejecuta la PRIMERA condición verdadera. 95 ya cumple \"≥ 90\".",
+    "Revisa primero la condición más exigente (≥ 95) y después la de ≥ 90: intercambia esas dos ramas."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 1",
+    "codigo": "BUG-U2-01"
+   }
+  },
+  {
+   "codigo": "BUG-U2-02",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: El triángulo que nunca es equilátero",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa clasifique un triángulo de lados 5, 5 y 5, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "a, b, c = 5, 5, 5\nif a == b or b == c or a == c:\n    print(\"Triángulo Isósceles\")\nelif a == b and b == c:\n    print(\"Triángulo Equilátero\")\nelse:\n    print(\"Triángulo Escaleno\")",
+   "ejemploSalida": "Triángulo Equilátero",
+   "salidaConBug": "Triángulo Isósceles",
+   "solucionReferencia": "a, b, c = 5, 5, 5\nif a == b and b == c:\n    print(\"Triángulo Equilátero\")\nelif a == b or b == c or a == c:\n    print(\"Triángulo Isósceles\")\nelse:\n    print(\"Triángulo Escaleno\")",
+   "tipoBug": "orden_lineas_intercambiado",
+   "pistas": [
+    "Un triángulo con 3 lados iguales también tiene 2 lados iguales. ¿Cuál condición se evalúa primero?",
+    "Cuando 5, 5 y 5 llegan al primer if, ya cumplen \"dos iguales\" y nunca se prueba el caso especial.",
+    "Pregunta primero por el caso más específico (los tres iguales) y después por el más general (dos iguales)."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 3",
+    "codigo": "BUG-U2-02"
+   }
+  },
+  {
+   "codigo": "BUG-U2-03",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: Descuento en el límite",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el total a pagar de una compra de 5000 (de 2001 a 5000 se descuenta el 5 %; más de 5000 y hasta 10000, el 7 %), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "compra = 5000\nif compra > 10000:\n    tasa = 0.10\nelif compra >= 5000:\n    tasa = 0.07\nelif compra > 2000:\n    tasa = 0.05\nelif compra >= 1000:\n    tasa = 0.03\nelse:\n    tasa = 0\nprint(\"Total a pagar:\", compra * (1 - tasa))",
+   "ejemploSalida": "Total a pagar: 4750.0",
+   "salidaConBug": "Total a pagar: 4650.0",
+   "solucionReferencia": "compra = 5000\nif compra > 10000:\n    tasa = 0.10\nelif compra > 5000:\n    tasa = 0.07\nelif compra > 2000:\n    tasa = 0.05\nelif compra >= 1000:\n    tasa = 0.03\nelse:\n    tasa = 0\nprint(\"Total a pagar:\", compra * (1 - tasa))",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "5000 recibe el descuento del tramo siguiente. Mira los valores frontera.",
+    "El tramo del 7 % empieza en 5001, no en 5000.",
+    "En esa condición, cambia >= por >."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 4",
+    "codigo": "BUG-U2-03"
+   }
+  },
+  {
+   "codigo": "BUG-U2-04",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: El nivel promedio del río",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el nivel promedio del río Mamoré con lecturas de 7.8 y 8.2 metros, y active la alerta si supera 7.5, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "manana = 7.8\ntarde = 8.2\npromedio = manana + tarde / 2\nprint(f\"Nivel promedio del río: {promedio:.2f} metros\")\nif promedio > 7.5:\n    print(\"ALERTA ROJA POR INUNDACIÓN\")",
+   "ejemploSalida": "Nivel promedio del río: 8.00 metros\nALERTA ROJA POR INUNDACIÓN",
+   "salidaConBug": "Nivel promedio del río: 11.90 metros\nALERTA ROJA POR INUNDACIÓN",
+   "solucionReferencia": "manana = 7.8\ntarde = 8.2\npromedio = (manana + tarde) / 2\nprint(f\"Nivel promedio del río: {promedio:.2f} metros\")\nif promedio > 7.5:\n    print(\"ALERTA ROJA POR INUNDACIÓN\")",
+   "tipoBug": null,
+   "pistas": [
+    "El promedio de 7.8 y 8.2 no puede dar 11.9. Revisa la línea del promedio.",
+    "En matemáticas, la división se hace antes que la suma, así que solo \"tarde\" se está dividiendo.",
+    "Usa paréntesis para sumar primero: (manana + tarde) / 2."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 6",
+    "codigo": "BUG-U2-04"
+   }
+  },
+  {
+   "codigo": "BUG-U2-05",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: El doble que no aparece",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa muestre el doble de 7 cuando el número es positivo, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "numero = 7\nif numero < 0:\n    print(\"el doble es\", numero * 2)",
+   "ejemploSalida": "el doble es 14",
+   "salidaConBug": "(no muestra nada)",
+   "solucionReferencia": "numero = 7\nif numero > 0:\n    print(\"el doble es\", numero * 2)",
+   "tipoBug": "operador_relacional_invertido",
+   "pistas": [
+    "El programa no muestra nada con un número positivo.",
+    "La condición pregunta por números negativos.",
+    "Cambia < por > en la condición."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 7",
+    "codigo": "BUG-U2-05"
+   }
+  },
+  {
+   "codigo": "BUG-U2-06",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: El descuento que cobra de más",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el total a pagar de un grupo nacional de 4 adultos (30 Bs) y 2 niños (15 Bs): si hay más de 5 integrantes se descuenta el 10 %, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "adultos = 4\nninos = 2\nsubtotal = adultos * 30 + ninos * 15\ndescuento = 0\nif adultos + ninos > 5:\n    descuento = subtotal * 0.10\nprint(\"Total a pagar:\", subtotal + descuento)",
+   "ejemploSalida": "Total a pagar: 135.0",
+   "salidaConBug": "Total a pagar: 165.0",
+   "solucionReferencia": "adultos = 4\nninos = 2\nsubtotal = adultos * 30 + ninos * 15\ndescuento = 0\nif adultos + ninos > 5:\n    descuento = subtotal * 0.10\nprint(\"Total a pagar:\", subtotal - descuento)",
+   "tipoBug": "operador_aritmetico_invertido",
+   "pistas": [
+    "El grupo paga más que el subtotal, y con descuento debería pagar menos.",
+    "Un descuento se resta del subtotal.",
+    "En el print final, cambia + por -."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 8",
+    "codigo": "BUG-U2-06"
+   }
+  },
+  {
+   "codigo": "BUG-U2-07",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: El mediodía que se convierte en tarde",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa indique el momento del día de la hora 13 (Mediodía: entre 12 y 13; Tarde: entre 14 y 19), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "hora = 13\nif hora <= 5:\n    print(\"Madrugada\")\nelif hora <= 11:\n    print(\"Mañana\")\nelif hora < 13:\n    print(\"Mediodía\")\nelif hora <= 19:\n    print(\"Tarde\")\nelse:\n    print(\"Noche\")",
+   "ejemploSalida": "Mediodía",
+   "salidaConBug": "Tarde",
+   "solucionReferencia": "hora = 13\nif hora <= 5:\n    print(\"Madrugada\")\nelif hora <= 11:\n    print(\"Mañana\")\nelif hora <= 13:\n    print(\"Mediodía\")\nelif hora <= 19:\n    print(\"Tarde\")\nelse:\n    print(\"Noche\")",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Prueba con el último valor de cada rango; la hora 13 cae mal.",
+    "El mediodía incluye la hora 13.",
+    "En la condición del mediodía, cambia < por <=."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 9",
+    "codigo": "BUG-U2-07"
+   }
+  },
+  {
+   "codigo": "BUG-U2-08",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: Todas las edades son infancia",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa indique el grupo etario de una persona de 15 años (Infancia 0–5, Niñez 6–11, Adolescencia 12–18), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "edad = 15\nif edad >= 0:\n    print(\"Infancia\")\nelif edad >= 6:\n    print(\"Niñez\")\nelif edad >= 12:\n    print(\"Adolescencia\")",
+   "ejemploSalida": "Adolescencia",
+   "salidaConBug": "Infancia",
+   "solucionReferencia": "edad = 15\nif edad >= 12:\n    print(\"Adolescencia\")\nelif edad >= 6:\n    print(\"Niñez\")\nelif edad >= 0:\n    print(\"Infancia\")",
+   "tipoBug": "orden_lineas_intercambiado",
+   "pistas": [
+    "Cambia la edad por 3 o por 30: ¿siempre dice lo mismo?",
+    "Cualquier edad mayor o igual a 0 entra a la primera rama y las demás nunca se revisan.",
+    "Con condiciones \">=\" se empieza por el valor más alto (≥ 12), luego ≥ 6 y al final ≥ 0."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 12",
+    "codigo": "BUG-U2-08"
+   }
+  },
+  {
+   "codigo": "BUG-U2-09",
+   "unidad": 2,
+   "tema": "2.5",
+   "titulo": "🐛 Bug: Los dígitos pares que salieron impares",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa arme un número nuevo con los dígitos pares de 456 (resultado esperado: 64), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "n = 456\nnuevo = 0\nwhile n > 0:\n    d = n % 10\n    if d % 2 == 1:\n        nuevo = nuevo * 10 + d\n    n = n // 10\nprint(\"Nuevo número:\", nuevo)",
+   "ejemploSalida": "Nuevo número: 64",
+   "salidaConBug": "Nuevo número: 5",
+   "solucionReferencia": "n = 456\nnuevo = 0\nwhile n > 0:\n    d = n % 10\n    if d % 2 == 0:\n        nuevo = nuevo * 10 + d\n    n = n // 10\nprint(\"Nuevo número:\", nuevo)",
+   "tipoBug": "operador_relacional_invertido",
+   "pistas": [
+    "El programa se queda con el 5. ¿Es par?",
+    "La condición de paridad está al revés: está tomando los impares.",
+    "Un dígito es par cuando d % 2 == 0."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.5",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 10",
+    "codigo": "BUG-U2-09"
+   }
+  },
+  {
+   "codigo": "BUG-U2-10",
+   "unidad": 2,
+   "tema": "2.3",
+   "titulo": "🐛 Bug: Seis días, no cinco",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule el promedio de producción de un operario en la semana de lunes a sábado (6 días), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "produccion = [110, 100, 105, 95, 120, 100]\ntotal = 0\nfor p in produccion:\n    total += p\nprint(f\"Promedio de producción: {total / 5:.2f}\")",
+   "ejemploSalida": "Promedio de producción: 105.00",
+   "salidaConBug": "Promedio de producción: 126.00",
+   "solucionReferencia": "produccion = [110, 100, 105, 95, 120, 100]\ntotal = 0\nfor p in produccion:\n    total += p\nprint(f\"Promedio de producción: {total / 6:.2f}\")",
+   "tipoBug": null,
+   "pistas": [
+    "El promedio resulta mayor que cualquier día. Revisa por cuánto divides.",
+    "De lunes a sábado hay 6 días de producción, no 5.",
+    "Divide entre 6 (o mejor, entre len(produccion), que se adapta solo)."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.3",
+    "citaBreve": "Práctica Nro. 1 · Condicionales, ejercicio 11",
+    "codigo": "BUG-U2-10"
+   }
+  },
+  {
+   "codigo": "BUG-U2-11",
+   "unidad": 2,
+   "tema": "2.4",
+   "titulo": "🐛 Bug: La nota más baja que no existe",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa muestre la nota más baja y la más alta del grupo 70, 85 y 90, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "notas = [70, 85, 90]\nminima = 0\nmaxima = 0\nfor n in notas:\n    if n < minima:\n        minima = n\n    if n > maxima:\n        maxima = n\nprint(\"Más baja:\", minima, \"- Más alta:\", maxima)",
+   "ejemploSalida": "Más baja: 70 - Más alta: 90",
+   "salidaConBug": "Más baja: 0 - Más alta: 90",
+   "solucionReferencia": "notas = [70, 85, 90]\nminima = notas[0]\nmaxima = notas[0]\nfor n in notas:\n    if n < minima:\n        minima = n\n    if n > maxima:\n        maxima = n\nprint(\"Más baja:\", minima, \"- Más alta:\", maxima)",
+   "tipoBug": null,
+   "pistas": [
+    "La nota más baja sale 0 y nadie sacó 0.",
+    "Si minima empieza en 0, ninguna nota es menor que 0 y nunca se actualiza.",
+    "Inicializa minima y maxima con la primera nota: notas[0]."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.4",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 1",
+    "codigo": "BUG-U2-11"
+   }
+  },
+  {
+   "codigo": "BUG-U2-12",
+   "unidad": 2,
+   "tema": "2.4",
+   "titulo": "🐛 Bug: La tabla que se queda corta",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa muestre la tabla de multiplicar del 7 hasta el 5 (7 * 1 hasta 7 * 5), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "numero = 7\nfor i in range(1, 5):\n    print(numero, \"*\", i, \"=\", numero * i)",
+   "ejemploSalida": "7 * 1 = 7\n7 * 2 = 14\n7 * 3 = 21\n7 * 4 = 28\n7 * 5 = 35",
+   "salidaConBug": "7 * 1 = 7\n7 * 2 = 14\n7 * 3 = 21\n7 * 4 = 28",
+   "solucionReferencia": "numero = 7\nfor i in range(1, 6):\n    print(numero, \"*\", i, \"=\", numero * i)",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Cuenta las líneas: falta una.",
+    "range(1, N) llega hasta N - 1; el último valor no se incluye.",
+    "Cambia range(1, 5) por range(1, 6)."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.4",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 3",
+    "codigo": "BUG-U2-12"
+   }
+  },
+  {
+   "codigo": "BUG-U2-13",
+   "unidad": 2,
+   "tema": "2.4",
+   "titulo": "🐛 Bug: Los impares que son todos",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa imprima los números impares menores o iguales a 15 y diga cuántos hay, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "numero = 1\ncantidad = 0\nwhile numero <= 15:\n    print(numero)\n    cantidad += 1\n    numero += 1\nprint(\"Cantidad de impares:\", cantidad)",
+   "ejemploSalida": "1\n3\n5\n7\n9\n11\n13\n15\nCantidad de impares: 8",
+   "salidaConBug": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\nCantidad de impares: 15",
+   "solucionReferencia": "numero = 1\ncantidad = 0\nwhile numero <= 15:\n    print(numero)\n    cantidad += 1\n    numero += 2\nprint(\"Cantidad de impares:\", cantidad)",
+   "tipoBug": null,
+   "pistas": [
+    "Aparecen números pares. ¿De cuánto en cuánto avanza el contador?",
+    "Los impares van de 2 en 2: 1, 3, 5…",
+    "Cambia numero += 1 por numero += 2."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.4",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 9",
+    "codigo": "BUG-U2-13"
+   }
+  },
+  {
+   "codigo": "BUG-U2-14",
+   "unidad": 2,
+   "tema": "2.4",
+   "titulo": "🐛 Bug: El negativo que se coló en la suma",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa sume números positivos hasta que aparezca un negativo (con 2, 5, 6 y luego -1 el resultado es 13), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "datos = [2, 5, 6, -1, 9]\nsuma = 0\nfor n in datos:\n    suma += n\n    if n < 0:\n        break\nprint(\"Suma total:\", suma)",
+   "ejemploSalida": "Suma total: 13",
+   "salidaConBug": "Suma total: 12",
+   "solucionReferencia": "datos = [2, 5, 6, -1, 9]\nsuma = 0\nfor n in datos:\n    if n < 0:\n        break\n    suma += n\nprint(\"Suma total:\", suma)",
+   "tipoBug": "orden_lineas_intercambiado",
+   "pistas": [
+    "El resultado es uno menos de lo esperado: el -1 entró a la suma.",
+    "El número se suma ANTES de comprobar si es negativo.",
+    "Intercambia el orden: primero pregunta si es negativo (y corta con break) y luego suma."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.4",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 7",
+    "codigo": "BUG-U2-14"
+   }
+  },
+  {
+   "codigo": "BUG-U2-15",
+   "unidad": 2,
+   "tema": "2.4",
+   "titulo": "🐛 Bug: Los primos que se acaban en el 3",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa muestre los números primos menores que 15 (2 3 5 7 11 13), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "es_primo = True\nfor num in range(2, 15):\n    for d in range(2, num):\n        if num % d == 0:\n            es_primo = False\n            break\n    if es_primo:\n        print(num)",
+   "ejemploSalida": "2\n3\n5\n7\n11\n13",
+   "salidaConBug": "2\n3",
+   "solucionReferencia": "for num in range(2, 15):\n    es_primo = True\n    for d in range(2, num):\n        if num % d == 0:\n            es_primo = False\n            break\n    if es_primo:\n        print(num)",
+   "tipoBug": null,
+   "pistas": [
+    "Después del 3 no sale ningún primo más. Mira cuándo se pone es_primo en True.",
+    "Cuando se encuentra el primer compuesto (el 4), la bandera pasa a False y ya nunca vuelve a True.",
+    "Mueve es_primo = True dentro del for externo, para reiniciarla con cada número."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.4",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 8",
+    "codigo": "BUG-U2-15"
+   }
+  },
+  {
+   "codigo": "BUG-U2-16",
+   "unidad": 2,
+   "tema": "2.4",
+   "titulo": "🐛 Bug: La resta que se detiene antes",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa divida 20 entre 5 usando restas sucesivas (cociente 4 y residuo 0), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "a = 20\nb = 5\ncociente = 0\nwhile a > b:\n    a = a - b\n    cociente += 1\nprint(\"Cociente:\", cociente, \"Residuo:\", a)",
+   "ejemploSalida": "Cociente: 4 Residuo: 0",
+   "salidaConBug": "Cociente: 3 Residuo: 5",
+   "solucionReferencia": "a = 20\nb = 5\ncociente = 0\nwhile a >= b:\n    a = a - b\n    cociente += 1\nprint(\"Cociente:\", cociente, \"Residuo:\", a)",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Prueba con una división exacta: 20 entre 5 debería dejar residuo 0.",
+    "Cuando a vale exactamente b todavía se puede restar una vez más.",
+    "En el while, cambia > por >=."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.4",
+    "citaBreve": "Práctica Nro. 1 · Iterativas, ejercicio 10",
+    "codigo": "BUG-U2-16"
+   }
+  },
+  {
+   "codigo": "BUG-U2-17",
+   "unidad": 2,
+   "tema": "2.5",
+   "titulo": "🐛 Bug: La serie que empieza en negativo",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa sume los 3 primeros términos de 1/2 − 2/2² + 3/2³ (resultado: 0.375), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "n = 3\ns = 0\nfor k in range(1, n + 1):\n    s += (-1) ** k * k / 2 ** k\nprint(\"S =\", s)",
+   "ejemploSalida": "S = 0.375",
+   "salidaConBug": "S = -0.375",
+   "solucionReferencia": "n = 3\ns = 0\nfor k in range(1, n + 1):\n    s += (-1) ** (k + 1) * k / 2 ** k\nprint(\"S =\", s)",
+   "tipoBug": null,
+   "pistas": [
+    "El resultado tiene el signo contrario al esperado.",
+    "El primer término (k = 1) debe ser positivo, pero (-1) ** 1 es -1.",
+    "El exponente del signo debe ser k + 1: (-1) ** (k + 1)."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.5",
+    "citaBreve": "Práctica Nro. 1 · Series y sumatorias, ejercicio 2",
+    "codigo": "BUG-U2-17"
+   }
+  },
+  {
+   "codigo": "BUG-U2-18",
+   "unidad": 2,
+   "tema": "2.5",
+   "titulo": "🐛 Bug: El factorial que suma",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule x/1! − x²/2! + x³/3! con x = 2 y n = 3 (resultado: 1.33), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "x = 2\nn = 3\ns = 0\nfact = 1\npot = 1\nfor k in range(1, n + 1):\n    fact += k\n    pot *= x\n    s += (-1) ** (k + 1) * pot / fact\nprint(f\"S = {s:.2f}\")",
+   "ejemploSalida": "S = 1.33",
+   "salidaConBug": "S = 1.14",
+   "solucionReferencia": "x = 2\nn = 3\ns = 0\nfact = 1\npot = 1\nfor k in range(1, n + 1):\n    fact *= k\n    pot *= x\n    s += (-1) ** (k + 1) * pot / fact\nprint(f\"S = {s:.2f}\")",
+   "tipoBug": "operador_aritmetico_invertido",
+   "pistas": [
+    "Los denominadores no crecen como factoriales (1, 2, 6). Revisa cómo se calcula fact.",
+    "Un factorial se obtiene MULTIPLICANDO: 3! = 1 × 2 × 3.",
+    "Cambia fact += k por fact *= k."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.5",
+    "citaBreve": "Práctica Nro. 1 · Series y sumatorias, ejercicio 3",
+    "codigo": "BUG-U2-18"
+   }
+  },
+  {
+   "codigo": "BUG-U2-19",
+   "unidad": 2,
+   "tema": "2.5",
+   "titulo": "🐛 Bug: El dígito menor que siempre es 0",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa encuentre el dígito mayor y el menor de 582491 (mayor 9, menor 1), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "n = 582491\nmayor = 0\nmenor = 0\nwhile n > 0:\n    d = n % 10\n    if d > mayor:\n        mayor = d\n    if d < menor:\n        menor = d\n    n = n // 10\nprint(\"Mayor:\", mayor, \"Menor:\", menor)",
+   "ejemploSalida": "Mayor: 9 Menor: 1",
+   "salidaConBug": "Mayor: 9 Menor: 0",
+   "solucionReferencia": "n = 582491\nmayor = 0\nmenor = 9\nwhile n > 0:\n    d = n % 10\n    if d > mayor:\n        mayor = d\n    if d < menor:\n        menor = d\n    n = n // 10\nprint(\"Mayor:\", mayor, \"Menor:\", menor)",
+   "tipoBug": null,
+   "pistas": [
+    "El dígito menor sale 0 y 582491 no tiene ningún cero.",
+    "Si menor empieza en 0, ningún dígito es menor que 0 y nunca se actualiza.",
+    "Inicializa menor en 9 (el dígito más grande posible)."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.5",
+    "citaBreve": "Práctica Nro. 1 · Series y sumatorias, ejercicio 5",
+    "codigo": "BUG-U2-19"
+   }
+  },
+  {
+   "codigo": "BUG-U2-20",
+   "unidad": 2,
+   "tema": "2.5",
+   "titulo": "🐛 Bug: La serie 1, 2, 4, 7, 11 que no acelera",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa muestre los 5 primeros términos de la serie 1, 2, 4, 7, 11 (el salto aumenta en 1 cada vez), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "termino = 1\nsalto = 1\nfor i in range(5):\n    print(termino)\n    termino += salto",
+   "ejemploSalida": "1\n2\n4\n7\n11",
+   "salidaConBug": "1\n2\n3\n4\n5",
+   "solucionReferencia": "termino = 1\nsalto = 1\nfor i in range(5):\n    print(termino)\n    termino += salto\n    salto += 1",
+   "tipoBug": null,
+   "pistas": [
+    "Salen 1, 2, 3, 4, 5: avanza siempre de 1 en 1.",
+    "El salto debería ir creciendo (+1, +2, +3, +4), pero nunca cambia.",
+    "Después de sumar el salto, aumenta el salto en 1."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "2",
+    "tema": "2.5",
+    "citaBreve": "Práctica Nro. 1 · Series y sumatorias, ejercicio 4",
+    "codigo": "BUG-U2-20"
+   }
+  }
+ ]
+}
