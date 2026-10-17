@@ -109,6 +109,8 @@ y por eso **heredan la trazabilidad** del ejercicio origen. No puntúan ni afect
 | `banco_unidades_1_y_2.json` | 60 preguntas (10 integradoras por unidad × 3 niveles) y 40 retos de la Práctica Nro. 1 |
 | `retos_bugs_unidades_1_y_2.json` | 30 retos "Encuentra el bug" de U1 y U2 |
 | `banco_unidades_3_y_4.json` | 60 preguntas (10 integradoras por unidad × 3 niveles) y 40 retos de la Práctica Nro. 2 |
+| `banco_unidades_1_a_4_por_tema.json` | 254 ejercicios por tema (sin examen) para llevar cada tema a 10 básico / 10 intermedio / 10 avanzado: U1 1.5–1.11, U2 2.1–2.5 y U3 3.1–3.3. Los temas 1.1–1.4, 4.2, 4.3 y la Unidad 5 siguen pendientes de material |
+| `retos_bugs_unidades_3_y_4.json` | 20 retos "Encuentra el bug" de U3 (12) y U4 (8) |
 
 Se cargan con un script propio que **no borra nada** y se puede repetir:
 

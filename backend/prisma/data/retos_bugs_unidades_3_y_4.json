@@ -1,0 +1,585 @@
+{
+ "fuente": "PRACTICA_NRO_2_PROGRAMACION_I.pdf (PRG-111, II/2026) - retos de depuración propuestos",
+ "retos": [
+  {
+   "codigo": "BUG-U3-01",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: El factorial que nunca llega",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el factorial de 5 con una función (5! = 120), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def factorial(n):\n    res = 1\n    for i in range(2, n):\n        res = res * i\n    return res\n\nprint(factorial(5))",
+   "ejemploSalida": "120",
+   "salidaConBug": "24",
+   "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\nprint(factorial(5))",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Sale 24 y debería salir 120: falta multiplicar por 5.",
+    "range(2, n) llega hasta n − 1, el último valor no entra.",
+    "Cambia range(2, n) por range(2, n + 1)."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 3",
+    "codigo": "BUG-U3-01"
+   }
+  },
+  {
+   "codigo": "BUG-U3-02",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: Una función que no devuelve nada",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa sume los dígitos de 1234 con una función y muestre 10, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n\nprint(suma_digitos(1234))",
+   "ejemploSalida": "10",
+   "salidaConBug": "None",
+   "solucionReferencia": "def suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n    return s\n\nprint(suma_digitos(1234))",
+   "tipoBug": null,
+   "pistas": [
+    "Imprime None en lugar de un número.",
+    "Una función que no usa return devuelve None.",
+    "Agrega return s al final de la función, fuera del while."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 2",
+    "codigo": "BUG-U3-02"
+   }
+  },
+  {
+   "codigo": "BUG-U3-03",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: El return que corta el ciclo",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa sume los dígitos de 1234 con una función y muestre 10, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n        return s\n\nprint(suma_digitos(1234))",
+   "ejemploSalida": "10",
+   "salidaConBug": "4",
+   "solucionReferencia": "def suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n    return s\n\nprint(suma_digitos(1234))",
+   "tipoBug": null,
+   "pistas": [
+    "Sale 4: solo se suma el último dígito.",
+    "return termina la función en cuanto se ejecuta, y aquí está dentro del while.",
+    "Mueve return s para que quede alineado con while, fuera del ciclo."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 2",
+    "codigo": "BUG-U3-03"
+   }
+  },
+  {
+   "codigo": "BUG-U3-04",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: Número invertido al revés",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa invierta el número 639 para obtener 936, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def invertir(n):\n    inv = 0\n    while n > 0:\n        inv = inv + n % 10 * 10\n        n = n // 10\n    return inv\n\nprint(invertir(639))",
+   "ejemploSalida": "936",
+   "salidaConBug": "180",
+   "solucionReferencia": "def invertir(n):\n    inv = 0\n    while n > 0:\n        inv = inv * 10 + n % 10\n        n = n // 10\n    return inv\n\nprint(invertir(639))",
+   "tipoBug": null,
+   "pistas": [
+    "Sale 180 y debería salir 936.",
+    "Cada dígito nuevo se agrega a la derecha: hay que correr lo que ya se tiene un lugar.",
+    "Usa inv = inv * 10 + n % 10."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 12",
+    "codigo": "BUG-U3-04"
+   }
+  },
+  {
+   "codigo": "BUG-U3-05",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: Contar el 8 en 4836581",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa cuente cuántas veces aparece el dígito 8 en 4836581 (aparece 2 veces), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def contar_digito(n, d):\n    c = 0\n    while n > 0:\n        if n % 10 == d:\n            c = 1\n        n = n // 10\n    return c\n\nprint(contar_digito(4836581, 8))",
+   "ejemploSalida": "2",
+   "salidaConBug": "1",
+   "solucionReferencia": "def contar_digito(n, d):\n    c = 0\n    while n > 0:\n        if n % 10 == d:\n            c = c + 1\n        n = n // 10\n    return c\n\nprint(contar_digito(4836581, 8))",
+   "tipoBug": null,
+   "pistas": [
+    "Sale 1 aunque el 8 aparece dos veces.",
+    "c = 1 asigna 1 cada vez; no acumula.",
+    "Cambia c = 1 por c = c + 1."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 16",
+    "codigo": "BUG-U3-05"
+   }
+  },
+  {
+   "codigo": "BUG-U3-06",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: El primo que no lo era",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa diga si 9 es primo (no lo es: 9 = 3 × 3), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def es_primo(n):\n    if n < 2:\n        return False\n    for d in range(2, n):\n        if n % d == 0:\n            return False\n        else:\n            return True\n\nprint(es_primo(9))",
+   "ejemploSalida": "False",
+   "salidaConBug": "True",
+   "solucionReferencia": "def es_primo(n):\n    if n < 2:\n        return False\n    for d in range(2, n):\n        if n % d == 0:\n            return False\n    return True\n\nprint(es_primo(9))",
+   "tipoBug": null,
+   "pistas": [
+    "Dice True para 9, que es 3 × 3.",
+    "El else con return True corta el ciclo en el primer divisor probado (el 2).",
+    "Quita el else y pon return True después del for: solo es primo si ningún divisor lo divide."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 11",
+    "codigo": "BUG-U3-06"
+   }
+  },
+  {
+   "codigo": "BUG-U3-07",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: La serie sin factoriales",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa calcule S = X¹/1! + X²/2! + X³/3! para X = 1 y N = 3 (da 1.6667), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef serie(x, n):\n    s = 0\n    for k in range(1, n + 1):\n        s = s + x ** k / k\n    return s\n\nprint(f\"{serie(1, 3):.4f}\")",
+   "ejemploSalida": "1.6667",
+   "salidaConBug": "1.8333",
+   "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef serie(x, n):\n    s = 0\n    for k in range(1, n + 1):\n        s = s + x ** k / factorial(k)\n    return s\n\nprint(f\"{serie(1, 3):.4f}\")",
+   "tipoBug": null,
+   "pistas": [
+    "Sale 1.8333 y debería ser 1.6667.",
+    "La función factorial existe, pero la serie no la usa.",
+    "Divide entre factorial(k) en lugar de entre k."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 9",
+    "codigo": "BUG-U3-07"
+   }
+  },
+  {
+   "codigo": "BUG-U3-08",
+   "unidad": 3,
+   "tema": "3.2",
+   "titulo": "🐛 Bug: El 500 que es Media",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa clasifique la generación de residuos: Alta (>500), Media (200 a 500) y Baja (<200). Con 500 debe decir Media, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def informe(t):\n    if t >= 500:\n        print(\"Alta\")\n    elif t >= 200:\n        print(\"Media\")\n    else:\n        print(\"Baja\")\n\ninforme(500)",
+   "ejemploSalida": "Media",
+   "salidaConBug": "Alta",
+   "solucionReferencia": "def informe(t):\n    if t > 500:\n        print(\"Alta\")\n    elif t >= 200:\n        print(\"Media\")\n    else:\n        print(\"Baja\")\n\ninforme(500)",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Prueba con el valor justo del límite: 500.",
+    "Alta es solamente mayor a 500; 500 pertenece a Media.",
+    "Cambia >= por > en la primera condición."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.2",
+    "citaBreve": "Práctica Nro. 2 · Funciones y procedimientos, ejercicio 13",
+    "codigo": "BUG-U3-08"
+   }
+  },
+  {
+   "codigo": "BUG-U3-09",
+   "unidad": 3,
+   "tema": "3.3",
+   "titulo": "🐛 Bug: La recursión sin fin",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el factorial de 5 de forma recursiva (120), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def factorial(n):\n    return n * factorial(n - 1)\n\nprint(factorial(5))",
+   "ejemploSalida": "120",
+   "salidaConBug": "(el programa se detiene con un error y no muestra nada)",
+   "solucionReferencia": "def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))",
+   "tipoBug": null,
+   "pistas": [
+    "El programa se detiene con un error de recursión.",
+    "Toda función recursiva necesita un caso base que la detenga.",
+    "Agrega: si n es 0, retorna 1."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.3",
+    "citaBreve": "Práctica Nro. 2 · Funciones recursivas, ejercicio 1",
+    "codigo": "BUG-U3-09"
+   }
+  },
+  {
+   "codigo": "BUG-U3-10",
+   "unidad": 3,
+   "tema": "3.3",
+   "titulo": "🐛 Bug: Un caso base equivocado",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule el factorial de 5 de forma recursiva (120), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def factorial(n):\n    if n == 0:\n        return 0\n    return n * factorial(n - 1)\n\nprint(factorial(5))",
+   "ejemploSalida": "120",
+   "salidaConBug": "0",
+   "solucionReferencia": "def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))",
+   "tipoBug": null,
+   "pistas": [
+    "Sale 0 sin importar el número.",
+    "El caso base devuelve el valor con el que se empieza a multiplicar.",
+    "Como 0! = 1, el caso base debe retornar 1."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.3",
+    "citaBreve": "Práctica Nro. 2 · Funciones recursivas, ejercicio 1",
+    "codigo": "BUG-U3-10"
+   }
+  },
+  {
+   "codigo": "BUG-U3-11",
+   "unidad": 3,
+   "tema": "3.3",
+   "titulo": "🐛 Bug: Potencia que suma en vez de multiplicar",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa calcule 2 elevado a la 4 de forma recursiva (16), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def potencia(a, b):\n    if b == 0:\n        return 1\n    return a + potencia(a, b - 1)\n\nprint(potencia(2, 4))",
+   "ejemploSalida": "16",
+   "salidaConBug": "9",
+   "solucionReferencia": "def potencia(a, b):\n    if b == 0:\n        return 1\n    return a * potencia(a, b - 1)\n\nprint(potencia(2, 4))",
+   "tipoBug": "operador_aritmetico_invertido",
+   "pistas": [
+    "Sale 9 y debería salir 16.",
+    "Elevar es multiplicar la base varias veces, no sumarla.",
+    "En el caso recursivo, cambia + por *."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.3",
+    "citaBreve": "Práctica Nro. 2 · Funciones recursivas, ejercicio 5",
+    "codigo": "BUG-U3-11"
+   }
+  },
+  {
+   "codigo": "BUG-U3-12",
+   "unidad": 3,
+   "tema": "3.3",
+   "titulo": "🐛 Bug: Fibonacci que arranca mal",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa muestre los 8 primeros términos de Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "def fib(n):\n    if n < 2:\n        return 1\n    return fib(n - 1) + fib(n - 2)\n\nprint(\", \".join(str(fib(i)) for i in range(8)))",
+   "ejemploSalida": "0, 1, 1, 2, 3, 5, 8, 13",
+   "salidaConBug": "1, 1, 2, 3, 5, 8, 13, 21",
+   "solucionReferencia": "def fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nprint(\", \".join(str(fib(i)) for i in range(8)))",
+   "tipoBug": null,
+   "pistas": [
+    "La serie sale 1, 1, 2, 3, 5… y debería empezar con 0.",
+    "Los casos base son fib(0) = 0 y fib(1) = 1.",
+    "En el caso base devuelve n (0 para 0 y 1 para 1)."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "3",
+    "tema": "3.3",
+    "citaBreve": "Práctica Nro. 2 · Funciones recursivas, ejercicio 8",
+    "codigo": "BUG-U3-12"
+   }
+  },
+  {
+   "codigo": "BUG-U4-01",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: La suma que se reinicia",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa sume los elementos del vector [2, 3, 4, 5, 10, 15] (39), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "v = [2, 3, 4, 5, 10, 15]\nfor x in v:\n    total = 0\n    total = total + x\nprint(\"La suma de los elementos es:\", total)",
+   "ejemploSalida": "La suma de los elementos es: 39",
+   "salidaConBug": "La suma de los elementos es: 15",
+   "solucionReferencia": "v = [2, 3, 4, 5, 10, 15]\ntotal = 0\nfor x in v:\n    total = total + x\nprint(\"La suma de los elementos es:\", total)",
+   "tipoBug": null,
+   "pistas": [
+    "Sale 15, solo el último elemento.",
+    "total = 0 está dentro del ciclo y borra lo acumulado en cada vuelta.",
+    "Mueve total = 0 antes del for."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 1",
+    "codigo": "BUG-U4-01"
+   }
+  },
+  {
+   "codigo": "BUG-U4-02",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: El menor que siempre es 0",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa encuentre el menor del vector [15, 10, 2, 7, 8, 9] y su posición contando desde 1 (2 y posición 3), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "v = [15, 10, 2, 7, 8, 9]\nmenor = 0\npos = 0\nfor i in range(len(v)):\n    if v[i] < menor:\n        menor = v[i]\n        pos = i\nprint(\"El elemento menor es:\", menor, \"y la posición es:\", pos + 1)",
+   "ejemploSalida": "El elemento menor es: 2 y la posición es: 3",
+   "salidaConBug": "El elemento menor es: 0 y la posición es: 1",
+   "solucionReferencia": "v = [15, 10, 2, 7, 8, 9]\nmenor = v[0]\npos = 0\nfor i in range(len(v)):\n    if v[i] < menor:\n        menor = v[i]\n        pos = i\nprint(\"El elemento menor es:\", menor, \"y la posición es:\", pos + 1)",
+   "tipoBug": null,
+   "pistas": [
+    "Dice que el menor es 0, y 0 no está en el vector.",
+    "Si menor empieza en 0, ningún elemento positivo es menor y nunca se actualiza.",
+    "Inicializa menor con el primer elemento: menor = v[0]."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 2",
+    "codigo": "BUG-U4-02"
+   }
+  },
+  {
+   "codigo": "BUG-U4-03",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: La posición que empieza en cero",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa indique la posición (contando desde 1) del menor del vector [15, 10, 2, 7, 8, 9] (posición 3), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "v = [15, 10, 2, 7, 8, 9]\nmenor = v[0]\npos = 0\nfor i in range(len(v)):\n    if v[i] < menor:\n        menor = v[i]\n        pos = i\nprint(\"El elemento menor es:\", menor, \"y la posición es:\", pos)",
+   "ejemploSalida": "El elemento menor es: 2 y la posición es: 3",
+   "salidaConBug": "El elemento menor es: 2 y la posición es: 2",
+   "solucionReferencia": "v = [15, 10, 2, 7, 8, 9]\nmenor = v[0]\npos = 0\nfor i in range(len(v)):\n    if v[i] < menor:\n        menor = v[i]\n        pos = i\nprint(\"El elemento menor es:\", menor, \"y la posición es:\", pos + 1)",
+   "tipoBug": null,
+   "pistas": [
+    "Dice posición 2, pero el 2 está en el tercer lugar.",
+    "Python numera las posiciones desde 0; las personas contamos desde 1.",
+    "Al mostrarla, suma 1: pos + 1."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 2",
+    "codigo": "BUG-U4-03"
+   }
+  },
+  {
+   "codigo": "BUG-U4-04",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: Los iguales que no se muestran",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa muestre los elementos del vector [6, 13, 0, 10, 13, 9] iguales a Y = 13 (13 y 13), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "x = [6, 13, 0, 10, 13, 9]\ny = 13\nfor e in x:\n    if e != y:\n        print(e)",
+   "ejemploSalida": "13\n13",
+   "salidaConBug": "6\n0\n10\n9",
+   "solucionReferencia": "x = [6, 13, 0, 10, 13, 9]\ny = 13\nfor e in x:\n    if e == y:\n        print(e)",
+   "tipoBug": "operador_relacional_invertido",
+   "pistas": [
+    "Muestra todo lo que NO es 13.",
+    "La condición está al revés: pide los distintos.",
+    "Cambia != por ==."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 3",
+    "codigo": "BUG-U4-04"
+   }
+  },
+  {
+   "codigo": "BUG-U4-05",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: Eliminar mientras se recorre",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa elimine todos los 2 del vector [2, 2, 5, 2, 7] (queda [5, 7]), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "v = [2, 2, 5, 2, 7]\nfor e in v:\n    if e == 2:\n        v.remove(e)\nprint(v)",
+   "ejemploSalida": "[5, 7]",
+   "salidaConBug": "[5, 2, 7]",
+   "solucionReferencia": "v = [2, 2, 5, 2, 7]\nnuevo = []\nfor e in v:\n    if e != 2:\n        nuevo.append(e)\nprint(nuevo)",
+   "tipoBug": null,
+   "pistas": [
+    "Queda [5, 2, 7]: un 2 se salvó.",
+    "Al quitar un elemento mientras se recorre, la lista se corre y el ciclo salta el siguiente.",
+    "Arma un vector nuevo con los elementos que sí se quedan."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 6",
+    "codigo": "BUG-U4-05"
+   }
+  },
+  {
+   "codigo": "BUG-U4-06",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: Punto silla con vecino inexistente",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa cuente los puntos silla de [1, 6, 8, 6, 1, 4, 3, 5, 6, 7], es decir, los V(i) con V(i−1) < V(i) < V(i+1) (son 3), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "V = [1, 6, 8, 6, 1, 4, 3, 5, 6, 7]\ncuenta = 0\nfor i in range(1, len(V)):\n    if V[i - 1] < V[i] < V[i + 1]:\n        cuenta = cuenta + 1\nprint(cuenta)",
+   "ejemploSalida": "3",
+   "salidaConBug": "(el programa se detiene con un error y no muestra nada)",
+   "solucionReferencia": "V = [1, 6, 8, 6, 1, 4, 3, 5, 6, 7]\ncuenta = 0\nfor i in range(1, len(V) - 1):\n    if V[i - 1] < V[i] < V[i + 1]:\n        cuenta = cuenta + 1\nprint(cuenta)",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "El programa se detiene con un error de índice.",
+    "En la última posición no existe V[i + 1].",
+    "El ciclo debe llegar hasta len(V) − 2: range(1, len(V) - 1)."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 11",
+    "codigo": "BUG-U4-06"
+   }
+  },
+  {
+   "codigo": "BUG-U4-07",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: Intercalar sin copiar el sobrante",
+   "categoria": "Depuración",
+   "nivelSugerido": "avanzado",
+   "enunciado": "Se espera que este programa intercale A = [1, 3, 5] y B = [2, 4, 6, 8, 10] y copie al final lo que sobra del más largo ([1, 2, 3, 4, 5, 6, 8, 10]), pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "A = [1, 3, 5]\nB = [2, 4, 6, 8, 10]\nC = []\nfor i in range(min(len(A), len(B))):\n    C.append(A[i])\n    C.append(B[i])\nprint(C)",
+   "ejemploSalida": "[1, 2, 3, 4, 5, 6, 8, 10]",
+   "salidaConBug": "[1, 2, 3, 4, 5, 6]",
+   "solucionReferencia": "A = [1, 3, 5]\nB = [2, 4, 6, 8, 10]\nC = []\nk = min(len(A), len(B))\nfor i in range(k):\n    C.append(A[i])\n    C.append(B[i])\nmayor = A if len(A) > len(B) else B\nfor i in range(k, len(mayor)):\n    C.append(mayor[i])\nprint(C)",
+   "tipoBug": null,
+   "pistas": [
+    "Faltan el 8 y el 10 en el resultado.",
+    "El ciclo se detiene al terminar el vector más corto y nadie copia el sobrante.",
+    "Después del ciclo, copia los elementos restantes del vector más largo."
+   ],
+   "xp": 35,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 14",
+    "codigo": "BUG-U4-07"
+   }
+  },
+  {
+   "codigo": "BUG-U4-08",
+   "unidad": 4,
+   "tema": "4.1",
+   "titulo": "🐛 Bug: Impares que empiezan en 3",
+   "categoria": "Depuración",
+   "nivelSugerido": "intermedio",
+   "enunciado": "Se espera que este programa genere los 5 primeros números impares: 1 3 5 7 9, pero tiene un error. Encuentra el bug y corrígelo para que muestre la salida correcta. (Versión con valores fijos de un ejercicio de la práctica.)",
+   "codigoInicial": "V = []\nfor i in range(1, 6):\n    V.append(2 * i + 1)\nprint(*V)",
+   "ejemploSalida": "1 3 5 7 9",
+   "salidaConBug": "3 5 7 9 11",
+   "solucionReferencia": "V = []\nfor i in range(0, 5):\n    V.append(2 * i + 1)\nprint(*V)",
+   "tipoBug": "limite_rango_corrido",
+   "pistas": [
+    "Sale 3 5 7 9 11: empieza un impar tarde.",
+    "La fórmula 2i + 1 da 1 cuando i vale 0.",
+    "Haz que i vaya de 0 a 4: range(0, 5)."
+   ],
+   "xp": 25,
+   "esBugHunt": true,
+   "autoCalificable": true,
+   "activo": true,
+   "fuenteDoc": {
+    "unidad": "4",
+    "tema": "4.1",
+    "citaBreve": "Práctica Nro. 2 · Vectores, ejercicio 12",
+    "codigo": "BUG-U4-08"
+   }
+  }
+ ]
+}

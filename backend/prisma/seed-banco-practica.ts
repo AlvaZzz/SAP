@@ -179,7 +179,8 @@ async function main() {
     // El examen de cada unidad cargada son EXACTAMENTE sus versiones intermedias:
     // las preguntas de examen anteriores de esas unidades se DESACTIVAN (no se
     // borran: se conservan los intentos ya rendidos y se pueden reactivar).
-    const unidadesCargadas = new Set(preguntas.map((p) => p.unidad));
+    // Solo las unidades que traen preguntas de examen: un archivo de práctica sin examen no debe desactivar el examen vigente.
+    const unidadesCargadas = new Set(preguntas.filter((p) => p.esExamenIntermedio).map((p) => p.unidad));
     const codigosExamen = preguntas.filter((p) => p.esExamenIntermedio).map((p) => p.fuenteDoc.codigo);
     const anteriores = await tx.ejercicio.findMany({
       where: { banco: Banco.examen, activo: true, temaId: { in: temas.filter((t) => unidadesCargadas.has(String(t.unidad.numero))).map((t) => t.id) } },
