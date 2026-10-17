@@ -102,19 +102,27 @@ y por eso **heredan la trazabilidad** del ejercicio origen. No puntúan ni afect
 (el examen se compone del banco sembrado, no se inventa fuera de él). Si el array
 `examen` va vacío, el banco de examen actual no se toca.
 
-## Banco de la Práctica Nro. 1 (Unidades 1 y 2) — carga ADITIVA
+## Bancos de las prácticas (U1–U2: Práctica Nro. 1 · U3–U4: Práctica Nro. 2) — carga ADITIVA
 
-`banco_unidades_1_y_2.json` (60 preguntas: 10 integradoras por unidad × 3 niveles, y 40
-retos de la práctica) y `retos_bugs_unidades_1_y_2.json` (30 retos "Encuentra el bug") se
-cargan con un script propio que **no borra nada** y se puede repetir:
+| Archivo | Contenido |
+|---|---|
+| `banco_unidades_1_y_2.json` | 60 preguntas (10 integradoras por unidad × 3 niveles) y 40 retos de la Práctica Nro. 1 |
+| `retos_bugs_unidades_1_y_2.json` | 30 retos "Encuentra el bug" de U1 y U2 |
+| `banco_unidades_3_y_4.json` | 60 preguntas (10 integradoras por unidad × 3 niveles) y 40 retos de la Práctica Nro. 2 |
+
+Se cargan con un script propio que **no borra nada** y se puede repetir:
 
 ```bash
-npm run seed:practica              # simulación: valida y muestra qué entra en cada tema
-npm run seed:practica -- --aplicar # escribe en la base
+npm run seed:banco                # simulación: valida y muestra qué entra en cada tema
+npm run seed:banco -- --aplicar   # escribe en la base (todos los archivos de arriba)
+npm run seed:banco -- --archivo banco_unidades_3_y_4.json --aplicar   # solo uno
 ```
 
-- Las 60 preguntas van al banco de práctica, cada una en su "Tema en PREXI".
+- Las preguntas van al banco de práctica, cada una en su "Tema en PREXI". Una pregunta
+  puede integrar temas de unidades anteriores (p. ej. una de U4 que usa 2.4).
 - Las 10 versiones intermedias de cada unidad forman su examen (banco `examen`); las
-  preguntas de examen anteriores de U1 y U2 quedan **desactivadas**, no borradas.
+  preguntas de examen anteriores de esas unidades quedan **desactivadas**, no borradas.
 - Cada ítem se identifica por `fuenteDoc.codigo` (y cada reto por `codigo`): si ya existe
   se actualiza; si no, se crea. Si un tema del archivo no existe en la base, no se escribe nada.
+- La clave de respuestas se reparte A/B/C/D **por archivo**: agregar un banco nuevo no
+  reordena las opciones de los que ya estaban.

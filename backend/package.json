@@ -23,7 +23,7 @@
     "test:watch": "jest --watch",
     "test:e2e": "jest --config test/jest-e2e.config.js --runInBand",
     "seed:demo": "ts-node prisma/seed-demo.ts",
-    "seed:practica": "ts-node prisma/seed-practica-u1u2.ts",
+    "seed:banco": "ts-node prisma/seed-banco-practica.ts",
     "clave:informe": "ts-node scripts/clave-distribucion.ts",
     "clave:migrar": "ts-node scripts/equilibrar-clave-bd.ts",
     "clave:migrar:aplicar": "ts-node scripts/equilibrar-clave-bd.ts --aplicar",

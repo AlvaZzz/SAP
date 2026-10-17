@@ -1,0 +1,4078 @@
+{
+ "fuente": "PRACTICA_NRO_2_PROGRAMACION_I.pdf (PRG-111, II/2026) - banco propuesto para las Unidades 3 y 4",
+ "unidades": {
+  "3": {
+   "ejercicios": [
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "El ejercicio 1 de la práctica pide un programa modular que calcule el promedio de una lista de números. ¿Cuál es la mejor forma de dividirlo en módulos?",
+     "xp": 10,
+     "explicacion": "Dividir por tareas (leer, calcular, mostrar) es la idea de la programación modular: cada módulo hace una sola cosa y se puede probar y reutilizar por separado.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 1: programa modular que calcula el promedio de una lista",
+      "codigo": "U3-P01-B"
+     },
+     "temasCombinados": [
+      "3.1 Principios de la programación modular"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Un módulo para leer los datos, otro para calcular el promedio y otro para mostrar el resultado"
+      },
+      {
+       "id": "B",
+       "texto": "Un solo bloque largo con todo mezclado"
+      },
+      {
+       "id": "C",
+       "texto": "Un módulo por cada número de la lista"
+      },
+      {
+       "id": "D",
+       "texto": "Un módulo que solo contiene los comentarios"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Una función se llama factorial(n), calcula el factorial, pero además pide el número por teclado y muestra el resultado en pantalla. ¿Qué principio de buen diseño modular incumple y cómo se corrige?",
+     "xp": 15,
+     "explicacion": "Una función cohesiva hace una sola cosa. Si solo calcula y retorna, se puede usar desde un menú, una serie o una prueba, sin depender del teclado ni de la pantalla.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 3: módulo que calcula el factorial de un número dado como parámetro",
+      "codigo": "U3-P01-I"
+     },
+     "temasCombinados": [
+      "3.1 Cohesión y acoplamiento",
+      "3.2 Funciones"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": true,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Baja cohesión: hace varias tareas; se corrige dejándola solo con el cálculo (recibe n y retorna el factorial)"
+      },
+      {
+       "id": "B",
+       "texto": "Alto acoplamiento: se corrige agregando más variables globales"
+      },
+      {
+       "id": "C",
+       "texto": "Reutilización: se corrige copiando la función en cada programa"
+      },
+      {
+       "id": "D",
+       "texto": "No incumple ningún principio"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Tres compañeros diseñan el informe de residuos sólidos (ejercicio 13). Ana usa una función que lee la ciudad, lee las toneladas, clasifica y muestra, todo adentro. Beto usa un procedimiento informe(ciudad, toneladas) que solo clasifica y muestra, y el programa principal lee los datos. Carla usa variables globales ciudad y toneladas que su procedimiento lee directamente. ¿Cuál diseño es mejor para reutilizar y probar?",
+     "xp": 20,
+     "explicacion": "El diseño de Beto tiene cohesión alta (una tarea) y acoplamiento bajo (solo depende de sus parámetros). Se puede probar con informe(\"El Alto\", 520) sin teclear nada.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 13: procedimiento para el informe de residuos sólidos",
+      "codigo": "U3-P01-A"
+     },
+     "temasCombinados": [
+      "3.1 Cohesión, acoplamiento y reutilización",
+      "3.2 Funciones y procedimientos"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "El de Ana, porque todo está en un solo lugar"
+      },
+      {
+       "id": "B",
+       "texto": "El de Beto: recibe lo que necesita por parámetros, tiene una sola tarea y no depende de variables externas"
+      },
+      {
+       "id": "C",
+       "texto": "El de Carla, porque no necesita parámetros"
+      },
+      {
+       "id": "D",
+       "texto": "Los tres son igual de buenos"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime el programa?",
+     "xp": 10,
+     "explicacion": "La función recibe 7 en el parámetro n, calcula 7 × 2 y lo devuelve con return. print muestra ese valor devuelto: 14.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 3: función con parámetro que retorna un valor",
+      "codigo": "U3-P02-B"
+     },
+     "temasCombinados": [
+      "3.2 Funciones",
+      "3.2 Llamada y retorno"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "def doble(n):\n    return n * 2\n\nprint(doble(7))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "14"
+      },
+      {
+       "id": "B",
+       "texto": "7"
+      },
+      {
+       "id": "C",
+       "texto": "27"
+      },
+      {
+       "id": "D",
+       "texto": "Da error"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "La función promedio recibe una lista y retorna su promedio. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "La suma es 4 + 6 + 8 = 18 y la lista tiene 3 elementos: 18 / 3 = 6.0. El operador / siempre da decimal, por eso sale 6.0 y no 6.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 1: promedio de una lista de números",
+      "codigo": "U3-P02-I"
+     },
+     "temasCombinados": [
+      "3.2 Funciones",
+      "3.2 Parámetros",
+      "3.1 Reutilización"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": true,
+     "codigoPython": "def promedio(lista):\n    total = 0\n    for x in lista:\n        total = total + x\n    return total / len(lista)\n\nprint(promedio([4, 6, 8]))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6.0"
+      },
+      {
+       "id": "B",
+       "texto": "18"
+      },
+      {
+       "id": "C",
+       "texto": "6"
+      },
+      {
+       "id": "D",
+       "texto": "8.0"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "La función potencia (ejercicio 6) se llama dos veces dentro de la misma expresión. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "potencia(2, 3) = 2·2·2 = 8 y potencia(3, 2) = 3·3 = 9. La suma de los dos valores devueltos es 17. El orden de los parámetros importa: potencia(2, 3) no es potencia(3, 2).",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 6: función potencia",
+      "codigo": "U3-P02-A"
+     },
+     "temasCombinados": [
+      "3.2 Funciones",
+      "3.2 Reutilización (varias llamadas)",
+      "3.2 Expresiones con llamadas"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "def potencia(base, exp):\n    r = 1\n    for _ in range(exp):\n        r = r * base\n    return r\n\nprint(potencia(2, 3) + potencia(3, 2))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "17"
+      },
+      {
+       "id": "B",
+       "texto": "13"
+      },
+      {
+       "id": "C",
+       "texto": "72"
+      },
+      {
+       "id": "D",
+       "texto": "25"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "En la práctica se piden funciones y procedimientos. ¿Cuál es la diferencia principal?",
+     "xp": 10,
+     "explicacion": "Una función devuelve un resultado que se puede guardar o usar en una expresión. Un procedimiento hace algo (como imprimir un informe) y termina.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicios 7 y 13: diseñar un procedimiento y una función",
+      "codigo": "U3-P03-B"
+     },
+     "temasCombinados": [
+      "3.2 Funciones y procedimientos"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "La función retorna un valor con return; el procedimiento realiza una acción (por ejemplo mostrar datos) sin retornar nada"
+      },
+      {
+       "id": "B",
+       "texto": "El procedimiento siempre es más rápido"
+      },
+      {
+       "id": "C",
+       "texto": "La función no puede tener parámetros"
+      },
+      {
+       "id": "D",
+       "texto": "No hay ninguna diferencia"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Un procedimiento no tiene return. ¿Qué imprime este programa?",
+     "xp": 15,
+     "explicacion": "saludar muestra \"Hola Ana\" (acción) pero no retorna nada, así que r vale None. Por eso un procedimiento no se usa para guardar resultados.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 13: procedimiento que muestra un informe",
+      "codigo": "U3-P03-I"
+     },
+     "temasCombinados": [
+      "3.2 Procedimientos",
+      "3.2 Retorno (None)"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": true,
+     "codigoPython": "def saludar(nombre):\n    print(\"Hola\", nombre)\n\nr = saludar(\"Ana\")\nprint(r)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Hola Ana y luego None"
+      },
+      {
+       "id": "B",
+       "texto": "Hola Ana y luego Ana"
+      },
+      {
+       "id": "C",
+       "texto": "Solo Hola Ana"
+      },
+      {
+       "id": "D",
+       "texto": "None y luego Hola Ana"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Un estudiante quiere una función que calcule el área de un triángulo, pero olvidó algo. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Sin return, la función calcula resultado pero no lo devuelve: Python devuelve None. La corrección es añadir return resultado al final de la función.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 3: función que debe retornar un valor",
+      "codigo": "U3-P03-A"
+     },
+     "temasCombinados": [
+      "3.2 Funciones",
+      "3.2 return olvidado"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "codigoPython": "def area(base, altura):\n    resultado = base * altura / 2\n\nvalor = area(6, 4)\nprint(valor)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "12.0"
+      },
+      {
+       "id": "B",
+       "texto": "None"
+      },
+      {
+       "id": "C",
+       "texto": "24"
+      },
+      {
+       "id": "D",
+       "texto": "Da error"
+      }
+     ],
+     "respuestaCorrecta": "B"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Una variable se crea dentro de una función. ¿Dónde se puede usar?",
+     "xp": 10,
+     "explicacion": "Las variables creadas dentro de una función son locales: existen mientras la función se ejecuta y desaparecen al terminar.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos (ejercicios 2, 3 y 7): variables locales dentro de cada módulo",
+      "codigo": "U3-P04-B"
+     },
+     "temasCombinados": [
+      "3.2 Ámbito local y global"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Solo dentro de esa función (es local)"
+      },
+      {
+       "id": "B",
+       "texto": "En todo el programa"
+      },
+      {
+       "id": "C",
+       "texto": "Solo fuera de la función"
+      },
+      {
+       "id": "D",
+       "texto": "En cualquier programa de la computadora"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Hay una x global y otra x dentro de la función. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "La x de adentro (5) es otra variable, distinta de la x global (10). f() devuelve 5 × 2 = 10 y la x global sigue valiendo 10.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 7: función y procedimiento con variables propias",
+      "codigo": "U3-P04-I"
+     },
+     "temasCombinados": [
+      "3.2 Ámbito local y global",
+      "3.2 Retorno"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": true,
+     "codigoPython": "x = 10\n\ndef f():\n    x = 5\n    return x * 2\n\nprint(f(), x)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "10 10"
+      },
+      {
+       "id": "B",
+       "texto": "10 5"
+      },
+      {
+       "id": "C",
+       "texto": "5 10"
+      },
+      {
+       "id": "D",
+       "texto": "10 20"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "El procedimiento modifica una variable global usando la palabra global. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Gracias a global, total se refiere a la variable de afuera: primero pasa a 3 y luego a 7. Sin esa palabra Python crearía una variable local y el total global quedaría en 0.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 7: procedimiento que acumula resultados",
+      "codigo": "U3-P04-A"
+     },
+     "temasCombinados": [
+      "3.2 Ámbito global",
+      "3.2 Procedimientos"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "codigoPython": "total = 0\n\ndef sumar(n):\n    global total\n    total = total + n\n\nsumar(3)\nsumar(4)\nprint(total)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "7"
+      },
+      {
+       "id": "B",
+       "texto": "0"
+      },
+      {
+       "id": "C",
+       "texto": "4"
+      },
+      {
+       "id": "D",
+       "texto": "3"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "En la definición def potencia(a, b): y en la llamada potencia(2, 3), ¿cómo se llaman a y b, y cómo se llaman 2 y 3?",
+     "xp": 10,
+     "explicacion": "Los parámetros son los nombres que la función espera recibir; los argumentos son los valores concretos que se le pasan en cada llamada.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 6: función potencia con parámetros",
+      "codigo": "U3-P05-B"
+     },
+     "temasCombinados": [
+      "3.2 Parámetros y argumentos"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "a y b son parámetros; 2 y 3 son argumentos"
+      },
+      {
+       "id": "B",
+       "texto": "a y b son argumentos; 2 y 3 son parámetros"
+      },
+      {
+       "id": "C",
+       "texto": "Los cuatro se llaman variables globales"
+      },
+      {
+       "id": "D",
+       "texto": "Los cuatro se llaman constantes"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "El orden de los argumentos importa. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "Los argumentos se asignan por posición: en resta(10, 2) es a = 10 y b = 2, y en resta(2, 10) es al revés. Restar no es conmutativo, así que sale 8 y -8.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 6: función con varios parámetros",
+      "codigo": "U3-P05-I"
+     },
+     "temasCombinados": [
+      "3.2 Parámetros",
+      "3.2 Orden de los argumentos"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": true,
+     "codigoPython": "def resta(a, b):\n    return a - b\n\nprint(resta(10, 2), resta(2, 10))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "8 -8"
+      },
+      {
+       "id": "B",
+       "texto": "8 8"
+      },
+      {
+       "id": "C",
+       "texto": "-8 8"
+      },
+      {
+       "id": "D",
+       "texto": "12 12"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "El número combinatorio C(n, r) = n! / (r! · (n − r)!) se programa llamando a la función factorial. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "C(5, 2) = 5! / (2! · 3!) = 120 / (2 · 6) = 10. Reutilizar factorial dentro de otra función evita repetir código: es la idea central de la modularidad.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 14: menú con número combinatorio",
+      "codigo": "U3-P05-A"
+     },
+     "temasCombinados": [
+      "3.2 Funciones que llaman a funciones",
+      "3.2 Número combinatorio"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "codigoPython": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef combinatorio(n, r):\n    return factorial(n) // (factorial(r) * factorial(n - r))\n\nprint(combinatorio(5, 2))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "10"
+      },
+      {
+       "id": "B",
+       "texto": "20"
+      },
+      {
+       "id": "C",
+       "texto": "60"
+      },
+      {
+       "id": "D",
+       "texto": "120"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime la función que suma los dígitos de un número?",
+     "xp": 10,
+     "explicacion": "Cada vuelta toma el último dígito con % 10 y lo suma, luego quita ese dígito con // 10: 4 + 3 + 2 + 1 = 10.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicios 2 y 5: suma de los dígitos de un número (1234 → 10)",
+      "codigo": "U3-P06-B"
+     },
+     "temasCombinados": [
+      "3.2 Funciones con ciclos",
+      "3.2 Dígitos de un número"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "def suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n    return s\n\nprint(suma_digitos(1234))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "10"
+      },
+      {
+       "id": "B",
+       "texto": "4"
+      },
+      {
+       "id": "C",
+       "texto": "1234"
+      },
+      {
+       "id": "D",
+       "texto": "24"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "completar_codigo",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Completa la función que invierte un número (639 → 936). En cada vuelta se quita el último dígito del número original.",
+     "xp": 15,
+     "explicacion": "n // 10 elimina el último dígito (639 → 63 → 6 → 0), y inv * 10 + n % 10 lo va colocando al revés en inv: 9, 93, 936.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 12: número invertido (639 → 936)",
+      "codigo": "U3-P06-I"
+     },
+     "temasCombinados": [
+      "3.2 Funciones con ciclos",
+      "3.2 Número invertido"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": true,
+     "codigoPython": "def invertir(n):\n    inv = 0\n    while n > 0:\n        inv = inv * 10 + n % 10\n        n = n // ____\n    return inv",
+     "respuestaCorrecta": "10"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "La función cuenta cuántas veces aparece el dígito d en n. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "En 4836581 el 8 aparece dos veces y no hay ningún 0. Cuidado: esta versión no sirve para contar ceros en un número que sea 0, porque el while no entra.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 16: cuántas veces aparece el dígito D en N",
+      "codigo": "U3-P06-A"
+     },
+     "temasCombinados": [
+      "3.2 Funciones con dos parámetros",
+      "3.2 Contar dígitos"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "def cuantos(n, d):\n    c = 0\n    while n > 0:\n        if n % 10 == d:\n            c = c + 1\n        n = n // 10\n    return c\n\nprint(cuantos(4836581, 8), cuantos(4836581, 0))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2 0"
+      },
+      {
+       "id": "B",
+       "texto": "2 1"
+      },
+      {
+       "id": "C",
+       "texto": "1 0"
+      },
+      {
+       "id": "D",
+       "texto": "0 0"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "5! = 1 · 2 · 3 · 4 · 5 = 120. La función parte de res = 1 y multiplica por cada i desde 2 hasta n.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 3: factorial de un número dado como parámetro",
+      "codigo": "U3-P07-B"
+     },
+     "temasCombinados": [
+      "3.2 Función factorial",
+      "3.2 Ciclo for"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "codigoPython": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\nprint(factorial(5))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "120"
+      },
+      {
+       "id": "B",
+       "texto": "25"
+      },
+      {
+       "id": "C",
+       "texto": "15"
+      },
+      {
+       "id": "D",
+       "texto": "24"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "La función suma_fact_digitos suma los factoriales de los dígitos de un número (ejercicio 7). ¿Qué imprime para 234?",
+     "xp": 15,
+     "explicacion": "Los dígitos son 2, 3 y 4: 2! + 3! + 4! = 2 + 6 + 24 = 32. Es el mismo valor del ejemplo de la práctica (N = 234 → S = 32).",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 7: suma de los factoriales de los dígitos (N = 234 → S = 32)",
+      "codigo": "U3-P07-I"
+     },
+     "temasCombinados": [
+      "3.2 Funciones que llaman a funciones",
+      "3.2 Dígitos de un número"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": true,
+     "codigoPython": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef suma_fact_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + factorial(n % 10)\n        n = n // 10\n    return s\n\nprint(suma_fact_digitos(234))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "32"
+      },
+      {
+       "id": "B",
+       "texto": "9"
+      },
+      {
+       "id": "C",
+       "texto": "24"
+      },
+      {
+       "id": "D",
+       "texto": "10"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "La serie S = X¹/1! + X²/2! + X³/3! + … se calcula llamando a factorial. Con X = 1 y N = 3 la práctica da 1.6666. ¿Qué imprime este programa?",
+     "xp": 20,
+     "explicacion": "1/1! + 1/2! + 1/3! = 1 + 0.5 + 0.16666… = 1.6666…, que round a 4 decimales muestra como 1.6667. La práctica escribe 1.6666 porque corta los decimales en lugar de redondear.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 9: serie X^k / k!",
+      "codigo": "U3-P07-A"
+     },
+     "temasCombinados": [
+      "3.2 Funciones que llaman a funciones",
+      "3.2 Series y sumatorias"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "codigoPython": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef serie(x, n):\n    s = 0\n    for k in range(1, n + 1):\n        s = s + x ** k / factorial(k)\n    return s\n\nprint(round(serie(1, 3), 4))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1.6667"
+      },
+      {
+       "id": "B",
+       "texto": "1.6666"
+      },
+      {
+       "id": "C",
+       "texto": "1.5"
+      },
+      {
+       "id": "D",
+       "texto": "2.0"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "El procedimiento informe clasifica la generación de residuos sólidos (Alta > 500, Media de 200 a 500, Baja < 200). ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "450 no supera 500 (no es Alta), pero está entre 200 y 500: es Media. Es el ejemplo de la práctica.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 13: informe de residuos sólidos (Cochabamba, 450 t/día → Media)",
+      "codigo": "U3-P08-B"
+     },
+     "temasCombinados": [
+      "3.2 Procedimientos",
+      "3.2 Estructuras condicionales dentro de módulos"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "codigoPython": "def informe(ciudad, toneladas):\n    if toneladas > 500:\n        nivel = \"Alta\"\n    elif toneladas >= 200:\n        nivel = \"Media\"\n    else:\n        nivel = \"Baja\"\n    print(ciudad, \"- Generación:\", nivel)\n\ninforme(\"Cochabamba\", 450)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Cochabamba - Generación: Media"
+      },
+      {
+       "id": "B",
+       "texto": "Cochabamba - Generación: Alta"
+      },
+      {
+       "id": "C",
+       "texto": "Cochabamba - Generación: Baja"
+      },
+      {
+       "id": "D",
+       "texto": "Cochabamba"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Mismo procedimiento informe, llamado tres veces con valores límite. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "500 no es mayor que 500, así que es Media; 200 entra en \"200 a 500\" (Media); 199 es menor que 200 (Baja). Los valores límite son donde más se equivocan los programas.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 13: Alta (>500), Media (200 a 500), Baja (<200)",
+      "codigo": "U3-P08-I"
+     },
+     "temasCombinados": [
+      "3.2 Procedimientos",
+      "3.2 Valores límite"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": true,
+     "codigoPython": "def informe(ciudad, toneladas):\n    if toneladas > 500:\n        nivel = \"Alta\"\n    elif toneladas >= 200:\n        nivel = \"Media\"\n    else:\n        nivel = \"Baja\"\n    print(ciudad + \":\", nivel)\n\ninforme(\"A\", 500)\ninforme(\"B\", 200)\ninforme(\"C\", 199)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "A: Media\nB: Media\nC: Baja"
+      },
+      {
+       "id": "B",
+       "texto": "A: Alta\nB: Media\nC: Baja"
+      },
+      {
+       "id": "C",
+       "texto": "A: Media\nB: Baja\nC: Baja"
+      },
+      {
+       "id": "D",
+       "texto": "A: Alta\nB: Alta\nC: Media"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Menú que llama a funciones (ejercicio 14). El usuario elige la opción 1 con n = 5, luego la opción 4 con n = 7 y luego la 5 (salir). ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "La opción 1 llama a factorial(5) = 120. La 4 llama a es_primo(7), que devuelve True porque nadie lo divide, y se imprime \"Primo\". La 5 corta el ciclo y se muestra \"Fin\".",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 14: menú de opciones con funciones (factorial, primo y salir)",
+      "codigo": "U3-P08-A"
+     },
+     "temasCombinados": [
+      "3.2 Menú con funciones",
+      "3.2 Funciones con retorno",
+      "3.2 Ciclo while"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "codigoPython": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef es_primo(n):\n    if n < 2:\n        return False\n    for d in range(2, n):\n        if n % d == 0:\n            return False\n    return True\n\nopcion = 0\nwhile opcion != 5:\n    opcion = int(input())\n    if opcion == 1:\n        print(factorial(int(input())))\n    elif opcion == 4:\n        print(\"Primo\" if es_primo(int(input())) else \"No primo\")\nprint(\"Fin\")",
+     "entradaPrueba": "1\n5\n4\n7\n5\n",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "120\nPrimo\nFin"
+      },
+      {
+       "id": "B",
+       "texto": "120\nNo primo\nFin"
+      },
+      {
+       "id": "C",
+       "texto": "5\nPrimo\nFin"
+      },
+      {
+       "id": "D",
+       "texto": "120\nPrimo"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "opcion_multiple",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "En una función recursiva, ¿para qué sirve el caso base?",
+     "xp": 10,
+     "explicacion": "Sin caso base, la función se llamaría a sí misma para siempre. El caso base (por ejemplo, factorial de 0 es 1) es el punto donde la recursión termina.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 1: factorial con funciones recursivas",
+      "codigo": "U3-P09-B"
+     },
+     "temasCombinados": [
+      "3.3 Recursividad",
+      "3.3 Caso base y caso recursivo"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "Para detener las llamadas: es el caso más simple, que se resuelve sin volver a llamarse"
+      },
+      {
+       "id": "B",
+       "texto": "Para que la función se llame infinitamente"
+      },
+      {
+       "id": "C",
+       "texto": "Para declarar las variables globales"
+      },
+      {
+       "id": "D",
+       "texto": "Para convertir la función en procedimiento"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué imprime la función recursiva del factorial?",
+     "xp": 15,
+     "explicacion": "factorial(5) = 5 · factorial(4) = 5 · 4 · factorial(3) … hasta factorial(0) = 1. Al volver, se multiplica todo: 120. Es el ejemplo de la práctica (N = 5 → 120).",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 1: factorial recursivo (N = 5 → 120)",
+      "codigo": "U3-P09-I"
+     },
+     "temasCombinados": [
+      "3.3 Recursividad",
+      "3.3 Factorial recursivo"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": true,
+     "codigoPython": "def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(5))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "120"
+      },
+      {
+       "id": "B",
+       "texto": "25"
+      },
+      {
+       "id": "C",
+       "texto": "5"
+      },
+      {
+       "id": "D",
+       "texto": "Se llama infinitamente"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "El máximo común divisor se calcula con el algoritmo de Euclides de forma recursiva. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "mcd(48, 18) → mcd(18, 12) → mcd(12, 6) → mcd(6, 0) = 6. El caso base es y == 0 y cada llamada acerca el problema a ese caso.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 4: máximo común divisor recursivo (mcd(18, 6) = 6)",
+      "codigo": "U3-P09-A"
+     },
+     "temasCombinados": [
+      "3.3 Recursividad",
+      "3.3 Máximo común divisor"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "codigoPython": "def mcd(x, y):\n    if y == 0:\n        return x\n    return mcd(y, x % y)\n\nprint(mcd(48, 18))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6"
+      },
+      {
+       "id": "B",
+       "texto": "18"
+      },
+      {
+       "id": "C",
+       "texto": "3"
+      },
+      {
+       "id": "D",
+       "texto": "12"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime la potencia recursiva?",
+     "xp": 10,
+     "explicacion": "2⁴ = 2 · 2³ = 2 · 2 · 2² … = 2 · 2 · 2 · 2 · 1 = 16. El caso base es el exponente 0, que vale 1. Es el ejemplo de la práctica (2 y 4 → 16).",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 5: potencia recursiva (base 2, exponente 4 → 16)",
+      "codigo": "U3-P10-B"
+     },
+     "temasCombinados": [
+      "3.3 Recursividad",
+      "3.3 Potencia"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "codigoPython": "def potencia(a, b):\n    if b == 0:\n        return 1\n    return a * potencia(a, b - 1)\n\nprint(potencia(2, 4))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "16"
+      },
+      {
+       "id": "B",
+       "texto": "8"
+      },
+      {
+       "id": "C",
+       "texto": "6"
+      },
+      {
+       "id": "D",
+       "texto": "Se llama infinitamente"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "¿Qué imprime este programa que genera 6 términos de Fibonacci con una función recursiva?",
+     "xp": 15,
+     "explicacion": "Cada término es la suma de los dos anteriores. Los casos base son fib(0) = 0 y fib(1) = 1. La serie queda 0, 1, 1, 2, 3, 5.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 8: serie de Fibonacci con funciones recursivas",
+      "codigo": "U3-P10-I"
+     },
+     "temasCombinados": [
+      "3.3 Recursividad",
+      "3.3 Serie de Fibonacci"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": true,
+     "codigoPython": "def fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nprint(fib(0), fib(1), fib(2), fib(3), fib(4), fib(5))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "0 1 1 2 3 5"
+      },
+      {
+       "id": "B",
+       "texto": "1 1 2 3 5 8"
+      },
+      {
+       "id": "C",
+       "texto": "0 1 2 3 4 5"
+      },
+      {
+       "id": "D",
+       "texto": "1 2 3 5 8 13"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Programación Modular",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "El logaritmo entero (parte entera de log en base b de x) se calcula contando cuántas veces se puede dividir x entre b. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Para 2 y 10: 10 → 5 → 2 → 1, son 3 divisiones, así que ⌊log₂ 10⌋ = 3 (ejemplo de la práctica). Para 10 y 1000: 1000 → 100 → 10 → 1, también 3.",
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 3: logaritmo entero (⌊log₂ 10⌋ = 3)",
+      "codigo": "U3-P10-A"
+     },
+     "temasCombinados": [
+      "3.3 Recursividad",
+      "3.3 Logaritmo entero",
+      "2.3 Condicional en el caso base"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "codigoPython": "def log_entero(b, x):\n    if x < b:\n        return 0\n    return 1 + log_entero(b, x // b)\n\nprint(log_entero(2, 10), log_entero(10, 1000))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3 3"
+      },
+      {
+       "id": "B",
+       "texto": "4 3"
+      },
+      {
+       "id": "C",
+       "texto": "3 2"
+      },
+      {
+       "id": "D",
+       "texto": "2 3"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    }
+   ],
+   "retos": [
+    {
+     "codigo": "RP2-FUN01",
+     "titulo": "Práctica 2 · Funciones y procedimientos 1: Promedio de una lista (programa modular)",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.1",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Escribir un programa modular que calcule el promedio de una lista de números ingresados por el usuario.",
+     "ejemploEntrada": "3\n4\n6\n8\n",
+     "ejemploSalida": "Cantidad de números: 3\nNúmero 1: 4\nNúmero 2: 6\nNúmero 3: 8\nPromedio: 6.00",
+     "pruebas": [
+      {
+       "label": "Tres números",
+       "stdin": "3\n4\n6\n8\n",
+       "salida": "Cantidad de números: 3\nNúmero 1: 4\nNúmero 2: 6\nNúmero 3: 8\nPromedio: 6.00"
+      },
+      {
+       "label": "Cuatro números",
+       "stdin": "4\n10\n20\n30\n40\n",
+       "salida": "Cantidad de números: 4\nNúmero 1: 10\nNúmero 2: 20\nNúmero 3: 30\nNúmero 4: 40\nPromedio: 25.00"
+      },
+      {
+       "label": "Un solo número",
+       "stdin": "1\n55\n",
+       "salida": "Cantidad de números: 1\nNúmero 1: 55\nPromedio: 55.00"
+      }
+     ],
+     "solucionReferencia": "def leer_lista():\n    n = int(input(\"Cantidad de números: \"))\n    lista = []\n    for i in range(n):\n        lista.append(float(input(f\"Número {i + 1}: \")))\n    return lista\n\ndef promedio(lista):\n    total = 0\n    for x in lista:\n        total = total + x\n    return total / len(lista)\n\ndef mostrar(valor):\n    print(f\"Promedio: {valor:.2f}\")\n\nlista = leer_lista()\nmostrar(promedio(lista))",
+     "criteriosEvaluacion": [
+      "Separa el programa en módulos: leer, calcular y mostrar.",
+      "La función promedio recibe la lista y retorna el valor (no imprime).",
+      "Calcula bien el promedio (suma / cantidad)."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 1",
+      "codigo": "RP2-FUN01"
+     }
+    },
+    {
+     "codigo": "RP2-FUN02",
+     "titulo": "Práctica 2 · Funciones y procedimientos 2: Suma de todos los dígitos de un número",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Implementar un módulo que realice la suma de todos los dígitos de un número mayor a cero.",
+     "ejemploEntrada": "1234\n",
+     "ejemploSalida": "Número mayor a cero: 1234\nSuma de los dígitos: 10",
+     "pruebas": [
+      {
+       "label": "Cuatro dígitos",
+       "stdin": "1234\n",
+       "salida": "Número mayor a cero: 1234\nSuma de los dígitos: 10"
+      },
+      {
+       "label": "Un dígito",
+       "stdin": "9\n",
+       "salida": "Número mayor a cero: 9\nSuma de los dígitos: 9"
+      },
+      {
+       "label": "Número no válido",
+       "stdin": "0\n",
+       "salida": "Número mayor a cero: 0\nError: el número debe ser mayor a cero"
+      }
+     ],
+     "solucionReferencia": "def suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n    return s\n\nnumero = int(input(\"Número mayor a cero: \"))\nif numero > 0:\n    print(\"Suma de los dígitos:\", suma_digitos(numero))\nelse:\n    print(\"Error: el número debe ser mayor a cero\")",
+     "criteriosEvaluacion": [
+      "El módulo suma_digitos recibe el número y retorna la suma.",
+      "Valida que el número sea mayor a cero antes de llamarlo.",
+      "Usa % 10 y // 10 para separar los dígitos."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 2",
+      "codigo": "RP2-FUN02"
+     }
+    },
+    {
+     "codigo": "RP2-FUN03",
+     "titulo": "Práctica 2 · Funciones y procedimientos 3: Factorial de un número dado como parámetro",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Implementar un módulo que calcule el factorial de un número dado como parámetro.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "Número: 5\n5! = 120",
+     "pruebas": [
+      {
+       "label": "Factorial de 5",
+       "stdin": "5\n",
+       "salida": "Número: 5\n5! = 120"
+      },
+      {
+       "label": "Factorial de 0",
+       "stdin": "0\n",
+       "salida": "Número: 0\n0! = 1"
+      },
+      {
+       "label": "Factorial de 10",
+       "stdin": "10\n",
+       "salida": "Número: 10\n10! = 3628800"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\nn = int(input(\"Número: \"))\nif n < 0:\n    print(\"Error: no existe el factorial de un negativo\")\nelse:\n    print(f\"{n}! = {factorial(n)}\")",
+     "criteriosEvaluacion": [
+      "La función factorial recibe n como parámetro y retorna el resultado.",
+      "Considera que 0! = 1.",
+      "No lee ni imprime dentro de la función."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 3",
+      "codigo": "RP2-FUN03"
+     }
+    },
+    {
+     "codigo": "RP2-FUN04",
+     "titulo": "Práctica 2 · Funciones y procedimientos 4: Serie SUM = 2/3³ − 4/5³ + 6/7³ − 8/9³ + …",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular la suma SUM = 2/3³ − 4/5³ + 6/7³ − 8/9³ + 10/11³ − … (para N términos).\nNota: el enunciado impreso termina con “−” sin indicar cuántos términos; la solución pide N. El término k es (2k) / (2k + 1)³ y el signo alterna empezando con +.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "Número de términos: 5\nSUM = 0.056106",
+     "pruebas": [
+      {
+       "label": "Cinco términos (los del enunciado)",
+       "stdin": "5\n",
+       "salida": "Número de términos: 5\nSUM = 0.056106"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "Número de términos: 1\nSUM = 0.074074"
+      },
+      {
+       "label": "Tres términos",
+       "stdin": "3\n",
+       "salida": "Número de términos: 3\nSUM = 0.059567"
+      }
+     ],
+     "solucionReferencia": "def termino(k):\n    return (2 * k) / (2 * k + 1) ** 3\n\ndef suma_serie(n):\n    s = 0\n    for k in range(1, n + 1):\n        if k % 2 == 1:\n            s = s + termino(k)\n        else:\n            s = s - termino(k)\n    return s\n\nn = int(input(\"Número de términos: \"))\nprint(f\"SUM = {suma_serie(n):.6f}\")",
+     "criteriosEvaluacion": [
+      "Identifica el patrón: numerador 2k y denominador (2k + 1)³.",
+      "Alterna el signo (+, −, +, −…).",
+      "Separa el cálculo del término en una función."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 4",
+      "codigo": "RP2-FUN04"
+     }
+    },
+    {
+     "codigo": "RP2-FUN05",
+     "titulo": "Práctica 2 · Funciones y procedimientos 5: Suma de dígitos mostrando el desarrollo",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Suma de dígitos de un número. Ejemplo: 1234 → 1 + 2 + 3 + 4 = 10.\nEste ejercicio se parece al 2; aquí se pide además mostrar el desarrollo de la suma como en el ejemplo.",
+     "ejemploEntrada": "1234\n",
+     "ejemploSalida": "Número: 1234\n1234 → 1 + 2 + 3 + 4 = 10",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "1234\n",
+       "salida": "Número: 1234\n1234 → 1 + 2 + 3 + 4 = 10"
+      },
+      {
+       "label": "Con un cero",
+       "stdin": "907\n",
+       "salida": "Número: 907\n907 → 9 + 0 + 7 = 16"
+      },
+      {
+       "label": "Un dígito",
+       "stdin": "5\n",
+       "salida": "Número: 5\n5 → 5 = 5"
+      }
+     ],
+     "solucionReferencia": "def digitos(n):\n    lista = []\n    while n > 0:\n        lista.insert(0, n % 10)\n        n = n // 10\n    return lista\n\ndef suma_digitos(n):\n    s = 0\n    for d in digitos(n):\n        s = s + d\n    return s\n\nn = int(input(\"Número: \"))\ntexto = \" + \".join(str(d) for d in digitos(n))\nprint(f\"{n} → {texto} = {suma_digitos(n)}\")",
+     "criteriosEvaluacion": [
+      "Separa los dígitos en el orden original (izquierda a derecha).",
+      "Muestra el desarrollo: 1 + 2 + 3 + 4 = 10.",
+      "Usa funciones para separar y para sumar."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 5",
+      "codigo": "RP2-FUN05"
+     }
+    },
+    {
+     "codigo": "RP2-FUN06",
+     "titulo": "Práctica 2 · Funciones y procedimientos 6: Función potencia: x = (√(aᵇ + aᶜ))ᵈ",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Diseñe la función potencia para obtener el resultado de la siguiente ecuación: x = (√(aᵇ + aᶜ))ᵈ.\nEjemplo: a = 2, b = 3, c = 4, d = 3 → mostrar 117.58.",
+     "ejemploEntrada": "2\n3\n4\n3\n",
+     "ejemploSalida": "a: 2\nb: 3\nc: 4\nd: 3\nx = 117.58",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (117.58)",
+       "stdin": "2\n3\n4\n3\n",
+       "salida": "a: 2\nb: 3\nc: 4\nd: 3\nx = 117.58"
+      },
+      {
+       "label": "a = 1",
+       "stdin": "1\n2\n3\n2\n",
+       "salida": "a: 1\nb: 2\nc: 3\nd: 2\nx = 2.00"
+      },
+      {
+       "label": "d = 1",
+       "stdin": "3\n1\n2\n1\n",
+       "salida": "a: 3\nb: 1\nc: 2\nd: 1\nx = 3.46"
+      }
+     ],
+     "solucionReferencia": "import math\n\ndef potencia(base, exp):\n    r = 1\n    for _ in range(exp):\n        r = r * base\n    return r\n\na = int(input(\"a: \"))\nb = int(input(\"b: \"))\nc = int(input(\"c: \"))\nd = int(input(\"d: \"))\nraiz = math.sqrt(potencia(a, b) + potencia(a, c))\nx = potencia(raiz, d)\nprint(f\"x = {x:.2f}\")",
+     "criteriosEvaluacion": [
+      "La función potencia(base, exp) no usa el operador ** (usa un ciclo).",
+      "Calcula aᵇ y aᶜ con la función, suma y saca la raíz cuadrada.",
+      "Reproduce el ejemplo: a = 2, b = 3, c = 4, d = 3 → 117.58."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 6",
+      "codigo": "RP2-FUN06"
+     }
+    },
+    {
+     "codigo": "RP2-FUN07",
+     "titulo": "Práctica 2 · Funciones y procedimientos 7: Suma de los factoriales de los dígitos",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Leer un número entero positivo en N y hallar la suma de las factoriales de todos los dígitos del número. Diseñe un procedimiento y una función.\nEj. N = 234 → mostrar S = 32.",
+     "ejemploEntrada": "234\n",
+     "ejemploSalida": "N: 234\nN = 234\nS = 32",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (S = 32)",
+       "stdin": "234\n",
+       "salida": "N: 234\nN = 234\nS = 32"
+      },
+      {
+       "label": "Caso 145",
+       "stdin": "145\n",
+       "salida": "N: 145\nN = 145\nS = 145"
+      },
+      {
+       "label": "Número no válido",
+       "stdin": "0\n",
+       "salida": "N: 0\nError: N debe ser positivo"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef suma_fact_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + factorial(n % 10)\n        n = n // 10\n    return s\n\ndef mostrar(n, s):\n    print(f\"N = {n}\")\n    print(f\"S = {s}\")\n\nn = int(input(\"N: \"))\nif n > 0:\n    mostrar(n, suma_fact_digitos(n))\nelse:\n    print(\"Error: N debe ser positivo\")",
+     "criteriosEvaluacion": [
+      "Usa una función (suma_fact_digitos) que retorna el valor.",
+      "Usa un procedimiento (mostrar) que solo imprime.",
+      "Reproduce el ejemplo: N = 234 → S = 32."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 7",
+      "codigo": "RP2-FUN07"
+     }
+    },
+    {
+     "codigo": "RP2-FUN08",
+     "titulo": "Práctica 2 · Funciones y procedimientos 8: Suma de la cantidad de dígitos de dos números",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Leer dos números en N y M y obtener en S la suma total de la cantidad de dígitos de los dos números. Diseñe una función.\nEj. N = 453, M = 7646 → mostrar S = 7.",
+     "ejemploEntrada": "453\n7646\n",
+     "ejemploSalida": "N: 453\nM: 7646\nS = 7",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (S = 7)",
+       "stdin": "453\n7646\n",
+       "salida": "N: 453\nM: 7646\nS = 7"
+      },
+      {
+       "label": "Un dígito y dos dígitos",
+       "stdin": "5\n10\n",
+       "salida": "N: 5\nM: 10\nS = 3"
+      },
+      {
+       "label": "Seis y un dígito",
+       "stdin": "123456\n7\n",
+       "salida": "N: 123456\nM: 7\nS = 7"
+      }
+     ],
+     "solucionReferencia": "def cantidad_digitos(n):\n    c = 0\n    while n > 0:\n        c = c + 1\n        n = n // 10\n    return c\n\nn = int(input(\"N: \"))\nm = int(input(\"M: \"))\ns = cantidad_digitos(n) + cantidad_digitos(m)\nprint(\"S =\", s)",
+     "criteriosEvaluacion": [
+      "La función cantidad_digitos(n) se reutiliza para N y para M.",
+      "Suma las dos cantidades.",
+      "Reproduce el ejemplo: N = 453, M = 7646 → S = 7."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 8",
+      "codigo": "RP2-FUN08"
+     }
+    },
+    {
+     "codigo": "RP2-FUN09",
+     "titulo": "Práctica 2 · Funciones y procedimientos 9: Serie X¹/1! + X²/2! + X³/3! + … + Xⁿ/n!",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular la siguiente serie: S = X¹/1! + X²/2! + X³/3! + X⁴/4! + X⁵/5! + … + Xⁿ/n!\nSi X = 1, N = 3: S = 1¹/1! + 1²/2! + 1³/3! = 1/1 + 1/2 + 1/6 = 1 + 0.5 + 0.1666 = 1.6666.\nLa práctica escribe 1.6666 porque corta los decimales; el programa muestra 1.6667 al redondear a 4 decimales.",
+     "ejemploEntrada": "1\n3\n",
+     "ejemploSalida": "X: 1\nN: 3\nS = 1.6667",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "1\n3\n",
+       "salida": "X: 1\nN: 3\nS = 1.6667"
+      },
+      {
+       "label": "X = 2, N = 4",
+       "stdin": "2\n4\n",
+       "salida": "X: 2\nN: 4\nS = 6.0000"
+      },
+      {
+       "label": "Un solo término",
+       "stdin": "3\n1\n",
+       "salida": "X: 3\nN: 1\nS = 3.0000"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef serie(x, n):\n    s = 0\n    for k in range(1, n + 1):\n        s = s + x ** k / factorial(k)\n    return s\n\nx = float(input(\"X: \"))\nn = int(input(\"N: \"))\nprint(f\"S = {serie(x, n):.4f}\")",
+     "criteriosEvaluacion": [
+      "Usa la función factorial dentro de la serie.",
+      "El término k es X elevado a k, dividido entre k!.",
+      "Reproduce el ejemplo: X = 1, N = 3 → 1.6667 (1.6666 sin redondear)."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 9",
+      "codigo": "RP2-FUN09"
+     }
+    },
+    {
+     "codigo": "RP2-FUN10",
+     "titulo": "Práctica 2 · Funciones y procedimientos 10: Ordenar los dígitos de un número sin cadenas",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Ordenar los dígitos de un número N. En este ejemplo no se debe utilizar cadenas.\nEjemplo: N = 62147 → NO = 12467.",
+     "ejemploEntrada": "62147\n",
+     "ejemploSalida": "N: 62147\nNO = 12467",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "62147\n",
+       "salida": "N: 62147\nNO = 12467"
+      },
+      {
+       "label": "Cuatro dígitos",
+       "stdin": "5132\n",
+       "salida": "N: 5132\nNO = 1235"
+      },
+      {
+       "label": "Orden inverso",
+       "stdin": "9876543210\n",
+       "salida": "N: 9876543210\nNO = 123456789"
+      }
+     ],
+     "solucionReferencia": "def ordenar_digitos(n):\n    nuevo = 0\n    for digito in range(0, 10):\n        t = n\n        while t > 0:\n            if t % 10 == digito:\n                nuevo = nuevo * 10 + digito\n            t = t // 10\n    return nuevo\n\nn = int(input(\"N: \"))\nprint(\"NO =\", ordenar_digitos(n))",
+     "criteriosEvaluacion": [
+      "No convierte el número a texto.",
+      "Para cada dígito de 0 a 9 recorre el número y lo agrega si aparece.",
+      "Reproduce el ejemplo: 62147 → 12467."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 10",
+      "codigo": "RP2-FUN10"
+     }
+    },
+    {
+     "codigo": "RP2-FUN11",
+     "titulo": "Práctica 2 · Funciones y procedimientos 11: Los primeros N números primos",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Generar los primeros N números primos. Si N = 10: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29.",
+     "ejemploEntrada": "10\n",
+     "ejemploSalida": "N: 10\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "10\n",
+       "salida": "N: 10\n2, 3, 5, 7, 11, 13, 17, 19, 23, 29"
+      },
+      {
+       "label": "Cinco primos",
+       "stdin": "5\n",
+       "salida": "N: 5\n2, 3, 5, 7, 11"
+      },
+      {
+       "label": "Un primo",
+       "stdin": "1\n",
+       "salida": "N: 1\n2"
+      }
+     ],
+     "solucionReferencia": "def es_primo(n):\n    if n < 2:\n        return False\n    for d in range(2, n):\n        if n % d == 0:\n            return False\n    return True\n\nn = int(input(\"N: \"))\nprimos = []\ncandidato = 2\nwhile len(primos) < n:\n    if es_primo(candidato):\n        primos.append(candidato)\n    candidato = candidato + 1\nprint(\", \".join(str(p) for p in primos))",
+     "criteriosEvaluacion": [
+      "La función es_primo retorna True o False.",
+      "Cuenta cuántos primos lleva hasta llegar a N.",
+      "Reproduce el ejemplo: N = 10 → 2 … 29."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 11",
+      "codigo": "RP2-FUN11"
+     }
+    },
+    {
+     "codigo": "RP2-FUN12",
+     "titulo": "Práctica 2 · Funciones y procedimientos 12: Número invertido",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Escribir una función que reciba un número entero mayor a cero y obtenga el número invertido.\nEjemplo: dame un número… 639 → número invertido 936.",
+     "ejemploEntrada": "639\n",
+     "ejemploSalida": "Dame un número: 639\nNúmero invertido 936",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "639\n",
+       "salida": "Dame un número: 639\nNúmero invertido 936"
+      },
+      {
+       "label": "Termina en ceros (el resultado pierde los ceros)",
+       "stdin": "1200\n",
+       "salida": "Dame un número: 1200\nNúmero invertido 21"
+      },
+      {
+       "label": "Un dígito",
+       "stdin": "7\n",
+       "salida": "Dame un número: 7\nNúmero invertido 7"
+      }
+     ],
+     "solucionReferencia": "def invertir(n):\n    inv = 0\n    while n > 0:\n        inv = inv * 10 + n % 10\n        n = n // 10\n    return inv\n\nn = int(input(\"Dame un número: \"))\nif n > 0:\n    print(\"Número invertido\", invertir(n))\nelse:\n    print(\"Error: el número debe ser mayor a cero\")",
+     "criteriosEvaluacion": [
+      "La función recibe el número y retorna el invertido.",
+      "Usa % 10 y // 10, sin convertir a texto.",
+      "Reproduce el ejemplo: 639 → 936."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 12",
+      "codigo": "RP2-FUN12"
+     }
+    },
+    {
+     "codigo": "RP2-FUN13",
+     "titulo": "Práctica 2 · Funciones y procedimientos 13: Informe de residuos sólidos (procedimiento)",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Crea un procedimiento para generar un informe de residuos sólidos. Debe recibir el nombre de una ciudad y la cantidad de residuos sólidos generados por día (en toneladas). El procedimiento debe mostrar si la generación es Alta (>500), Media (200 a 500) o Baja (<200).",
+     "ejemploEntrada": "Cochabamba\n450\n",
+     "ejemploSalida": "Ingrese nombre de la ciudad: Cochabamba\nResiduos sólidos generados por día en Toneladas…450\nResiduos sólidos en Ton= 450.0\nToneladas/día\nGeneración: Media",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (Media)",
+       "stdin": "Cochabamba\n450\n",
+       "salida": "Ingrese nombre de la ciudad: Cochabamba\nResiduos sólidos generados por día en Toneladas…450\nResiduos sólidos en Ton= 450.0\nToneladas/día\nGeneración: Media"
+      },
+      {
+       "label": "Alta",
+       "stdin": "El Alto\n520\n",
+       "salida": "Ingrese nombre de la ciudad: El Alto\nResiduos sólidos generados por día en Toneladas…520\nResiduos sólidos en Ton= 520.0\nToneladas/día\nGeneración: Alta"
+      },
+      {
+       "label": "Baja",
+       "stdin": "Sucre\n150\n",
+       "salida": "Ingrese nombre de la ciudad: Sucre\nResiduos sólidos generados por día en Toneladas…150\nResiduos sólidos en Ton= 150.0\nToneladas/día\nGeneración: Baja"
+      }
+     ],
+     "solucionReferencia": "def informe(ciudad, toneladas):\n    if toneladas > 500:\n        nivel = \"Alta\"\n    elif toneladas >= 200:\n        nivel = \"Media\"\n    else:\n        nivel = \"Baja\"\n    print(f\"Residuos sólidos en Ton= {toneladas}\")\n    print(\"Toneladas/día\")\n    print(\"Generación:\", nivel)\n\nciudad = input(\"Ingrese nombre de la ciudad: \")\ntoneladas = float(input(\"Residuos sólidos generados por día en Toneladas…\"))\ninforme(ciudad, toneladas)",
+     "criteriosEvaluacion": [
+      "Es un procedimiento: recibe ciudad y toneladas y solo muestra el informe.",
+      "Los límites quedan bien (500 y 200 son Media).",
+      "Reproduce el ejemplo: Cochabamba, 450 → Media."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 13",
+      "codigo": "RP2-FUN13"
+     }
+    },
+    {
+     "codigo": "RP2-FUN14",
+     "titulo": "Práctica 2 · Funciones y procedimientos 14: Menú con factorial, combinatorio, permutaciones y primos",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Se pide mostrar el siguiente Menú de Opciones; al seleccionar cada opción se debe realizar la llamada a funciones con parámetro y deben retornar valor.\nMENÚ DE OPCIONES: 1. Factorial de N; 2. Calcular el número combinatorio C(n, r); 3. Calcular permutaciones P(n, r); 4. Verifica si N es primo; 5. Salir.\nFórmulas: C(n, r) = n! / (r! · (n − r)!); P(n, r) = n! / (n − r)!.",
+     "ejemploEntrada": "1\n5\n5\n",
+     "ejemploSalida": "1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 1\nN: 5\nFactorial: 120\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 5",
+     "pruebas": [
+      {
+       "label": "Factorial de 5",
+       "stdin": "1\n5\n5\n",
+       "salida": "1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 1\nN: 5\nFactorial: 120\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 5"
+      },
+      {
+       "label": "Combinatorio y permutaciones de (5, 2)",
+       "stdin": "2\n5\n2\n3\n5\n2\n5\n",
+       "salida": "1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 2\nn: 5\nr: 2\nCombinatorio: 10\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 3\nn: 5\nr: 2\nPermutaciones: 20\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 5"
+      },
+      {
+       "label": "Primos y opción no válida",
+       "stdin": "4\n7\n4\n9\n7\n5\n",
+       "salida": "1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 4\nN: 7\nEs primo\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 4\nN: 9\nNo es primo\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 7\nOpción no válida\n1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\nOpción: 5"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef combinatorio(n, r):\n    return factorial(n) // (factorial(r) * factorial(n - r))\n\ndef permutaciones(n, r):\n    return factorial(n) // factorial(n - r)\n\ndef es_primo(n):\n    if n < 2:\n        return False\n    for d in range(2, n):\n        if n % d == 0:\n            return False\n    return True\n\nopcion = 0\nwhile opcion != 5:\n    print(\"1. Factorial  2. Combinatorio  3. Permutaciones  4. Primo  5. Salir\")\n    opcion = int(input(\"Opción: \"))\n    if opcion == 1:\n        n = int(input(\"N: \"))\n        print(\"Factorial:\", factorial(n))\n    elif opcion == 2:\n        n = int(input(\"n: \"))\n        r = int(input(\"r: \"))\n        print(\"Combinatorio:\", combinatorio(n, r))\n    elif opcion == 3:\n        n = int(input(\"n: \"))\n        r = int(input(\"r: \"))\n        print(\"Permutaciones:\", permutaciones(n, r))\n    elif opcion == 4:\n        n = int(input(\"N: \"))\n        print(\"Es primo\" if es_primo(n) else \"No es primo\")\n    elif opcion != 5:\n        print(\"Opción no válida\")",
+     "criteriosEvaluacion": [
+      "Cada opción llama a una función con parámetros que retorna un valor.",
+      "El menú se repite hasta elegir 5.",
+      "Reutiliza factorial dentro de combinatorio y permutaciones."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 14",
+      "codigo": "RP2-FUN14"
+     }
+    },
+    {
+     "codigo": "RP2-FUN15",
+     "titulo": "Práctica 2 · Funciones y procedimientos 15: Número de 6 dígitos: Npar, Nimpar e invertidos",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Dado un número N verificar que tenga 6 dígitos. A continuación, crear un número Npar con los dígitos pares y otro número Nimpar con los dígitos impares. Finalmente, invertir N, Npar y Nimpar usando funciones.\nLa práctica no indica el orden de los dígitos de Npar y Nimpar; la solución respeta el orden original. Un dígito 0 cuenta como par.",
+     "ejemploEntrada": "123456\n",
+     "ejemploSalida": "N (6 dígitos): 123456\nNpar = 246 | Nimpar = 135\nN invertido = 654321\nNpar invertido = 642\nNimpar invertido = 531",
+     "pruebas": [
+      {
+       "label": "Caso normal",
+       "stdin": "123456\n",
+       "salida": "N (6 dígitos): 123456\nNpar = 246 | Nimpar = 135\nN invertido = 654321\nNpar invertido = 642\nNimpar invertido = 531"
+      },
+      {
+       "label": "Casi todos pares",
+       "stdin": "864209\n",
+       "salida": "N (6 dígitos): 864209\nNpar = 86420 | Nimpar = 9\nN invertido = 902468\nNpar invertido = 2468\nNimpar invertido = 9"
+      },
+      {
+       "label": "Solo 5 dígitos (error)",
+       "stdin": "12345\n",
+       "salida": "N (6 dígitos): 12345\nError: N debe tener 6 dígitos"
+      }
+     ],
+     "solucionReferencia": "def cantidad_digitos(n):\n    c = 0\n    while n > 0:\n        c = c + 1\n        n = n // 10\n    return c\n\ndef invertir(n):\n    inv = 0\n    while n > 0:\n        inv = inv * 10 + n % 10\n        n = n // 10\n    return inv\n\ndef formar(n, par):\n    nuevo = 0\n    mult = 1\n    while n > 0:\n        d = n % 10\n        if (d % 2 == 0) == par:\n            nuevo = nuevo + d * mult\n            mult = mult * 10\n        n = n // 10\n    return nuevo\n\nn = int(input(\"N (6 dígitos): \"))\nif cantidad_digitos(n) != 6:\n    print(\"Error: N debe tener 6 dígitos\")\nelse:\n    npar = formar(n, True)\n    nimpar = formar(n, False)\n    print(\"Npar =\", npar, \"| Nimpar =\", nimpar)\n    print(\"N invertido =\", invertir(n))\n    print(\"Npar invertido =\", invertir(npar))\n    print(\"Nimpar invertido =\", invertir(nimpar))",
+     "criteriosEvaluacion": [
+      "Verifica que N tenga exactamente 6 dígitos.",
+      "Usa funciones para formar Npar, Nimpar y para invertir.",
+      "Muestra N, Npar y Nimpar invertidos."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 15",
+      "codigo": "RP2-FUN15"
+     }
+    },
+    {
+     "codigo": "RP2-FUN16",
+     "titulo": "Práctica 2 · Funciones y procedimientos 16: Cuántas veces aparece el dígito D en N",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Leer un número N entero positivo y averiguar cuántas veces se encuentra el dígito D en N.\nEj. N = 4836581, D = 8 → mostrar: el 8 se encuentra 2 veces.",
+     "ejemploEntrada": "4836581\n8\n",
+     "ejemploSalida": "N: 4836581\nD: 8\nel 8 se encuentra 2 veces",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "4836581\n8\n",
+       "salida": "N: 4836581\nD: 8\nel 8 se encuentra 2 veces"
+      },
+      {
+       "label": "Dígito que no aparece",
+       "stdin": "4836581\n7\n",
+       "salida": "N: 4836581\nD: 7\nel 7 se encuentra 0 veces"
+      },
+      {
+       "label": "El dígito 0",
+       "stdin": "1000\n0\n",
+       "salida": "N: 1000\nD: 0\nel 0 se encuentra 3 veces"
+      }
+     ],
+     "solucionReferencia": "def contar_digito(n, d):\n    c = 0\n    while n > 0:\n        if n % 10 == d:\n            c = c + 1\n        n = n // 10\n    return c\n\nn = int(input(\"N: \"))\nd = int(input(\"D: \"))\nveces = contar_digito(n, d)\nprint(f\"el {d} se encuentra {veces} veces\")",
+     "criteriosEvaluacion": [
+      "La función retorna cuántas veces aparece D.",
+      "Recorre todos los dígitos con % 10 y // 10.",
+      "Reproduce el ejemplo: el 8 se encuentra 2 veces."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 16",
+      "codigo": "RP2-FUN16"
+     }
+    },
+    {
+     "codigo": "RP2-FUN17",
+     "titulo": "Práctica 2 · Funciones y procedimientos 17: Dígitos pares, múltiplos de 3 y suma de dígitos",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Dado un número entero positivo n, se desea saber: cuántos de sus dígitos son pares; cuántos de sus dígitos son múltiplos de 3; la suma de todos sus dígitos.\nEl dígito 0 se cuenta como par y como múltiplo de 3 (0 es divisible entre 2 y entre 3).",
+     "ejemploEntrada": "4836581\n",
+     "ejemploSalida": "n: 4836581\nDígitos pares: 4\nDígitos múltiplos de 3: 2\nSuma de dígitos: 35",
+     "pruebas": [
+      {
+       "label": "Caso 4836581",
+       "stdin": "4836581\n",
+       "salida": "n: 4836581\nDígitos pares: 4\nDígitos múltiplos de 3: 2\nSuma de dígitos: 35"
+      },
+      {
+       "label": "Todos pares",
+       "stdin": "2468\n",
+       "salida": "n: 2468\nDígitos pares: 4\nDígitos múltiplos de 3: 1\nSuma de dígitos: 20"
+      },
+      {
+       "label": "Todos múltiplos de 3",
+       "stdin": "333\n",
+       "salida": "n: 333\nDígitos pares: 0\nDígitos múltiplos de 3: 3\nSuma de dígitos: 9"
+      }
+     ],
+     "solucionReferencia": "def contar_pares(n):\n    c = 0\n    while n > 0:\n        if (n % 10) % 2 == 0:\n            c = c + 1\n        n = n // 10\n    return c\n\ndef contar_multiplos_3(n):\n    c = 0\n    while n > 0:\n        if (n % 10) % 3 == 0:\n            c = c + 1\n        n = n // 10\n    return c\n\ndef suma_digitos(n):\n    s = 0\n    while n > 0:\n        s = s + n % 10\n        n = n // 10\n    return s\n\nn = int(input(\"n: \"))\nprint(\"Dígitos pares:\", contar_pares(n))\nprint(\"Dígitos múltiplos de 3:\", contar_multiplos_3(n))\nprint(\"Suma de dígitos:\", suma_digitos(n))",
+     "criteriosEvaluacion": [
+      "Resuelve las tres preguntas con funciones separadas.",
+      "Decide qué hacer con el dígito 0 y lo documenta.",
+      "Muestra los tres resultados."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 17",
+      "codigo": "RP2-FUN17"
+     }
+    },
+    {
+     "codigo": "RP2-FUN18",
+     "titulo": "Práctica 2 · Funciones y procedimientos 18: Sumatoria 0! + 1! + 2! + 3! + … para N términos",
+     "categoria": "Funciones y procedimientos",
+     "tema": "3.2",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Despliegue el resultado obtenido de la siguiente sumatoria, para N términos: 0! + 1! + 2! + 3! + 4! + 5! + …",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "Número de términos: 5\nResultado: 34",
+     "pruebas": [
+      {
+       "label": "Cinco términos (0! a 4!)",
+       "stdin": "5\n",
+       "salida": "Número de términos: 5\nResultado: 34"
+      },
+      {
+       "label": "Seis términos (0! a 5!)",
+       "stdin": "6\n",
+       "salida": "Número de términos: 6\nResultado: 154"
+      },
+      {
+       "label": "Un término (0!)",
+       "stdin": "1\n",
+       "salida": "Número de términos: 1\nResultado: 1"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\ndef sumatoria(n):\n    s = 0\n    for k in range(0, n):\n        s = s + factorial(k)\n    return s\n\nn = int(input(\"Número de términos: \"))\nprint(\"Resultado:\", sumatoria(n))",
+     "criteriosEvaluacion": [
+      "Los N términos empiezan en 0! y terminan en (N − 1)!.",
+      "Reutiliza la función factorial.",
+      "Resultado para N = 5: 1 + 1 + 2 + 6 + 24 = 34."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.2",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones y procedimientos, ejercicio 18",
+      "codigo": "RP2-FUN18"
+     }
+    },
+    {
+     "codigo": "RP2-REC01",
+     "titulo": "Práctica 2 · Funciones recursivas 1: Factorial con funciones recursivas",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Obtener la factorial de un número mediante funciones recursivas.\nEj. N = 5 → mostrar 120.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "N: 5\nFactorial: 120",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (120)",
+       "stdin": "5\n",
+       "salida": "N: 5\nFactorial: 120"
+      },
+      {
+       "label": "Caso base",
+       "stdin": "0\n",
+       "salida": "N: 0\nFactorial: 1"
+      },
+      {
+       "label": "Factorial de 8",
+       "stdin": "8\n",
+       "salida": "N: 8\nFactorial: 40320"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n\nn = int(input(\"N: \"))\nprint(\"Factorial:\", factorial(n))",
+     "criteriosEvaluacion": [
+      "Tiene caso base (0! = 1).",
+      "El caso recursivo es n * factorial(n − 1).",
+      "Reproduce el ejemplo: N = 5 → 120."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 1",
+      "codigo": "RP2-REC01"
+     }
+    },
+    {
+     "codigo": "RP2-REC02",
+     "titulo": "Práctica 2 · Funciones recursivas 2: Suma de dos números con recursividad",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Obtener la suma de dos números mediante funciones recursivas.\nEj. A = 3, B = 2 → mostrar 5.\nSe resuelve contando: sumar B es sumar 1, B veces (caso base: B = 0). Se asume B entero mayor o igual a 0.",
+     "ejemploEntrada": "3\n2\n",
+     "ejemploSalida": "A: 3\nB: 2\nSuma: 5",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (5)",
+       "stdin": "3\n2\n",
+       "salida": "A: 3\nB: 2\nSuma: 5"
+      },
+      {
+       "label": "Caso base",
+       "stdin": "10\n0\n",
+       "salida": "A: 10\nB: 0\nSuma: 10"
+      },
+      {
+       "label": "Otra suma",
+       "stdin": "7\n5\n",
+       "salida": "A: 7\nB: 5\nSuma: 12"
+      }
+     ],
+     "solucionReferencia": "def suma(a, b):\n    if b == 0:\n        return a\n    return 1 + suma(a, b - 1)\n\na = int(input(\"A: \"))\nb = int(input(\"B: \"))\nprint(\"Suma:\", suma(a, b))",
+     "criteriosEvaluacion": [
+      "Tiene caso base (B = 0).",
+      "No usa el operador + entre A y B directamente, solo suma 1 en cada llamada.",
+      "Reproduce el ejemplo: A = 3, B = 2 → 5."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 2",
+      "codigo": "RP2-REC02"
+     }
+    },
+    {
+     "codigo": "RP2-REC03",
+     "titulo": "Práctica 2 · Funciones recursivas 3: Logaritmo entero de X en base b (recursivo)",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular el logaritmo de un número N, de cualquier base b donde b <= 10 y b >= 1 (nota: solo se debe calcular la parte entera).\nPor ejemplo C = ⌊log_b X⌋; C = ⌊log₂ 10⌋ = 3.\nLa base 1 no tiene logaritmo; el programa acepta bases de 2 a 10 y avisa si se ingresa 1.",
+     "ejemploEntrada": "2\n10\n",
+     "ejemploSalida": "Base b: 2\nNúmero X: 10\n⌊log_2(10)⌋ = 3",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (3)",
+       "stdin": "2\n10\n",
+       "salida": "Base b: 2\nNúmero X: 10\n⌊log_2(10)⌋ = 3"
+      },
+      {
+       "label": "Base 10",
+       "stdin": "10\n1000\n",
+       "salida": "Base b: 10\nNúmero X: 1000\n⌊log_10(1000)⌋ = 3"
+      },
+      {
+       "label": "Base no válida",
+       "stdin": "1\n8\n",
+       "salida": "Base b: 1\nNúmero X: 8\nError: la base debe estar entre 2 y 10 y X debe ser positivo"
+      }
+     ],
+     "solucionReferencia": "def log_entero(b, x):\n    if x < b:\n        return 0\n    return 1 + log_entero(b, x // b)\n\nb = int(input(\"Base b: \"))\nx = int(input(\"Número X: \"))\nif b < 2 or b > 10 or x < 1:\n    print(\"Error: la base debe estar entre 2 y 10 y X debe ser positivo\")\nelse:\n    print(f\"⌊log_{b}({x})⌋ =\", log_entero(b, x))",
+     "criteriosEvaluacion": [
+      "El caso base es x < b (devuelve 0).",
+      "El caso recursivo cuenta una división: 1 + log(b, x // b).",
+      "Reproduce el ejemplo: ⌊log₂ 10⌋ = 3."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 3",
+      "codigo": "RP2-REC03"
+     }
+    },
+    {
+     "codigo": "RP2-REC04",
+     "titulo": "Práctica 2 · Funciones recursivas 4: Máximo común divisor recursivo",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular el máximo común divisor de dos números X, Y de forma recursiva.\nPor ejemplo C = mcd(X, Y); C = mcd(18, 6) = 6.",
+     "ejemploEntrada": "18\n6\n",
+     "ejemploSalida": "X: 18\nY: 6\nmcd(18, 6) = 6",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (6)",
+       "stdin": "18\n6\n",
+       "salida": "X: 18\nY: 6\nmcd(18, 6) = 6"
+      },
+      {
+       "label": "Otro caso",
+       "stdin": "48\n18\n",
+       "salida": "X: 48\nY: 18\nmcd(48, 18) = 6"
+      },
+      {
+       "label": "Primos entre sí (1)",
+       "stdin": "17\n5\n",
+       "salida": "X: 17\nY: 5\nmcd(17, 5) = 1"
+      }
+     ],
+     "solucionReferencia": "def mcd(x, y):\n    if y == 0:\n        return x\n    return mcd(y, x % y)\n\nx = int(input(\"X: \"))\ny = int(input(\"Y: \"))\nprint(f\"mcd({x}, {y}) =\", mcd(x, y))",
+     "criteriosEvaluacion": [
+      "Caso base: y = 0 devuelve x.",
+      "Caso recursivo: mcd(y, x % y).",
+      "Reproduce el ejemplo: mcd(18, 6) = 6."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 4",
+      "codigo": "RP2-REC04"
+     }
+    },
+    {
+     "codigo": "RP2-REC05",
+     "titulo": "Práctica 2 · Funciones recursivas 5: Potencia recursiva aᵇ",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Calcular la potencia en forma recursiva: aᵇ.\nEntrada: Ingrese la base… 2; ingrese el exponente… 4. Salida: resultado es 16.",
+     "ejemploEntrada": "2\n4\n",
+     "ejemploSalida": "Ingrese la base …. 2\ningrese el exponente … 4\nresultado es 16",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (16)",
+       "stdin": "2\n4\n",
+       "salida": "Ingrese la base …. 2\ningrese el exponente … 4\nresultado es 16"
+      },
+      {
+       "label": "Exponente 0",
+       "stdin": "5\n0\n",
+       "salida": "Ingrese la base …. 5\ningrese el exponente … 0\nresultado es 1"
+      },
+      {
+       "label": "Tres al cubo",
+       "stdin": "3\n3\n",
+       "salida": "Ingrese la base …. 3\ningrese el exponente … 3\nresultado es 27"
+      }
+     ],
+     "solucionReferencia": "def potencia(a, b):\n    if b == 0:\n        return 1\n    return a * potencia(a, b - 1)\n\na = int(input(\"Ingrese la base …. \"))\nb = int(input(\"ingrese el exponente … \"))\nprint(\"resultado es\", potencia(a, b))",
+     "criteriosEvaluacion": [
+      "Caso base: exponente 0 devuelve 1.",
+      "Caso recursivo: a * potencia(a, b − 1).",
+      "Reproduce el ejemplo: 2⁴ = 16."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 5",
+      "codigo": "RP2-REC05"
+     }
+    },
+    {
+     "codigo": "RP2-REC06",
+     "titulo": "Práctica 2 · Funciones recursivas 6: Serie 1/2 + 1/3 + 1/4 + 1/5 + … (recursiva)",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Sumar N términos de la siguiente serie en forma recursiva: 1/2 + 1/3 + 1/4 + 1/5 + 1/6 + …\nEjemplo: Ingrese cantidad de términos… 4 → La sumatoria es 1.2833.",
+     "ejemploEntrada": "4\n",
+     "ejemploSalida": "Ingrese cantidad de términos… 4\nLa sumatoria es 1.2833",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (1.2833)",
+       "stdin": "4\n",
+       "salida": "Ingrese cantidad de términos… 4\nLa sumatoria es 1.2833"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "Ingrese cantidad de términos… 1\nLa sumatoria es 0.5000"
+      },
+      {
+       "label": "Diez términos",
+       "stdin": "10\n",
+       "salida": "Ingrese cantidad de términos… 10\nLa sumatoria es 2.0199"
+      }
+     ],
+     "solucionReferencia": "def serie(n):\n    if n == 0:\n        return 0\n    return 1 / (n + 1) + serie(n - 1)\n\nn = int(input(\"Ingrese cantidad de términos… \"))\nprint(f\"La sumatoria es {serie(n):.4f}\")",
+     "criteriosEvaluacion": [
+      "Caso base: sin términos suma 0.",
+      "El término n es 1/(n + 1) y se suma al resto de la serie.",
+      "Reproduce el ejemplo: 4 términos → 1.2833."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 6",
+      "codigo": "RP2-REC06"
+     }
+    },
+    {
+     "codigo": "RP2-REC07",
+     "titulo": "Práctica 2 · Funciones recursivas 7: Número combinatorio con funciones recursivas",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Calcular el número combinatorio C(n, r) con funciones recursivas.\nLa práctica no da fórmula para este ejercicio; se usa la relación de Pascal: C(n, r) = C(n − 1, r − 1) + C(n − 1, r), con C(n, 0) = C(n, n) = 1.",
+     "ejemploEntrada": "5\n2\n",
+     "ejemploSalida": "n: 5\nr: 2\nC(5, 2) = 10",
+     "pruebas": [
+      {
+       "label": "C(5, 2) = 10",
+       "stdin": "5\n2\n",
+       "salida": "n: 5\nr: 2\nC(5, 2) = 10"
+      },
+      {
+       "label": "C(6, 3) = 20",
+       "stdin": "6\n3\n",
+       "salida": "n: 6\nr: 3\nC(6, 3) = 20"
+      },
+      {
+       "label": "r mayor que n",
+       "stdin": "4\n6\n",
+       "salida": "n: 4\nr: 6\nError: r debe estar entre 0 y n"
+      }
+     ],
+     "solucionReferencia": "def combinatorio(n, r):\n    if r == 0 or r == n:\n        return 1\n    return combinatorio(n - 1, r - 1) + combinatorio(n - 1, r)\n\nn = int(input(\"n: \"))\nr = int(input(\"r: \"))\nif 0 <= r <= n:\n    print(f\"C({n}, {r}) =\", combinatorio(n, r))\nelse:\n    print(\"Error: r debe estar entre 0 y n\")",
+     "criteriosEvaluacion": [
+      "Casos base: r = 0 o r = n devuelven 1.",
+      "Caso recursivo con la relación de Pascal.",
+      "Valida que 0 ≤ r ≤ n."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 7",
+      "codigo": "RP2-REC07"
+     }
+    },
+    {
+     "codigo": "RP2-REC08",
+     "titulo": "Práctica 2 · Funciones recursivas 8: Serie de Fibonacci con recursividad (N términos)",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Generar la serie de Fibonacci para N términos, utilizando funciones recursivas.\nNota: la sucesión comienza con 0 y 1 y cada término se obtiene sumando los dos anteriores: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, …",
+     "ejemploEntrada": "10\n",
+     "ejemploSalida": "Número de términos: 10\n0, 1, 1, 2, 3, 5, 8, 13, 21, 34",
+     "pruebas": [
+      {
+       "label": "Diez términos",
+       "stdin": "10\n",
+       "salida": "Número de términos: 10\n0, 1, 1, 2, 3, 5, 8, 13, 21, 34"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "Número de términos: 1\n0"
+      },
+      {
+       "label": "Catorce términos (hasta 233)",
+       "stdin": "14\n",
+       "salida": "Número de términos: 14\n0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233"
+      }
+     ],
+     "solucionReferencia": "def fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nn = int(input(\"Número de términos: \"))\nprint(\", \".join(str(fib(i)) for i in range(n)))",
+     "criteriosEvaluacion": [
+      "Casos base: fib(0) = 0 y fib(1) = 1.",
+      "Caso recursivo: suma de los dos anteriores.",
+      "Genera exactamente N términos."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 8",
+      "codigo": "RP2-REC08"
+     }
+    },
+    {
+     "codigo": "RP2-REC09",
+     "titulo": "Práctica 2 · Funciones recursivas 9: Factorial recursivo de un número positivo",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Realizar un programa recursivo para calcular el factorial de un número n positivo.\nEste ejercicio repite la idea del 1; aquí se agrega la validación de que n sea positivo.",
+     "ejemploEntrada": "6\n",
+     "ejemploSalida": "n (positivo): 6\n6! = 720",
+     "pruebas": [
+      {
+       "label": "Factorial de 6",
+       "stdin": "6\n",
+       "salida": "n (positivo): 6\n6! = 720"
+      },
+      {
+       "label": "Caso base",
+       "stdin": "1\n",
+       "salida": "n (positivo): 1\n1! = 1"
+      },
+      {
+       "label": "Número no positivo",
+       "stdin": "-4\n",
+       "salida": "n (positivo): -4\nError: n debe ser positivo"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nn = int(input(\"n (positivo): \"))\nif n > 0:\n    print(f\"{n}! =\", factorial(n))\nelse:\n    print(\"Error: n debe ser positivo\")",
+     "criteriosEvaluacion": [
+      "Valida que n sea positivo antes de llamar a la función.",
+      "Tiene caso base.",
+      "Calcula bien el factorial."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 9",
+      "codigo": "RP2-REC09"
+     }
+    },
+    {
+     "codigo": "RP2-REC10",
+     "titulo": "Práctica 2 · Funciones recursivas 10: Suma de dos números recursiva (con negativos)",
+     "categoria": "Funciones recursivas",
+     "tema": "3.3",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Realizar un programa recursivo para hallar la suma de dos números.\nEste ejercicio repite la idea del 2; aquí se acepta que B sea negativo (cuando B < 0 se resta 1 en cada llamada).",
+     "ejemploEntrada": "3\n2\n",
+     "ejemploSalida": "A: 3\nB: 2\nSuma: 5",
+     "pruebas": [
+      {
+       "label": "Los dos positivos",
+       "stdin": "3\n2\n",
+       "salida": "A: 3\nB: 2\nSuma: 5"
+      },
+      {
+       "label": "B negativo",
+       "stdin": "3\n-2\n",
+       "salida": "A: 3\nB: -2\nSuma: 1"
+      },
+      {
+       "label": "B igual a 0",
+       "stdin": "-4\n0\n",
+       "salida": "A: -4\nB: 0\nSuma: -4"
+      }
+     ],
+     "solucionReferencia": "def suma(a, b):\n    if b == 0:\n        return a\n    if b > 0:\n        return 1 + suma(a, b - 1)\n    return -1 + suma(a, b + 1)\n\na = int(input(\"A: \"))\nb = int(input(\"B: \"))\nprint(\"Suma:\", suma(a, b))",
+     "criteriosEvaluacion": [
+      "Caso base: B = 0.",
+      "Maneja B positivo y B negativo.",
+      "No usa + entre A y B directamente."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "3",
+      "tema": "3.3",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Funciones recursivas, ejercicio 10",
+      "codigo": "RP2-REC10"
+     }
+    }
+   ]
+  },
+  "4": {
+   "ejercicios": [
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "El vector v guarda 6 números. En Python un vector se representa con una lista y sus posiciones empiezan en 0. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "La primera posición es la 0 (valor 2) y la última es la 5 (valor 15). len(v) cuenta los elementos: 6. Por eso la última posición siempre es len(v) - 1.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 1: vector 2 3 4 5 10 15",
+      "codigo": "U4-P01-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (declaración y acceso)"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [2, 3, 4, 5, 10, 15]\nprint(v[0], v[5], len(v))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2 15 6"
+      },
+      {
+       "id": "B",
+       "texto": "2 10 6"
+      },
+      {
+       "id": "C",
+       "texto": "3 15 5"
+      },
+      {
+       "id": "D",
+       "texto": "2 15 5"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Los índices negativos cuentan desde el final. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "v[1] es 3 y v[4] es 10, y su suma es 13. v[-2] es el penúltimo elemento: 10.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 1: acceso a los elementos de un vector",
+      "codigo": "U4-P01-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (acceso por posición)",
+      "2.2 Operaciones aritméticas"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": true,
+     "codigoPython": "v = [2, 3, 4, 5, 10, 15]\nprint(v[1] + v[4], v[-2])",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "13 10"
+      },
+      {
+       "id": "B",
+       "texto": "7 10"
+      },
+      {
+       "id": "C",
+       "texto": "13 5"
+      },
+      {
+       "id": "D",
+       "texto": "7 5"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Se crea un vector de 5 ceros y se llena con un ciclo. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Primero se reserva el vector con 5 posiciones en 0 ([0] * 5) y luego cada posición i recibe i al cuadrado: 0, 1, 4, 9, 16.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicios 1 y 12: crear un vector de tamaño N y llenarlo",
+      "codigo": "U4-P01-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (crear y llenar)",
+      "2.4 Ciclo for"
+     ],
+     "preguntaExamen": 1,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [0] * 5\nfor i in range(5):\n    v[i] = i * i\nprint(v)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[0, 1, 4, 9, 16]"
+      },
+      {
+       "id": "B",
+       "texto": "[1, 4, 9, 16, 25]"
+      },
+      {
+       "id": "C",
+       "texto": "[0, 1, 2, 3, 4]"
+      },
+      {
+       "id": "D",
+       "texto": "[0, 0, 0, 0, 0]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime este programa que suma los datos del vector?",
+     "xp": 10,
+     "explicacion": "2 + 3 + 4 + 5 + 10 + 15 = 39. Es el ejemplo de la práctica. El acumulador total se inicia en 0 antes del ciclo.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 1: suma de los datos de un vector (resultado 39)",
+      "codigo": "U4-P02-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (recorrido)",
+      "2.4 Acumulador"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [2, 3, 4, 5, 10, 15]\ntotal = 0\nfor x in v:\n    total = total + x\nprint(\"La suma de los elementos es:\", total)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "La suma de los elementos es: 39"
+      },
+      {
+       "id": "B",
+       "texto": "La suma de los elementos es: 6"
+      },
+      {
+       "id": "C",
+       "texto": "La suma de los elementos es: 15"
+      },
+      {
+       "id": "D",
+       "texto": "La suma de los elementos es: 0"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "completar_codigo",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Completa para recorrer el vector por posición y sumar sus elementos.",
+     "xp": 15,
+     "explicacion": "El ciclo recorre las posiciones i = 0, 1, …, 5; en cada una se suma el elemento que está en esa posición: v[i].",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 1: llenar y recorrer un vector",
+      "codigo": "U4-P02-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (recorrido con índice)",
+      "2.4 Ciclo for"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": true,
+     "codigoPython": "v = [2, 3, 4, 5, 10, 15]\ntotal = 0\nfor i in range(len(v)):\n    total = total + ____\nprint(total)",
+     "respuestaCorrecta": "v[i]|v [i]"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Se suman solo los pares y se cuentan los impares. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Los pares son 12, 8 y 10 (suman 30). Los impares son 7, 5 y 3 (son 3). El mismo recorrido puede hacer varias cosas a la vez.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 1: recorrer un vector y acumular datos",
+      "codigo": "U4-P02-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (recorrido)",
+      "2.3 Condicional dentro del ciclo",
+      "2.4 Acumulador y contador"
+     ],
+     "preguntaExamen": 2,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [7, 12, 5, 8, 3, 10]\nsuma_pares = 0\nimpares = 0\nfor x in v:\n    if x % 2 == 0:\n        suma_pares = suma_pares + x\n    else:\n        impares = impares + 1\nprint(suma_pares, impares)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "30 3"
+      },
+      {
+       "id": "B",
+       "texto": "45 3"
+      },
+      {
+       "id": "C",
+       "texto": "30 6"
+      },
+      {
+       "id": "D",
+       "texto": "12 3"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "¿Qué imprime este programa que busca el menor elemento?",
+     "xp": 10,
+     "explicacion": "Se parte suponiendo que el primero es el menor y se actualiza cada vez que aparece uno más pequeño. El menor es 2.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 2: número menor de un vector",
+      "codigo": "U4-P03-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (búsqueda del menor)"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [15, 10, 2, 7, 8, 9]\nmenor = v[0]\nfor x in v:\n    if x < menor:\n        menor = x\nprint(menor)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2"
+      },
+      {
+       "id": "B",
+       "texto": "15"
+      },
+      {
+       "id": "C",
+       "texto": "9"
+      },
+      {
+       "id": "D",
+       "texto": "0"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Ahora también se guarda la posición del menor. Para el usuario la primera posición es la 1. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "El 2 está en el índice 2, que para una persona es la posición 3 (por eso se suma 1). Es el ejemplo de la práctica.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 2: menor elemento y su posición (2 en la posición 3)",
+      "codigo": "U4-P03-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (menor y posición)",
+      "2.2 Salida formateada"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": true,
+     "codigoPython": "v = [15, 10, 2, 7, 8, 9]\nmenor = v[0]\npos = 0\nfor i in range(len(v)):\n    if v[i] < menor:\n        menor = v[i]\n        pos = i\nprint(\"El elemento menor es:\", menor, \"y la posición es:\", pos + 1)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "El elemento menor es: 2 y la posición es: 3"
+      },
+      {
+       "id": "B",
+       "texto": "El elemento menor es: 2 y la posición es: 2"
+      },
+      {
+       "id": "C",
+       "texto": "El elemento menor es: 15 y la posición es: 1"
+      },
+      {
+       "id": "D",
+       "texto": "El elemento menor es: 2 y la posición es: 6"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "El vector tiene el menor repetido. Esta versión usa <= en lugar de <. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Con <= se actualiza también cuando hay un empate, y la posición queda en la última aparición del 2 (posición 4). Con < se quedaría la primera (posición 2). Conviene decidir cuál se quiere.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 2: posición del menor elemento",
+      "codigo": "U4-P03-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (menor y posición)",
+      "2.3 Operadores relacionales",
+      "2.4 Casos de empate"
+     ],
+     "preguntaExamen": 3,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [4, 2, 7, 2]\nmenor = v[0]\npos = 0\nfor i in range(len(v)):\n    if v[i] <= menor:\n        menor = v[i]\n        pos = i\nprint(menor, pos + 1)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "2 4"
+      },
+      {
+       "id": "B",
+       "texto": "2 2"
+      },
+      {
+       "id": "C",
+       "texto": "4 1"
+      },
+      {
+       "id": "D",
+       "texto": "2 3"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Se muestran los elementos iguales a Y. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "El ciclo revisa uno por uno y solo imprime los iguales a 13: aparecen dos veces. Es el ejemplo de la práctica (se debe mostrar 13, 13).",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 3: mostrar los números iguales a Y (Y = 13)",
+      "codigo": "U4-P04-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (búsqueda secuencial)",
+      "2.3 Condicional"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "codigoPython": "X = [6, 13, 0, 10, 13, 9]\nY = 13\nfor x in X:\n    if x == Y:\n        print(x)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "13\n13"
+      },
+      {
+       "id": "B",
+       "texto": "13"
+      },
+      {
+       "id": "C",
+       "texto": "6\n13\n0\n10\n13\n9"
+      },
+      {
+       "id": "D",
+       "texto": "Nada"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Ahora se muestran las posiciones (índices) en las que aparece Y. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "El 13 está en las posiciones 1 y 4 (se cuenta desde 0). Al recorrer por índice se pueden conocer las posiciones, no solo los valores.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 3: elementos iguales a Y en un vector",
+      "codigo": "U4-P04-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (búsqueda secuencial)",
+      "2.4 for con índice"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": true,
+     "codigoPython": "X = [6, 13, 0, 10, 13, 9]\nY = 13\nfor i in range(len(X)):\n    if X[i] == Y:\n        print(i)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1\n4"
+      },
+      {
+       "id": "B",
+       "texto": "2\n5"
+      },
+      {
+       "id": "C",
+       "texto": "13\n13"
+      },
+      {
+       "id": "D",
+       "texto": "0\n5"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "La función buscar retorna la posición del primer elemento igual a y, o -1 si no existe. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "En cuanto encuentra el 13 (posición 1) la función termina con return, sin mirar el segundo 13. El 7 no existe, así que llega al final y retorna -1.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 3: búsqueda de valores en un vector",
+      "codigo": "U4-P04-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (búsqueda con función)",
+      "3.2 Funciones con retorno"
+     ],
+     "preguntaExamen": 4,
+     "esExamenIntermedio": false,
+     "codigoPython": "def buscar(v, y):\n    for i in range(len(v)):\n        if v[i] == y:\n            return i\n    return -1\n\nX = [6, 13, 0, 10, 13, 9]\nprint(buscar(X, 13), buscar(X, 7))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "1 -1"
+      },
+      {
+       "id": "B",
+       "texto": "4 -1"
+      },
+      {
+       "id": "C",
+       "texto": "1 0"
+      },
+      {
+       "id": "D",
+       "texto": "0 -1"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un vector se puede modificar posición por posición. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "Solo se reemplaza la posición 1 (el 5) por su doble: 10. Los demás elementos quedan igual.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 4: reemplazar elementos de un vector",
+      "codigo": "U4-P05-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (modificar elementos)"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "codigoPython": "A = [3, 5, 4]\nA[1] = A[1] * 2\nprint(A)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[3, 10, 4]"
+      },
+      {
+       "id": "B",
+       "texto": "[6, 10, 8]"
+      },
+      {
+       "id": "C",
+       "texto": "[3, 5, 8]"
+      },
+      {
+       "id": "D",
+       "texto": "[3, 5, 4]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Se reemplazan los elementos impares por su factorial. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "3 y 5 son impares y se reemplazan por 3! = 6 y 5! = 120. El 4 es par y no cambia. (En el dibujo de la práctica el 4 también aparece convertido en 24; el enunciado pide solo los impares.)",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 4: reemplazar los impares por su factorial (3 5 4)",
+      "codigo": "U4-P05-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (reemplazo condicional)",
+      "3.2 Funciones"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": true,
+     "codigoPython": "def fact(n):\n    r = 1\n    for i in range(2, n + 1):\n        r = r * i\n    return r\n\nA = [3, 5, 4]\nfor i in range(len(A)):\n    if A[i] % 2 == 1:\n        A[i] = fact(A[i])\nprint(A)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[6, 120, 4]"
+      },
+      {
+       "id": "B",
+       "texto": "[6, 120, 24]"
+      },
+      {
+       "id": "C",
+       "texto": "[3, 5, 24]"
+      },
+      {
+       "id": "D",
+       "texto": "[6, 25, 4]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Atención: asignar un vector a otra variable no lo copia. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "b = a hace que b y a sean el MISMO vector, así que cambiar b[0] cambia también a. En cambio a.copy() crea un vector nuevo e independiente: c[1] = 77 no afecta a a.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicios 4 y 6: modificar un vector sin perder el original",
+      "codigo": "U4-P05-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (copia y referencia)"
+     ],
+     "preguntaExamen": 5,
+     "esExamenIntermedio": false,
+     "codigoPython": "a = [1, 2, 3]\nb = a\nb[0] = 99\nc = a.copy()\nc[1] = 77\nprint(a, c)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[99, 2, 3] [99, 77, 3]"
+      },
+      {
+       "id": "B",
+       "texto": "[1, 2, 3] [99, 77, 3]"
+      },
+      {
+       "id": "C",
+       "texto": "[99, 2, 3] [1, 77, 3]"
+      },
+      {
+       "id": "D",
+       "texto": "[1, 2, 3] [1, 77, 3]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "La función cuenta los dígitos de un número. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "En cada vuelta se quita un dígito con // 10 y se cuenta: 432 → 43 → 4 → 0, son 3 vueltas.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 5: cantidad de dígitos de cada elemento",
+      "codigo": "U4-P06-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (elementos numéricos)",
+      "3.2 Función cant_digitos"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "def cant_digitos(n):\n    c = 0\n    while n > 0:\n        c = c + 1\n        n = n // 10\n    return c\n\nprint(cant_digitos(432))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "3"
+      },
+      {
+       "id": "B",
+       "texto": "432"
+      },
+      {
+       "id": "C",
+       "texto": "9"
+      },
+      {
+       "id": "D",
+       "texto": "2"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Se arma un vector con la cantidad de dígitos de cada elemento. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "R empieza vacío y con append se le agrega la cantidad de dígitos de cada elemento: 12 → 2, 432 → 3, 23 → 2 y 12563 → 5. Es el resultado de la práctica (2, 3, 2, 5).",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 5: mostrar la cantidad de dígitos de cada elemento (2, 3, 2, 5)",
+      "codigo": "U4-P06-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (recorrido y nuevo vector)",
+      "3.2 Funciones"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": true,
+     "codigoPython": "def cant_digitos(n):\n    c = 0\n    while n > 0:\n        c = c + 1\n        n = n // 10\n    return c\n\nA = [12, 432, 23, 12563]\nR = []\nfor x in A:\n    R.append(cant_digitos(x))\nprint(R)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[2, 3, 2, 5]"
+      },
+      {
+       "id": "B",
+       "texto": "[12, 432, 23, 12563]"
+      },
+      {
+       "id": "C",
+       "texto": "[4]"
+      },
+      {
+       "id": "D",
+       "texto": "[1, 3, 2, 5]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "La práctica exige elementos mayores o iguales a 10 y esta es la razón. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Con n = 0 el while no entra y la función devuelve 0, aunque el 0 tiene un dígito. Por eso conviene validar los datos que se aceptan (en la práctica, números ≥ 10).",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 5: elementos mayores o iguales a 10",
+      "codigo": "U4-P06-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (casos especiales)",
+      "3.2 Funciones con ciclos",
+      "2.4 while"
+     ],
+     "preguntaExamen": 6,
+     "esExamenIntermedio": false,
+     "codigoPython": "def cant_digitos(n):\n    c = 0\n    while n > 0:\n        c = c + 1\n        n = n // 10\n    return c\n\nprint(cant_digitos(0), cant_digitos(10))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "0 2"
+      },
+      {
+       "id": "B",
+       "texto": "1 2"
+      },
+      {
+       "id": "C",
+       "texto": "0 1"
+      },
+      {
+       "id": "D",
+       "texto": "1 1"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Para eliminar un valor de un vector se puede usar remove. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "remove(6) quita el 6 y los elementos de la derecha se corren una posición a la izquierda. Es el ejemplo de la práctica.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 6: eliminar un elemento x de un vector (x = 6)",
+      "codigo": "U4-P07-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (eliminar elementos)"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "codigoPython": "V = [5, 2, 6, 1, 2]\nV.remove(6)\nprint(V)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[5, 2, 1, 2]"
+      },
+      {
+       "id": "B",
+       "texto": "[5, 2, 6, 1]"
+      },
+      {
+       "id": "C",
+       "texto": "[2, 6, 1, 2]"
+      },
+      {
+       "id": "D",
+       "texto": "[5, 2, 6, 1, 2]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Se eliminan todas las apariciones de x construyendo un vector nuevo. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "Solo se copian al vector nuevo los elementos distintos de x. Construir un vector nuevo es más seguro que borrar dentro del mismo ciclo.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 6: eliminar un elemento x de un vector",
+      "codigo": "U4-P07-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (eliminar todas las apariciones)",
+      "2.4 for",
+      "2.3 Condicional"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": true,
+     "codigoPython": "V = [5, 2, 6, 1, 2]\nx = 2\nnuevo = []\nfor e in V:\n    if e != x:\n        nuevo.append(e)\nprint(nuevo)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[5, 6, 1]"
+      },
+      {
+       "id": "B",
+       "texto": "[5, 6, 1, 2]"
+      },
+      {
+       "id": "C",
+       "texto": "[2, 2]"
+      },
+      {
+       "id": "D",
+       "texto": "[5, 2, 6, 1, 2]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Cuidado: este programa borra elementos del mismo vector que recorre. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Al borrar un elemento, los siguientes se corren una posición y el ciclo se salta uno. Además remove quita siempre la PRIMERA aparición. Resultado: queda un 2 sin borrar y el vector es [3, 2], no [3]. La forma segura es crear un vector nuevo con los elementos que se quedan.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 6: eliminar elementos de un vector",
+      "codigo": "U4-P07-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (eliminar mientras se recorre)",
+      "2.4 Recorrido de vectores"
+     ],
+     "preguntaExamen": 7,
+     "esExamenIntermedio": false,
+     "codigoPython": "v = [2, 2, 3, 2]\nfor x in v:\n    if x == 2:\n        v.remove(x)\nprint(v)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[3, 2]"
+      },
+      {
+       "id": "B",
+       "texto": "[3]"
+      },
+      {
+       "id": "C",
+       "texto": "[2, 2, 3]"
+      },
+      {
+       "id": "D",
+       "texto": "[]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un elemento es \"punto silla\" si es mayor que el anterior y menor que el siguiente. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "Python permite encadenar comparaciones: 1 < 6 y 6 < 8 son ciertas, así que el resultado es True. El elemento V[1] = 6 cumple la condición.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 11: puntos silla V(i-1) < V(i) < V(i+1)",
+      "codigo": "U4-P08-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (comparar vecinos)",
+      "2.3 Operadores relacionales"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "codigoPython": "V = [1, 6, 8, 6]\nprint(V[0] < V[1] < V[2])",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "True"
+      },
+      {
+       "id": "B",
+       "texto": "False"
+      },
+      {
+       "id": "C",
+       "texto": "1"
+      },
+      {
+       "id": "D",
+       "texto": "Da error"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Se recorren solo las posiciones que tienen vecino a ambos lados. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "Cumplen 1 < 6 < 8 (posición 1), 3 < 5 < 6 (posición 7) y 5 < 6 < 7 (posición 8). El ciclo va de 1 a len(V) - 2 para no salirse del vector.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 11: determinar los puntos silla de un vector",
+      "codigo": "U4-P08-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (puntos silla)",
+      "2.4 for con límites"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": true,
+     "codigoPython": "V = [1, 6, 8, 6, 1, 4, 3, 5, 6, 7]\nfor i in range(1, len(V) - 1):\n    if V[i - 1] < V[i] < V[i + 1]:\n        print(V[i])",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "6\n5\n6"
+      },
+      {
+       "id": "B",
+       "texto": "6\n3\n5"
+      },
+      {
+       "id": "C",
+       "texto": "8\n4"
+      },
+      {
+       "id": "D",
+       "texto": "6\n8\n5"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Con elementos repetidos, la desigualdad estricta importa. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Solo el 3 tiene un vecino menor (2) y otro mayor (4). Los 2 y los 4 repetidos no cumplen, porque 2 < 2 y 4 < 4 son falsos.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 11: puntos silla (V(i-1) < V(i) < V(i+1))",
+      "codigo": "U4-P08-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (puntos silla)",
+      "2.3 Desigualdad estricta",
+      "2.4 Listas de resultados"
+     ],
+     "preguntaExamen": 8,
+     "esExamenIntermedio": false,
+     "codigoPython": "V = [1, 2, 2, 3, 4, 4, 5]\nsillas = []\nfor i in range(1, len(V) - 1):\n    if V[i - 1] < V[i] < V[i + 1]:\n        sillas.append(V[i])\nprint(sillas)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[3]"
+      },
+      {
+       "id": "B",
+       "texto": "[2, 3, 4]"
+      },
+      {
+       "id": "C",
+       "texto": "[2, 3]"
+      },
+      {
+       "id": "D",
+       "texto": "[]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Se generan los N primeros números impares con N = 5. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "La fórmula 2·i + 1 da 1, 3, 5, 7, 9 para i = 0, 1, 2, 3, 4. Es el ejemplo de la práctica (N = 5).",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 12: vector con los primeros N números impares",
+      "codigo": "U4-P09-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (generar un vector)",
+      "2.4 for"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "codigoPython": "N = 5\nV = []\nfor i in range(N):\n    V.append(2 * i + 1)\nprint(V)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[1, 3, 5, 7, 9]"
+      },
+      {
+       "id": "B",
+       "texto": "[2, 4, 6, 8, 10]"
+      },
+      {
+       "id": "C",
+       "texto": "[1, 3, 5, 7, 9, 11]"
+      },
+      {
+       "id": "D",
+       "texto": "[0, 1, 3, 5, 7]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Cada elemento es la suma de los dos anteriores. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "El vector empieza con 0 y 1 y se le agregan términos hasta tener 8 elementos. Al usar el propio vector, cada término se calcula a partir de los dos anteriores.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 13: serie de Fibonacci con un vector",
+      "codigo": "U4-P09-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (generar la serie de Fibonacci)",
+      "2.5 Series"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": true,
+     "codigoPython": "fib = [0, 1]\nfor i in range(2, 8):\n    fib.append(fib[i - 1] + fib[i - 2])\nprint(fib)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[0, 1, 1, 2, 3, 5, 8, 13]"
+      },
+      {
+       "id": "B",
+       "texto": "[0, 1, 2, 3, 4, 5, 6, 7]"
+      },
+      {
+       "id": "C",
+       "texto": "[1, 1, 2, 3, 5, 8, 13, 21]"
+      },
+      {
+       "id": "D",
+       "texto": "[0, 1, 1, 2, 3, 5, 8]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Se genera el vector 1, 22, 333, … (el número k se repite k veces). ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "Para cada k el ciclo interno repite k veces la operación n * 10 + k: con k = 3 se arma 3, 33 y 333. El resultado se agrega al vector.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 16: vector 1, 22, 333, 4444, 55555",
+      "codigo": "U4-P09-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (generar un vector)",
+      "2.4 for anidados",
+      "2.5 Series"
+     ],
+     "preguntaExamen": 9,
+     "esExamenIntermedio": false,
+     "codigoPython": "V = []\nfor k in range(1, 5):\n    n = 0\n    for _ in range(k):\n        n = n * 10 + k\n    V.append(n)\nprint(V)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[1, 22, 333, 4444]"
+      },
+      {
+       "id": "B",
+       "texto": "[1, 2, 3, 4]"
+      },
+      {
+       "id": "C",
+       "texto": "[1, 22, 333]"
+      },
+      {
+       "id": "D",
+       "texto": "[11, 222, 3333, 44444]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "basico",
+     "b": -1.0,
+     "enunciado": "Un vector se puede pasar a una función como parámetro. ¿Qué imprime?",
+     "xp": 10,
+     "explicacion": "La función recibe el vector, lo recorre con un acumulador y retorna 2 + 3 + 4 = 9.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicios 13 a 15: leer y procesar vectores usando funciones",
+      "codigo": "U4-P10-B"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (vectores como parámetro)",
+      "3.2 Funciones"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "codigoPython": "def suma(v):\n    total = 0\n    for x in v:\n        total = total + x\n    return total\n\nprint(suma([2, 3, 4]))",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "9"
+      },
+      {
+       "id": "B",
+       "texto": "3"
+      },
+      {
+       "id": "C",
+       "texto": "24"
+      },
+      {
+       "id": "D",
+       "texto": "Da error"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "intermedio",
+     "b": 0.0,
+     "enunciado": "Se arma C intercalando A y B, y al final se copian los restantes del vector más largo. ¿Qué imprime?",
+     "xp": 15,
+     "explicacion": "En las 3 primeras vueltas se alterna un elemento de A y uno de B (1, 2, 3, 4, 5, 6). Como B sobra con 8 y 10, el segundo ciclo los copia al final.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 14: vector C con elementos intercalados de A y B",
+      "codigo": "U4-P10-I"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (intercalar dos vectores)",
+      "2.4 Recorrido",
+      "3.2 Funciones"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": true,
+     "codigoPython": "A = [1, 3, 5]\nB = [2, 4, 6, 8, 10]\nC = []\nn = min(len(A), len(B))\nfor i in range(n):\n    C.append(A[i])\n    C.append(B[i])\nfor i in range(n, len(B)):\n    C.append(B[i])\nprint(C)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[1, 2, 3, 4, 5, 6, 8, 10]"
+      },
+      {
+       "id": "B",
+       "texto": "[1, 3, 5, 2, 4, 6, 8, 10]"
+      },
+      {
+       "id": "C",
+       "texto": "[1, 2, 3, 4, 5, 6]"
+      },
+      {
+       "id": "D",
+       "texto": "[2, 1, 4, 3, 6, 5, 8, 10]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    },
+    {
+     "categoria": "Estructura de Datos",
+     "tipo": "predecir_salida",
+     "nivel": "avanzado",
+     "b": 1.0,
+     "enunciado": "Un número capicúa se lee igual al derecho y al revés. La función es_capicua se usa para formar un vector solo con los capicúas. ¿Qué imprime?",
+     "xp": 20,
+     "explicacion": "La función invierte el número y compara con el original: 121, 4554 y 77 son iguales al revés. 123 (321) y 90 (9) no.",
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 15: vector con los números capicúa",
+      "codigo": "U4-P10-A"
+     },
+     "temasCombinados": [
+      "4.1 Arreglos unidimensionales / vectores (filtrar con una condición)",
+      "3.2 Función es_capicua",
+      "2.5 Dígitos de un número"
+     ],
+     "preguntaExamen": 10,
+     "esExamenIntermedio": false,
+     "codigoPython": "def es_capicua(n):\n    inv = 0\n    t = n\n    while t > 0:\n        inv = inv * 10 + t % 10\n        t = t // 10\n    return inv == n\n\nV = [121, 123, 4554, 90, 77]\nR = []\nfor x in V:\n    if es_capicua(x):\n        R.append(x)\nprint(R)",
+     "opciones": [
+      {
+       "id": "A",
+       "texto": "[121, 4554, 77]"
+      },
+      {
+       "id": "B",
+       "texto": "[121, 123, 4554, 90, 77]"
+      },
+      {
+       "id": "C",
+       "texto": "[121, 4554]"
+      },
+      {
+       "id": "D",
+       "texto": "[]"
+      }
+     ],
+     "respuestaCorrecta": "A"
+    }
+   ],
+   "retos": [
+    {
+     "codigo": "RP2-VEC01",
+     "titulo": "Práctica 2 · Vectores 1: Suma de los datos de un vector",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Pedir el tamaño de un vector y llenarlo por teclado y mostrar la suma de sus datos.\nEntrada: 2 3 4 5 10 15. Salida: La suma de los elementos es: 39.",
+     "ejemploEntrada": "6\n2\n3\n4\n5\n10\n15\n",
+     "ejemploSalida": "Tamaño del vector: 6\nv[0] = 2\nv[1] = 3\nv[2] = 4\nv[3] = 5\nv[4] = 10\nv[5] = 15\nLa suma de los elementos es: 39",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica (39)",
+       "stdin": "6\n2\n3\n4\n5\n10\n15\n",
+       "salida": "Tamaño del vector: 6\nv[0] = 2\nv[1] = 3\nv[2] = 4\nv[3] = 5\nv[4] = 10\nv[5] = 15\nLa suma de los elementos es: 39"
+      },
+      {
+       "label": "Tres unos",
+       "stdin": "3\n1\n1\n1\n",
+       "salida": "Tamaño del vector: 3\nv[0] = 1\nv[1] = 1\nv[2] = 1\nLa suma de los elementos es: 3"
+      },
+      {
+       "label": "Un solo elemento",
+       "stdin": "1\n8\n",
+       "salida": "Tamaño del vector: 1\nv[0] = 8\nLa suma de los elementos es: 8"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Tamaño del vector: \"))\nv = []\nfor i in range(n):\n    v.append(int(input(f\"v[{i}] = \")))\ntotal = 0\nfor x in v:\n    total = total + x\nprint(\"La suma de los elementos es:\", total)",
+     "criteriosEvaluacion": [
+      "Pide el tamaño y llena el vector por teclado.",
+      "Usa un acumulador inicializado en 0.",
+      "Reproduce el ejemplo: 2 3 4 5 10 15 → 39."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 1",
+      "codigo": "RP2-VEC01"
+     }
+    },
+    {
+     "codigo": "RP2-VEC02",
+     "titulo": "Práctica 2 · Vectores 2: Número menor y su posición",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Pedir un número entero positivo que sea el tamaño de un vector, llenarlo por teclado y mostrar el número menor y su posición.\nEntrada: 15 10 2 7 8 9. Salida: El elemento menor es: 2 y la posición es: 3.",
+     "ejemploEntrada": "6\n15\n10\n2\n7\n8\n9\n",
+     "ejemploSalida": "Tamaño del vector: 6\nv[1] = 15\nv[2] = 10\nv[3] = 2\nv[4] = 7\nv[5] = 8\nv[6] = 9\nEl elemento menor es: 2 y la posición es: 3",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "6\n15\n10\n2\n7\n8\n9\n",
+       "salida": "Tamaño del vector: 6\nv[1] = 15\nv[2] = 10\nv[3] = 2\nv[4] = 7\nv[5] = 8\nv[6] = 9\nEl elemento menor es: 2 y la posición es: 3"
+      },
+      {
+       "label": "Menor repetido (primera posición)",
+       "stdin": "4\n4\n2\n7\n2\n",
+       "salida": "Tamaño del vector: 4\nv[1] = 4\nv[2] = 2\nv[3] = 7\nv[4] = 2\nEl elemento menor es: 2 y la posición es: 2"
+      },
+      {
+       "label": "Un solo elemento",
+       "stdin": "1\n9\n",
+       "salida": "Tamaño del vector: 1\nv[1] = 9\nEl elemento menor es: 9 y la posición es: 1"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Tamaño del vector: \"))\nv = []\nfor i in range(n):\n    v.append(int(input(f\"v[{i + 1}] = \")))\nmenor = v[0]\npos = 0\nfor i in range(len(v)):\n    if v[i] < menor:\n        menor = v[i]\n        pos = i\nprint(\"El elemento menor es:\", menor, \"y la posición es:\", pos + 1)",
+     "criteriosEvaluacion": [
+      "Parte suponiendo que el primero es el menor.",
+      "Guarda la posición y la muestra contando desde 1.",
+      "Reproduce el ejemplo: el menor es 2 en la posición 3."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 2",
+      "codigo": "RP2-VEC02"
+     }
+    },
+    {
+     "codigo": "RP2-VEC03",
+     "titulo": "Práctica 2 · Vectores 3: Mostrar los números iguales a Y",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Llenar un vector X con N elementos enteros positivos y mostrar los números iguales a Y.\nSi N = 6; Y = 13. Entrada X[i]: 6 13 0 10 13 9. Salida: se debe mostrar 13, 13.",
+     "ejemploEntrada": "6\n6\n13\n0\n10\n13\n9\n13\n",
+     "ejemploSalida": "N: 6\nX[0] = 6\nX[1] = 13\nX[2] = 0\nX[3] = 10\nX[4] = 13\nX[5] = 9\nY: 13\nSe debe mostrar 13, 13",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "6\n6\n13\n0\n10\n13\n9\n13\n",
+       "salida": "N: 6\nX[0] = 6\nX[1] = 13\nX[2] = 0\nX[3] = 10\nX[4] = 13\nX[5] = 9\nY: 13\nSe debe mostrar 13, 13"
+      },
+      {
+       "label": "Ningún elemento igual a Y",
+       "stdin": "4\n1\n2\n3\n4\n7\n",
+       "salida": "N: 4\nX[0] = 1\nX[1] = 2\nX[2] = 3\nX[3] = 4\nY: 7\nNo hay elementos iguales a 7"
+      },
+      {
+       "label": "Todos iguales",
+       "stdin": "3\n5\n5\n5\n5\n",
+       "salida": "N: 3\nX[0] = 5\nX[1] = 5\nX[2] = 5\nY: 5\nSe debe mostrar 5, 5, 5"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nx = []\nfor i in range(n):\n    x.append(int(input(f\"X[{i}] = \")))\ny = int(input(\"Y: \"))\niguales = []\nfor e in x:\n    if e == y:\n        iguales.append(str(e))\nif iguales:\n    print(\"Se debe mostrar\", \", \".join(iguales))\nelse:\n    print(\"No hay elementos iguales a\", y)",
+     "criteriosEvaluacion": [
+      "Llena el vector X y luego lee Y.",
+      "Recorre el vector y muestra solo los iguales a Y.",
+      "Maneja el caso en que no hay ninguno."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 3",
+      "codigo": "RP2-VEC03"
+     }
+    },
+    {
+     "codigo": "RP2-VEC04",
+     "titulo": "Práctica 2 · Vectores 4: Reemplazar los impares por su factorial",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Leer un vector con n elementos positivos, reemplaza los elementos impares del vector por su factorial.\nEjemplo: A = 3 5 4 → A = 6 120 24.\nObservación para el docente: el enunciado pide reemplazar solo los impares, pero el ejemplo dibujado también convierte el 4 en 24 (4!). La solución sigue el enunciado (el 4 queda igual). Confirmar cuál criterio se usará.",
+     "ejemploEntrada": "3\n3\n5\n4\n",
+     "ejemploSalida": "n: 3\nA[0] = 3\nA[1] = 5\nA[2] = 4\nA = [6, 120, 4]",
+     "pruebas": [
+      {
+       "label": "Datos del ejemplo de la práctica",
+       "stdin": "3\n3\n5\n4\n",
+       "salida": "n: 3\nA[0] = 3\nA[1] = 5\nA[2] = 4\nA = [6, 120, 4]"
+      },
+      {
+       "label": "Impares y un par",
+       "stdin": "4\n1\n2\n3\n7\n",
+       "salida": "n: 4\nA[0] = 1\nA[1] = 2\nA[2] = 3\nA[3] = 7\nA = [1, 2, 6, 5040]"
+      },
+      {
+       "label": "Solo pares (no cambia nada)",
+       "stdin": "2\n2\n4\n",
+       "salida": "n: 2\nA[0] = 2\nA[1] = 4\nA = [2, 4]"
+      }
+     ],
+     "solucionReferencia": "def factorial(n):\n    res = 1\n    for i in range(2, n + 1):\n        res = res * i\n    return res\n\nn = int(input(\"n: \"))\nA = []\nfor i in range(n):\n    A.append(int(input(f\"A[{i}] = \")))\nfor i in range(len(A)):\n    if A[i] % 2 == 1:\n        A[i] = factorial(A[i])\nprint(\"A =\", A)",
+     "criteriosEvaluacion": [
+      "Reemplaza solo los elementos impares.",
+      "Usa la función factorial.",
+      "Modifica el mismo vector (no crea uno nuevo)."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 4",
+      "codigo": "RP2-VEC04"
+     }
+    },
+    {
+     "codigo": "RP2-VEC05",
+     "titulo": "Práctica 2 · Vectores 5: Cantidad de dígitos de cada elemento",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Llenar un vector con elementos que sean mayores o iguales a 10, mostrar la cantidad de dígitos de cada elemento.\nA = 12, 432, 23, 12563 → mostrar: 2, 3, 2, 5.",
+     "ejemploEntrada": "4\n12\n432\n23\n12563\n",
+     "ejemploSalida": "Tamaño del vector: 4\nA[0] (≥ 10): 12\nA[1] (≥ 10): 432\nA[2] (≥ 10): 23\nA[3] (≥ 10): 12563\nmostrar: 2, 3, 2, 5",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "4\n12\n432\n23\n12563\n",
+       "salida": "Tamaño del vector: 4\nA[0] (≥ 10): 12\nA[1] (≥ 10): 432\nA[2] (≥ 10): 23\nA[3] (≥ 10): 12563\nmostrar: 2, 3, 2, 5"
+      },
+      {
+       "label": "Rechaza valores menores a 10",
+       "stdin": "3\n5\n100\n7\n1000\n9\n20\n",
+       "salida": "Tamaño del vector: 3\nA[0] (≥ 10): 5\nError: el elemento debe ser mayor o igual a 10\nA[0] (≥ 10): 100\nA[1] (≥ 10): 7\nError: el elemento debe ser mayor o igual a 10\nA[1] (≥ 10): 1000\nA[2] (≥ 10): 9\nError: el elemento debe ser mayor o igual a 10\nA[2] (≥ 10): 20\nmostrar: 3, 4, 2"
+      },
+      {
+       "label": "Un solo elemento",
+       "stdin": "1\n99\n",
+       "salida": "Tamaño del vector: 1\nA[0] (≥ 10): 99\nmostrar: 2"
+      }
+     ],
+     "solucionReferencia": "def cantidad_digitos(n):\n    c = 0\n    while n > 0:\n        c = c + 1\n        n = n // 10\n    return c\n\nn = int(input(\"Tamaño del vector: \"))\nA = []\nwhile len(A) < n:\n    x = int(input(f\"A[{len(A)}] (≥ 10): \"))\n    if x >= 10:\n        A.append(x)\n    else:\n        print(\"Error: el elemento debe ser mayor o igual a 10\")\nprint(\"mostrar:\", \", \".join(str(cantidad_digitos(x)) for x in A))",
+     "criteriosEvaluacion": [
+      "Solo acepta elementos mayores o iguales a 10.",
+      "Usa una función que cuenta los dígitos de un número.",
+      "Reproduce el ejemplo: 2, 3, 2, 5."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 5",
+      "codigo": "RP2-VEC05"
+     }
+    },
+    {
+     "codigo": "RP2-VEC06",
+     "titulo": "Práctica 2 · Vectores 6: Eliminar un elemento x de un vector",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Dado un vector V eliminar un elemento x.\nPor ejemplo, x = 6, N = 5: V = 5 2 6 1 2 → V = 5 2 1 2.",
+     "ejemploEntrada": "5\n5\n2\n6\n1\n2\n6\n",
+     "ejemploSalida": "Tamaño del vector: 5\nV[0] = 5\nV[1] = 2\nV[2] = 6\nV[3] = 1\nV[4] = 2\nElemento a eliminar: 6\nV = [5, 2, 1, 2]",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "5\n5\n2\n6\n1\n2\n6\n",
+       "salida": "Tamaño del vector: 5\nV[0] = 5\nV[1] = 2\nV[2] = 6\nV[3] = 1\nV[4] = 2\nElemento a eliminar: 6\nV = [5, 2, 1, 2]"
+      },
+      {
+       "label": "Elemento repetido (se eliminan todos)",
+       "stdin": "4\n1\n2\n2\n3\n2\n",
+       "salida": "Tamaño del vector: 4\nV[0] = 1\nV[1] = 2\nV[2] = 2\nV[3] = 3\nElemento a eliminar: 2\nV = [1, 3]"
+      },
+      {
+       "label": "El elemento no está",
+       "stdin": "3\n4\n5\n6\n9\n",
+       "salida": "Tamaño del vector: 3\nV[0] = 4\nV[1] = 5\nV[2] = 6\nElemento a eliminar: 9\nV = [4, 5, 6]"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"Tamaño del vector: \"))\nV = []\nfor i in range(n):\n    V.append(int(input(f\"V[{i}] = \")))\nx = int(input(\"Elemento a eliminar: \"))\nnuevo = []\nfor e in V:\n    if e != x:\n        nuevo.append(e)\nprint(\"V =\", nuevo)",
+     "criteriosEvaluacion": [
+      "Elimina el elemento x del vector.",
+      "Construye un vector nuevo con los elementos que se quedan.",
+      "Reproduce el ejemplo: 5 2 6 1 2, x = 6 → 5 2 1 2."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 6",
+      "codigo": "RP2-VEC06"
+     }
+    },
+    {
+     "codigo": "RP2-VEC11",
+     "titulo": "Práctica 2 · Vectores 11: Puntos silla de un vector",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Dado un vector V de dimensión N, determinar los puntos silla y mostrarlos. Se considera a un elemento V(i) como punto silla si se cumple la condición: V(i − 1) < V(i) < V(i + 1).\nN = 10; V = 1 6 8 6 1 4 3 5 6 7.\nObservación para el docente: con la condición escrita, los puntos silla del ejemplo son las posiciones 1, 7 y 8 (valores 6, 5 y 6). El dibujo de la práctica parece marcar otras posiciones (1, 6 y 7), que no coinciden con la condición. La solución sigue la condición.",
+     "ejemploEntrada": "10\n1\n6\n8\n6\n1\n4\n3\n5\n6\n7\n",
+     "ejemploSalida": "N: 10\nV[0] = 1\nV[1] = 6\nV[2] = 8\nV[3] = 6\nV[4] = 1\nV[5] = 4\nV[6] = 3\nV[7] = 5\nV[8] = 6\nV[9] = 7\nPuntos silla: V[1] = 6, V[7] = 5, V[8] = 6",
+     "pruebas": [
+      {
+       "label": "Vector de la práctica",
+       "stdin": "10\n1\n6\n8\n6\n1\n4\n3\n5\n6\n7\n",
+       "salida": "N: 10\nV[0] = 1\nV[1] = 6\nV[2] = 8\nV[3] = 6\nV[4] = 1\nV[5] = 4\nV[6] = 3\nV[7] = 5\nV[8] = 6\nV[9] = 7\nPuntos silla: V[1] = 6, V[7] = 5, V[8] = 6"
+      },
+      {
+       "label": "Ninguno (vector decreciente)",
+       "stdin": "5\n5\n4\n3\n2\n1\n",
+       "salida": "N: 5\nV[0] = 5\nV[1] = 4\nV[2] = 3\nV[3] = 2\nV[4] = 1\nNo hay puntos silla"
+      },
+      {
+       "label": "Tres elementos",
+       "stdin": "3\n1\n2\n3\n",
+       "salida": "N: 3\nV[0] = 1\nV[1] = 2\nV[2] = 3\nPuntos silla: V[1] = 2"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nV = []\nfor i in range(n):\n    V.append(int(input(f\"V[{i}] = \")))\nsillas = []\nfor i in range(1, n - 1):\n    if V[i - 1] < V[i] < V[i + 1]:\n        sillas.append(f\"V[{i}] = {V[i]}\")\nif sillas:\n    print(\"Puntos silla:\", \", \".join(sillas))\nelse:\n    print(\"No hay puntos silla\")",
+     "criteriosEvaluacion": [
+      "Recorre solo las posiciones con vecino a ambos lados (1 a N − 2).",
+      "Aplica V(i − 1) < V(i) < V(i + 1).",
+      "Maneja el caso sin puntos silla."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 11",
+      "codigo": "RP2-VEC11"
+     }
+    },
+    {
+     "codigo": "RP2-VEC12",
+     "titulo": "Práctica 2 · Vectores 12: Vector con los primeros N números impares",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "intermedio",
+     "enunciado": "Generar un vector con N elementos de tipo entero, donde los elementos sean los primeros números impares.\nEjemplo: N = 5 → 1 3 5 7 9.",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "N: 5\n1 3 5 7 9",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "5\n",
+       "salida": "N: 5\n1 3 5 7 9"
+      },
+      {
+       "label": "Un elemento",
+       "stdin": "1\n",
+       "salida": "N: 1\n1"
+      },
+      {
+       "label": "Ocho elementos",
+       "stdin": "8\n",
+       "salida": "N: 8\n1 3 5 7 9 11 13 15"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nV = []\nfor i in range(n):\n    V.append(2 * i + 1)\nprint(*V)",
+     "criteriosEvaluacion": [
+      "Genera N elementos.",
+      "Usa una fórmula o un contador para obtener los impares.",
+      "Reproduce el ejemplo: N = 5 → 1 3 5 7 9."
+     ],
+     "xp": 25,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 12",
+      "codigo": "RP2-VEC12"
+     }
+    },
+    {
+     "codigo": "RP2-VEC13",
+     "titulo": "Práctica 2 · Vectores 13: Serie de Fibonacci con un vector y funciones",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Generar la serie de Fibonacci usando un vector aplicando funciones.",
+     "ejemploEntrada": "10\n",
+     "ejemploSalida": "Número de términos: 10\n0 1 1 2 3 5 8 13 21 34",
+     "pruebas": [
+      {
+       "label": "Diez términos",
+       "stdin": "10\n",
+       "salida": "Número de términos: 10\n0 1 1 2 3 5 8 13 21 34"
+      },
+      {
+       "label": "Un término",
+       "stdin": "1\n",
+       "salida": "Número de términos: 1\n0"
+      },
+      {
+       "label": "Dos términos",
+       "stdin": "2\n",
+       "salida": "Número de términos: 2\n0 1"
+      }
+     ],
+     "solucionReferencia": "def generar_fibonacci(n):\n    fib = []\n    for i in range(n):\n        if i < 2:\n            fib.append(i)\n        else:\n            fib.append(fib[i - 1] + fib[i - 2])\n    return fib\n\ndef mostrar(v):\n    print(*v)\n\nn = int(input(\"Número de términos: \"))\nmostrar(generar_fibonacci(n))",
+     "criteriosEvaluacion": [
+      "La función genera el vector y lo retorna.",
+      "Cada término se calcula con los dos anteriores del propio vector.",
+      "Una segunda función muestra el vector."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 13",
+      "codigo": "RP2-VEC13"
+     }
+    },
+    {
+     "codigo": "RP2-VEC14",
+     "titulo": "Práctica 2 · Vectores 14: Intercalar dos vectores en un tercero",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Dados 2 vectores A y B de dimensiones n y m, se pide leer los valores en cada vector usando funciones. Luego se pide crear otro vector C de dimensión n + m, que almacene de manera intercalada un valor de A y otro de B. Los elementos restantes del vector con mayor dimensión, copiarlos al final del vector C.",
+     "ejemploEntrada": "3\n1\n3\n5\n5\n2\n4\n6\n8\n10\n",
+     "ejemploSalida": "Tamaño de A: 3\nA[0] = 1\nA[1] = 3\nA[2] = 5\nTamaño de B: 5\nB[0] = 2\nB[1] = 4\nB[2] = 6\nB[3] = 8\nB[4] = 10\nC = [1, 2, 3, 4, 5, 6, 8, 10]",
+     "pruebas": [
+      {
+       "label": "B más largo que A",
+       "stdin": "3\n1\n3\n5\n5\n2\n4\n6\n8\n10\n",
+       "salida": "Tamaño de A: 3\nA[0] = 1\nA[1] = 3\nA[2] = 5\nTamaño de B: 5\nB[0] = 2\nB[1] = 4\nB[2] = 6\nB[3] = 8\nB[4] = 10\nC = [1, 2, 3, 4, 5, 6, 8, 10]"
+      },
+      {
+       "label": "A más largo que B",
+       "stdin": "4\n9\n8\n7\n6\n2\n1\n2\n",
+       "salida": "Tamaño de A: 4\nA[0] = 9\nA[1] = 8\nA[2] = 7\nA[3] = 6\nTamaño de B: 2\nB[0] = 1\nB[1] = 2\nC = [9, 1, 8, 2, 7, 6]"
+      },
+      {
+       "label": "Mismo tamaño",
+       "stdin": "2\n1\n2\n2\n3\n4\n",
+       "salida": "Tamaño de A: 2\nA[0] = 1\nA[1] = 2\nTamaño de B: 2\nB[0] = 3\nB[1] = 4\nC = [1, 3, 2, 4]"
+      }
+     ],
+     "solucionReferencia": "def leer_vector(nombre):\n    n = int(input(f\"Tamaño de {nombre}: \"))\n    v = []\n    for i in range(n):\n        v.append(int(input(f\"{nombre}[{i}] = \")))\n    return v\n\ndef intercalar(a, b):\n    c = []\n    k = min(len(a), len(b))\n    for i in range(k):\n        c.append(a[i])\n        c.append(b[i])\n    mayor = a if len(a) > len(b) else b\n    for i in range(k, len(mayor)):\n        c.append(mayor[i])\n    return c\n\nA = leer_vector(\"A\")\nB = leer_vector(\"B\")\nprint(\"C =\", intercalar(A, B))",
+     "criteriosEvaluacion": [
+      "Lee A y B con una función.",
+      "Intercala un valor de A y uno de B.",
+      "Copia al final los elementos restantes del vector más largo."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 14",
+      "codigo": "RP2-VEC14"
+     }
+    },
+    {
+     "codigo": "RP2-VEC15",
+     "titulo": "Práctica 2 · Vectores 15: Vector con los números capicúa",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Leer un vector de n elementos con cantidad de dígitos >= 2 y formar otro vector con los números capicúa.",
+     "ejemploEntrada": "5\n121\n123\n4554\n90\n77\n",
+     "ejemploSalida": "Tamaño del vector: 5\nV[0] (2 o más dígitos): 121\nV[1] (2 o más dígitos): 123\nV[2] (2 o más dígitos): 4554\nV[3] (2 o más dígitos): 90\nV[4] (2 o más dígitos): 77\nCapicúas: [121, 4554, 77]",
+     "pruebas": [
+      {
+       "label": "Mezcla",
+       "stdin": "5\n121\n123\n4554\n90\n77\n",
+       "salida": "Tamaño del vector: 5\nV[0] (2 o más dígitos): 121\nV[1] (2 o más dígitos): 123\nV[2] (2 o más dígitos): 4554\nV[3] (2 o más dígitos): 90\nV[4] (2 o más dígitos): 77\nCapicúas: [121, 4554, 77]"
+      },
+      {
+       "label": "Ningún capicúa",
+       "stdin": "3\n12\n34\n56\n",
+       "salida": "Tamaño del vector: 3\nV[0] (2 o más dígitos): 12\nV[1] (2 o más dígitos): 34\nV[2] (2 o más dígitos): 56\nCapicúas: []"
+      },
+      {
+       "label": "Rechaza un dato de 1 dígito",
+       "stdin": "2\n5\n11\n22\n",
+       "salida": "Tamaño del vector: 2\nV[0] (2 o más dígitos): 5\nError: el número debe tener al menos 2 dígitos\nV[0] (2 o más dígitos): 11\nV[1] (2 o más dígitos): 22\nCapicúas: [11, 22]"
+      }
+     ],
+     "solucionReferencia": "def es_capicua(n):\n    inv = 0\n    t = n\n    while t > 0:\n        inv = inv * 10 + t % 10\n        t = t // 10\n    return inv == n\n\nn = int(input(\"Tamaño del vector: \"))\nV = []\nwhile len(V) < n:\n    x = int(input(f\"V[{len(V)}] (2 o más dígitos): \"))\n    if x >= 10:\n        V.append(x)\n    else:\n        print(\"Error: el número debe tener al menos 2 dígitos\")\ncapicuas = []\nfor x in V:\n    if es_capicua(x):\n        capicuas.append(x)\nprint(\"Capicúas:\", capicuas)",
+     "criteriosEvaluacion": [
+      "Solo acepta números de 2 o más dígitos.",
+      "Usa una función es_capicua que retorna True o False.",
+      "Forma un segundo vector con los capicúa."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 15",
+      "codigo": "RP2-VEC15"
+     }
+    },
+    {
+     "codigo": "RP2-VEC16",
+     "titulo": "Práctica 2 · Vectores 16: Vector 1, 22, 333, 4444, 55555",
+     "categoria": "Vectores",
+     "tema": "4.1",
+     "nivelSugerido": "avanzado",
+     "enunciado": "Generar el vector V de tamaño N.\nEj. N = 5 → V = (1, 22, 333, 4444, 55555).",
+     "ejemploEntrada": "5\n",
+     "ejemploSalida": "N: 5\nV = (1, 22, 333, 4444, 55555)",
+     "pruebas": [
+      {
+       "label": "Ejemplo de la práctica",
+       "stdin": "5\n",
+       "salida": "N: 5\nV = (1, 22, 333, 4444, 55555)"
+      },
+      {
+       "label": "N = 3",
+       "stdin": "3\n",
+       "salida": "N: 3\nV = (1, 22, 333)"
+      },
+      {
+       "label": "N = 1",
+       "stdin": "1\n",
+       "salida": "N: 1\nV = (1,)"
+      }
+     ],
+     "solucionReferencia": "n = int(input(\"N: \"))\nV = []\nfor k in range(1, n + 1):\n    numero = 0\n    for _ in range(k):\n        numero = numero * 10 + k\n    V.append(numero)\nprint(\"V =\", tuple(V))",
+     "criteriosEvaluacion": [
+      "Genera N elementos.",
+      "El elemento k repite el dígito k, k veces.",
+      "Reproduce el ejemplo: N = 5 → (1, 22, 333, 4444, 55555)."
+     ],
+     "xp": 35,
+     "esBugHunt": false,
+     "fuenteDoc": {
+      "unidad": "4",
+      "tema": "4.1",
+      "citaBreve": "Práctica Nro. 2 PRG-111 (II/2026), Vectores, ejercicio 16",
+      "codigo": "RP2-VEC16"
+     }
+    }
+   ]
+  }
+ }
+}
