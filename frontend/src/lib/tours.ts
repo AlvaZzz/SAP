@@ -129,7 +129,7 @@ export const TOURS: Tour[] = [
     ruta: en('/docente/retos'),
     pasos: [
       { titulo: 'Dos tipos de reto', texto: '«Encuentra el bug»: das un código con un error y el sistema califica solo. «Escribe tu código»: planteas un problema y tú revisas la entrega.' },
-      { titulo: 'Ordenados por tema', texto: 'Dentro de cada tipo, los retos aparecen por unidad y tema, igual que los encuentra el estudiante.' },
+      { titulo: 'Elige unidad y tema', texto: 'Arriba eliges la unidad y a la izquierda el tema: cada uno muestra cuántos retos tiene. A la derecha ves solo los retos de ese tema.' },
       { titulo: 'Tres pasos para crear uno', texto: '«Nuevo reto» te pregunta el tipo, el tema y el nivel; luego el contenido; y al final los puntos y si lo publicas.' },
     ],
   },
