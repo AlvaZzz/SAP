@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from './icons';
+import Link from 'next/link';
+import { ArrowRight, X } from './icons';
 
 /**
  * Sistema de diseño compartido de PREXI.
@@ -44,24 +45,42 @@ const ACCENTS: Record<string, string> = {
   navy: 'bg-prexi-navy/10 text-prexi-navy dark:text-blue-300',
 };
 
-export function StatCard({ icon, label, value, accent = 'blue' }: {
+export function StatCard({ icon, label, value, accent = 'blue', href, accion }: {
   icon: ReactNode; label: string; value: ReactNode; accent?: keyof typeof ACCENTS;
+  /** Si se da, la tarjeta entera es un enlace: lleva a donde se ve el detalle de esa cifra. */
+  href?: string;
+  /** Qué pasa al tocarla, en pocas palabras («Ver la lista»). Solo con `href`. */
+  accion?: string;
 }) {
-  return (
-    // Padding horizontal e ícono algo más compactos que una Card normal: así el
-    // texto (ícono + etiqueta + número) cabe completo desde ~215px de ancho, que
-    // es el mínimo que usa StatGrid para decidir cuántas columnas caben.
-    <Card hover className="flex items-center gap-3 !px-4">
+  const contenido = (
+    <>
       <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${ACCENTS[accent]}`}>{icon}</div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         {/* break-words: red de seguridad. Si la tarjeta quedara más angosta que
             la palabra más larga, la etiqueta se parte en dos líneas en vez de
             desbordar/cortarse (p. ej. "COMPLETADOS HOY"). */}
         <p className="stat-label break-words">{label}</p>
         <p className="font-display text-2xl font-extrabold leading-tight text-fg sm:text-3xl">{value}</p>
+        {href && accion && (
+          <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-prexi-blue-deep group-hover:underline">
+            {accion} <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+          </p>
+        )}
       </div>
-    </Card>
+    </>
   );
+  // Padding horizontal e ícono algo más compactos que una Card normal: así el
+  // texto (ícono + etiqueta + número) cabe completo desde ~215px de ancho, que
+  // es el mínimo que usa StatGrid para decidir cuántas columnas caben.
+  if (href) {
+    return (
+      <Card hover as={Link} href={href} aria-label={`${label}: ${value}. ${accion ?? 'Ver detalle'}`}
+        className="group flex items-center gap-3 !px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-prexi-blue">
+        {contenido}
+      </Card>
+    );
+  }
+  return <Card hover className="flex items-center gap-3 !px-4">{contenido}</Card>;
 }
 
 /**

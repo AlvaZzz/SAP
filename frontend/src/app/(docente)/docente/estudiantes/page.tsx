@@ -31,7 +31,18 @@ const GRUPOS = [
   { clave: 'cerca', texto: 'Cerca de aprobar', color: '#3B82F6' },
 ] as const;
 type Clave = typeof GRUPOS[number]['clave'];
-type Filtro = '' | Clave | 'al_dia';
+type Filtro = '' | Clave | 'al_dia' | 'atencion' | 'activos';
+
+/** Filtro inicial según el enlace de origen (las tarjetas del panel del docente). */
+const FILTRO_DE_ENLACE: Record<string, Filtro> = { sin_ingresar: 'nunca_entro', atencion: 'atencion', activos: 'activos' };
+// Mismos criterios que los contadores del panel (docente-dashboard.service): semana desde
+// la medianoche (UTC, como el servidor y como se guarda `ultima_sesion`) de hace 7 días,
+// y quien nunca ingresó se cuenta aparte, no como «atención».
+const activoEstaSemana = (e: FilaCurso) => {
+  const hoy = new Date(); hoy.setUTCHours(0, 0, 0, 0);
+  return !!e.ultima_sesion && new Date(e.ultima_sesion).getTime() >= hoy.getTime() - 7 * 86_400_000;
+};
+const necesitaAtencion = (e: FilaCurso) => e.motivos_riesgo.length > 0 && e.estado !== 'sin_ingresar';
 
 const esDe = (e: FilaCurso, clave: Clave) => (clave === 'cerca' ? e.situacion === 'cerca' : e.motivos_riesgo.some((m) => m.clave === clave));
 
@@ -51,8 +62,8 @@ function Contenido() {
   const [cargando, setCargando] = useState(true);
   const [q, setQ] = useState('');
   const [paralelo, setParalelo] = useState(params.get('paralelo') ?? '');
-  // El panel de paralelos enlaza aquí con `?estado=sin_ingresar`.
-  const [filtro, setFiltro] = useState<Filtro>(params.get('estado') === 'sin_ingresar' ? 'nunca_entro' : '');
+  // El panel del docente enlaza aquí con `?estado=sin_ingresar|atencion|activos`.
+  const [filtro, setFiltro] = useState<Filtro>(FILTRO_DE_ENLACE[params.get('estado') ?? ''] ?? '');
 
   useEffect(() => {
     api.get<Respuesta>('/docente/estudiantes').then(setD).catch(() => undefined).finally(() => setCargando(false));
@@ -64,13 +75,17 @@ function Contenido() {
   );
   const grupos = useMemo(() => GRUPOS.map((g) => ({ ...g, n: activos.filter((e) => esDe(e, g.clave)).length })).filter((g) => g.n > 0), [activos]);
   const alDia = useMemo(() => activos.filter((e) => e.motivos_riesgo.length === 0).length, [activos]);
+  const nAtencion = useMemo(() => activos.filter(necesitaAtencion).length, [activos]);
+  const nSemana = useMemo(() => activos.filter(activoEstaSemana).length, [activos]);
 
   const visibles = useMemo(() => {
     const texto = q.trim().toLowerCase();
     return activos
       .filter((e) => {
         if (filtro === 'al_dia' && e.motivos_riesgo.length > 0) return false;
-        if (filtro && filtro !== 'al_dia' && !esDe(e, filtro)) return false;
+        if (filtro === 'atencion' && !necesitaAtencion(e)) return false;
+        if (filtro === 'activos' && !activoEstaSemana(e)) return false;
+        if (filtro && filtro !== 'al_dia' && filtro !== 'atencion' && filtro !== 'activos' && !esDe(e, filtro)) return false;
         return !texto || `${e.nombre} ${e.ci ?? ''} ${e.ru ?? ''}`.toLowerCase().includes(texto);
       })
       .sort((a, b) => urgencia(a) - urgencia(b) || a.nombre.localeCompare(b.nombre));
@@ -131,6 +146,12 @@ function Contenido() {
       <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filtrar estudiantes">
         <button onClick={() => setFiltro('')} aria-pressed={filtro === ''} {...boton(filtro === '', '#3B82F6')}>
           <b className="text-fg">{activos.length}</b> Todos
+        </button>
+        <button onClick={() => setFiltro(filtro === 'atencion' ? '' : 'atencion')} aria-pressed={filtro === 'atencion'} {...boton(filtro === 'atencion', '#F59E0B')}>
+          <b className="text-prexi-amber">{nAtencion}</b> Necesitan atención
+        </button>
+        <button onClick={() => setFiltro(filtro === 'activos' ? '' : 'activos')} aria-pressed={filtro === 'activos'} {...boton(filtro === 'activos', '#10B981')}>
+          <b className="text-prexi-green">{nSemana}</b> Activos esta semana
         </button>
         {grupos.map((g) => (
           <button key={g.clave} onClick={() => setFiltro(filtro === g.clave ? '' : g.clave)} aria-pressed={filtro === g.clave} {...boton(filtro === g.clave, g.color)}>

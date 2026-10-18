@@ -61,10 +61,15 @@ export default function DocenteDashboardPage() {
       <StatGrid className="mb-6">
         {cargando ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[92px]" />) : (
           <>
-            <StatCard icon={<Users className="h-7 w-7" />} accent="blue" label="Estudiantes" value={d?.stats.estudiantes_total ?? 0} />
-            <StatCard icon={<UserCheck className="h-7 w-7" />} accent="green" label="Activos esta semana" value={d?.stats.estudiantes_activos ?? 0} />
-            <StatCard icon={<CheckCircle className="h-7 w-7" />} accent="navy" label="Resolvieron hoy" value={d?.stats.resolvieron_hoy ?? 0} />
-            <StatCard icon={<AlertTriangle className="h-7 w-7" />} accent="amber" label="Necesitan atención" value={d?.stats.necesitan_atencion ?? 0} />
+            {/* Cada cifra lleva a la lista de quiénes son: es lo primero que el docente quiere saber. */}
+            <StatCard icon={<Users className="h-7 w-7" />} accent="blue" label="Estudiantes" value={d?.stats.estudiantes_total ?? 0}
+              href="/docente/estudiantes" accion="Ver a todos" />
+            <StatCard icon={<UserCheck className="h-7 w-7" />} accent="green" label="Activos esta semana" value={d?.stats.estudiantes_activos ?? 0}
+              href="/docente/estudiantes?estado=activos" accion="Ver quiénes entraron" />
+            <StatCard icon={<CheckCircle className="h-7 w-7" />} accent="navy" label="Resolvieron hoy" value={d?.stats.resolvieron_hoy ?? 0}
+              href="#actividad" accion="Ver qué resolvieron" />
+            <StatCard icon={<AlertTriangle className="h-7 w-7" />} accent="amber" label="Necesitan atención" value={d?.stats.necesitan_atencion ?? 0}
+              href="/docente/estudiantes?estado=atencion" accion="Ver a quién ayudar" />
           </>
         )}
       </StatGrid>
@@ -212,7 +217,7 @@ export default function DocenteDashboardPage() {
             </div>
           </Card>
 
-          <Card>
+          <Card id="actividad" className="scroll-mt-24">
             <SectionTitle className="mb-3">Actividad reciente de tus estudiantes</SectionTitle>
             {cargando ? <Skeleton className="h-32" /> : !d || d.actividad_reciente.length === 0 ? (
               <p className="rounded-xl bg-subtle px-4 py-6 text-center text-sm text-muted">Aún no hay actividad.</p>
