@@ -227,24 +227,29 @@ export class AuthService {
     } catch { /* registro de auditoría no disponible */ }
   }
 
-  async login(dto: LoginDto, contexto: { ip?: string } = {}) {
-    // El identificador puede ser:
-    //  · el USUARIO del estudiante, "PrimerNombre_CI" (Alvaro_12929098): se busca
-    //    por el CI, que es único, y se comprueba que el nombre sea el suyo;
-    //  · el CORREO (docentes, administradores y quien se registró con correo);
-    //  · el RU, para los estudiantes que ya entraban así antes de este cambio.
-    const identificador = dto.email.trim();
+  /**
+   * Busca la cuenta por lo que la persona escribió para entrar:
+   *  · su USUARIO, "PrimerNombre_CI" (Alvaro_12929098), para TODOS los roles: se
+   *    busca por el CI, que es único, y se comprueba que el nombre sea el suyo;
+   *  · el CORREO o el RU, para las cuentas que ya entraban así antes del cambio.
+   * La usan el login y la recuperación de contraseña (misma regla en los dos).
+   */
+  async buscarCuenta(identificadorRaw: string) {
+    const identificador = identificadorRaw.trim();
     const deAcceso = leerUsuarioDeAcceso(identificador);
-    let u;
     if (identificador.includes('@')) {
-      u = await this.prisma.usuario.findUnique({ where: { email: identificador.toLowerCase() } })
+      return await this.prisma.usuario.findUnique({ where: { email: identificador.toLowerCase() } })
         ?? await this.prisma.usuario.findUnique({ where: { email: identificador } });
-    } else if (deAcceso) {
-      const porCi = await this.prisma.usuario.findUnique({ where: { cedula: deAcceso.ci } });
-      u = porCi && nombreCoincide(deAcceso.nombre, porCi) ? porCi : null;
-    } else {
-      u = await this.prisma.usuario.findUnique({ where: { ru: identificador.replace(/[^0-9]/g, '') || identificador } });
     }
+    if (deAcceso) {
+      const porCi = await this.prisma.usuario.findUnique({ where: { cedula: deAcceso.ci } });
+      return porCi && nombreCoincide(deAcceso.nombre, porCi) ? porCi : null;
+    }
+    return this.prisma.usuario.findUnique({ where: { ru: identificador.replace(/[^0-9]/g, '') || identificador } });
+  }
+
+  async login(dto: LoginDto, contexto: { ip?: string } = {}) {
+    const u = await this.buscarCuenta(dto.email);
     // MISMO mensaje si la cuenta no existe o si la contraseña es incorrecta: de
     // otro modo se podrían enumerar las cuentas registradas probando valores.
     const credInvalidas = () => new UnauthorizedException('Usuario o contraseña incorrectos');

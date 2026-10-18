@@ -10,7 +10,7 @@ import { PrexiLogo } from '@/components/login/prexi-logo';
 import { inputAuthCls } from '@/components/fondo-auth';
 import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import {
-  User, Mail, Lock, KeyRound, ShieldCheck, GraduationCap, Users, Eye, EyeOff, AlertCircle, CheckCircle, Clock,
+  User, Lock, KeyRound, ShieldCheck, GraduationCap, Users, Eye, EyeOff, AlertCircle, CheckCircle, Clock,
   ArrowRight, ChevronLeft,
 } from '@/components/icons';
 
@@ -25,13 +25,13 @@ import {
 
 export interface Curso { id: number; paralelo: string; materia: string; sigla: string | null; gestion: string; docente: string | null }
 
-const VACIO = { apellidoPaterno: '', apellidoMaterno: '', nombres: '', cedula: '', ru: '', paraleloId: '', email: '', password: '', confirmar: '' };
+const VACIO = { apellidoPaterno: '', apellidoMaterno: '', nombres: '', cedula: '', ru: '', paraleloId: '', password: '', confirmar: '' };
 type Clave = keyof typeof VACIO;
 
 const PASOS: { titulo: string; campos: Clave[] }[] = [
   { titulo: 'Tus datos', campos: ['apellidoPaterno', 'apellidoMaterno', 'nombres', 'cedula', 'ru'] },
   { titulo: 'Tu curso', campos: ['paraleloId'] },
-  { titulo: 'Tu acceso', campos: ['email', 'password', 'confirmar'] },
+  { titulo: 'Tu acceso', campos: ['password', 'confirmar'] },
 ];
 
 /** Fuerza de contraseña → semánticos del sistema (rojo/ámbar/verde). */
@@ -74,7 +74,6 @@ export default function RegistroPage() {
   const cursoElegido = cursos?.find((c) => String(c.id) === f.paraleloId) ?? null;
 
   const fz = fuerza(f.password);
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim());
   const errores: Record<Clave, string> = {
     apellidoPaterno: f.apellidoPaterno.trim().length < 2 ? 'Escribe tu apellido paterno.' : '',
     apellidoMaterno: '',
@@ -83,7 +82,6 @@ export default function RegistroPage() {
     // El RU es opcional: solo se revisa si lo escribió.
     ru: f.ru && !/^\d{4,12}$/.test(f.ru) ? 'El RU lleva solo números (4 a 12). Si no lo tienes, déjalo vacío.' : '',
     paraleloId: !f.paraleloId ? 'Elige tu materia y paralelo.' : '',
-    email: f.email.trim() && !emailOk ? 'Ese correo no parece válido. Puedes dejarlo vacío.' : '',
     password: f.password.length < 8 ? 'Al menos 8 caracteres.' : !/[A-Za-z]/.test(f.password) || !/\d/.test(f.password) ? 'Incluye al menos una letra y un número.' : '',
     confirmar: !f.confirmar ? 'Vuelve a escribir tu contraseña.' : f.confirmar !== f.password ? 'Las contraseñas no coinciden.' : '',
   };
@@ -102,7 +100,7 @@ export default function RegistroPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (paso < PASOS.length - 1) { siguiente(); return; }
-    setTocado((t) => ({ ...t, email: true, password: true, confirmar: true, terminos: true }));
+    setTocado((t) => ({ ...t, password: true, confirmar: true, terminos: true }));
     if (cargando || !pasoOk(2) || !acepta) return;
     // Por si algo de un paso anterior quedó mal: vuelve a ese paso.
     const malo = [0, 1].find((i) => !pasoOk(i));
@@ -111,7 +109,7 @@ export default function RegistroPage() {
     try {
       await register({
         apellidoPaterno: f.apellidoPaterno.trim(), apellidoMaterno: f.apellidoMaterno.trim() || undefined, nombres: f.nombres.trim(),
-        cedula: f.cedula, ru: f.ru || undefined, paraleloId: Number(f.paraleloId), email: f.email.trim() || undefined,
+        cedula: f.cedula, ru: f.ru || undefined, paraleloId: Number(f.paraleloId),
         password: f.password, aceptaTerminos: acepta,
       });
       router.replace('/inscripcion');
@@ -235,7 +233,7 @@ export default function RegistroPage() {
 
             {/* ── Paso 3: tu acceso y resumen ── */}
             {paso === 2 && (
-              <Paso titulo="Tu acceso" texto="Crea tu contraseña. El correo es opcional: solo sirve para recuperarla si la olvidas.">
+              <Paso titulo="Tu acceso" texto="Crea tu contraseña: con ella y tu usuario entrarás a PREXI.">
                 <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                   <Campo label="Contraseña" icon={Lock} error={err('password')}
                     hint={f.password ? undefined : 'Mínimo 8 caracteres, con letras y números.'}
@@ -254,11 +252,8 @@ export default function RegistroPage() {
                     <input type={verPass ? 'text' : 'password'} value={f.confirmar} onChange={set('confirmar')} onBlur={toca('confirmar')}
                       autoComplete="new-password" placeholder="Escríbela otra vez" className={inputAuthCls(!!err('confirmar')) + ' pl-11'} />
                   </Campo>
-                  <Campo className="sm:col-span-2 lg:col-span-1 xl:col-span-2" label="Correo electrónico (opcional)" icon={Mail} error={err('email')}>
-                    <input type="email" value={f.email} onChange={set('email')} onBlur={toca('email')} autoComplete="email"
-                      placeholder="Ej.: ana.quispe@gmail.com" className={inputAuthCls(!!err('email')) + ' pl-11'} />
-                  </Campo>
                 </div>
+                <p className="mt-3 text-xs text-muted">Si la olvidas, en «¿Olvidaste tu contraseña?» le pides a tu docente que te deje crear una nueva.</p>
 
                 {/* Resumen antes de enviar */}
                 <dl className="mt-5 grid gap-3 rounded-2xl border border-line bg-app/50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">

@@ -196,6 +196,9 @@ model Usuario {
   pasosRuta           PasoRuta[]
   intentosSubidaNivel IntentoSubidaNivel[]
   tokensRecuperacion  TokenRecuperacion[]
+  // Recuperación de contraseña SIN correo: la pide el usuario y la aprueba su docente (o un admin).
+  recuperacionesPedidas   SolicitudRecuperacion[] @relation("RecuperacionSolicitante")
+  recuperacionesResueltas SolicitudRecuperacion[] @relation("RecuperacionAprobador")
   refreshTokens       RefreshToken[]
   historialTheta      HistorialTheta[]
   diagnosticoTemas    DiagnosticoTema[]
@@ -1348,4 +1351,37 @@ enum EstadoInscripcion {
   aprobada
   pendiente
   rechazada
+}
+
+// Estado de una solicitud para recuperar la contraseña sin correo.
+enum EstadoRecuperacion {
+  pendiente // espera que su docente (o un admin) la acepte
+  aprobada  // aceptada: el usuario ya puede poner su nueva contraseña
+  rechazada
+  usada     // ya puso su nueva contraseña
+  cancelada // la reemplazó otra solicitud del mismo usuario
+}
+
+// RECUPERACIÓN DE CONTRASEÑA SIN CORREO. El usuario escribe su usuario (Nombre_CI);
+// se avisa a quien puede aprobarlo (el docente de su paralelo; si es docente o no
+// tiene docente, los administradores). Al aceptar, el navegador que la pidió (que
+// guarda el secreto) muestra el formulario de nueva contraseña. El secreto se
+// guarda solo como hash.
+model SolicitudRecuperacion {
+  id          Int                @id @default(autoincrement())
+  usuarioId   Int                @map("usuario_id")
+  secretoHash String             @unique @map("secreto_hash")
+  estado      EstadoRecuperacion @default(pendiente)
+  aprobadorId Int?               @map("aprobador_id")
+  motivo      String?
+  creadoEn    DateTime           @default(now()) @map("creado_en")
+  resueltoEn  DateTime?          @map("resuelto_en")
+  usadoEn     DateTime?          @map("usado_en")
+
+  usuario   Usuario  @relation("RecuperacionSolicitante", fields: [usuarioId], references: [id], onDelete: Cascade)
+  aprobador Usuario? @relation("RecuperacionAprobador", fields: [aprobadorId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, estado])
+  @@index([estado, creadoEn])
+  @@map("solicitudes_recuperacion")
 }

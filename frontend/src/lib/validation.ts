@@ -16,10 +16,10 @@ export const loginSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, 'Ingresa tu usuario o tu correo electrónico.')
+    .min(1, 'Escribe tu usuario.')
     .refine(
       (v) => esUsuarioDeAcceso(v) || /^\d{4,12}$/.test(v) || z.string().email().safeParse(v).success,
-      'Tu usuario es tu primer nombre, un guion bajo y tu CI (ej. Alvaro_12929098), o escribe tu correo.',
+      'Tu usuario es tu primer nombre, un guion bajo y tu CI (ej. Alvaro_12929098).',
     ),
   // Mínimo 5: la contraseña inicial de un estudiante registrado es su CI.
   password: z.string().min(5, 'La contraseña debe tener al menos 5 caracteres.'),

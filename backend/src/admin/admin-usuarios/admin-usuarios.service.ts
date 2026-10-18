@@ -4,6 +4,8 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AdminAuditoriaService } from '../admin-auditoria/admin-auditoria.service';
 import { CrearUsuarioDto, EditarUsuarioDto } from './dto/usuario.dto';
+import { usuarioDeAcceso } from '../../common/usuario/usuario-acceso';
+import { capitalizar, limpiarCi, nombreCompletoDe } from '../../docente/docente-registro/lista';
 
 /**
  * Gestión de usuarios de TODOS los roles (rol admin). Preferimos desactivar
@@ -43,7 +45,7 @@ export class AdminUsuariosService {
       where,
       orderBy: [{ activo: 'desc' }, { creadoEn: 'desc' }],
       select: {
-        id: true, nombre: true, nombres: true, email: true, cedula: true, ru: true, rol: true, carrera: true,
+        id: true, nombre: true, apellidoPaterno: true, apellidoMaterno: true, nombres: true, email: true, cedula: true, ru: true, rol: true, carrera: true,
         institucion: true, paralelo: true, activo: true, creadoEn: true, mustChangePassword: true, lockedUntil: true,
         estadoInscripcion: true,
         paraleloRef: { select: { nombre: true, materia: { select: { nombre: true, gestion: true } } } },
@@ -53,6 +55,8 @@ export class AdminUsuariosService {
     const ahora = new Date();
     return usuarios.map(({ lockedUntil, paraleloRef, _count, ...u }) => ({
       ...u,
+      // Usuario para entrar (PrimerNombre_CI), igual para todos los roles.
+      usuario: usuarioDeAcceso(u) || u.email || null,
       bloqueado: !!lockedUntil && lockedUntil > ahora,
       curso: paraleloRef ? `${paraleloRef.materia.nombre} ${paraleloRef.materia.gestion} · ${paraleloRef.nombre}` : null,
       paralelos_a_cargo: _count.paralelosACargo,
@@ -68,15 +72,24 @@ export class AdminUsuariosService {
   }
 
   async crear(actorId: number, dto: CrearUsuarioDto) {
-    if (await this.prisma.usuario.findUnique({ where: { email: dto.email } }))
-      throw new BadRequestException('Ya existe un usuario con ese correo');
-    if (await this.prisma.usuario.findUnique({ where: { cedula: dto.cedula } }))
-      throw new BadRequestException('Ya existe un usuario con esa cédula');
+    const cedula = limpiarCi(dto.cedula);
+    if (!/^\d{5,10}(-?[0-9A-Z]{1,3})?$/.test(cedula)) throw new BadRequestException('El CI debe tener entre 5 y 10 dígitos.');
+    if (await this.prisma.usuario.findUnique({ where: { cedula } }))
+      throw new BadRequestException('Ya existe una cuenta con ese CI.');
+    const email = dto.email?.trim().toLowerCase() || null;
+    if (email && await this.prisma.usuario.findUnique({ where: { email } }))
+      throw new BadRequestException('Ya existe una cuenta con ese correo.');
+
+    const apellidoPaterno = capitalizar(dto.apellidoPaterno);
+    const apellidoMaterno = dto.apellidoMaterno?.trim() ? capitalizar(dto.apellidoMaterno) : null;
+    const nombres = capitalizar(dto.nombres);
+    const nombre = nombreCompletoDe({ apellidoPaterno, apellidoMaterno: apellidoMaterno ?? '', nombres });
+    const usuarioAcceso = usuarioDeAcceso({ nombres, cedula });
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const usuario = await this.prisma.usuario.create({
       data: {
-        nombre: dto.nombre, email: dto.email, cedula: dto.cedula, rol: dto.rol,
+        nombre, apellidoPaterno, apellidoMaterno, nombres, email, cedula, rol: dto.rol,
         carrera: dto.carrera ?? null, institucion: dto.institucion ?? null, passwordHash,
         // La contraseña la eligió el admin: la persona debe cambiarla al entrar.
         mustChangePassword: true,
@@ -89,9 +102,9 @@ export class AdminUsuariosService {
     });
     await this.auditoria.registrar({
       actorId, accion: 'usuario_crear', entidad: 'usuario', entidadId: usuario.id,
-      detalle: `Creó a ${usuario.nombre} (${dto.email}) con rol ${dto.rol}`,
+      detalle: `Creó a ${usuario.nombre} (usuario ${usuarioAcceso}) con rol ${dto.rol}`,
     });
-    return { id: usuario.id };
+    return { id: usuario.id, usuario: usuarioAcceso };
   }
 
   private async existente(id: number) {
@@ -103,25 +116,40 @@ export class AdminUsuariosService {
   async editar(actorId: number, id: number, dto: EditarUsuarioDto) {
     const u = await this.existente(id);
 
-    if (dto.email && dto.email !== u.email) {
-      const otro = await this.prisma.usuario.findUnique({ where: { email: dto.email } });
-      if (otro) throw new BadRequestException('Ya existe un usuario con ese correo');
+    const email = dto.email !== undefined ? (dto.email.trim().toLowerCase() || null) : undefined;
+    if (email && email !== u.email) {
+      const otro = await this.prisma.usuario.findUnique({ where: { email } });
+      if (otro) throw new BadRequestException('Ya existe una cuenta con ese correo.');
     }
-    if (dto.cedula && dto.cedula !== u.cedula) {
-      const otro = await this.prisma.usuario.findUnique({ where: { cedula: dto.cedula } });
-      if (otro) throw new BadRequestException('Ya existe un usuario con esa cédula');
+    const cedula = dto.cedula !== undefined ? limpiarCi(dto.cedula) : undefined;
+    if (cedula !== undefined) {
+      if (!/^\d{5,10}(-?[0-9A-Z]{1,3})?$/.test(cedula)) throw new BadRequestException('El CI debe tener entre 5 y 10 dígitos.');
+      if (cedula !== u.cedula && await this.prisma.usuario.findUnique({ where: { cedula } }))
+        throw new BadRequestException('Ya existe una cuenta con ese CI.');
     }
     // No permitir que el admin se quite a sí mismo el rol admin (evita quedar sin admins).
     if (id === actorId && dto.rol && dto.rol !== 'admin')
       throw new ForbiddenException('No puedes cambiar tu propio rol de administrador');
 
+    // Apellidos y nombres por separado (de ahí sale el usuario); el nombre completo se arma solo.
+    const nombreData: Prisma.UsuarioUpdateInput = {};
+    if (dto.apellidoPaterno !== undefined || dto.nombres !== undefined || dto.apellidoMaterno !== undefined) {
+      const apellidoPaterno = capitalizar(dto.apellidoPaterno ?? u.apellidoPaterno ?? '');
+      const apellidoMaterno = capitalizar(dto.apellidoMaterno ?? u.apellidoMaterno ?? '');
+      const nombres = capitalizar(dto.nombres ?? u.nombres ?? '');
+      if (!apellidoPaterno || !nombres) throw new BadRequestException('El apellido paterno y los nombres son obligatorios.');
+      Object.assign(nombreData, { apellidoPaterno, apellidoMaterno: apellidoMaterno || null, nombres, nombre: nombreCompletoDe({ apellidoPaterno, apellidoMaterno, nombres }) });
+    } else if (dto.nombre !== undefined) {
+      nombreData.nombre = dto.nombre;
+    }
+
     const cambioRol = dto.rol && dto.rol !== u.rol;
     await this.prisma.usuario.update({
       where: { id },
       data: {
-        ...(dto.nombre !== undefined ? { nombre: dto.nombre } : {}),
-        ...(dto.email !== undefined ? { email: dto.email } : {}),
-        ...(dto.cedula !== undefined ? { cedula: dto.cedula } : {}),
+        ...nombreData,
+        ...(email !== undefined ? { email } : {}),
+        ...(cedula !== undefined ? { cedula } : {}),
         ...(dto.rol !== undefined ? { rol: dto.rol } : {}),
         ...(dto.carrera !== undefined ? { carrera: dto.carrera } : {}),
         ...(dto.institucion !== undefined ? { institucion: dto.institucion } : {}),

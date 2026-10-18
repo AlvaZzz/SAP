@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Solicitudes } from '@/components/docente/solicitudes';
+import { Recuperaciones } from '@/components/recuperaciones';
 import { api, ApiError } from '@/lib/api';
 import { Badge, Card, PageHeader, Skeleton } from '@/components/ui';
 import { usuarioDeAcceso } from '@/lib/usuario-acceso';
@@ -57,8 +58,10 @@ export default function RegistroEstudiantesPage() {
   // registrarlo desde la lista, o aceptar la solicitud del que se registró solo.
   const vista = useSearchParams().get('ver') === 'solicitudes' ? 'solicitudes' : 'lista';
   const [porAceptar, setPorAceptar] = useState(0);
+  const [porRecuperar, setPorRecuperar] = useState(0);
   const contarSolicitudes = useCallback(() => {
     api.get<{ pendientes: number }>('/docente/registro/solicitudes/conteo').then((r) => setPorAceptar(r.pendientes)).catch(() => undefined);
+    api.get<{ pendientes: number }>('/recuperaciones/conteo').then((r) => setPorRecuperar(r.pendientes)).catch(() => undefined);
   }, []);
   useEffect(() => { contarSolicitudes(); }, [contarSolicitudes]);
   const pestanas = (
@@ -67,7 +70,7 @@ export default function RegistroEstudiantesPage() {
         <Link key={clave} href={href} role="tab" aria-selected={vista === clave}
           className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${vista === clave ? 'border-prexi-blue bg-prexi-blue/10 text-fg' : 'border-line bg-card text-muted hover:bg-subtle'}`}>
           {texto}
-          {clave === 'solicitudes' && porAceptar > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-prexi-red px-1.5 text-xs font-bold text-white">{porAceptar}</span>}
+          {clave === 'solicitudes' && porAceptar + porRecuperar > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-prexi-red px-1.5 text-xs font-bold text-white">{porAceptar + porRecuperar}</span>}
         </Link>
       ))}
     </div>
@@ -135,8 +138,9 @@ export default function RegistroEstudiantesPage() {
   if (vista === 'solicitudes') {
     return (
       <div className="animate-fade-up">
-        <PageHeader title="Registro de estudiantes" subtitle="Acepta a los estudiantes que se registraron por su cuenta y pidieron entrar a tu paralelo." />
-        {pestanas}
+        <PageHeader title="Registro de estudiantes" subtitle="Acepta a los estudiantes que piden entrar a tu paralelo y a los que olvidaron su contraseña." />
+
+        <Recuperaciones ocultarVacio onCambio={(n) => setPorRecuperar(n)} />
         <Solicitudes onCambio={contarSolicitudes} />
       </div>
     );

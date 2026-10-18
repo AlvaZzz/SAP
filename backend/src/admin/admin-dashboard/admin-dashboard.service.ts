@@ -40,7 +40,7 @@ export class AdminDashboardService {
 
     const [
       porRol, ejercicios, estudiantes, activosRows, auditoria,
-      sinDocente, solicitudes, bloqueadas, temporales, inactivos, cfg, consultasIa, contenido, retos,
+      sinDocente, solicitudes, bloqueadas, temporales, inactivos, cfg, consultasIa, contenido, retos, recuperaciones,
     ] = await Promise.all([
       this.usuarios.conteos(),
       this.prisma.ejercicio.count({ where: { activo: true, banco: 'practica' } }),
@@ -56,6 +56,7 @@ export class AdminDashboardService {
       this.prisma.consultaIa.count({ where: { fecha: { gte: hace7 } } }),
       this.contenido.resumen(),
       this.prisma.reto.count({ where: { activo: true } }),
+      this.prisma.solicitudRecuperacion.count({ where: { estado: 'pendiente' } }),
     ]);
 
     const totalUsuarios = Object.values(porRol).reduce((a, b) => a + b, 0);
@@ -113,6 +114,13 @@ export class AdminDashboardService {
         clave: 'solicitudes', tono: 'ambar', titulo: `${solicitudes} solicitud(es) de inscripción esperan respuesta`,
         detalle: 'Estudiantes que se registraron solos y esperan que su docente los acepte para rendir el diagnóstico.',
         enlace: '/admin/cursos', accion: 'Ver por paralelo',
+      });
+    }
+    if (recuperaciones) {
+      pendientes.push({
+        clave: 'recuperaciones', tono: 'rojo', titulo: `${recuperaciones} persona(s) piden recuperar su contraseña`,
+        detalle: 'Olvidaron su contraseña. Acepta solo si es quien dice ser: al aceptar, podrá poner una nueva.',
+        enlace: '/admin/usuarios?ver=recuperaciones', accion: 'Revisar',
       });
     }
     if (bloqueadas) {

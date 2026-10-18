@@ -5,6 +5,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../common/auth/jwt.guard';
 import { MailModule } from '../common/mail/mail.module';
+import { RecuperacionService } from './recuperacion/recuperacion.service';
+import { RecuperacionAprobacionController, RecuperacionPublicaController } from './recuperacion/recuperacion.controller';
 
 @Module({
   imports: [
@@ -21,8 +23,8 @@ import { MailModule } from '../common/mail/mail.module';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard],
+  controllers: [AuthController, RecuperacionPublicaController, RecuperacionAprobacionController],
+  providers: [AuthService, JwtAuthGuard, RecuperacionService],
   exports: [JwtModule, AuthService],
 })
 export class AuthModule {}

@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
 import { usuarioDeAcceso } from '@/lib/usuario-acceso';
+import { Recuperaciones } from '@/components/recuperaciones';
 import { PageHeader, Badge, Skeleton, Modal, Field, Input, EmptyState, ResponsiveTable } from '@/components/ui';
 import {
   Plus, Edit, Search, Power, KeyRound, CheckCircle, X, GraduationCap, BookOpen, FlaskConical, ShieldCheck, Lock, ArrowRight, ChevronLeft,
@@ -20,12 +21,13 @@ import {
 
 type Rol = 'estudiante' | 'docente' | 'investigador' | 'admin';
 interface Usuario {
-  id: number; nombre: string; nombres: string | null; email: string | null; cedula: string | null; ru: string | null; rol: Rol;
+  id: number; nombre: string; apellidoPaterno: string | null; apellidoMaterno: string | null; nombres: string | null; usuario: string | null;
+  email: string | null; cedula: string | null; ru: string | null; rol: Rol;
   carrera: string | null; institucion: string | null; activo: boolean; creadoEn: string; mustChangePassword: boolean;
   bloqueado: boolean; estadoInscripcion: 'aprobada' | 'pendiente' | 'rechazada'; curso: string | null; paralelos_a_cargo: number;
 }
-interface FormState { nombre: string; email: string; cedula: string; rol: Rol; password: string; carrera: string; institucion: string }
-const VACIO: FormState = { nombre: '', email: '', cedula: '', rol: 'docente', password: '', carrera: '', institucion: '' };
+interface FormState { apellidoPaterno: string; apellidoMaterno: string; nombres: string; cedula: string; rol: Rol; password: string; carrera: string; institucion: string }
+const VACIO: FormState = { apellidoPaterno: '', apellidoMaterno: '', nombres: '', cedula: '', rol: 'docente', password: '', carrera: '', institucion: '' };
 
 const ROLES: { id: Rol; nombre: string; plural: string; color: string; icon: typeof BookOpen; resumen: string; puede: string[] }[] = [
   { id: 'docente', nombre: 'Docente', plural: 'Docentes', color: '#10B981', icon: BookOpen, resumen: 'Dicta un curso y sigue a sus estudiantes.',
@@ -100,15 +102,16 @@ export default function AdminUsuariosPage() {
   function abrirCrear() { setEditId(null); setForm({ ...VACIO, password: generarClave() }); setErrores({}); setApiError(''); setPaso(1); setModal(true); }
   function abrirEditar(u: Usuario) {
     setEditId(u.id); setErrores({}); setApiError(''); setPaso(2);
-    setForm({ nombre: u.nombre, email: u.email ?? '', cedula: u.cedula ?? '', rol: u.rol, password: '', carrera: u.carrera ?? '', institucion: u.institucion ?? '' });
+    // Cuentas antiguas sin apellidos separados: el nombre completo queda en «Nombres» para corregirlo.
+    setForm({ apellidoPaterno: u.apellidoPaterno ?? '', apellidoMaterno: u.apellidoMaterno ?? '', nombres: u.nombres ?? (u.apellidoPaterno ? '' : u.nombre), cedula: u.cedula ?? '', rol: u.rol, password: '', carrera: u.carrera ?? '', institucion: u.institucion ?? '' });
     setModal(true);
   }
 
   function validar(): boolean {
     const e: Record<string, string> = {};
-    if (form.nombre.trim().length < 2) e.nombre = 'Escribe el nombre completo.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Escribe un correo válido: con él entrará al sistema.';
-    if (form.cedula.trim().length < 4) e.cedula = 'Escribe la cédula (CI).';
+    if (form.apellidoPaterno.trim().length < 2) e.apellidoPaterno = 'Escribe el apellido paterno.';
+    if (form.nombres.trim().length < 2) e.nombres = 'Escribe los nombres.';
+    if (!/^\d{5,10}$/.test(form.cedula.trim())) e.cedula = 'Solo los números del CI (5 a 10 dígitos).';
     if (!editId && form.password.length < 6) e.password = 'Mínimo 6 caracteres.';
     setErrores(e);
     return Object.keys(e).length === 0;
@@ -118,16 +121,16 @@ export default function AdminUsuariosPage() {
     if (!validar()) return;
     setGuardando(true); setApiError('');
     const datos = {
-      nombre: form.nombre.trim(), email: form.email.trim(), cedula: form.cedula.trim(), rol: form.rol,
+      apellidoPaterno: form.apellidoPaterno.trim(), apellidoMaterno: form.apellidoMaterno.trim(), nombres: form.nombres.trim(), cedula: form.cedula.trim(), rol: form.rol,
       carrera: form.carrera.trim() || undefined, institucion: form.institucion.trim() || undefined,
     };
     try {
       if (editId) {
         await api.put(`/admin/usuarios/${editId}`, datos);
-        setAviso(`Se guardaron los cambios de ${datos.nombre}.`);
+        setAviso(`Se guardaron los cambios de ${datos.nombres} ${datos.apellidoPaterno}.`);
       } else {
-        await api.post('/admin/usuarios', { ...datos, password: form.password });
-        setTemporal({ titulo: 'Cuenta creada', nombre: datos.nombre, usuario: datos.email, pass: form.password });
+        const r = await api.post<{ usuario: string }>('/admin/usuarios', { ...datos, password: form.password });
+        setTemporal({ titulo: 'Cuenta creada', nombre: `${datos.nombres} ${datos.apellidoPaterno}`, usuario: r.usuario, pass: form.password });
       }
       setModal(false); await cargar();
     } catch (err) { setApiError(err instanceof ApiError ? err.message : 'No se pudo guardar'); }
@@ -147,7 +150,7 @@ export default function AdminUsuariosPage() {
     if (!confirm(`¿Restablecer la contraseña de ${u.nombre}? Se genera una temporal, se desbloquea la cuenta y deberá cambiarla al entrar.`)) return;
     try {
       const r = await api.post<{ temporal: string }>(`/admin/usuarios/${u.id}/reset-password`);
-      setTemporal({ titulo: 'Contraseña restablecida', nombre: u.nombre, usuario: u.rol === 'estudiante' ? usuarioDeAcceso(u) || u.email || '' : u.email ?? '', pass: r.temporal });
+      setTemporal({ titulo: 'Contraseña restablecida', nombre: u.nombre, usuario: u.usuario ?? '', pass: r.temporal });
       await cargar();
     } catch (e) { setAviso(e instanceof ApiError ? e.message : 'No se pudo restablecer.'); }
   }
@@ -158,8 +161,11 @@ export default function AdminUsuariosPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Usuarios" subtitle="Todas las cuentas del sistema. Crea docentes, investigadores y administradores; los estudiantes los registra su docente."
+      <PageHeader title="Usuarios" subtitle="Todas las cuentas del sistema. Todos entran con su usuario (primer nombre y CI). Crea docentes, investigadores y administradores; los estudiantes los registra su docente."
         action={<button onClick={abrirCrear} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo usuario</button>} />
+
+      {/* Contraseñas olvidadas: el admin aprueba las de docentes y las de estudiantes sin docente (o cualquiera). */}
+      <Recuperaciones ocultarVacio />
 
       {/* Pestañas por rol */}
       <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Rol">
@@ -180,7 +186,7 @@ export default function AdminUsuariosPage() {
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="relative min-w-[240px] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Busca por nombre, correo, CI, RU o usuario (Alvaro_12929098)" className="input !pl-10" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Busca por nombre, usuario (Alvaro_12929098), CI o RU" className="input !pl-10" />
         </div>
         <div className="flex flex-wrap gap-1.5">
           {ESTADOS.map((e) => (
@@ -256,13 +262,20 @@ export default function AdminUsuariosPage() {
             {apiError && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
             {form.rol === 'estudiante' && !editId && (
               <p className="rounded-xl border border-prexi-amber/40 bg-prexi-amber/10 px-3 py-2.5 text-sm text-fg">
-                Para un curso completo es mejor que el docente use <b>Registro de estudiantes</b>: su usuario será su primer nombre y su CI. Aquí la cuenta entra con el correo.
+                Para un curso completo es mejor que el docente use <b>Registro de estudiantes</b> (sube su lista de una vez). El usuario es el mismo: primer nombre y CI.
               </p>
             )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2"><Field label="Nombre completo" error={errores.nombre}><Input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Ej.: María Quispe Mamani" autoFocus /></Field></div>
-              <Field label="Correo electrónico" hint="Con este correo iniciará sesión." error={errores.email}><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nombre@upea.edu.bo" /></Field>
-              <Field label="Cédula (CI)" error={errores.cedula}><Input value={form.cedula} onChange={(e) => setForm({ ...form, cedula: e.target.value })} placeholder="Ej.: 9876543" /></Field>
+              <Field label="Apellido paterno" error={errores.apellidoPaterno}><Input value={form.apellidoPaterno} onChange={(e) => setForm({ ...form, apellidoPaterno: e.target.value })} placeholder="Ej.: Quispe" autoFocus /></Field>
+              <Field label="Apellido materno (opcional)"><Input value={form.apellidoMaterno} onChange={(e) => setForm({ ...form, apellidoMaterno: e.target.value })} placeholder="Ej.: Mamani" /></Field>
+              <Field label="Nombres" error={errores.nombres}><Input value={form.nombres} onChange={(e) => setForm({ ...form, nombres: e.target.value })} placeholder="Ej.: María José" /></Field>
+              <Field label="Cédula (CI)" hint="Solo números. Es su contraseña de respaldo si la olvida." error={errores.cedula}><Input value={form.cedula} inputMode="numeric" onChange={(e) => setForm({ ...form, cedula: e.target.value.replace(/\D/g, '') })} placeholder="Ej.: 9876543" /></Field>
+              {/* Usuario con el que entrará: primer nombre + "_" + CI */}
+              <div className="sm:col-span-2 flex items-center gap-3 rounded-xl border border-prexi-blue/30 bg-prexi-blue/5 px-3 py-2.5 text-sm">
+                <KeyRound className="h-4 w-4 shrink-0 text-prexi-blue-deep" />
+                <span className="text-muted">Entrará con el usuario</span>
+                <b className="font-mono text-fg">{usuarioDeAcceso({ nombres: form.nombres, cedula: form.cedula }) || 'PrimerNombre_CI'}</b>
+              </div>
               {editId && (
                 <Field label="Rol" hint={editId === yo?.id ? 'No puedes quitarte el rol de administrador.' : 'Cambiar el rol queda en la auditoría.'}>
                   <select value={form.rol} disabled={editId === yo?.id} onChange={(e) => setForm({ ...form, rol: e.target.value as Rol })} className="input">
@@ -309,12 +322,12 @@ function detalle(u: Usuario): string {
 }
 
 function Persona({ u }: { u: Usuario }) {
-  const acceso = u.rol === 'estudiante' ? usuarioDeAcceso(u) : '';
+  const acceso = u.usuario ?? usuarioDeAcceso(u);
   return (
     <div className={`min-w-0 ${u.activo ? '' : 'opacity-60'}`}>
       <p className="font-medium text-fg">{u.nombre}</p>
       <p className="truncate text-xs text-muted">
-        {acceso ? <span className="font-mono">{acceso}</span> : u.email ?? '—'}
+        {acceso ? <span className="font-mono">{acceso}</span> : '—'}
         {u.cedula ? ` · CI ${u.cedula}` : ''}{u.ru ? ` · RU ${u.ru}` : ''}
       </p>
     </div>
