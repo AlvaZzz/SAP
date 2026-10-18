@@ -143,19 +143,38 @@ const NAV_INVESTIGADOR: NavGrupo[] = [
   },
 ];
 
+/**
+ * Navegación del ADMINISTRADOR, agrupada como la del docente: personas, cursos,
+ * contenido y sistema. Puede entrar también a las áreas docente e investigador.
+ */
 const NAV_ADMIN: NavGrupo[] = [
   {
-    titulo: 'Gestión',
+    titulo: 'Inicio',
+    items: [{ href: '/admin/dashboard', label: 'Panel', icon: LayoutDashboard }],
+  },
+  {
+    titulo: 'Personas y cursos',
     items: [
-      { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
+      { href: '/admin/cursos', label: 'Cursos y docentes', icon: GraduationCap },
     ],
+  },
+  {
+    titulo: 'Contenido',
+    items: [{ href: '/admin/contenido', label: 'Contenido', icon: Layers }],
   },
   {
     titulo: 'Sistema',
     items: [
       { href: '/admin/sistema', label: 'Configuración', icon: Settings },
       { href: '/admin/auditoria', label: 'Auditoría', icon: ClipboardList },
+    ],
+  },
+  {
+    titulo: 'Otras áreas',
+    items: [
+      { href: '/docente/dashboard', label: 'Área docente', icon: BookOpen },
+      { href: '/investigador/indice', label: 'Investigación', icon: FlaskConical },
     ],
   },
 ];
@@ -171,13 +190,21 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
   const [menuAbierto, setMenuAbierto] = useState(false);
   const navId = useId();
 
-  const grupos = area === 'docente'
+  const gruposArea = area === 'docente'
     ? NAV_DOCENTE
     : area === 'investigador'
       ? NAV_INVESTIGADOR
       : area === 'admin'
         ? NAV_ADMIN
         : NAV_ESTUDIANTE;
+  // El administrador que entra al área docente o de investigación tiene siempre
+  // a la vista el camino de vuelta a su panel.
+  const grupos = useMemo(
+    () => (usuario?.rol === 'admin' && area !== 'admin' && area !== 'estudiante'
+      ? [...gruposArea, { titulo: 'Administración', items: [{ href: '/admin/dashboard', label: 'Volver al panel admin', icon: ShieldCheck }] }]
+      : gruposArea),
+    [gruposArea, usuario?.rol, area],
+  );
   // El buscador trabaja sobre la lista plana de destinos del rol activo.
   const nav = useMemo(() => grupos.flatMap((g) => g.items), [grupos]);
   // Ítem activo = el de ruta MÁS específica que coincide: así "Registro de

@@ -221,7 +221,7 @@ export default function DocenteDashboardPage() {
                 {d.actividad_reciente.map((a, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${a.correcto ? 'bg-prexi-green' : 'bg-prexi-red'}`} />
-                    <Link href={`/docente/estudiantes/${a.estudiante_id}`} className="shrink-0 font-medium text-fg hover:underline">{a.estudiante}</Link>
+                    <Link href={`/docente/estudiantes/${a.estudiante_id}`} className="min-w-0 max-w-[45%] truncate font-medium text-fg hover:underline sm:max-w-none sm:shrink-0">{a.estudiante}</Link>
                     <span className="min-w-0 flex-1 truncate text-muted">{a.correcto ? 'resolvió' : 'falló'} · {a.titulo}</span>
                     <span className="shrink-0 text-xs text-muted">{hora(a.fecha)}</span>
                   </li>

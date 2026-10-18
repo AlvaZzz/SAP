@@ -33,9 +33,13 @@ export class AdminAuditoriaService {
     });
   }
 
-  async listar(filtros: { accion?: string; desde?: string; hasta?: string; limit?: number; offset?: number }) {
+  async listar(filtros: { accion?: string; desde?: string; hasta?: string; limit?: number; offset?: number; q?: string }) {
     const where: Prisma.LogAuditoriaWhereInput = {
       ...(filtros.accion ? { accion: filtros.accion } : {}),
+      // Búsqueda libre: en el detalle o en el nombre de quien hizo la acción.
+      ...(filtros.q
+        ? { OR: [{ detalle: { contains: filtros.q, mode: 'insensitive' } }, { actor: { nombre: { contains: filtros.q, mode: 'insensitive' } } }] }
+        : {}),
       ...(filtros.desde || filtros.hasta
         ? {
             fecha: {

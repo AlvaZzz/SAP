@@ -42,6 +42,8 @@ import { AdminAuditoriaModule } from './admin/admin-auditoria/admin-auditoria.mo
 import { AdminUsuariosModule } from './admin/admin-usuarios/admin-usuarios.module';
 import { AdminConfigModule } from './admin/admin-config/admin-config.module';
 import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.module';
+import { AdminCursosModule } from './admin/admin-cursos/admin-cursos.module';
+import { AdminContenidoModule } from './admin/admin-contenido/admin-contenido.module';
 
 /**
  * Módulo raíz. Cada dominio (Screaming Architecture) se importa aquí.
@@ -92,6 +94,8 @@ import { AdminDashboardModule } from './admin/admin-dashboard/admin-dashboard.mo
     AdminUsuariosModule,
     AdminConfigModule,
     AdminDashboardModule,
+    AdminCursosModule,
+    AdminContenidoModule,
   ],
   controllers: [AppController],
   providers: [

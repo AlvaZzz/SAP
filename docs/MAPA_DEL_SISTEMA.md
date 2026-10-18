@@ -193,14 +193,18 @@ y calidad del producto de software. **No** administra usuarios ni configura el s
 **Propósito:** gestión **técnica** del sistema. Es soporte técnico: **no** hace el análisis de
 la tesis (eso es del investigador). Acciones **auditadas**.
 
-**Backend (módulos):** `admin-dashboard/`, `admin-usuarios/`, `admin-config/`, `admin-auditoria/`.
+**Backend (módulos):** `admin-dashboard/`, `admin-usuarios/`, `admin-cursos/`, `admin-contenido/`, `admin-config/`, `admin-auditoria/`.
+
+El menú se agrupa como el del docente: **Inicio** (Panel), **Personas y cursos** (Usuarios, Cursos y docentes), **Contenido**, **Sistema** (Configuración, Auditoría) y **Otras áreas** (docente e investigación, con un enlace para volver al panel admin).
 
 | Apartado | Ruta | Qué hace | Enganche | Datos |
 |---|---|---|---|---|
-| **Dashboard** | `/admin/dashboard` | Totales de usuarios, activos, docentes/admins, ejercicios; distribución por rol; estudiantes registrados y activos; registros por semana; actividad reciente (auditoría). | Vista global. | Lee `Usuario`, `Ejercicio`, `LogAuditoria`. |
-| **Gestión de usuarios** | `/admin/usuarios` | CRUD de **todos los roles** (crea docentes, investigadores y admins que no se registran públicamente). Filtros, búsqueda, **activar/desactivar** (soft-disable), **reset de contraseña** (temporal, sin ver la actual). Valida correo/cédula únicos. | Un usuario creado puede iniciar sesión en su rol; uno desactivado no. | Escribe `Usuario`; registra en `LogAuditoria`. |
-| **Configuración del sistema** | `/admin/sistema` | Tabs **General**, **Gamificación**, **IA** e **Investigación**: fase de evaluación del sistema (SUS / ISO 25010), **rango objetivo** del motor adaptativo, **umbrales de los tres criterios de aceptación**, umbral de la evaluación final y umbrales de "en riesgo". | **TODO el sistema lee de aquí**, nada hardcodeado. | Lee/escribe `ConfiguracionSistema`; audita. |
-| **Auditoría** | `/admin/auditoria` | Registro de acciones sensibles (crear/editar/desactivar usuario, cambio de rol, cambio de config, reset de contraseña) con filtros por acción y fecha. | Trazabilidad. | Lee `LogAuditoria`. |
+| **Panel** | `/admin/dashboard` | Saludo y **«Requiere tu atención»**: IA sin clave o apagada, paralelos sin docente, solicitudes de inscripción, cuentas bloqueadas, temas sin 10 ejercicios por nivel y exámenes de menos de 10 preguntas; cada aviso lleva a donde se resuelve. Números del sistema, accesos directos, personas por rol, estado del sistema (IA, contenido, evaluación), cuentas nuevas por semana y actividad reciente. | Vista global. | Lee `Usuario`, `Paralelo`, `Ejercicio`, `Reto`, `ConsultaIa`, `ConfiguracionSistema`, `LogAuditoria`. |
+| **Usuarios** | `/admin/usuarios` | Pestañas por rol con su cantidad, filtros (activas, desactivadas, bloqueadas, con contraseña inicial) y búsqueda por nombre, correo, CI, RU o usuario `Nombre_CI`. Crear en **dos pasos** (rol con lo que puede hacer → datos, contraseña inicial generada y cambio obligatorio al entrar). Editar, restablecer contraseña (también desbloquea) y activar/desactivar. | Un usuario creado puede iniciar sesión en su rol; uno desactivado no. | Escribe `Usuario`; registra en `LogAuditoria`. |
+| **Cursos y docentes** | `/admin/cursos` | Materias con sus paralelos: docente a cargo, estudiantes inscritos y solicitudes pendientes. **Asigna o cambia el docente** de cada paralelo y crea materias y paralelos. Lista de docentes con su carga. | Sin docente nadie acepta las solicitudes del paralelo. | Lee/escribe `Materia`, `Paralelo`; audita. |
+| **Contenido** | `/admin/contenido` | Por unidad y tema: ejercicios de práctica en Básico, Intermedio y Avanzado, preguntas del examen y retos; marca lo que no llega a 10. | Lo completa el docente desde Unidades. | Lee `Unidad`, `Tema`, `Ejercicio`, `Reto`. |
+| **Configuración** | `/admin/sistema` | Secciones **Institución**, **Reglas de avance**, **Puntos (XP)**, **Tutor PREXI (IA)**, **Alertas al docente** y **Evaluación e investigación**, cada opción explicada; los cambios se guardan o descartan juntos desde una barra fija. Incluye: fase de evaluación del sistema (SUS / ISO 25010), **rango objetivo** del motor adaptativo, **umbrales de los tres criterios de aceptación**, umbral de la evaluación final y umbrales de "en riesgo". | **TODO el sistema lee de aquí**, nada hardcodeado. | Lee/escribe `ConfiguracionSistema`; audita. |
+| **Auditoría** | `/admin/auditoria` | Acciones importantes con nombre claro (cuentas, roles, cursos, configuración y seguridad), agrupadas por día; búsqueda libre, filtros por acción y fechas, y «cargar más». | Trazabilidad. | Lee `LogAuditoria`. |
 
 > **Límites del admin:** nunca ve contraseñas (solo fuerza reseteo); **no** edita datos de
 > medición (diagnóstico, evaluación final, intentos y logs son inmutables); no puede
@@ -307,7 +311,7 @@ Prefijo global: `/api`. Todas requieren JWT salvo login/registro. Las de rol usa
 ### Admin (`@Roles('admin')`)
 | Método | Ruta | Función |
 |---|---|---|
-| GET | `/api/admin/dashboard` | Estado técnico del sistema. |
+| GET | `/api/admin/dashboard` | Panel: avisos, números, estado de la IA y actividad. |
 | GET/POST/PUT/PATCH | `/api/admin/usuarios[...]` | CRUD, estado y reset de contraseña. |
 | GET/PUT | `/api/admin/config` | Leer/actualizar la configuración central. |
 | GET | `/api/admin/auditoria` | Registro de acciones sensibles. |

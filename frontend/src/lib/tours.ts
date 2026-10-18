@@ -202,31 +202,47 @@ export const TOURS: Tour[] = [
     clave: 'admin-dashboard',
     ruta: en('/admin/dashboard'),
     pasos: [
-      { titulo: 'Panel de administración', texto: 'Estado global del sistema: usuarios por rol, actividad reciente y salud de la configuración.' },
-      { titulo: 'Máximo privilegio', texto: 'Como admin puedes ver todas las áreas y gestionar usuarios, configuración y auditoría.', selector: 'nav' },
+      { titulo: 'Empieza por los avisos', texto: '«Requiere tu atención» junta lo que hay que resolver: paralelos sin docente, solicitudes, cuentas bloqueadas, la IA o el contenido. Cada aviso te lleva a donde se arregla.' },
+      { titulo: 'Tu menú', texto: 'Usuarios, Cursos y docentes, Contenido, Configuración y Auditoría. También puedes entrar al área docente o a la de investigación.', selector: 'nav' },
     ],
   },
   {
     clave: 'admin-usuarios',
     ruta: en('/admin/usuarios'),
     pasos: [
-      { titulo: 'Gestión de usuarios', texto: 'Crea usuarios de cualquier rol, edítalos, resetea contraseñas y activa/desactiva cuentas.' },
-      { titulo: 'Desactivar, no borrar', texto: 'Las cuentas se desactivan (soft-disable) en lugar de borrarse: así se conservan los datos del estudio.' },
+      { titulo: 'Todas las cuentas', texto: 'Arriba eliges el rol y ves cuántos hay. Puedes buscar por nombre, correo, CI, RU o el usuario de un estudiante (Alvaro_12929098).' },
+      { titulo: 'Crear en dos pasos', texto: '«Nuevo usuario» te pide primero el rol, con lo que puede hacer cada uno, y luego sus datos. La contraseña inicial se genera sola y la persona la cambia al entrar.' },
+      { titulo: 'Desactivar, no borrar', texto: 'Una cuenta desactivada no puede entrar, pero conserva todo su historial (importante para el estudio).' },
+    ],
+  },
+  {
+    clave: 'admin-cursos',
+    ruta: en('/admin/cursos'),
+    pasos: [
+      { titulo: 'Cada paralelo, su docente', texto: 'El docente acepta las solicitudes de sus estudiantes y sigue su avance. Un paralelo sin docente se marca en ámbar: elige al docente en su lista y se guarda al momento.' },
+      { titulo: 'Materias y paralelos', texto: 'Crea la materia de la gestión (por ejemplo, Programación I · 2026-II) y agrégale sus paralelos.' },
+    ],
+  },
+  {
+    clave: 'admin-contenido',
+    ruta: en('/admin/contenido'),
+    pasos: [
+      { titulo: 'Lo que tiene cada tema', texto: 'Por unidad, cuántos ejercicios hay en Básico, Intermedio y Avanzado, cuántas preguntas tiene el examen y cuántos retos. En ámbar lo que no llega a 10.' },
     ],
   },
   {
     clave: 'admin-sistema',
     ruta: en('/admin/sistema'),
     pasos: [
-      { titulo: 'Configuración central', texto: 'Única fuente de parámetros del sistema: XP por ejercicio, umbral de desbloqueo, pistas y límites de PREXI, nivel desde el que se habilita el postest…' },
-      { titulo: 'Efecto inmediato', texto: 'Los cambios aplican al instante para todos los usuarios: la IA y el módulo del estudiante leen esta configuración en cada operación.' },
+      { titulo: 'Configuración por temas', texto: 'A la izquierda eliges la sección: reglas de avance, puntos, la IA, las alertas al docente o la evaluación. Cada opción explica qué cambia.' },
+      { titulo: 'Guardar o descartar', texto: 'Los cambios se juntan en una barra abajo: los guardas todos juntos o los descartas. Rigen para todos desde que guardas.' },
     ],
   },
   {
     clave: 'admin-auditoria',
     ruta: en('/admin/auditoria'),
     pasos: [
-      { titulo: 'Auditoría', texto: 'Registro inmutable de acciones sensibles: quién creó/editó usuarios, cambió roles o configuración, y cuándo.' },
+      { titulo: 'Quién hizo qué', texto: 'Cada acción importante queda registrada por día y no se puede borrar. Busca por persona o detalle, o filtra por tipo de acción y fechas.' },
     ],
   },
 ];

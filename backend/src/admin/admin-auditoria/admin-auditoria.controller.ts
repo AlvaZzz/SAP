@@ -16,6 +16,7 @@ export class AdminAuditoriaController {
     @Query('hasta') hasta?: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @Query('q') q?: string,
   ) {
     return this.service.listar({
       accion: accion || undefined,
@@ -23,6 +24,7 @@ export class AdminAuditoriaController {
       hasta: hasta || undefined,
       limit: limit ? Number(limit) : undefined,
       offset: offset ? Number(offset) : undefined,
+      q: q || undefined,
     });
   }
 }

@@ -1,63 +1,114 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+/**
+ * USUARIOS (administrador). Pestañas por rol con su cantidad, filtros de estado
+ * y una búsqueda que entiende nombre, correo, CI, RU o el usuario de un
+ * estudiante (Alvaro_12929098). Crear una cuenta es un asistente de dos pasos:
+ * primero el rol (con lo que puede hacer cada uno) y luego sus datos.
+ */
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
-import { PageHeader, Badge, Skeleton, Modal, Field, Input, Select, EmptyState, ResponsiveTable } from '@/components/ui';
-import { Plus, Edit, Search, Power, KeyRound, CheckCircle, X } from '@/components/icons';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
+import { PageHeader, Badge, Skeleton, Modal, Field, Input, EmptyState, ResponsiveTable } from '@/components/ui';
+import {
+  Plus, Edit, Search, Power, KeyRound, CheckCircle, X, GraduationCap, BookOpen, FlaskConical, ShieldCheck, Lock, ArrowRight, ChevronLeft,
+} from '@/components/icons';
 
 type Rol = 'estudiante' | 'docente' | 'investigador' | 'admin';
 interface Usuario {
-  id: number; nombre: string; email: string; cedula: string; rol: Rol;
-  carrera: string | null; institucion: string | null; paralelo: string | null; activo: boolean; creadoEn: string;
+  id: number; nombre: string; nombres: string | null; email: string | null; cedula: string | null; ru: string | null; rol: Rol;
+  carrera: string | null; institucion: string | null; activo: boolean; creadoEn: string; mustChangePassword: boolean;
+  bloqueado: boolean; estadoInscripcion: 'aprobada' | 'pendiente' | 'rechazada'; curso: string | null; paralelos_a_cargo: number;
 }
 interface FormState { nombre: string; email: string; cedula: string; rol: Rol; password: string; carrera: string; institucion: string }
 const VACIO: FormState = { nombre: '', email: '', cedula: '', rol: 'docente', password: '', carrera: '', institucion: '' };
-const ROLES: Rol[] = ['estudiante', 'docente', 'investigador', 'admin'];
-const ROL_TONE: Record<Rol, 'blue' | 'green' | 'amber' | 'slate'> = { estudiante: 'slate', docente: 'blue', investigador: 'green', admin: 'amber' };
+
+const ROLES: { id: Rol; nombre: string; plural: string; color: string; icon: typeof BookOpen; resumen: string; puede: string[] }[] = [
+  { id: 'docente', nombre: 'Docente', plural: 'Docentes', color: '#10B981', icon: BookOpen, resumen: 'Dicta un curso y sigue a sus estudiantes.',
+    puede: ['Registra estudiantes y acepta solicitudes', 'Arma unidades, ejercicios, retos y exámenes', 'Ve el avance de su curso'] },
+  { id: 'investigador', nombre: 'Investigador', plural: 'Investigadores', color: '#8B5CF6', icon: FlaskConical, resumen: 'Analiza los datos del estudio.',
+    puede: ['Ve resultados e instrumentos', 'Exporta los datos anónimos', 'No modifica cuentas ni contenido'] },
+  { id: 'admin', nombre: 'Administrador', plural: 'Administradores', color: '#F59E0B', icon: ShieldCheck, resumen: 'Gestiona todo el sistema.',
+    puede: ['Crea cuentas y asigna roles', 'Asigna docentes a los paralelos', 'Configura el sistema y revisa la auditoría'] },
+  { id: 'estudiante', nombre: 'Estudiante', plural: 'Estudiantes', color: '#3B82F6', icon: GraduationCap, resumen: 'Aprende y practica en PREXI.',
+    puede: ['Lo habitual es que lo registre su docente', 'O que se registre solo y su docente lo acepte'] },
+];
+const rolDe = (id: Rol) => ROLES.find((r) => r.id === id)!;
+const ESTADOS = [
+  { id: '', nombre: 'Todos' }, { id: 'activo', nombre: 'Activos' }, { id: 'inactivo', nombre: 'Desactivados' },
+  { id: 'bloqueado', nombre: 'Bloqueados' }, { id: 'temporal', nombre: 'Contraseña inicial' },
+];
+
+/** Contraseña inicial legible: 4 letras + 4 números + un signo (ej. Prex7316#). */
+function generarClave() {
+  const l = 'abcdefghijkmnpqrstuvwxyz', n = '23456789';
+  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
+  const letras = Array.from({ length: 4 }, () => pick(l)).join('');
+  return letras.charAt(0).toUpperCase() + letras.slice(1) + Array.from({ length: 4 }, () => pick(n)).join('') + pick('#$%&*');
+}
 
 export default function AdminUsuariosPage() {
   const { usuario: yo } = useAuth();
+  const router = useRouter();
+  const params = useSearchParams();
+  const fRol = (params.get('rol') ?? '') as Rol | '';
+  const fEstado = params.get('estado') ?? '';
   const [items, setItems] = useState<Usuario[]>([]);
+  const [conteos, setConteos] = useState<Record<Rol, number> | null>(null);
   const [cargando, setCargando] = useState(true);
-  const [fRol, setFRol] = useState('');
-  const [fEstado, setFEstado] = useState('');
   const [q, setQ] = useState('');
 
   const [modal, setModal] = useState(false);
+  const [paso, setPaso] = useState<1 | 2>(1);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(VACIO);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [guardando, setGuardando] = useState(false);
   const [apiError, setApiError] = useState('');
-  const [temporal, setTemporal] = useState<{ nombre: string; pass: string } | null>(null);
+  const [aviso, setAviso] = useState('');
+  const [temporal, setTemporal] = useState<{ nombre: string; usuario: string; pass: string; titulo: string } | null>(null);
+
+  const filtrar = (cambios: Record<string, string>) => {
+    const p = new URLSearchParams(params.toString());
+    for (const [k, v] of Object.entries(cambios)) { if (v) p.set(k, v); else p.delete(k); }
+    router.replace(`/admin/usuarios${p.toString() ? `?${p}` : ''}`, { scroll: false });
+  };
 
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      const params = new URLSearchParams();
-      if (fRol) params.set('rol', fRol);
-      if (fEstado) params.set('estado', fEstado);
-      if (q.trim()) params.set('q', q.trim());
-      const r = await api.get<{ usuarios: Usuario[] }>(`/admin/usuarios?${params.toString()}`);
-      setItems(r.usuarios);
-    } catch { /* noop */ } finally { setCargando(false); }
+      const p = new URLSearchParams();
+      if (fRol) p.set('rol', fRol);
+      if (fEstado) p.set('estado', fEstado);
+      if (q.trim()) p.set('q', q.trim());
+      const r = await api.get<{ usuarios: Usuario[]; conteos: Record<Rol, number> }>(`/admin/usuarios?${p.toString()}`);
+      setItems(r.usuarios); setConteos(r.conteos);
+    } catch { /* se queda con lo que había */ } finally { setCargando(false); }
   }, [fRol, fEstado, q]);
-
   useEffect(() => { const t = setTimeout(cargar, 250); return () => clearTimeout(t); }, [cargar]);
 
-  function abrirCrear() { setEditId(null); setForm(VACIO); setErrores({}); setApiError(''); setModal(true); }
+  // ?nuevo=1 (desde el panel) abre directamente el asistente.
+  useEffect(() => {
+    if (params.get('nuevo') === '1') { abrirCrear(); filtrar({ nuevo: '' }); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  function abrirCrear() { setEditId(null); setForm({ ...VACIO, password: generarClave() }); setErrores({}); setApiError(''); setPaso(1); setModal(true); }
   function abrirEditar(u: Usuario) {
-    setEditId(u.id); setErrores({}); setApiError('');
-    setForm({ nombre: u.nombre, email: u.email, cedula: u.cedula, rol: u.rol, password: '', carrera: u.carrera ?? '', institucion: u.institucion ?? '' });
+    setEditId(u.id); setErrores({}); setApiError(''); setPaso(2);
+    setForm({ nombre: u.nombre, email: u.email ?? '', cedula: u.cedula ?? '', rol: u.rol, password: '', carrera: u.carrera ?? '', institucion: u.institucion ?? '' });
     setModal(true);
   }
 
   function validar(): boolean {
     const e: Record<string, string> = {};
-    if (form.nombre.trim().length < 2) e.nombre = 'Nombre inválido.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Correo inválido.';
-    if (form.cedula.trim().length < 4) e.cedula = 'Cédula inválida.';
+    if (form.nombre.trim().length < 2) e.nombre = 'Escribe el nombre completo.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Escribe un correo válido: con él entrará al sistema.';
+    if (form.cedula.trim().length < 4) e.cedula = 'Escribe la cédula (CI).';
     if (!editId && form.password.length < 6) e.password = 'Mínimo 6 caracteres.';
     setErrores(e);
     return Object.keys(e).length === 0;
@@ -66,17 +117,17 @@ export default function AdminUsuariosPage() {
   async function guardar() {
     if (!validar()) return;
     setGuardando(true); setApiError('');
+    const datos = {
+      nombre: form.nombre.trim(), email: form.email.trim(), cedula: form.cedula.trim(), rol: form.rol,
+      carrera: form.carrera.trim() || undefined, institucion: form.institucion.trim() || undefined,
+    };
     try {
       if (editId) {
-        await api.put(`/admin/usuarios/${editId}`, {
-          nombre: form.nombre.trim(), email: form.email.trim(), cedula: form.cedula.trim(),
-          rol: form.rol, carrera: form.carrera.trim() || undefined, institucion: form.institucion.trim() || undefined,
-        });
+        await api.put(`/admin/usuarios/${editId}`, datos);
+        setAviso(`Se guardaron los cambios de ${datos.nombre}.`);
       } else {
-        await api.post('/admin/usuarios', {
-          nombre: form.nombre.trim(), email: form.email.trim(), cedula: form.cedula.trim(), rol: form.rol,
-          password: form.password, carrera: form.carrera.trim() || undefined, institucion: form.institucion.trim() || undefined,
-        });
+        await api.post('/admin/usuarios', { ...datos, password: form.password });
+        setTemporal({ titulo: 'Cuenta creada', nombre: datos.nombre, usuario: datos.email, pass: form.password });
       }
       setModal(false); await cargar();
     } catch (err) { setApiError(err instanceof ApiError ? err.message : 'No se pudo guardar'); }
@@ -84,97 +135,166 @@ export default function AdminUsuariosPage() {
   }
 
   async function alternar(u: Usuario) {
-    if (!confirm(`¿${u.activo ? 'Desactivar' : 'Activar'} la cuenta de ${u.nombre}?${u.activo ? ' No podrá iniciar sesión.' : ''}`)) return;
-    await api.patch(`/admin/usuarios/${u.id}/estado`).catch((e) => setApiError(e instanceof ApiError ? e.message : ''));
+    if (!confirm(u.activo
+      ? `¿Desactivar la cuenta de ${u.nombre}? No podrá iniciar sesión, pero se conserva todo su historial.`
+      : `¿Volver a activar la cuenta de ${u.nombre}?`)) return;
+    try { await api.patch(`/admin/usuarios/${u.id}/estado`); setAviso(`${u.nombre}: cuenta ${u.activo ? 'desactivada' : 'activada'}.`); }
+    catch (e) { setAviso(e instanceof ApiError ? e.message : 'No se pudo cambiar el estado.'); }
     await cargar();
   }
 
   async function reset(u: Usuario) {
-    if (!confirm(`¿Restablecer la contraseña de ${u.nombre}? Se generará una temporal.`)) return;
+    if (!confirm(`¿Restablecer la contraseña de ${u.nombre}? Se genera una temporal, se desbloquea la cuenta y deberá cambiarla al entrar.`)) return;
     try {
       const r = await api.post<{ temporal: string }>(`/admin/usuarios/${u.id}/reset-password`);
-      setTemporal({ nombre: u.nombre, pass: r.temporal });
-    } catch (e) { alert(e instanceof ApiError ? e.message : 'No se pudo restablecer'); }
+      setTemporal({ titulo: 'Contraseña restablecida', nombre: u.nombre, usuario: u.rol === 'estudiante' ? usuarioDeAcceso(u) || u.email || '' : u.email ?? '', pass: r.temporal });
+      await cargar();
+    } catch (e) { setAviso(e instanceof ApiError ? e.message : 'No se pudo restablecer.'); }
   }
 
+  const total = conteos ? Object.values(conteos).reduce((a, b) => a + b, 0) : 0;
   const fecha = (f: string) => new Date(f).toLocaleDateString('es-BO', { day: 'numeric', month: 'short', year: 'numeric' });
+  const rolElegido = useMemo(() => rolDe(form.rol), [form.rol]);
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Gestión de usuarios" subtitle="Crea y administra cuentas de todos los roles. El registro público es solo para estudiantes."
+      <PageHeader title="Usuarios" subtitle="Todas las cuentas del sistema. Crea docentes, investigadores y administradores; los estudiantes los registra su docente."
         action={<button onClick={abrirCrear} className="btn-primary"><Plus className="h-4 w-4" /> Nuevo usuario</button>} />
 
-      {/* Filtros */}
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o correo…" className="input !pl-10" />
-        </div>
-        <Select value={fRol} onChange={(e) => setFRol(e.target.value)} className="!w-auto"><option value="">Todos los roles</option>{ROLES.map((r) => <option key={r} value={r} className="capitalize">{r}</option>)}</Select>
-        <Select value={fEstado} onChange={(e) => setFEstado(e.target.value)} className="!w-auto"><option value="">Todos</option><option value="activo">Activos</option><option value="inactivo">Inactivos</option></Select>
+      {/* Pestañas por rol */}
+      <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Rol">
+        {[{ id: '' as const, plural: 'Todos', color: '#64748B' }, ...ROLES].map((r) => {
+          const sel = fRol === r.id;
+          const n = r.id ? conteos?.[r.id] ?? 0 : total;
+          return (
+            <button key={r.id || 'todos'} role="tab" aria-selected={sel} onClick={() => filtrar({ rol: r.id })}
+              className={`flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2 text-sm transition ${sel ? 'border-prexi-blue bg-prexi-blue/10 font-bold text-prexi-blue-deep' : 'border-line bg-card text-fg hover:bg-subtle'}`}>
+              {r.id && <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: r.color }} />}
+              {r.plural} <span className="rounded-md bg-subtle px-1.5 py-0.5 text-2xs font-bold text-muted">{n}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {apiError && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
+      {/* Búsqueda y estado */}
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[240px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Busca por nombre, correo, CI, RU o usuario (Alvaro_12929098)" className="input !pl-10" />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {ESTADOS.map((e) => (
+            <button key={e.id || 'todos'} onClick={() => filtrar({ estado: e.id })}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${fEstado === e.id ? 'bg-fg text-card' : 'bg-subtle text-muted hover:text-fg'}`}>{e.nombre}</button>
+          ))}
+        </div>
+      </div>
+
+      {aviso && (
+        <p className="mb-4 flex items-center justify-between gap-2 rounded-xl border border-prexi-blue/30 bg-prexi-blue/10 px-3 py-2 text-sm text-fg">
+          <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-prexi-blue-deep" /> {aviso}</span>
+          <button onClick={() => setAviso('')} aria-label="Cerrar aviso" className="text-muted hover:text-fg"><X className="h-4 w-4" /></button>
+        </p>
+      )}
+      {fRol === 'estudiante' && (
+        <p className="mb-4 rounded-xl bg-subtle px-3 py-2.5 text-sm text-muted">
+          Los estudiantes los registra su docente desde <Link href="/docente/estudiantes/registro" className="font-semibold text-prexi-blue-deep hover:underline">Registro de estudiantes</Link>, o se registran solos y el docente los acepta.
+        </p>
+      )}
 
       {cargando ? <div className="space-y-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14" />)}</div>
-        : items.length === 0 ? <EmptyState icon={<Search className="h-7 w-7" />} title="Sin usuarios" hint="Ajusta los filtros o crea un nuevo usuario." />
+        : items.length === 0 ? <EmptyState icon={<Search className="h-7 w-7" />} title="No hay cuentas con esos filtros" hint="Prueba con otra búsqueda o vuelve a «Todos»." />
           : (
             <ResponsiveTable
               rows={items}
               rowKey={(u) => u.id}
               cols={[
-                { header: 'Usuario', cell: (u) => <div className={u.activo ? '' : 'opacity-60'}><p className="font-medium text-fg">{u.nombre}</p><p className="text-xs text-muted">{u.email}</p></div> },
-                { header: 'Rol', cell: (u) => <Badge tone={ROL_TONE[u.rol]}>{u.rol}</Badge> },
-                { header: 'Institución', cell: (u) => <span className="text-muted">{u.institucion ?? '—'}</span> },
-                { header: 'Estado', cell: (u) => u.activo ? <Badge tone="green"><CheckCircle className="h-3 w-3" /> Activo</Badge> : <Badge tone="red"><X className="h-3 w-3" /> Inactivo</Badge> },
-                { header: 'Alta', cell: (u) => <span className="text-muted">{fecha(u.creadoEn)}</span> },
-                { header: 'Acciones', align: 'right', cardHidden: true, cell: (u) => <AccionesUsuario u={u} deshabilitado={u.id === yo?.id} onEditar={abrirEditar} onReset={reset} onAlternar={alternar} /> },
+                { header: 'Persona', cell: (u) => <Persona u={u} /> },
+                { header: 'Rol', cell: (u) => <RolChip rol={u.rol} /> },
+                { header: 'Detalle', cell: (u) => <span className="text-sm text-muted">{detalle(u)}</span> },
+                { header: 'Estado', cell: (u) => <Estados u={u} /> },
+                { header: 'Alta', cell: (u) => <span className="text-sm text-muted">{fecha(u.creadoEn)}</span> },
+                { header: 'Acciones', align: 'right', cardHidden: true, cell: (u) => <AccionesUsuario u={u} soyYo={u.id === yo?.id} onEditar={abrirEditar} onReset={reset} onAlternar={alternar} /> },
               ]}
               card={(u) => (
-                <div className={`space-y-3 ${u.activo ? '' : 'opacity-60'}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0"><p className="font-medium text-fg">{u.nombre}</p><p className="truncate text-xs text-muted">{u.email}</p></div>
-                    <Badge tone={ROL_TONE[u.rol]}>{u.rol}</Badge>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                    {u.activo ? <Badge tone="green"><CheckCircle className="h-3 w-3" /> Activo</Badge> : <Badge tone="red"><X className="h-3 w-3" /> Inactivo</Badge>}
-                    <span>{u.institucion ?? 'Sin institución'}</span>
-                    <span>· Alta: {fecha(u.creadoEn)}</span>
-                  </div>
-                  <AccionesUsuario u={u} deshabilitado={u.id === yo?.id} onEditar={abrirEditar} onReset={reset} onAlternar={alternar} grandes />
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3"><Persona u={u} /><RolChip rol={u.rol} /></div>
+                  <p className="text-sm text-muted">{detalle(u)} · Alta {fecha(u.creadoEn)}</p>
+                  <Estados u={u} />
+                  <AccionesUsuario u={u} soyYo={u.id === yo?.id} onEditar={abrirEditar} onReset={reset} onAlternar={alternar} grandes />
                 </div>
               )}
             />
           )}
 
-      {/* Modal crear/editar */}
-      <Modal open={modal} onClose={() => setModal(false)} title={editId ? 'Editar usuario' : 'Nuevo usuario'}
-        footer={<>
+      {/* Asistente crear / editar */}
+      <Modal open={modal} onClose={() => setModal(false)} size="lg"
+        title={editId ? 'Editar cuenta' : paso === 1 ? 'Nueva cuenta · 1 de 2: ¿qué rol tendrá?' : `Nueva cuenta · 2 de 2: datos del ${rolElegido.nombre.toLowerCase()}`}
+        footer={editId || paso === 2 ? <>
+          {!editId && <button onClick={() => setPaso(1)} className="btn-ghost mr-auto"><ChevronLeft className="h-4 w-4" /> Cambiar rol</button>}
           <button onClick={() => setModal(false)} className="btn-ghost">Cancelar</button>
-          <button onClick={guardar} disabled={guardando} className="btn-primary">{guardando ? 'Guardando…' : 'Guardar'}</button>
-        </>}>
-        {apiError && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2"><Field label="Nombre completo" error={errores.nombre}><Input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} /></Field></div>
-          <Field label="Correo" error={errores.email}><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-          <Field label="Cédula" error={errores.cedula}><Input value={form.cedula} onChange={(e) => setForm({ ...form, cedula: e.target.value })} /></Field>
-          <Field label="Rol"><Select value={form.rol} onChange={(e) => setForm({ ...form, rol: e.target.value as Rol })}>{ROLES.map((r) => <option key={r} value={r} className="capitalize">{r}</option>)}</Select></Field>
-          {!editId && <Field label="Contraseña inicial" error={errores.password}><Input type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Mín. 6 caracteres" /></Field>}
-          <Field label="Carrera (opcional)"><Input value={form.carrera} onChange={(e) => setForm({ ...form, carrera: e.target.value })} /></Field>
-          <Field label="Institución (opcional)"><Input value={form.institucion} onChange={(e) => setForm({ ...form, institucion: e.target.value })} placeholder="UPEA, EMI…" /></Field>
-        </div>
+          <button onClick={guardar} disabled={guardando} className="btn-primary">{guardando ? 'Guardando…' : editId ? 'Guardar cambios' : 'Crear cuenta'}</button>
+        </> : <button onClick={() => setModal(false)} className="btn-ghost">Cancelar</button>}>
+        {paso === 1 && !editId ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {ROLES.map((r) => (
+              <button key={r.id} onClick={() => { setForm((f) => ({ ...f, rol: r.id })); setPaso(2); }}
+                className="group rounded-2xl border-2 border-line p-4 text-left transition hover:-translate-y-0.5" style={{ borderColor: form.rol === r.id ? r.color : undefined }}>
+                <span className="flex items-center gap-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style={{ color: r.color, backgroundColor: `${r.color}1F` }}><r.icon className="h-5 w-5" /></span>
+                  <span><span className="block font-display text-lg font-bold text-fg">{r.nombre}</span><span className="block text-sm text-muted">{r.resumen}</span></span>
+                </span>
+                <ul className="mt-3 space-y-1 text-sm text-muted">
+                  {r.puede.map((p) => <li key={p} className="flex items-start gap-1.5"><CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: r.color }} /> {p}</li>)}
+                </ul>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-prexi-blue-deep">Elegir <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {apiError && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-prexi-red">{apiError}</p>}
+            {form.rol === 'estudiante' && !editId && (
+              <p className="rounded-xl border border-prexi-amber/40 bg-prexi-amber/10 px-3 py-2.5 text-sm text-fg">
+                Para un curso completo es mejor que el docente use <b>Registro de estudiantes</b>: su usuario será su primer nombre y su CI. Aquí la cuenta entra con el correo.
+              </p>
+            )}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2"><Field label="Nombre completo" error={errores.nombre}><Input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Ej.: María Quispe Mamani" autoFocus /></Field></div>
+              <Field label="Correo electrónico" hint="Con este correo iniciará sesión." error={errores.email}><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nombre@upea.edu.bo" /></Field>
+              <Field label="Cédula (CI)" error={errores.cedula}><Input value={form.cedula} onChange={(e) => setForm({ ...form, cedula: e.target.value })} placeholder="Ej.: 9876543" /></Field>
+              {editId && (
+                <Field label="Rol" hint={editId === yo?.id ? 'No puedes quitarte el rol de administrador.' : 'Cambiar el rol queda en la auditoría.'}>
+                  <select value={form.rol} disabled={editId === yo?.id} onChange={(e) => setForm({ ...form, rol: e.target.value as Rol })} className="input">
+                    {ROLES.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                  </select>
+                </Field>
+              )}
+              <Field label="Institución (opcional)"><Input value={form.institucion} onChange={(e) => setForm({ ...form, institucion: e.target.value })} placeholder="UPEA" /></Field>
+              {form.rol === 'estudiante' && <Field label="Carrera (opcional)"><Input value={form.carrera} onChange={(e) => setForm({ ...form, carrera: e.target.value })} placeholder="Ingeniería de Sistemas" /></Field>}
+            </div>
+            {!editId && (
+              <div className="rounded-2xl border border-line bg-subtle/60 p-4">
+                <Field label="Contraseña inicial" hint="Compártela con la persona: deberá cambiarla en su primer ingreso." error={errores.password}>
+                  <div className="flex gap-2">
+                    <Input value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="font-mono" />
+                    <button type="button" onClick={() => setForm({ ...form, password: generarClave() })} className="btn-ghost shrink-0 text-sm"><KeyRound className="h-4 w-4" /> Generar otra</button>
+                  </div>
+                </Field>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
 
-      {/* Contraseña temporal generada */}
-      <Modal open={!!temporal} onClose={() => setTemporal(null)} title="Contraseña temporal generada"
-        footer={<button onClick={() => setTemporal(null)} className="btn-primary">Entendido</button>}>
+      {/* Datos de acceso (cuenta nueva o contraseña restablecida) */}
+      <Modal open={!!temporal} onClose={() => setTemporal(null)} title={temporal?.titulo ?? ''}
+        footer={<button onClick={() => setTemporal(null)} className="btn-primary">Listo</button>}>
         {temporal && (
           <div className="space-y-3">
-            <p className="text-sm text-muted">Comparte esta contraseña con <b className="text-fg">{temporal.nombre}</b>. Se le pedirá cambiarla en su próximo ingreso. No se volverá a mostrar.</p>
-            <div className="flex items-center justify-between rounded-xl border border-line bg-subtle px-4 py-3">
-              <code className="font-mono text-lg font-bold text-fg">{temporal.pass}</code>
-              <button onClick={() => navigator.clipboard?.writeText(temporal.pass)} className="text-xs font-semibold text-prexi-blue-deep hover:underline">Copiar</button>
-            </div>
+            <p className="text-sm text-muted">Entrégale estos datos a <b className="text-fg">{temporal.nombre}</b>. La contraseña no se volverá a mostrar y deberá cambiarla al entrar.</p>
+            <DatoCopiable etiqueta="Usuario" valor={temporal.usuario} />
+            <DatoCopiable etiqueta="Contraseña inicial" valor={temporal.pass} />
           </div>
         )}
       </Modal>
@@ -182,18 +302,67 @@ export default function AdminUsuariosPage() {
   );
 }
 
-/** Botonera de acciones de un usuario. `grandes` = áreas táctiles ≥44px (móvil). */
-function AccionesUsuario({ u, deshabilitado, onEditar, onReset, onAlternar, grandes = false }: {
-  u: Usuario; deshabilitado: boolean;
+function detalle(u: Usuario): string {
+  if (u.rol === 'estudiante') return u.curso ?? 'Sin curso asignado';
+  if (u.rol === 'docente') return u.paralelos_a_cargo ? `${u.paralelos_a_cargo} paralelo(s) a cargo` : 'Sin paralelos asignados';
+  return u.institucion ?? '—';
+}
+
+function Persona({ u }: { u: Usuario }) {
+  const acceso = u.rol === 'estudiante' ? usuarioDeAcceso(u) : '';
+  return (
+    <div className={`min-w-0 ${u.activo ? '' : 'opacity-60'}`}>
+      <p className="font-medium text-fg">{u.nombre}</p>
+      <p className="truncate text-xs text-muted">
+        {acceso ? <span className="font-mono">{acceso}</span> : u.email ?? '—'}
+        {u.cedula ? ` · CI ${u.cedula}` : ''}{u.ru ? ` · RU ${u.ru}` : ''}
+      </p>
+    </div>
+  );
+}
+
+function RolChip({ rol }: { rol: Rol }) {
+  const r = rolDe(rol);
+  return <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold" style={{ color: r.color, backgroundColor: `${r.color}1F` }}><r.icon className="h-3.5 w-3.5" /> {r.nombre}</span>;
+}
+
+function Estados({ u }: { u: Usuario }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {u.activo ? <Badge tone="green"><CheckCircle className="h-3 w-3" /> Activa</Badge> : <Badge tone="red"><X className="h-3 w-3" /> Desactivada</Badge>}
+      {u.bloqueado && <Badge tone="red"><Lock className="h-3 w-3" /> Bloqueada</Badge>}
+      {u.mustChangePassword && <Badge tone="amber"><KeyRound className="h-3 w-3" /> Contraseña inicial</Badge>}
+      {u.rol === 'estudiante' && u.estadoInscripcion === 'pendiente' && <Badge tone="blue">Solicitud pendiente</Badge>}
+    </div>
+  );
+}
+
+function DatoCopiable({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  const [copiado, setCopiado] = useState(false);
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-subtle px-4 py-3">
+      <span className="min-w-0"><span className="block text-xs text-muted">{etiqueta}</span><code className="block truncate font-mono text-lg font-bold text-fg">{valor || '—'}</code></span>
+      <button onClick={() => { navigator.clipboard?.writeText(valor); setCopiado(true); setTimeout(() => setCopiado(false), 1500); }}
+        className="shrink-0 text-xs font-semibold text-prexi-blue-deep hover:underline">{copiado ? '¡Copiado!' : 'Copiar'}</button>
+    </div>
+  );
+}
+
+/** Acciones con texto (no solo íconos). `grandes` = áreas táctiles ≥44px (móvil). */
+function AccionesUsuario({ u, soyYo, onEditar, onReset, onAlternar, grandes = false }: {
+  u: Usuario; soyYo: boolean;
   onEditar: (u: Usuario) => void; onReset: (u: Usuario) => void; onAlternar: (u: Usuario) => void;
   grandes?: boolean;
 }) {
-  const s = grandes ? 'h-10 w-10' : 'h-8 w-8';
+  const t = grandes ? '!px-3 !py-2 text-sm' : '!px-2.5 !py-1 text-xs';
   return (
-    <div className={`flex items-center gap-1.5 ${grandes ? '' : 'justify-end'}`}>
-      <button onClick={() => onEditar(u)} title="Editar" aria-label={`Editar a ${u.nombre}`} className={`grid ${s} place-items-center rounded-lg border border-line text-muted transition hover:bg-subtle hover:text-prexi-blue-deep`}><Edit className="h-4 w-4" /></button>
-      <button onClick={() => onReset(u)} title="Restablecer contraseña" aria-label={`Restablecer contraseña de ${u.nombre}`} className={`grid ${s} place-items-center rounded-lg border border-line text-muted transition hover:bg-subtle hover:text-prexi-amber`}><KeyRound className="h-4 w-4" /></button>
-      <button onClick={() => onAlternar(u)} disabled={deshabilitado} title={deshabilitado ? 'No puedes desactivarte' : (u.activo ? 'Desactivar' : 'Activar')} aria-label={`${u.activo ? 'Desactivar' : 'Activar'} a ${u.nombre}`} className={`grid ${s} place-items-center rounded-lg border border-line text-muted transition hover:bg-subtle enabled:hover:text-prexi-red disabled:opacity-40`}><Power className="h-4 w-4" /></button>
+    <div className={`flex flex-wrap items-center gap-1.5 ${grandes ? '' : 'justify-end'}`}>
+      <button onClick={() => onEditar(u)} className={`btn-ghost ${t}`}><Edit className="h-3.5 w-3.5" /> Editar</button>
+      <button onClick={() => onReset(u)} className={`btn-ghost ${t}`} title="Genera una contraseña temporal y desbloquea la cuenta"><KeyRound className="h-3.5 w-3.5" /> Contraseña</button>
+      <button onClick={() => onAlternar(u)} disabled={soyYo} title={soyYo ? 'No puedes desactivar tu propia cuenta' : undefined}
+        className={`btn-ghost ${t} disabled:opacity-40 ${u.activo ? 'hover:!text-prexi-red' : 'hover:!text-prexi-green'}`}>
+        <Power className="h-3.5 w-3.5" /> {u.activo ? 'Desactivar' : 'Activar'}
+      </button>
     </div>
   );
 }

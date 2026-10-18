@@ -19,22 +19,44 @@ export class AdminUsuariosService {
   ) {}
 
   async listar(filtros: { rol?: string; estado?: string; q?: string }) {
+    // "Alvaro_12929098" (usuario de un estudiante) se busca por su CI.
+    const q = filtros.q?.trim();
+    const ciDeUsuario = q?.match(/_([0-9A-Za-z-]{4,20})$/)?.[1]?.toUpperCase();
     const where: Prisma.UsuarioWhereInput = {
       ...(filtros.rol ? { rol: filtros.rol as Rol } : {}),
-      ...(filtros.estado === 'activo' ? { activo: true } : filtros.estado === 'inactivo' ? { activo: false } : {}),
-      ...(filtros.q
-        ? { OR: [{ nombre: { contains: filtros.q, mode: 'insensitive' } }, { email: { contains: filtros.q, mode: 'insensitive' } }] }
+      ...(filtros.estado === 'activo' ? { activo: true }
+        : filtros.estado === 'inactivo' ? { activo: false }
+          : filtros.estado === 'bloqueado' ? { lockedUntil: { gt: new Date() } }
+            : filtros.estado === 'temporal' ? { mustChangePassword: true } : {}),
+      ...(q
+        ? {
+            OR: [
+              { nombre: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+              { cedula: { contains: ciDeUsuario ?? q, mode: 'insensitive' } },
+              { ru: { contains: q } },
+            ],
+          }
         : {}),
     };
     const usuarios = await this.prisma.usuario.findMany({
       where,
       orderBy: [{ activo: 'desc' }, { creadoEn: 'desc' }],
       select: {
-        id: true, nombre: true, email: true, cedula: true, rol: true, carrera: true,
-        institucion: true, paralelo: true, activo: true, creadoEn: true,
+        id: true, nombre: true, nombres: true, email: true, cedula: true, ru: true, rol: true, carrera: true,
+        institucion: true, paralelo: true, activo: true, creadoEn: true, mustChangePassword: true, lockedUntil: true,
+        estadoInscripcion: true,
+        paraleloRef: { select: { nombre: true, materia: { select: { nombre: true, gestion: true } } } },
+        _count: { select: { paralelosACargo: true } },
       },
     });
-    return usuarios;
+    const ahora = new Date();
+    return usuarios.map(({ lockedUntil, paraleloRef, _count, ...u }) => ({
+      ...u,
+      bloqueado: !!lockedUntil && lockedUntil > ahora,
+      curso: paraleloRef ? `${paraleloRef.materia.nombre} ${paraleloRef.materia.gestion} · ${paraleloRef.nombre}` : null,
+      paralelos_a_cargo: _count.paralelosACargo,
+    }));
   }
 
   /** Conteo por rol (para el dashboard y encabezados). */
@@ -56,6 +78,8 @@ export class AdminUsuariosService {
       data: {
         nombre: dto.nombre, email: dto.email, cedula: dto.cedula, rol: dto.rol,
         carrera: dto.carrera ?? null, institucion: dto.institucion ?? null, passwordHash,
+        // La contraseña la eligió el admin: la persona debe cambiarla al entrar.
+        mustChangePassword: true,
         // Los estudiantes deben rendir el pretest; los demás roles no.
         pretestCompletado: dto.rol !== 'estudiante',
         // Ranking solo tiene sentido para estudiantes (gamificación).

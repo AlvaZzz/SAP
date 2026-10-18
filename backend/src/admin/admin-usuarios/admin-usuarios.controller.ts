@@ -15,7 +15,11 @@ export class AdminUsuariosController {
 
   @Get()
   async listar(@Query('rol') rol?: string, @Query('estado') estado?: string, @Query('q') q?: string) {
-    return { usuarios: await this.service.listar({ rol: rol || undefined, estado: estado || undefined, q: q || undefined }) };
+    const [usuarios, conteos] = await Promise.all([
+      this.service.listar({ rol: rol || undefined, estado: estado || undefined, q: q || undefined }),
+      this.service.conteos(),
+    ]);
+    return { usuarios, conteos };
   }
 
   @Post()
