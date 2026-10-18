@@ -46,7 +46,10 @@ describe('InvestigadorValidacionService (panel de validación de la tesis)', () 
     expect(r.usabilidad.media.estimacion).toBeNull();
     expect(r.calidad.todas_aceptables).toBeNull();
     expect(r.criterios.pendientes).toBe(3);
-    expect(r.criterios.hipotesis_aceptada).toBeNull();
+    expect(r.criterios.sistema_validado).toBeNull();
+    expect(r.hipotesis.aceptada).toBeNull();
+    expect(r.rendimiento.media).toBeNull();
+    expect(r.rendimiento.contraste.calculado).toBe(false);
   });
 
   it('precisión: % en rango con IC, excluyendo las asignaciones no evaluables', async () => {
@@ -87,7 +90,7 @@ describe('InvestigadorValidacionService (panel de validación de la tesis)', () 
     expect(r.usabilidad.interpretacion?.calificativo).toBe('Excelente');
   });
 
-  it('criterios: la hipótesis se acepta solo si los TRES se cumplen a la vez', async () => {
+  it('criterios: el sistema queda validado solo si los TRES se cumplen a la vez', async () => {
     prisma.logAdaptacion.findMany.mockResolvedValue(Array.from({ length: 40 }, () => log(11, true)));
     instrumentos.respuestasPorPersona.mockImplementation(async (clave: string) =>
       clave === 'SUS'
@@ -97,9 +100,11 @@ describe('InvestigadorValidacionService (panel de validación de la tesis)', () 
     const todos = await service.resumen();
     expect(todos.criterios.filas.map((c) => c.cumple)).toEqual([true, true, true]);
     expect(todos.criterios.satisfechos).toBe(3);
-    expect(todos.criterios.hipotesis_aceptada).toBe(true);
+    expect(todos.criterios.sistema_validado).toBe(true);
+    // Sin exámenes de unidad la hipótesis no se decide, aunque el producto esté validado.
+    expect(todos.hipotesis.aceptada).toBeNull();
 
-    // Basta con que falle la calidad para que la hipótesis NO se acepte.
+    // Basta con que falle la calidad para que el sistema NO quede validado.
     instrumentos.respuestasPorPersona.mockImplementation(async (clave: string) =>
       clave === 'SUS'
         ? new Map([[11, sus([5, 1, 5, 1, 5, 1, 5, 1, 5, 1])], [12, sus([4, 2, 5, 1, 4, 2, 5, 2, 4, 3])]])
@@ -107,7 +112,38 @@ describe('InvestigadorValidacionService (panel de validación de la tesis)', () 
     );
     const falla = await service.resumen();
     expect(falla.criterios.filas.map((c) => c.cumple)).toEqual([true, true, false]);
-    expect(falla.criterios.hipotesis_aceptada).toBe(false);
+    expect(falla.criterios.sistema_validado).toBe(false);
+  });
+
+  it('rendimiento: decide la hipótesis con el PRIMER intento de cada unidad', async () => {
+    const ex = (usuarioId: number, unidad: number, puntaje: number, dia: number) => ({
+      usuarioId, unidadId: unidad, puntaje, fecha: new Date(`2026-10-${String(dia).padStart(2, '0')}T12:00:00Z`),
+      unidad: { numero: unidad, titulo: `Unidad ${unidad}` },
+    });
+    prisma.usuario.findMany.mockResolvedValue([
+      ...ESTUDIANTES,
+      { id: 13, nombre: 'Eva Privada', paralelo: 'B', creadoEn: new Date(), ranking: null },
+    ]);
+    prisma.examenUnidad.findMany.mockResolvedValue([
+      ex(11, 1, 90, 1), ex(11, 2, 80, 5),
+      ex(12, 1, 60, 1), ex(12, 1, 100, 3), // el reintento con 100 NO cuenta
+      ex(13, 1, 85, 2),
+    ]);
+    const r = await service.resumen();
+    expect(r.rendimiento.n_estudiantes).toBe(3);
+    expect(r.rendimiento.n_reintentos_excluidos).toBe(1);
+    // promedios: 85, 60, 85 → media 76,7
+    expect(r.rendimiento.media).toBe(76.7);
+    expect(r.rendimiento.pct_80).toBe(66.7);
+    expect(r.rendimiento.por_unidad[0]).toEqual({ unidad: 1, titulo: 'Unidad 1', n: 3, media: 78.3, pct_80: 66.7 });
+    expect(r.rendimiento.contraste.calculado).toBe(true);
+    expect(r.hipotesis.aceptada).toBe(false);
+
+    const csv = await service.rendimientoCsv();
+    const lineas = csv.split('\n');
+    expect(lineas[0]).toBe('id_anonimo,paralelo,n_examenes,n_intentos_totales,u1_primer_intento,u2_primer_intento,promedio,alcanza_80');
+    expect(lineas[2]).toBe('E-002,A,1,2,60,,60,0');
+    expect(csv).not.toMatch(/Privad/);
   });
 
   it('los CSV salen anonimizados: sin nombre ni id interno', async () => {

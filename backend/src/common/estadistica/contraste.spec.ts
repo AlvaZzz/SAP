@@ -6,7 +6,7 @@
  * `inferencia.spec.ts`; aquí se verifica la lógica metodológica que los usa.
  */
 
-import { compararGrupos, formatearP, MIN_CALCULO, MIN_INTERPRETABLE } from './contraste';
+import { compararGrupos, contrastarFrenteA, formatearP, MIN_CALCULO, MIN_INTERPRETABLE } from './contraste';
 
 // Dos grupos normales, varianzas parecidas, sin diferencia real.
 const NORMAL_A = [52, 55, 58, 60, 62, 64, 66, 68, 70, 73];
@@ -128,5 +128,26 @@ describe('formato académico del valor p', () => {
   it('reporta tres decimales en el resto de casos', () => {
     expect(formatearP(0.0432)).toBe('p = 0.043');
     expect(formatearP(0.5)).toBe('p = 0.500');
+  });
+});
+
+describe('contraste de una muestra frente a 80 (hipótesis de la tesis)', () => {
+  it('se niega con menos de MIN_CALCULO estudiantes', () => {
+    const r = contrastarFrenteA([85, 90], 80, { variable: 'rendimiento' });
+    expect(r.calculado).toBe(false);
+    expect(r.resultado).toBeNull();
+    expect(r.bloqueo).toContain(String(MIN_CALCULO));
+  });
+
+  it('con datos normales usa la t de Student de una muestra', () => {
+    const r = contrastarFrenteA([72, 76, 79, 81, 83, 84, 86, 88, 90, 94], 80, { variable: 'rendimiento' });
+    expect(r.prueba).toBe('t de Student para una muestra');
+    expect(r.interpretable).toBe(true);
+    expect(r.efecto).not.toBeNull();
+  });
+
+  it('con datos no normales usa Wilcoxon', () => {
+    const r = contrastarFrenteA([20, 81, 82, 83, 84, 85, 86, 87, 88, 100], 80, { variable: 'rendimiento' });
+    expect(r.prueba).toContain('Wilcoxon');
   });
 });

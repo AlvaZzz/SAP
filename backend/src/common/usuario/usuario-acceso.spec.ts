@@ -1,4 +1,4 @@
-import { leerUsuarioDeAcceso, nombreCoincide, primerNombre, usuarioDeAcceso } from './usuario-acceso';
+import { errorNombreCompleto, errorNombrePersona, leerUsuarioDeAcceso, nombreCoincide, primerNombre, usuarioDeAcceso } from './usuario-acceso';
 
 describe('Usuario de acceso del estudiante (PrimerNombre_CI)', () => {
   it('se arma con el primer nombre sin tildes y el CI', () => {
@@ -33,5 +33,26 @@ describe('Usuario de acceso del estudiante (PrimerNombre_CI)', () => {
 
   it('en cuentas antiguas sin "nombres" vale cualquier palabra del nombre', () => {
     expect(nombreCoincide('juan', { nombres: null, nombre: 'Juan Pérez' })).toBe(true);
+  });
+});
+
+describe('nombres de persona válidos', () => {
+  it('acepta nombres reales con tildes, ñ, guion y apóstrofo', () => {
+    for (const n of ['María José', 'Ñusta', "D'Alessandro", 'Mamani-Quispe', 'Güemes']) {
+      expect(errorNombrePersona(n, 'los nombres')).toBeNull();
+    }
+  });
+
+  it('rechaza números, símbolos y nombres vacíos (dejarían la cuenta sin usuario)', () => {
+    expect(errorNombrePersona('123 456', 'los nombres')).toMatch(/solo van letras/);
+    expect(errorNombrePersona('<script>', 'los nombres')).toMatch(/solo van letras/);
+    expect(errorNombrePersona('  ', 'los nombres')).toBe('Escribe los nombres.');
+    expect(errorNombrePersona('.-', 'los nombres')).toMatch(/al menos 2 letras/);
+  });
+
+  it('el nombre completo exige paterno y nombres; el materno es opcional', () => {
+    expect(errorNombreCompleto({ apellidoPaterno: 'Mamani', nombres: 'Juan' })).toBeNull();
+    expect(errorNombreCompleto({ apellidoPaterno: 'Mamani', nombres: '' })).toBe('Escribe los nombres.');
+    expect(errorNombreCompleto({ apellidoPaterno: 'Mamani', apellidoMaterno: '9', nombres: 'Juan' })).toMatch(/apellido materno/);
   });
 });

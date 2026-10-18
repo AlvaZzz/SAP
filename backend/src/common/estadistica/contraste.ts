@@ -16,8 +16,8 @@
  */
 
 import {
-  Descriptivos, ResultadoContraste, TamanoEfecto, descriptivos, levene,
-  mannWhitney, shapiroWilk, tIndependiente, tamanoEfecto,
+  Descriptivos, ResultadoContraste, TamanoEfecto, descriptivos, efectoUnaMuestra, levene,
+  mannWhitney, shapiroWilk, tIndependiente, tUnaMuestra, tamanoEfecto, wilcoxonUnaMuestra,
 } from './inferencia';
 
 /** Nivel de significancia adoptado en el estudio. */
@@ -253,5 +253,109 @@ export function compararGrupos(
     efecto,
     significativo,
     interpretacion,
+  };
+}
+
+export interface ContrasteUnaMuestra {
+  variable: string;
+  referencia: number;
+  descriptivos: Descriptivos;
+  calculado: boolean;
+  bloqueo: string | null;
+  interpretable: boolean;
+  advertencia: string | null;
+  supuestos: Supuesto[];
+  prueba: string | null;
+  justificacion: string | null;
+  resultado: ResultadoContraste | null;
+  efecto: TamanoEfecto | null;
+  significativo: boolean | null;
+  interpretacion: string;
+}
+
+/**
+ * CONTRASTE DE UNA MUESTRA frente a un valor de referencia (la hipótesis de la
+ * tesis: promedio del rendimiento académico frente a 80).
+ *
+ *  1. ¿Hay n suficiente? Si no → se bloquea y se explica.
+ *  2. Shapiro-Wilk → ¿los datos se apartan de la normal?
+ *  3. Normales → t de Student de una muestra; si no → rangos con signo de Wilcoxon.
+ *  4. d de Cohen SIEMPRE: la distancia al umbral en desviaciones estándar.
+ */
+export function contrastarFrenteA(xs: number[], referencia: number, opciones: { variable: string }): ContrasteUnaMuestra {
+  const { variable } = opciones;
+  const desc = descriptivos(xs);
+  const base = {
+    variable, referencia, descriptivos: desc, supuestos: [] as Supuesto[],
+    prueba: null, justificacion: null, resultado: null, efecto: null, significativo: null,
+  };
+
+  if (xs.length < MIN_CALCULO) {
+    return {
+      ...base,
+      calculado: false,
+      interpretable: false,
+      advertencia: null,
+      bloqueo: `Se requieren al menos ${MIN_CALCULO} estudiantes para el contraste. Actualmente n = ${xs.length}.`,
+      interpretacion: 'No se emite ningún valor p: con tan pocos casos cualquier cifra sería ruido. Falta recolectar datos.',
+    };
+  }
+
+  const sw = shapiroWilk(xs);
+  const normal = Number.isFinite(sw.p) ? sw.p >= ALFA : null;
+  const supuestos: Supuesto[] = [{
+    nombre: 'Normalidad (Shapiro-Wilk)',
+    estadistico: Number.isFinite(sw.W) ? sw.W : null,
+    p: Number.isFinite(sw.p) ? sw.p : null,
+    cumple: normal,
+    detalle: normal === null
+      ? 'No evaluable con estos datos (por ejemplo, todos los valores iguales).'
+      : normal
+        ? `W = ${fmt(sw.W, 3)}, ${formatearP(sw.p)} → la distribución no se aparta de la normal.`
+        : `W = ${fmt(sw.W, 3)}, ${formatearP(sw.p)} → los datos NO son normales.`,
+  }];
+
+  let resultado: ResultadoContraste;
+  let prueba: string;
+  let justificacion: string;
+  if (normal === false) {
+    const w = wilcoxonUnaMuestra(xs, referencia);
+    resultado = w;
+    prueba = 'Rangos con signo de Wilcoxon (una muestra)';
+    justificacion =
+      'Se usa la prueba NO PARAMÉTRICA porque Shapiro-Wilk indica que los promedios no siguen una distribución normal. ' +
+      (w.exacto ? 'Valor p exacto.' : 'Valor p por aproximación normal con corrección por empates.');
+  } else {
+    resultado = tUnaMuestra(xs, referencia);
+    prueba = 't de Student para una muestra';
+    justificacion = normal
+      ? 'Shapiro-Wilk no detecta desviación de la normalidad, por lo que la t de Student de una muestra es apropiada.'
+      : 'No se pudo evaluar la normalidad; se informa la t de Student de una muestra.';
+  }
+
+  const efecto = efectoUnaMuestra(xs, referencia);
+  const significativo = Number.isFinite(resultado.p) ? resultado.p < ALFA : null;
+  const interpretable = xs.length >= MIN_INTERPRETABLE;
+  const advertencia = interpretable
+    ? null
+    : `Resultado PRELIMINAR: con ${xs.length} estudiantes la prueba tiene muy poca potencia. Se recomiendan al menos ${MIN_INTERPRETABLE}.`;
+
+  const encima = desc.media >= referencia;
+  const centro = normal === false ? `la mediana (${fmt(desc.mediana, 1)})` : `la media (${fmt(desc.media, 1)})`;
+  let interpretacion = `El ${variable} promedio observado es ${fmt(desc.media, 1)}, ${encima ? 'igual o superior' : 'inferior'} a ${referencia}. `;
+  if (significativo === null) {
+    interpretacion += 'No se pudo calcular el valor p con estos datos.';
+  } else if (significativo) {
+    interpretacion += `La diferencia de ${centro} frente a ${referencia} es estadísticamente significativa (${formatearP(resultado.p)}): ` +
+      `el grupo está ${encima ? 'por encima' : 'por debajo'} del umbral más allá del azar.`;
+  } else {
+    interpretacion += `La diferencia de ${centro} frente a ${referencia} no es estadísticamente significativa (${formatearP(resultado.p)}): ` +
+      'con estos datos no se distingue del umbral.';
+  }
+  if (Number.isFinite(efecto.d)) interpretacion += ` Tamaño del efecto ${efecto.magnitud} (d = ${fmt(efecto.d)}).`;
+
+  return {
+    ...base, calculado: true, bloqueo: null, interpretable, advertencia, supuestos,
+    prueba, justificacion, resultado, efecto, significativo, interpretacion,
   };
 }

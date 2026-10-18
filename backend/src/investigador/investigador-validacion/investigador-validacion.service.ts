@@ -11,6 +11,7 @@ import {
 import { bootstrapIC, IntervaloBootstrap } from '../../common/estadistica/bootstrap';
 import { alfaCronbach } from '../../common/estadistica/fiabilidad';
 import { desviacion, media, mediana } from '../../common/estadistica/inferencia';
+import { contrastarFrenteA, formatearP, MIN_CALCULO } from '../../common/estadistica/contraste';
 import { percentilDe, porcentajePersonalizacion, rangoDesdeConfig } from '../../mediciones/motor/motor';
 import { ETIQUETA_NIVEL, NIVELES } from '../../common/niveles/nivel-dificultad';
 
@@ -49,6 +50,32 @@ const aCsv = (cols: string[], filas: (string | number | boolean | Date | null | 
   [cols.join(','), ...filas.map((f) => f.map(csvCelda).join(','))].join('\n');
 
 /**
+ * Umbral de la HIPÓTESIS de la tesis: rendimiento académico promedio ≥ 80/100 en
+ * los exámenes de unidad. Es parte de la hipótesis formulada en el Capítulo I, no
+ * un parámetro: por eso no se lee de la configuración.
+ */
+export const UMBRAL_HIPOTESIS = 80;
+
+interface ExamenFila { usuarioId: number; unidadId: number; puntaje: number; fecha: Date; unidad: { numero: number; titulo: string } }
+
+/**
+ * El rendimiento se mide con el PRIMER intento de cada unidad. La tesis declara
+ * un solo intento por examen; el sistema permite reintentar hasta aprobar, y
+ * contar los reintentos inflaría el promedio con la nota del último intento.
+ */
+function primerosIntentos(examenes: ExamenFila[]): ExamenFila[] {
+  const vistos = new Set<string>();
+  const out: ExamenFila[] = [];
+  for (const e of [...examenes].sort((a, b) => a.fecha.getTime() - b.fecha.getTime())) {
+    const clave = `${e.usuarioId}:${e.unidadId}`;
+    if (vistos.has(clave)) continue;
+    vistos.add(clave);
+    out.push(e);
+  }
+  return out;
+}
+
+/**
  * ═══════════════════════════════════════════════════════════════════════════
  *  PANEL DE VALIDACIÓN DEL SISTEMA (rol investigador, SOLO LECTURA)
  * ═══════════════════════════════════════════════════════════════════════════
@@ -56,6 +83,8 @@ const aCsv = (cols: string[], filas: (string | number | boolean | Date | null | 
  *  Calcula exactamente los indicadores que declara la tesis (diseño no
  *  experimental transversal):
  *
+ *   · Rendimiento académico → decide la HIPÓTESIS: promedio de los exámenes de
+ *     unidad ≥ 80, con IC 95 % bootstrap y prueba de una muestra frente a 80.
  *   · Precisión del motor adaptativo → % de asignaciones en rango objetivo con
  *     IC 95 % por bootstrap, y latencia de reajuste.
  *   · Usabilidad percibida → puntaje medio SUS con IC 95 %.
@@ -63,7 +92,8 @@ const aCsv = (cols: string[], filas: (string | number | boolean | Date | null | 
  *     subcaracterísticas en nivel aceptable.
  *   · Variable independiente (descriptiva) → personalización, retos completados,
  *     cambios de posición en el ranking y tiempo de retroalimentación.
- *   · Criterios de aceptación → los tres deben cumplirse de forma conjunta.
+ *   · Criterios de aceptación → los tres deben cumplirse de forma conjunta para
+ *     validar el sistema como PRODUCTO. Complementan la hipótesis, no la deciden.
  *
  *  Sin datos NO se muestran cifras: los campos van en null y la pantalla lo dice.
  *  Fórmulas y tablas de origen: docs/DISENO_INVESTIGACION.md.
@@ -86,6 +116,83 @@ export class InvestigadorValidacionService {
     return filas.map((u, i) => ({ ...u, id_anonimo: `E-${String(i + 1).padStart(3, '0')}` }));
   }
 
+  private async examenes(ids: number[]): Promise<ExamenFila[]> {
+    return this.prisma.examenUnidad.findMany({
+      where: { usuarioId: { in: ids } },
+      orderBy: { fecha: 'asc' },
+      select: { usuarioId: true, unidadId: true, puntaje: true, fecha: true, unidad: { select: { numero: true, titulo: true } } },
+    });
+  }
+
+  /**
+   * RENDIMIENTO ACADÉMICO — la variable sobre la que se formuló la hipótesis.
+   * Promedio por estudiante de sus exámenes de unidad (primer intento), y sobre
+   * esos promedios: descriptivos, % ≥ 80, IC 95 % bootstrap de la media y el
+   * contraste de una muestra frente a 80 (t de Student o Wilcoxon según
+   * Shapiro-Wilk) con la d de Cohen.
+   */
+  private rendimiento(examenes: ExamenFila[], totalIntentos: number) {
+    const primeros = primerosIntentos(examenes);
+    const porEstudiante = new Map<number, number[]>();
+    for (const e of primeros) porEstudiante.set(e.usuarioId, [...(porEstudiante.get(e.usuarioId) ?? []), e.puntaje]);
+    const promedios = [...porEstudiante.values()].map((xs) => media(xs));
+
+    const unidades = new Map<number, { unidad: number; titulo: string; notas: number[] }>();
+    for (const e of primeros) {
+      const u = unidades.get(e.unidadId) ?? { unidad: e.unidad.numero, titulo: e.unidad.titulo, notas: [] };
+      u.notas.push(e.puntaje);
+      unidades.set(e.unidadId, u);
+    }
+    const porUnidad = [...unidades.values()]
+      .sort((a, b) => a.unidad - b.unidad)
+      .map((u) => ({
+        unidad: u.unidad,
+        titulo: u.titulo,
+        n: u.notas.length,
+        media: r1(media(u.notas)),
+        pct_80: r1((u.notas.filter((x) => x >= UMBRAL_HIPOTESIS).length / u.notas.length) * 100),
+      }));
+
+    const ic = bootstrapIC(promedios);
+    const contraste = contrastarFrenteA(promedios, UMBRAL_HIPOTESIS, { variable: 'rendimiento académico' });
+    const n = promedios.length;
+    return {
+      umbral: UMBRAL_HIPOTESIS,
+      n_estudiantes: n,
+      n_examenes: primeros.length,
+      n_reintentos_excluidos: totalIntentos - primeros.length,
+      media: n ? r1(media(promedios)) : null,
+      mediana: n ? r1(mediana(promedios)) : null,
+      desviacion: n > 1 ? r1(desviacion(promedios)) : null,
+      min: n ? r1(Math.min(...promedios)) : null,
+      max: n ? r1(Math.max(...promedios)) : null,
+      pct_80: n ? r1((promedios.filter((x) => x >= UMBRAL_HIPOTESIS).length / n) * 100) : null,
+      ic: { ...ic, estimacion: r1(ic.estimacion), inferior: r1(ic.inferior), superior: r1(ic.superior) },
+      por_unidad: porUnidad,
+      contraste: {
+        calculado: contraste.calculado,
+        bloqueo: contraste.bloqueo,
+        interpretable: contraste.interpretable,
+        advertencia: contraste.advertencia,
+        prueba: contraste.prueba,
+        justificacion: contraste.justificacion,
+        normalidad: contraste.supuestos[0] ?? null,
+        estadistico: contraste.resultado ? r3(contraste.resultado.estadistico) : null,
+        gl: contraste.resultado?.gl ?? null,
+        p: contraste.resultado ? r3(contraste.resultado.p) : null,
+        p_texto: contraste.resultado ? formatearP(contraste.resultado.p) : null,
+        d_cohen: contraste.efecto ? r2(contraste.efecto.d) : null,
+        magnitud: contraste.efecto && Number.isFinite(contraste.efecto.d) ? contraste.efecto.magnitud : null,
+        interpretacion: contraste.interpretacion,
+      },
+      como_se_calcula:
+        'Para cada estudiante se promedian las notas (0–100) de sus exámenes de unidad, tomando solo el PRIMER ' +
+        'intento de cada unidad. La hipótesis se acepta si la media de esos promedios es ≥ 80. Como apoyo se da el ' +
+        'IC 95 % de la media (bootstrap) y una prueba de una muestra frente a 80: t de Student si Shapiro-Wilk no ' +
+        'rechaza la normalidad, rangos con signo de Wilcoxon si la rechaza (α = 0,05).',
+    };
+  }
+
   private async logs(ids: number[]) {
     return this.prisma.logAdaptacion.findMany({
       where: { usuarioId: { in: ids } },
@@ -102,8 +209,9 @@ export class InvestigadorValidacionService {
     const ids = estudiantes.map((e) => e.id);
     const idSet = new Set(ids);
 
-    const [logs, susPorPersona, isoPorPersona, retosCompletados, cambiosRanking, consultasRanking] = await Promise.all([
+    const [logs, examenes, susPorPersona, isoPorPersona, retosCompletados, cambiosRanking, consultasRanking] = await Promise.all([
       this.logs(ids),
+      this.examenes(ids),
       this.instrumentos.respuestasPorPersona('SUS'),
       this.instrumentos.respuestasPorPersona('ISO25010'),
       this.prisma.retoUsuario.count({ where: { usuarioId: { in: ids }, resuelto: true } }),
@@ -279,20 +387,42 @@ export class InvestigadorValidacionService {
     const pendientes = criterios.filter((c) => c.cumple === null).length;
     const satisfechos = criterios.filter((c) => c.cumple === true).length;
 
+    // ── HIPÓTESIS: se decide SOLO con el rendimiento académico (Tabla 26 de la tesis) ──
+    const rendimiento = this.rendimiento(examenes, examenes.length);
+    const hayRendimiento = rendimiento.n_estudiantes >= MIN_CALCULO && rendimiento.media !== null;
+    const hipotesisAceptada = hayRendimiento ? rendimiento.media! >= UMBRAL_HIPOTESIS : null;
+    const sistemaValidado = pendientes > 0 ? null : satisfechos === criterios.length;
+
     return {
       muestra,
+      rendimiento,
       precision,
       usabilidad,
       calidad,
       variable_independiente,
+      hipotesis: {
+        enunciado:
+          'El sistema permite que los estudiantes de primer semestre alcancen un rendimiento académico promedio ' +
+          `igual o mayor a ${UMBRAL_HIPOTESIS} sobre 100 en los exámenes de cada unidad.`,
+        indicador: 'Media de los promedios por estudiante en los exámenes de unidad (primer intento)',
+        umbral: `≥ ${UMBRAL_HIPOTESIS}`,
+        valor: rendimiento.media === null ? null : String(rendimiento.media),
+        // null mientras no haya datos: no se declara ni aceptada ni rechazada.
+        aceptada: hipotesisAceptada,
+        motivo_sin_decision: hayRendimiento
+          ? null
+          : `Hacen falta exámenes de unidad de al menos ${MIN_CALCULO} estudiantes (hay ${rendimiento.n_estudiantes}).`,
+        regla: `Se acepta la hipótesis cuando el rendimiento promedio es igual o superior a ${UMBRAL_HIPOTESIS}.`,
+      },
       criterios: {
         filas: criterios,
         total: criterios.length,
         satisfechos,
         pendientes,
-        // null mientras falte algún dato: no se declara ni aceptada ni rechazada.
-        hipotesis_aceptada: pendientes > 0 ? null : satisfechos === criterios.length,
-        regla: 'La hipótesis de investigación se acepta solo si los tres criterios se cumplen de forma conjunta.',
+        // null mientras falte algún dato: no se declara validado ni no validado.
+        sistema_validado: sistemaValidado,
+        regla: 'El sistema queda validado como producto cuando los tres criterios se cumplen de forma conjunta. ' +
+          'Estos criterios complementan la hipótesis; no la deciden.',
       },
     };
   }
@@ -344,6 +474,39 @@ export class InvestigadorValidacionService {
     });
     return aCsv(
       ['id_evaluador', ...items.map((i) => i.id), ...CARACTERISTICAS_ISO25010.map((c) => `media_${c.clave}`), 'version'],
+      filas,
+    );
+  }
+
+  /**
+   * rendimiento_academico: una fila por estudiante que rindió algún examen de
+   * unidad, con la nota del PRIMER intento de cada unidad y su promedio. Es el
+   * archivo con el que se contrasta la hipótesis fuera del sistema.
+   */
+  async rendimientoCsv(): Promise<string> {
+    const estudiantes = await this.estudiantes();
+    const examenes = await this.examenes(estudiantes.map((e) => e.id));
+    const primeros = primerosIntentos(examenes);
+    const unidades = [...new Set(primeros.map((e) => e.unidad.numero))].sort((a, b) => a - b);
+    const intentos = new Map<number, number>();
+    for (const e of examenes) intentos.set(e.usuarioId, (intentos.get(e.usuarioId) ?? 0) + 1);
+
+    const filas = estudiantes
+      .map((est) => {
+        const propios = primeros.filter((e) => e.usuarioId === est.id);
+        if (!propios.length) return null;
+        const nota = (u: number) => propios.find((e) => e.unidad.numero === u)?.puntaje ?? null;
+        const prom = r1(media(propios.map((e) => e.puntaje)));
+        return [
+          est.id_anonimo, est.paralelo, propios.length, intentos.get(est.id) ?? 0,
+          ...unidades.map(nota), prom, prom !== null && prom >= UMBRAL_HIPOTESIS,
+        ];
+      })
+      .filter((f): f is NonNullable<typeof f> => f !== null);
+
+    return aCsv(
+      ['id_anonimo', 'paralelo', 'n_examenes', 'n_intentos_totales', ...unidades.map((u) => `u${u}_primer_intento`),
+        'promedio', 'alcanza_80'],
       filas,
     );
   }

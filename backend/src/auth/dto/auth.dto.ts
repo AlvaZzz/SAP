@@ -75,12 +75,13 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  // Correo O RU: los estudiantes registrados por el docente entran con su RU.
-  // Se conserva el nombre `email` del campo para no romper a los clientes.
-  @IsString() @MinLength(3, { message: 'Escribe tu RU o tu correo' }) @MaxLength(120)
+  // El USUARIO (PrimerNombre_CI), para todos los roles; se aceptan aún el correo
+  // y el RU de cuentas antiguas. Se conserva el nombre `email` del campo para no
+  // romper a los clientes.
+  @IsString() @MinLength(3, { message: 'Escribe tu usuario (PrimerNombre_CI)' }) @MaxLength(120)
   email!: string;
 
-  @IsString() @MinLength(1)
+  @IsString() @MinLength(1, { message: 'Escribe tu contraseña' })
   password!: string;
 
   /**

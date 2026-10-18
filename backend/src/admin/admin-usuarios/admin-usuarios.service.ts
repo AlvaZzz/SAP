@@ -4,7 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { AdminAuditoriaService } from '../admin-auditoria/admin-auditoria.service';
 import { CrearUsuarioDto, EditarUsuarioDto } from './dto/usuario.dto';
-import { usuarioDeAcceso } from '../../common/usuario/usuario-acceso';
+import { errorNombreCompleto, usuarioDeAcceso } from '../../common/usuario/usuario-acceso';
 import { capitalizar, limpiarCi, nombreCompletoDe } from '../../docente/docente-registro/lista';
 
 /**
@@ -83,6 +83,8 @@ export class AdminUsuariosService {
     const apellidoPaterno = capitalizar(dto.apellidoPaterno);
     const apellidoMaterno = dto.apellidoMaterno?.trim() ? capitalizar(dto.apellidoMaterno) : null;
     const nombres = capitalizar(dto.nombres);
+    const errorNombre = errorNombreCompleto({ apellidoPaterno, apellidoMaterno, nombres });
+    if (errorNombre) throw new BadRequestException(errorNombre);
     const nombre = nombreCompletoDe({ apellidoPaterno, apellidoMaterno: apellidoMaterno ?? '', nombres });
     const usuarioAcceso = usuarioDeAcceso({ nombres, cedula });
 
@@ -138,6 +140,8 @@ export class AdminUsuariosService {
       const apellidoMaterno = capitalizar(dto.apellidoMaterno ?? u.apellidoMaterno ?? '');
       const nombres = capitalizar(dto.nombres ?? u.nombres ?? '');
       if (!apellidoPaterno || !nombres) throw new BadRequestException('El apellido paterno y los nombres son obligatorios.');
+      const errorNombre = errorNombreCompleto({ apellidoPaterno, apellidoMaterno, nombres });
+      if (errorNombre) throw new BadRequestException(errorNombre);
       Object.assign(nombreData, { apellidoPaterno, apellidoMaterno: apellidoMaterno || null, nombres, nombre: nombreCompletoDe({ apellidoPaterno, apellidoMaterno, nombres }) });
     } else if (dto.nombre !== undefined) {
       nombreData.nombre = dto.nombre;

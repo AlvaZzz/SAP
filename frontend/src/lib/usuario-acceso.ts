@@ -24,3 +24,15 @@ export function usuarioDeAcceso(u: { nombres?: string | null; nombre?: string | 
 
 /** ¿Lo escrito tiene la forma Nombre_CI? */
 export const esUsuarioDeAcceso = (v: string) => /^[^\s_@]+_[0-9A-Za-z-]{4,20}$/.test(v.trim());
+
+/** Letras (con tildes, ñ y ü), espacios, guion, apóstrofo y punto. Misma regla que el servidor. */
+const NOMBRE_PERSONA = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]+$/;
+
+/** Mensaje de error de un nombre o apellido, o '' si está bien. `que` va en minúscula: «tu apellido paterno». */
+export function errorNombrePersona(texto: string, que: string): string {
+  const t = texto.trim();
+  if (!t) return `Escribe ${que}.`;
+  if (!NOMBRE_PERSONA.test(t)) return `En ${que} solo van letras, sin números ni símbolos.`;
+  if ((t.match(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g) ?? []).length < 2) return `En ${que} escribe al menos 2 letras.`;
+  return '';
+}

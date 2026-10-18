@@ -4,7 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
-import { usuarioDeAcceso } from '../../common/usuario/usuario-acceso';
+import { errorNombreCompleto, usuarioDeAcceso } from '../../common/usuario/usuario-acceso';
 import {
   CAMPOS, FilaEstudiante, FilaValidada, Mapeo,
   aplicarMapeo, capitalizar, detectarColumnas, faltantesDe, limpiarCi, limpiarParalelo, limpiarRu,
@@ -491,6 +491,8 @@ export class DocenteRegistroService {
     const nombres = dto.nombres !== undefined ? capitalizar(dto.nombres) : (u.nombres ?? '');
     if (dto.apellidoPaterno !== undefined || dto.apellidoMaterno !== undefined || dto.nombres !== undefined) {
       if (!paterno || !nombres) throw new BadRequestException('El apellido paterno y los nombres son obligatorios.');
+      const errorNombre = errorNombreCompleto({ apellidoPaterno: paterno, apellidoMaterno: materno, nombres });
+      if (errorNombre) throw new BadRequestException(errorNombre);
       Object.assign(data, {
         apellidoPaterno: paterno, apellidoMaterno: materno || null, nombres,
         nombre: nombreCompletoDe({ apellidoPaterno: paterno, apellidoMaterno: materno, nombres }),

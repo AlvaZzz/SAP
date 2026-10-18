@@ -30,6 +30,11 @@ export class InvestigadorValidacionController {
     res.send(csv);
   }
 
+  @Get('rendimiento-academico.csv')
+  async rendimiento(@Res() res: Response) {
+    this.enviar(res, 'rendimiento_academico', await this.service.rendimientoCsv());
+  }
+
   @Get('log-adaptacion.csv')
   async logAdaptacion(@Res() res: Response) {
     this.enviar(res, 'log_adaptacion', await this.service.logAdaptacionCsv());

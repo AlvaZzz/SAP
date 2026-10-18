@@ -414,6 +414,101 @@ export function mannWhitney(a: number[], b: number[]): ResultadoContraste & { ex
   return { estadistico: U1, gl: null, p: Math.min(1, p), ic95: null, diferencia: dif, exacto: false };
 }
 
+// ── Contraste de UNA muestra frente a un valor de referencia ────────────────
+
+/**
+ * PRUEBA t DE UNA MUESTRA frente a un valor de referencia μ₀.
+ *
+ *      t = (x̄ − μ₀) / (s / √n) ,  gl = n − 1
+ *
+ *  Es la prueba de la hipótesis de la tesis: ¿el promedio del rendimiento
+ *  académico se aparta de 80? El IC 95 % se da sobre la MEDIA (no sobre la
+ *  diferencia), que es como se lee frente al umbral.
+ *  scipy: stats.ttest_1samp(xs, mu0)
+ */
+export function tUnaMuestra(xs: number[], mu0: number): ResultadoContraste {
+  const n = xs.length;
+  if (n < 2) return { estadistico: NaN, gl: null, p: NaN, ic95: null, diferencia: null };
+  const m = media(xs);
+  const ee = desviacion(xs) / Math.sqrt(n);
+  const dif = m - mu0;
+  if (ee === 0) return { estadistico: NaN, gl: n - 1, p: NaN, ic95: null, diferencia: dif };
+  const gl = n - 1;
+  const t = dif / ee;
+  const tc = tCritico(gl, 0.95);
+  return { estadistico: t, gl, p: pValorT(t, gl), ic95: [m - tc * ee, m + tc * ee], diferencia: dif };
+}
+
+/**
+ * Distribución exacta de W⁺ (suma de rangos positivos) bajo H₀ para n
+ * diferencias sin empates ni ceros: f[w] = nº de subconjuntos de {1..n} que
+ * suman w, de un total de 2ⁿ.
+ */
+function distribucionWilcoxon(n: number): number[] {
+  const max = (n * (n + 1)) / 2;
+  const f = new Array<number>(max + 1).fill(0);
+  f[0] = 1;
+  for (let k = 1; k <= n; k++) {
+    for (let w = max; w >= k; w--) f[w] += f[w - k];
+  }
+  return f;
+}
+
+/**
+ * PRUEBA DE RANGOS CON SIGNO DE WILCOXON para UNA muestra frente a μ₀
+ * (alternativa no paramétrica a la t de una muestra).
+ *
+ *  Toma las diferencias dᵢ = xᵢ − μ₀, descarta las nulas (criterio de Wilcoxon,
+ *  el de scipy por defecto), ordena sus valores absolutos y suma los rangos de
+ *  las positivas (W⁺) y de las negativas (W⁻). El estadístico que se reporta es
+ *  min(W⁺, W⁻), como scipy.
+ *
+ *  Sin empates y con n ≤ 50: valor p EXACTO. En otro caso, aproximación normal
+ *  con corrección por empates (sin corrección de continuidad, como scipy).
+ *  scipy: stats.wilcoxon([x − mu0 for x in xs])
+ */
+export function wilcoxonUnaMuestra(xs: number[], mu0: number): ResultadoContraste & { exacto: boolean } {
+  const d = xs.map((x) => x - mu0).filter((v) => v !== 0);
+  const n = d.length;
+  const dif = xs.length ? mediana(xs) - mu0 : null;
+  if (n < 1) return { estadistico: NaN, gl: null, p: NaN, ic95: null, diferencia: dif, exacto: false };
+
+  const abs = d.map(Math.abs);
+  const r = rangos(abs);
+  const wMas = r.reduce((acc, ri, i) => acc + (d[i] > 0 ? ri : 0), 0);
+  const wMenos = (n * (n + 1)) / 2 - wMas;
+  const w = Math.min(wMas, wMenos);
+
+  if (!hayEmpates(abs) && n <= 50) {
+    const f = distribucionWilcoxon(n);
+    const total = 2 ** n;
+    let acum = 0;
+    for (let k = 0; k <= w; k++) acum += f[k];
+    return { estadistico: w, gl: null, p: Math.min(1, (2 * acum) / total), ic95: null, diferencia: dif, exacto: true };
+  }
+
+  const conteos = new Map<number, number>();
+  for (const v of abs) conteos.set(v, (conteos.get(v) ?? 0) + 1);
+  const correccion = [...conteos.values()].reduce((acc, t) => acc + (t ** 3 - t), 0);
+  const mu = (n * (n + 1)) / 4;
+  const sigma = Math.sqrt((n * (n + 1) * (2 * n + 1)) / 24 - correccion / 48);
+  if (sigma === 0) return { estadistico: w, gl: null, p: NaN, ic95: null, diferencia: dif, exacto: false };
+  const z = (w - mu) / sigma;
+  return { estadistico: w, gl: null, p: Math.min(1, 2 * normalCdf(-Math.abs(z))), ic95: null, diferencia: dif, exacto: false };
+}
+
+/** d de Cohen de UNA muestra: (x̄ − μ₀) / s, la distancia al umbral en desviaciones estándar. */
+export function efectoUnaMuestra(xs: number[], mu0: number): TamanoEfecto {
+  const s = desviacion(xs);
+  const d = !Number.isFinite(s) || s === 0 ? NaN : (media(xs) - mu0) / s;
+  const n = xs.length;
+  const J = n > 1 ? 1 - 3 / (4 * (n - 1) - 1) : NaN;
+  const abs = Math.abs(d);
+  const magnitud: TamanoEfecto['magnitud'] =
+    abs < 0.2 ? 'insignificante' : abs < 0.5 ? 'pequeño' : abs < 0.8 ? 'mediano' : 'grande';
+  return { d, g: d * J, magnitud };
+}
+
 // ── Correlación ─────────────────────────────────────────────────────────────
 
 export interface Correlacion {

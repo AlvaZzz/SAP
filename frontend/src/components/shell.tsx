@@ -115,9 +115,12 @@ const NAV_DOCENTE: NavGrupo[] = [
  */
 const NAV_INVESTIGADOR: NavGrupo[] = [
   {
+    titulo: 'Inicio',
+    items: [{ href: '/investigador/indice', label: 'Estado del estudio', icon: LayoutDashboard }],
+  },
+  {
     titulo: 'El estudio',
     items: [
-      { href: '/investigador/indice', label: 'Índice', icon: LayoutDashboard },
       { href: '/investigador/panel', label: 'Diseño y muestra', icon: ClipboardList },
       { href: '/investigador/validez', label: 'Participantes y uso', icon: Users },
     ],
@@ -125,7 +128,7 @@ const NAV_INVESTIGADOR: NavGrupo[] = [
   {
     titulo: 'Resultados',
     items: [
-      { href: '/investigador/validacion', label: 'Validación del sistema', icon: BarChart3 },
+      { href: '/investigador/validacion', label: 'Hipótesis y validación', icon: BarChart3 },
     ],
   },
   {
@@ -138,7 +141,7 @@ const NAV_INVESTIGADOR: NavGrupo[] = [
   {
     titulo: 'Entrega',
     items: [
-      { href: '/investigador/exportacion', label: 'Exportación y reproducibilidad', icon: Download },
+      { href: '/investigador/exportacion', label: 'Descargar los datos', icon: Download },
     ],
   },
 ];

@@ -48,9 +48,27 @@ interface Datos {
     gamificacion: { retos_completados: number; cambios_posicion_ranking: number; consultas_ranking: number };
     retroalimentacion: Tiempos;
   };
+  rendimiento: {
+    umbral: number; n_estudiantes: number; n_examenes: number; n_reintentos_excluidos: number;
+    media: number | null; mediana: number | null; desviacion: number | null; min: number | null; max: number | null;
+    pct_80: number | null; ic: IC;
+    por_unidad: { unidad: number; titulo: string; n: number; media: number | null; pct_80: number | null }[];
+    contraste: {
+      calculado: boolean; bloqueo: string | null; interpretable: boolean; advertencia: string | null;
+      prueba: string | null; justificacion: string | null;
+      normalidad: { detalle: string } | null;
+      estadistico: number | null; gl: number | null; p_texto: string | null;
+      d_cohen: number | null; magnitud: string | null; interpretacion: string;
+    };
+    como_se_calcula: string;
+  };
+  hipotesis: {
+    enunciado: string; indicador: string; umbral: string; valor: string | null;
+    aceptada: boolean | null; motivo_sin_decision: string | null; regla: string;
+  };
   criterios: {
     filas: { criterio: string; indicador: string; umbral: string; valor: string | null; cumple: boolean | null }[];
-    total: number; satisfechos: number; pendientes: number; hipotesis_aceptada: boolean | null; regla: string;
+    total: number; satisfechos: number; pendientes: number; sistema_validado: boolean | null; regla: string;
   };
 }
 
@@ -70,13 +88,13 @@ export default function ValidacionPage() {
   if (cargando) return <div className="space-y-6"><Skeleton className="h-28" /><Skeleton className="h-64" /><Skeleton className="h-64" /></div>;
   if (!d) return <Bloqueo motivo="No se pudo cargar el panel de validación." explicacion="Vuelve a intentarlo en unos segundos." />;
 
-  const { muestra, precision, usabilidad, calidad, variable_independiente: vi, criterios } = d;
+  const { muestra, rendimiento: rend, hipotesis, precision, usabilidad, calidad, variable_independiente: vi, criterios } = d;
 
   return (
     <div className="animate-fade-up">
       <PageHeader
-        title="Validación del sistema"
-        subtitle="¿PREXI funciona bien? Precisión del motor adaptativo, usabilidad percibida y calidad del software, medidos al final del período de uso."
+        title="Hipótesis y validación"
+        subtitle="Primero la hipótesis (rendimiento académico frente a 80); después, los tres criterios que validan a PREXI como producto."
       />
 
       {/* ── Muestra ── */}
@@ -87,15 +105,101 @@ export default function ValidacionPage() {
         <Metrica etiqueta="Período de uso" valor={`${fecha(muestra.periodo.inicio)} – ${fecha(muestra.periodo.fin)}`} />
       </div>
 
-      {/* ── Criterios de aceptación ── */}
+      {/* ── HIPÓTESIS: rendimiento académico ── */}
+      <Card className="mb-6">
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
+          <SectionTitle>Hipótesis de investigación · rendimiento académico</SectionTitle>
+          {hipotesis.aceptada === null
+            ? <Badge tone="amber">Aún sin decisión</Badge>
+            : hipotesis.aceptada
+              ? <Badge tone="green"><CheckCircle className="h-3 w-3" /> Se acepta la hipótesis</Badge>
+              : <Badge tone="red"><X className="h-3 w-3" /> No se acepta la hipótesis</Badge>}
+        </div>
+        <p className="mb-4 text-sm italic text-muted">«{hipotesis.enunciado}»</p>
+
+        {rend.n_estudiantes === 0 ? (
+          <Bloqueo
+            motivo="Ningún estudiante rindió todavía un examen de unidad."
+            explicacion="El examen de unidad se habilita cuando el estudiante completa los temas de la unidad con nivel Intermedio, o cuando su docente lo habilita."
+          />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-line p-4">
+                <p className="text-xs uppercase tracking-wide text-muted">Rendimiento promedio (0–100)</p>
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <p className="font-display text-4xl font-extrabold text-fg">{num(rend.media, 1)}</p>
+                  <span className="text-sm text-muted">umbral {rend.umbral}</span>
+                </div>
+                <ProgressBar className="mt-2" value={rend.media ?? 0} tone={(rend.media ?? 0) >= rend.umbral ? 'green' : 'amber'} />
+                <p className="mt-2 text-sm text-muted">{intervalo(rend.ic)}</p>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  <Metrica etiqueta="Mediana" valor={num(rend.mediana, 1)} />
+                  <Metrica etiqueta="Desv. estándar" valor={num(rend.desviacion, 1)} />
+                  <Metrica etiqueta="Mín – máx" valor={`${num(rend.min, 0)} – ${num(rend.max, 0)}`} />
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Metrica etiqueta="Estudiantes con examen" valor={String(rend.n_estudiantes)} />
+                  <Metrica etiqueta="Con promedio ≥ 80" valor={rend.pct_80 === null ? '—' : `${num(rend.pct_80, 1)} %`} />
+                </div>
+                {rend.n_reintentos_excluidos > 0 && (
+                  <p className="mt-2 text-2xs text-muted">
+                    {rend.n_reintentos_excluidos} reintento(s) quedaron fuera: solo cuenta el primer intento de cada unidad.
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-line p-4">
+                <p className="mb-2 text-sm font-semibold text-fg">Contraste frente a {rend.umbral}</p>
+                {!rend.contraste.calculado ? (
+                  <p className="text-sm text-muted">{rend.contraste.bloqueo}</p>
+                ) : (
+                  <div className="space-y-2 text-sm">
+                    <p className="text-fg"><b>{rend.contraste.prueba}</b></p>
+                    {rend.contraste.normalidad && <p className="text-muted">Normalidad: {rend.contraste.normalidad.detalle}</p>}
+                    <div className="grid grid-cols-3 gap-2">
+                      <Metrica etiqueta={rend.contraste.gl === null ? 'Estadístico W' : `t (gl = ${rend.contraste.gl})`} valor={num(rend.contraste.estadistico, 3)} />
+                      <Metrica etiqueta="Valor p" valor={rend.contraste.p_texto ?? '—'} />
+                      <Metrica etiqueta="d de Cohen" valor={rend.contraste.d_cohen === null ? '—' : `${num(rend.contraste.d_cohen, 2)} (${rend.contraste.magnitud})`} />
+                    </div>
+                    <p className="text-fg">{rend.contraste.interpretacion}</p>
+                    {rend.contraste.advertencia && <AvisoMuestra texto={rend.contraste.advertencia} />}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {rend.por_unidad.length > 0 && (
+              <div className="mt-5">
+                <p className="mb-2 text-sm font-semibold text-fg">Por unidad (primer intento)</p>
+                <div className="space-y-3">
+                  {rend.por_unidad.map((u) => (
+                    <div key={u.unidad}>
+                      <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
+                        <span className="min-w-0 truncate font-medium text-fg">Unidad {u.unidad} · {u.titulo}</span>
+                        <span className="shrink-0 text-muted">media {num(u.media, 1)} · {num(u.pct_80, 1)} % ≥ 80 · n = {u.n}</span>
+                      </div>
+                      <ProgressBar value={u.media ?? 0} tone={(u.media ?? 0) >= rend.umbral ? 'green' : 'amber'} size="sm" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        {hipotesis.motivo_sin_decision && rend.n_estudiantes > 0 && <p className="mt-3 text-sm text-prexi-amber">{hipotesis.motivo_sin_decision}</p>}
+        <Explicacion>{hipotesis.regla} {rend.como_se_calcula}</Explicacion>
+      </Card>
+
+      {/* ── Criterios de aceptación del sistema como producto ── */}
       <Card className="mb-6">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <SectionTitle>Criterios de aceptación de la hipótesis</SectionTitle>
-          {criterios.hipotesis_aceptada === null
+          <SectionTitle>Validación del sistema · criterios de aceptación</SectionTitle>
+          {criterios.sistema_validado === null
             ? <Badge tone="amber">Faltan datos · {criterios.satisfechos} de {criterios.total} cumplidos</Badge>
-            : criterios.hipotesis_aceptada
-              ? <Badge tone="green">{criterios.satisfechos} de {criterios.total} · se acepta la hipótesis</Badge>
-              : <Badge tone="red">{criterios.satisfechos} de {criterios.total} · no se acepta</Badge>}
+            : criterios.sistema_validado
+              ? <Badge tone="green">{criterios.satisfechos} de {criterios.total} · sistema validado</Badge>
+              : <Badge tone="red">{criterios.satisfechos} de {criterios.total} · no validado</Badge>}
         </div>
         <ResponsiveTable
           rows={criterios.filas}

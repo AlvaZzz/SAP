@@ -8,7 +8,7 @@ import { api, ApiError } from '@/lib/api';
 import { LoginHero } from '@/components/login/login-hero';
 import { PrexiLogo } from '@/components/login/prexi-logo';
 import { inputAuthCls } from '@/components/fondo-auth';
-import { usuarioDeAcceso } from '@/lib/usuario-acceso';
+import { errorNombrePersona, usuarioDeAcceso } from '@/lib/usuario-acceso';
 import {
   User, Lock, KeyRound, ShieldCheck, GraduationCap, Users, Eye, EyeOff, AlertCircle, CheckCircle, Clock,
   ArrowRight, ChevronLeft,
@@ -75,9 +75,9 @@ export default function RegistroPage() {
 
   const fz = fuerza(f.password);
   const errores: Record<Clave, string> = {
-    apellidoPaterno: f.apellidoPaterno.trim().length < 2 ? 'Escribe tu apellido paterno.' : '',
-    apellidoMaterno: '',
-    nombres: f.nombres.trim().length < 2 ? 'Escribe tu nombre o nombres.' : '',
+    apellidoPaterno: errorNombrePersona(f.apellidoPaterno, 'tu apellido paterno'),
+    apellidoMaterno: f.apellidoMaterno.trim() ? errorNombrePersona(f.apellidoMaterno, 'tu apellido materno') : '',
+    nombres: errorNombrePersona(f.nombres, 'tu nombre o nombres'),
     cedula: !/^\d{5,10}$/.test(f.cedula) ? 'Solo los números de tu cédula (5 a 10 dígitos).' : '',
     // El RU es opcional: solo se revisa si lo escribió.
     ru: f.ru && !/^\d{4,12}$/.test(f.ru) ? 'El RU lleva solo números (4 a 12). Si no lo tienes, déjalo vacío.' : '',

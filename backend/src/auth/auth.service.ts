@@ -13,7 +13,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { JwtPayload } from '../common/auth/jwt.guard';
 import { RegisterDto, LoginDto, PerfilDto, PasswordDto } from './dto/auth.dto';
-import { leerUsuarioDeAcceso, nombreCoincide } from '../common/usuario/usuario-acceso';
+import { errorNombreCompleto, errorNombrePersona, leerUsuarioDeAcceso, nombreCoincide } from '../common/usuario/usuario-acceso';
 import { limpiarCi } from '../docente/docente-registro/lista';
 
 const MAX_FALLIDOS = 5;
@@ -126,6 +126,19 @@ export class AuthService {
     const nombres = dto.nombres?.trim() || null;
     const nombre = [apellidoPaterno, apellidoMaterno, nombres].filter(Boolean).join(' ') || dto.nombre?.trim();
     if (!nombre || nombre.length < 2) throw new BadRequestException('Escribe tus apellidos y nombres');
+    // Con apellidos y nombres separados (el formulario actual), los tres pasan la
+    // regla de nombres: de `nombres` sale el usuario PrimerNombre_CI, y sin un
+    // nombre de letras la cuenta quedaría sin usuario y nunca podría entrar.
+    if (apellidoPaterno || apellidoMaterno || nombres) {
+      const errorNombre = errorNombreCompleto({ apellidoPaterno, apellidoMaterno, nombres });
+      if (errorNombre) throw new BadRequestException(errorNombre);
+    } else {
+      const errorNombre = errorNombrePersona(dto.nombre, 'tu nombre');
+      if (errorNombre) throw new BadRequestException(errorNombre);
+    }
+    // Sin curso, la cuenta entraba aprobada y «Sin paralelo» a la muestra del
+    // estudio. Todo estudiante pertenece a un paralelo.
+    if (!dto.paraleloId && !dto.paralelo?.trim()) throw new BadRequestException('Elige tu materia y tu paralelo.');
 
     // Curso pedido. El formulario manda el paralelo exacto; los clientes
     // antiguos mandan solo la letra y quedan enlazados sin pasar por solicitud.

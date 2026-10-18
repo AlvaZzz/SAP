@@ -25,6 +25,7 @@ const COLUMNAS = [
 ];
 
 const DATASETS = [
+  { archivo: 'rendimiento_academico.csv', href: '/api/investigador/validacion/rendimiento-academico.csv', detalle: 'Una fila por estudiante: nota del primer intento de cada examen de unidad y su promedio. Contrasta la hipótesis.' },
   { archivo: 'log_adaptacion.csv', href: '/api/investigador/validacion/log-adaptacion.csv', detalle: 'Una fila por decisión del motor: θ, dificultad, rango objetivo y latencia.' },
   { archivo: 'sus.csv', href: '/api/investigador/validacion/sus.csv', detalle: 'Una fila por estudiante: los 10 ítems crudos y el puntaje SUS.' },
   { archivo: 'iso25010.csv', href: '/api/investigador/validacion/iso25010.csv', detalle: 'Una fila por evaluador: ítems crudos y media por característica.' },

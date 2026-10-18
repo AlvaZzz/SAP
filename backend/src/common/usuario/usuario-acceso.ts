@@ -31,6 +31,31 @@ export function primerNombre(nombres: string | null | undefined, nombreCompleto?
   return limpio ? limpio.charAt(0).toUpperCase() + limpio.slice(1).toLowerCase() : '';
 }
 
+/** Letras (con tildes, ñ y ü), espacios, guion, apóstrofo y punto: «María José», «D'Alessandro», «Mamani-Quispe». */
+const NOMBRE_PERSONA = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]+$/;
+
+/**
+ * ¿Es un nombre o apellido de persona válido? Devuelve el mensaje de error, o
+ * null si está bien. Sin esta regla, «123» o «<b>» se guardaban como nombres y,
+ * peor, el usuario de acceso (PrimerNombre_CI) quedaba vacío: la cuenta no
+ * podía iniciar sesión nunca.
+ */
+export function errorNombrePersona(texto: string | null | undefined, que: string): string | null {
+  const t = (texto ?? '').trim();
+  if (!t) return `Escribe ${que}.`;
+  if (t.length > 80) return `En ${que} caben como máximo 80 caracteres.`;
+  if (!NOMBRE_PERSONA.test(t)) return `En ${que} solo van letras, sin números ni símbolos.`;
+  if ((t.match(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g) ?? []).length < 2) return `En ${que} escribe al menos 2 letras.`;
+  return null;
+}
+
+/** Primer error de un nombre completo (paterno y nombres obligatorios, materno opcional), o null. */
+export function errorNombreCompleto(p: { apellidoPaterno?: string | null; apellidoMaterno?: string | null; nombres?: string | null }): string | null {
+  return errorNombrePersona(p.apellidoPaterno, 'el apellido paterno')
+    ?? (p.apellidoMaterno?.trim() ? errorNombrePersona(p.apellidoMaterno, 'el apellido materno') : null)
+    ?? errorNombrePersona(p.nombres, 'los nombres');
+}
+
 /** Usuario de acceso: "Alvaro_12929098". Vacío si falta el nombre o el CI. */
 export function usuarioDeAcceso(u: { nombres?: string | null; nombre?: string | null; cedula?: string | null }): string {
   const nombre = primerNombre(u.nombres, u.nombre);

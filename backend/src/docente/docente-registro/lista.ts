@@ -15,6 +15,8 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
+import { errorNombrePersona } from '../../common/usuario/usuario-acceso';
+
 export type CampoLista = 'apellidoPaterno' | 'apellidoMaterno' | 'nombres' | 'nombreCompleto' | 'ci' | 'ru' | 'paralelo';
 
 export const CAMPOS: { clave: CampoLista; etiqueta: string }[] = [
@@ -292,7 +294,19 @@ export function validarFilas(filas: FilaEstudiante[], existentes: Existente[]): 
     const falla = (campo: string, mensaje: string) => { errores.push(mensaje); campos.add(campo); };
 
     if (!f.apellidoPaterno) falla('apellidoPaterno', 'Falta el apellido paterno.');
+    else {
+      const e = errorNombrePersona(f.apellidoPaterno, 'el apellido paterno');
+      if (e) falla('apellidoPaterno', e);
+    }
+    if (f.apellidoMaterno) {
+      const e = errorNombrePersona(f.apellidoMaterno, 'el apellido materno');
+      if (e) falla('apellidoMaterno', e);
+    }
     if (!f.nombres) falla('nombres', 'Faltan los nombres.');
+    else {
+      const e = errorNombrePersona(f.nombres, 'los nombres');
+      if (e) falla('nombres', e);
+    }
     if (!f.ci) falla('ci', 'Falta el CI.');
     else if (!/^\d{5,10}(-?[0-9A-Z]{1,3})?$/.test(f.ci)) falla('ci', 'El CI no tiene un formato válido (5 a 10 dígitos).');
     // RU opcional: si viene, debe tener formato de RU.

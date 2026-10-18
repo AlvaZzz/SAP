@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+import { fabricaErroresValidacion } from './common/validacion/mensajes-validacion';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -17,7 +18,11 @@ async function bootstrap() {
 
   // Valida y transforma los DTOs entrantes; rechaza propiedades extra.
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true, forbidNonWhitelisted: true, transform: true,
+      // Los mensajes por defecto de class-validator están en inglés y llegan tal cual al usuario.
+      exceptionFactory: fabricaErroresValidacion,
+    }),
   );
 
   // Errores no controlados: log interno completo, respuesta genérica sin stack traces.

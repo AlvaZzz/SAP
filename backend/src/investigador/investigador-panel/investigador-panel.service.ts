@@ -3,6 +3,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import {
   DOMINIO_DEMO, INSTITUCION_DEMO, MODO_DEMO, SOLO_ESTUDIANTES_DEL_ESTUDIO,
 } from '../investigador-exportacion/investigador-exportacion.service';
+import { INSTRUMENTO_VALIDADO } from '../../mediciones/calidad/items-iso25010';
 
 /**
  * Panel del estudio (rol investigador, SOLO LECTURA): resumen de la muestra
@@ -14,7 +15,7 @@ export class InvestigadorPanelService {
   constructor(private readonly prisma: PrismaService) {}
 
   async resumen() {
-    const [estudiantes, evaluaciones, primerIntento, ultimoIntento, cuentasDemo] = await Promise.all([
+    const [estudiantes, evaluaciones, primerIntento, ultimoIntento, cuentasDemo, cfg] = await Promise.all([
       this.prisma.usuario.findMany({
         where: SOLO_ESTUDIANTES_DEL_ESTUDIO,
         select: { id: true, paralelo: true, creadoEn: true },
@@ -31,6 +32,7 @@ export class InvestigadorPanelService {
           OR: [{ email: { endsWith: DOMINIO_DEMO } }, { institucion: INSTITUCION_DEMO }],
         },
       }),
+      this.prisma.configuracionSistema.findUnique({ where: { id: 1 }, select: { faseEvaluacionActiva: true } }),
     ]);
 
     const total = estudiantes.length;
@@ -90,6 +92,12 @@ export class InvestigadorPanelService {
       recoleccion: {
         inicio: candidatosInicio.length ? new Date(Math.min(...candidatosInicio)) : null,
         fin: candidatosFin.length ? new Date(Math.max(...candidatosFin)) : null,
+      },
+      // Lo que el investigador necesita saber para cerrar la medición: si los
+      // cuestionarios SUS/ISO ya se muestran y si el ISO tiene ítems validados.
+      evaluacion: {
+        fase_activa: cfg?.faseEvaluacionActiva ?? false,
+        iso_validado: INSTRUMENTO_VALIDADO,
       },
     };
   }

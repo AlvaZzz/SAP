@@ -19,8 +19,8 @@
  */
 
 import {
-  descriptivos, levene, mannWhitney, pearson, rangos,
-  shapiroWilk, spearman, tIndependiente, tamanoEfecto,
+  descriptivos, efectoUnaMuestra, levene, mannWhitney, pearson, rangos,
+  shapiroWilk, spearman, tIndependiente, tUnaMuestra, tamanoEfecto, wilcoxonUnaMuestra,
 } from './inferencia';
 import { pValorT, pValorF, normalCdf, normalInv, tCritico } from './distribuciones';
 
@@ -262,3 +262,45 @@ describe('correlación', () => {
   });
 });
 
+
+describe('contraste de una muestra frente a un valor de referencia', () => {
+  it('t de una muestra coincide con scipy.stats.ttest_1samp', () => {
+    // scipy: ttest_1samp([1,2,3,4,5], 2) → t=1.4142135623730951, p=0.23019964108049873
+    const r = tUnaMuestra([1, 2, 3, 4, 5], 2);
+    expect(r.estadistico).toBeCloseTo(Math.SQRT2, PREC);
+    expect(r.gl).toBe(4);
+    expect(r.p).toBeCloseTo(0.2301996, 4);
+    expect(r.diferencia).toBeCloseTo(1, PREC);
+    // IC 95 % de la media: 3 ± 2.776445 · 0.7071068
+    expect(r.ic95![0]).toBeCloseTo(3 - 2.776445105 * Math.SQRT1_2, 4);
+    expect(r.ic95![1]).toBeCloseTo(3 + 2.776445105 * Math.SQRT1_2, 4);
+  });
+
+  it('Wilcoxon exacto: todas las diferencias positivas', () => {
+    // scipy: wilcoxon([1,2,3,4,5]) → statistic=0.0, p=0.0625
+    const r = wilcoxonUnaMuestra([81, 82, 83, 84, 85], 80);
+    expect(r.exacto).toBe(true);
+    expect(r.estadistico).toBe(0);
+    expect(r.p).toBeCloseTo(0.0625, PREC);
+  });
+
+  it('Wilcoxon exacto con signos mezclados', () => {
+    // diferencias -2,1,3,7,10,-5 → W⁻ = 2+4 = 6; scipy: wilcoxon(...) → statistic=6.0, p=0.4375
+    const r = wilcoxonUnaMuestra([78, 81, 83, 87, 90, 75], 80);
+    expect(r.estadistico).toBe(6);
+    expect(r.p).toBeCloseTo(0.4375, PREC);
+  });
+
+  it('Wilcoxon descarta las diferencias nulas y usa la aproximación normal con empates', () => {
+    const r = wilcoxonUnaMuestra([80, 80, 82, 82, 84, 84, 70], 80);
+    expect(r.exacto).toBe(false);
+    expect(r.p).toBeGreaterThan(0);
+    expect(r.p).toBeLessThanOrEqual(1);
+  });
+
+  it('d de Cohen de una muestra = (x̄ − μ₀)/s', () => {
+    const e = efectoUnaMuestra([1, 2, 3, 4, 5], 2);
+    expect(e.d).toBeCloseTo(1 / Math.sqrt(2.5), PREC);
+    expect(e.magnitud).toBe('mediano');
+  });
+});
