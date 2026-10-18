@@ -180,7 +180,7 @@ export default function DocenteDashboardPage() {
                   <Link href={`/docente/estudiantes/${e.id}`} className="block rounded-xl border border-line p-3 transition hover:bg-subtle">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-semibold text-fg">{e.nombre}</span>
-                      <span className="text-xs text-muted">RU {e.ru ?? '—'} · Par. {e.paralelo}</span>
+                      <span className="text-xs text-muted">CI {e.ci ?? '—'}{e.ru ? ` · RU ` : ''} · Par. {e.paralelo}</span>
                     </div>
                     <p className="mt-0.5 text-xs text-muted">{e.motivos.map((m) => m.detalle).join(' ')}</p>
                   </Link>

@@ -194,7 +194,7 @@ export default function ExamenesUnidadPage() {
                         : <span className="w-4 shrink-0" />}
                       <button onClick={() => router.push(`/docente/estudiantes/${e.id}`)} className="min-w-0 flex-1 text-left">
                         <p className="truncate font-semibold text-fg hover:underline">{e.nombre}</p>
-                        <p className="text-xs text-muted">CI {e.ci ?? '—'} · RU {e.ru ?? '—'} · Paralelo {e.paralelo}</p>
+                        <p className="text-xs text-muted">CI {e.ci ?? '—'}{e.ru ? ` · RU ` : ''} · Paralelo {e.paralelo}</p>
                       </button>
                       <NivelChip nivel={e.nivel} />
                       <div className="w-24 text-center"><p className="text-2xs uppercase tracking-wide text-muted">Promedio</p><PromedioChip promedio={e.promedio} /></div>

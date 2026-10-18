@@ -115,7 +115,7 @@ export function Solicitudes({ onCambio }: { onCambio?: () => void }) {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-display text-lg font-bold text-fg">{s.nombre}</p>
-                    <p className="text-sm text-muted">CI <b className="text-fg">{s.ci ?? '—'}</b> · RU <b className="text-fg">{s.ru ?? '—'}</b>{s.email ? ` · ${s.email}` : ''}</p>
+                    <p className="text-sm text-muted">CI <b className="text-fg">{s.ci ?? '—'}</b>{s.ru ? <> · RU <b className="text-fg">{s.ru}</b></> : null}{s.email ? ` · ${s.email}` : ''}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
                       Pide entrar a
                       {s.paralelo ? <Badge tone="blue">{s.paralelo.materia} · Paralelo {s.paralelo.nombre}</Badge> : <Badge tone="amber">sin paralelo</Badge>}

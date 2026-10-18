@@ -13,6 +13,8 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { MailService } from '../common/mail/mail.service';
 import { JwtPayload } from '../common/auth/jwt.guard';
 import { RegisterDto, LoginDto, PerfilDto, PasswordDto } from './dto/auth.dto';
+import { leerUsuarioDeAcceso, nombreCoincide } from '../common/usuario/usuario-acceso';
+import { limpiarCi } from '../docente/docente-registro/lista';
 
 const MAX_FALLIDOS = 5;
 const BLOQUEO_MIN = 15;
@@ -53,6 +55,8 @@ const SELECT_PUBLICO = {
   // Solicitud de inscripción: mientras no sea `aprobada` no puede rendir el diagnóstico.
   estadoInscripcion: true, inscripcionMotivo: true,
   paralelo: true, semestre: true, ru: true, nombres: true,
+  // Su propio CI: con él y su primer nombre se arma su usuario de acceso (Nombre_CI).
+  cedula: true,
   // Curso del estudiante: materia, paralelo y docente a cargo (lo ve en su panel).
   paraleloRef: {
     select: {
@@ -107,13 +111,15 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const email = dto.email?.trim().toLowerCase() || null;
     const ru = dto.ru?.trim() || null;
+    // El CI se guarda limpio (sin extensión ni espacios): con él se arma el usuario "Nombre_CI".
+    const cedula = limpiarCi(dto.cedula);
+    if (!/^\d{5,10}(-?[0-9A-Z]{1,3})?$/.test(cedula)) throw new BadRequestException('Revisa tu CI: debe tener entre 5 y 10 dígitos.');
     if (email && await this.prisma.usuario.findUnique({ where: { email } }))
       throw new BadRequestException('Ya existe un usuario con ese correo');
-    if (await this.prisma.usuario.findUnique({ where: { cedula: dto.cedula } }))
-      throw new BadRequestException('Ya existe un usuario con esa cédula');
+    if (await this.prisma.usuario.findUnique({ where: { cedula } }))
+      throw new BadRequestException('Ya existe una cuenta con ese CI. Si tu docente ya te registró, entra con tu usuario (PrimerNombre_CI) y tu CI.');
     if (ru && await this.prisma.usuario.findFirst({ where: { ru } }))
-      throw new BadRequestException('Ya existe un usuario con ese RU. Si tu docente ya te registró, entra con tu RU y tu CI.');
-    if (!email && !ru) throw new BadRequestException('Escribe tu RU: lo usarás para iniciar sesión');
+      throw new BadRequestException('Ya existe una cuenta con ese RU. Si tu docente ya te registró, entra con tu usuario (PrimerNombre_CI) y tu CI.');
 
     const apellidoPaterno = dto.apellidoPaterno?.trim() || null;
     const apellidoMaterno = dto.apellidoMaterno?.trim() || null;
@@ -138,7 +144,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const usuario = await this.prisma.usuario.create({
       data: {
-        nombre, apellidoPaterno, apellidoMaterno, nombres, email, cedula: dto.cedula, ru,
+        nombre, apellidoPaterno, apellidoMaterno, nombres, email, cedula, ru,
         carrera: dto.carrera ?? null, passwordHash, rol: 'estudiante',
         paralelo, paraleloId, semestre: dto.semestre ?? 1,
         ...(pendiente ? { estadoInscripcion: 'pendiente' as const, inscripcionSolicitada: new Date() } : {}),
@@ -222,13 +228,23 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, contexto: { ip?: string } = {}) {
-    // El identificador puede ser el CORREO o el RU: los estudiantes que registra el
-    // docente desde su lista no tienen correo y entran con su RU.
+    // El identificador puede ser:
+    //  · el USUARIO del estudiante, "PrimerNombre_CI" (Alvaro_12929098): se busca
+    //    por el CI, que es único, y se comprueba que el nombre sea el suyo;
+    //  · el CORREO (docentes, administradores y quien se registró con correo);
+    //  · el RU, para los estudiantes que ya entraban así antes de este cambio.
     const identificador = dto.email.trim();
-    const u = identificador.includes('@')
-      ? await this.prisma.usuario.findUnique({ where: { email: identificador.toLowerCase() } })
-        ?? await this.prisma.usuario.findUnique({ where: { email: identificador } })
-      : await this.prisma.usuario.findUnique({ where: { ru: identificador.replace(/[^0-9]/g, '') || identificador } });
+    const deAcceso = leerUsuarioDeAcceso(identificador);
+    let u;
+    if (identificador.includes('@')) {
+      u = await this.prisma.usuario.findUnique({ where: { email: identificador.toLowerCase() } })
+        ?? await this.prisma.usuario.findUnique({ where: { email: identificador } });
+    } else if (deAcceso) {
+      const porCi = await this.prisma.usuario.findUnique({ where: { cedula: deAcceso.ci } });
+      u = porCi && nombreCoincide(deAcceso.nombre, porCi) ? porCi : null;
+    } else {
+      u = await this.prisma.usuario.findUnique({ where: { ru: identificador.replace(/[^0-9]/g, '') || identificador } });
+    }
     // MISMO mensaje si la cuenta no existe o si la contraseña es incorrecta: de
     // otro modo se podrían enumerar las cuentas registradas probando valores.
     const credInvalidas = () => new UnauthorizedException('Usuario o contraseña incorrectos');

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { esUsuarioDeAcceso } from './usuario-acceso';
 
 /**
  * Validación del módulo de autenticación (login).
@@ -10,15 +11,15 @@ import { z } from 'zod';
  * desincronizado. NO reintroducir aquí una restricción de dominio.
  */
 export const loginSchema = z.object({
-  // RU (solo dígitos) o correo. Los estudiantes que registró el docente entran
-  // con su RU; el campo conserva el nombre `email` porque así lo espera el API.
+  // Usuario del estudiante (PrimerNombre_CI, p. ej. Alvaro_12929098), correo, o el RU
+  // de quien ya entraba así. El campo conserva el nombre `email` porque así lo espera el API.
   email: z
     .string()
     .trim()
-    .min(1, 'Ingresa tu RU o tu correo electrónico.')
+    .min(1, 'Ingresa tu usuario o tu correo electrónico.')
     .refine(
-      (v) => /^\d{4,12}$/.test(v) || z.string().email().safeParse(v).success,
-      'Escribe tu RU (solo números) o un correo válido.',
+      (v) => esUsuarioDeAcceso(v) || /^\d{4,12}$/.test(v) || z.string().email().safeParse(v).success,
+      'Tu usuario es tu primer nombre, un guion bajo y tu CI (ej. Alvaro_12929098), o escribe tu correo.',
     ),
   // Mínimo 5: la contraseña inicial de un estudiante registrado es su CI.
   password: z.string().min(5, 'La contraseña debe tener al menos 5 caracteres.'),

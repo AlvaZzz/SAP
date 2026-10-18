@@ -9,6 +9,7 @@ import { EmblemasGaleria } from '@/components/emblemas-galeria';
 import { RadarIndicadores } from '@/components/radar-indicadores';
 import { reproducir } from '@/lib/sonidos';
 import { vozSoportada } from '@/lib/voz';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import { Star, Trophy, Flame, Lock, CheckCircle, Medal, Edit, X, Play } from '@/components/icons';
 
 const CARRERAS = ['Ingeniería de Sistemas', 'Ingeniería de Software', 'Ingeniería Informática', 'Ingeniería Electrónica', 'Ingeniería Industrial', 'Otra'];
@@ -100,6 +101,7 @@ export default function PerfilPage() {
                 <div className="mt-3 rounded-xl bg-subtle px-3 py-2 text-left text-xs leading-relaxed">
                   <p className="font-semibold text-fg">{usuario.paraleloRef.materia.nombre} · Paralelo {usuario.paraleloRef.nombre}</p>
                   <p className="text-muted">{usuario.paraleloRef.docente ? `Docente: ${usuario.paraleloRef.docente.nombre}` : 'Docente por asignar'}</p>
+                  {usuarioDeAcceso(usuario) && <p className="text-muted">Usuario para entrar: <b className="font-mono text-fg">{usuarioDeAcceso(usuario)}</b></p>}
                   {usuario.ru && <p className="text-muted">RU: {usuario.ru}</p>}
                 </div>
               )}

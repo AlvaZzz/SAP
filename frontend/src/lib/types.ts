@@ -12,6 +12,8 @@ export interface Usuario {
   paralelo?: string | null;
   semestre?: number;
   ru?: string | null;
+  // Su CI: con su primer nombre forma su usuario de acceso (lib/usuario-acceso).
+  cedula?: string | null;
   nombres?: string | null;
   /** true mientras use una contraseña temporal: debe pasar por /primer-ingreso. */
   mustChangePassword?: boolean;

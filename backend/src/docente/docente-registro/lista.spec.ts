@@ -33,7 +33,7 @@ describe('reconocimiento de columnas de la lista de estudiantes', () => {
   it('si no reconoce encabezados lo dice, en vez de adivinar', () => {
     const d = detectarColumnas([['a', 'b', 'c'], ['1', '2', '3']]);
     expect(d.filaEncabezado).toBe(-1);
-    expect(d.faltantes).toEqual(['Nombre (apellidos y nombres)', 'CI', 'RU']);
+    expect(d.faltantes).toEqual(['Nombre (apellidos y nombres)', 'CI']);
     expect(d.encabezados).toEqual(['Columna 1', 'Columna 2', 'Columna 3']);
   });
 
@@ -118,9 +118,14 @@ describe('validación de la vista previa', () => {
   });
 
   it('marca campos vacíos y formatos inválidos', () => {
-    const [f] = validarFilas([{ ...base, nombres: '', ci: '12', ru: '', paralelo: '' }], []);
+    const [f] = validarFilas([{ ...base, nombres: '', ci: '12', ru: '12', paralelo: '' }], []);
     expect(f.estado).toBe('error');
     expect(f.camposConError.sort()).toEqual(['ci', 'nombres', 'paralelo', 'ru']);
+  });
+
+  it('el RU (matrícula) es OPCIONAL: sin RU la fila es nueva', () => {
+    const [f] = validarFilas([{ ...base, ru: '' }], []);
+    expect(f).toMatchObject({ estado: 'nuevo', errores: [] });
   });
 
   it('marca CI y RU repetidos DENTRO de la lista', () => {
@@ -129,14 +134,25 @@ describe('validación de la vista previa', () => {
     expect(r[0].errores).toEqual(expect.arrayContaining(['CI repetido en la lista.', 'RU repetido en la lista.']));
   });
 
-  it('un RU que ya está registrado como estudiante es EXISTE (no error)', () => {
+  it('un CI que ya es de un estudiante registrado es EXISTE (no error)', () => {
     const [f] = validarFilas([base], [{ id: 9, ci: '1234567', ru: '200012345', rol: 'estudiante' }]);
     expect(f).toMatchObject({ estado: 'existe', existenteId: 9, errores: [] });
   });
 
-  it('un CI que pertenece a OTRA cuenta es un error real', () => {
+  it('la cuenta se reconoce por el CI aunque el RU guardado sea otro', () => {
     const [f] = validarFilas([base], [{ id: 3, ci: '1234567', ru: '999', rol: 'estudiante' }]);
+    expect(f).toMatchObject({ estado: 'existe', existenteId: 3 });
+  });
+
+  it('un RU que pertenece a OTRA cuenta es un error real', () => {
+    const [f] = validarFilas([base], [{ id: 3, ci: '7777777', ru: '200012345', rol: 'estudiante' }]);
     expect(f.estado).toBe('error');
-    expect(f.errores).toContain('Ese CI ya está registrado en otra cuenta.');
+    expect(f.errores).toContain('Ese RU ya está registrado en otra cuenta.');
+  });
+
+  it('un CI de una cuenta que no es de estudiante es un error', () => {
+    const [f] = validarFilas([base], [{ id: 1, ci: '1234567', ru: null, rol: 'docente' }]);
+    expect(f.estado).toBe('error');
+    expect(f.errores).toContain('Ese CI pertenece a una cuenta que no es de estudiante.');
   });
 });

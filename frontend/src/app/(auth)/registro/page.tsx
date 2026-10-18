@@ -8,13 +8,15 @@ import { api, ApiError } from '@/lib/api';
 import { LoginHero } from '@/components/login/login-hero';
 import { PrexiLogo } from '@/components/login/prexi-logo';
 import { inputAuthCls } from '@/components/fondo-auth';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import { User, Mail, Lock, KeyRound, ShieldCheck, GraduationCap, Users, Eye, EyeOff, AlertCircle, CheckCircle, Clock } from '@/components/icons';
 
 /**
  * REGISTRO POR CUENTA PROPIA. El estudiante da los mismos datos que usa su
- * docente (apellidos, nombres, CI y RU) y elige su curso. La cuenta se crea,
- * pero queda como SOLICITUD: el docente del paralelo debe aceptarla antes de
- * que pueda rendir el diagnóstico. Inicia sesión con su RU.
+ * docente (apellidos, nombres y CI; el RU es opcional) y elige su curso. La
+ * cuenta se crea, pero queda como SOLICITUD: el docente del paralelo debe
+ * aceptarla antes de que pueda rendir el diagnóstico. Inicia sesión con su
+ * usuario PrimerNombre_CI (ej. Alvaro_12929098).
  */
 
 export interface Curso { id: number; paralelo: string; materia: string; sigla: string | null; gestion: string; docente: string | null }
@@ -67,7 +69,8 @@ export default function RegistroPage() {
     apellidoMaterno: '',
     nombres: f.nombres.trim().length < 2 ? 'Escribe tu nombre o nombres.' : '',
     cedula: !/^\d{5,10}$/.test(f.cedula) ? 'Solo los números de tu cédula (5 a 10 dígitos).' : '',
-    ru: !/^\d{4,12}$/.test(f.ru) ? 'Escribe tu registro universitario (solo números).' : '',
+    // El RU es opcional: solo se revisa si lo escribió.
+    ru: f.ru && !/^\d{4,12}$/.test(f.ru) ? 'El RU lleva solo números (4 a 12). Si no lo tienes, déjalo vacío.' : '',
     paraleloId: !f.paraleloId ? 'Elige tu materia y paralelo.' : '',
     email: f.email.trim() && !emailOk ? 'Ese correo no parece válido. Puedes dejarlo vacío.' : '',
     password: f.password.length < 8 ? 'Al menos 8 caracteres.' : !/[A-Za-z]/.test(f.password) || !/\d/.test(f.password) ? 'Incluye al menos una letra y un número.' : '',
@@ -84,7 +87,7 @@ export default function RegistroPage() {
     try {
       await register({
         apellidoPaterno: f.apellidoPaterno.trim(), apellidoMaterno: f.apellidoMaterno.trim() || undefined, nombres: f.nombres.trim(),
-        cedula: f.cedula, ru: f.ru, paraleloId: Number(f.paraleloId), email: f.email.trim() || undefined,
+        cedula: f.cedula, ru: f.ru || undefined, paraleloId: Number(f.paraleloId), email: f.email.trim() || undefined,
         password: f.password, aceptaTerminos: acepta,
       });
       router.replace('/inscripcion');
@@ -144,10 +147,15 @@ export default function RegistroPage() {
                   <input value={f.cedula} onChange={set('cedula')} onBlur={toca('cedula')} inputMode="numeric" autoComplete="off"
                     placeholder="Ej.: 9876543" className={inputAuthCls(!!err('cedula')) + ' pl-11'} />
                 </Campo>
-                <Campo label="Registro universitario (RU)" icon={GraduationCap} hint="Con este número iniciarás sesión." error={err('ru')}>
-                  <input value={f.ru} onChange={set('ru')} onBlur={toca('ru')} inputMode="numeric" autoComplete="username"
+                <Campo label="Registro universitario (RU) · opcional" icon={GraduationCap} hint="Si aún no lo tienes, déjalo vacío." error={err('ru')}>
+                  <input value={f.ru} onChange={set('ru')} onBlur={toca('ru')} inputMode="numeric" autoComplete="off"
                     placeholder="Ej.: 200012345" className={inputAuthCls(!!err('ru')) + ' pl-11'} />
                 </Campo>
+                {usuarioDeAcceso({ nombres: f.nombres, cedula: f.cedula }) && /^\d{5,10}$/.test(f.cedula) && (
+                  <p className="sm:col-span-2 flex flex-wrap items-center gap-1.5 rounded-xl border border-prexi-blue/25 bg-prexi-blue/5 px-3 py-2 text-sm text-muted">
+                    <KeyRound className="h-4 w-4 text-prexi-blue-deep" /> Tu usuario para entrar será <b className="font-mono text-fg">{usuarioDeAcceso({ nombres: f.nombres, cedula: f.cedula })}</b>
+                  </p>
+                )}
               </div>
             </Seccion>
 

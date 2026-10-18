@@ -109,7 +109,7 @@ export const TOURS: Tour[] = [
     ruta: en('/docente/dashboard'),
     pasos: [
       { titulo: 'Tus paralelos', texto: 'Aquí ves una tarjeta por cada paralelo a tu cargo. Entra a uno para ver cuántos estudiantes hay en nivel Básico, Intermedio y Avanzado.' },
-      { titulo: 'Cada número tiene nombres', texto: 'Toca un nivel y se abre la lista de esos estudiantes, con su CI y su RU. Al tocar un estudiante ves su ficha completa.' },
+      { titulo: 'Cada número tiene nombres', texto: 'Toca un nivel y se abre la lista de esos estudiantes, con su CI. Al tocar un estudiante ves su ficha completa.' },
       { titulo: 'Tus herramientas', texto: 'Desde el menú registras estudiantes, haces su seguimiento, armas el contenido y habilitas los exámenes de unidad.', selector: 'nav' },
     ],
   },
@@ -149,7 +149,7 @@ export const TOURS: Tour[] = [
       { titulo: 'Registro de estudiantes', texto: 'Aquí creas las cuentas de tu curso en cuatro pasos: eliges la materia y el paralelo, subes tu lista, revisas las columnas y confirmas la vista previa.' },
       { titulo: 'Sirve la lista que ya tienes', texto: 'No hace falta copiar nada a una plantilla: sube tu Excel tal como está. PREXI reconoce qué columna es el nombre, el CI, el RU y el paralelo.' },
       { titulo: 'Nada se guarda sin tu revisión', texto: 'Antes de registrar verás a todos los estudiantes en una tabla. Ahí corriges datos, mueves estudiantes de paralelo y ves marcados en rojo los problemas.' },
-      { titulo: 'Cómo entran', texto: 'Cada estudiante usa su RU como usuario y su CI como contraseña inicial. En su primer ingreso el sistema le pide crear la suya.' },
+      { titulo: 'Cómo entran', texto: 'Cada estudiante entra con su primer nombre y su CI como usuario (por ejemplo, Alvaro_12929098) y su CI como contraseña inicial. En su primer ingreso el sistema le pide crear la suya. El RU es opcional.' },
     ],
   },
   {

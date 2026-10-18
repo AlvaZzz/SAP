@@ -50,7 +50,7 @@ describe('Registro por cuenta propia → solicitud de inscripción', () => {
 
   it('rechaza un RU que ya existe (probablemente ya lo registró su docente)', async () => {
     prisma.usuario.findFirst.mockResolvedValue({ id: 7 });
-    await expect(auth.register(base as never)).rejects.toThrow('Ya existe un usuario con ese RU');
+    await expect(auth.register(base as never)).rejects.toThrow('Ya existe una cuenta con ese RU');
     expect(prisma.usuario.create).not.toHaveBeenCalled();
   });
 

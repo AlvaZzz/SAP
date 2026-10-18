@@ -169,9 +169,9 @@ export function LoginForm() {
         </motion.p>
       )}
 
-      {/* RU o correo: los estudiantes registrados por el docente entran con su RU. */}
+      {/* Usuario (PrimerNombre_CI) o correo: los estudiantes entran con su usuario; docentes y admin, con su correo. */}
       <motion.label variants={item} className="mb-4 block sm:mb-5">
-        <span className="mb-1.5 block text-sm font-medium text-fg">RU o correo electrónico</span>
+        <span className="mb-1.5 block text-sm font-medium text-fg">Usuario o correo electrónico</span>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
           <input
@@ -187,9 +187,9 @@ export function LoginForm() {
               revalidar();
             }}
             aria-invalid={!!tocado.email && !!errores.email}
-            aria-label="RU o correo electrónico"
+            aria-label="Usuario o correo electrónico"
             className={campo(!!tocado.email && !!errores.email) + ' pr-12'}
-            placeholder="Tu RU o tucorreo@ejemplo.com"
+            placeholder="Alvaro_12929098 o tucorreo@ejemplo.com"
           />
           {emailValido && (
             <CheckCircle
@@ -201,7 +201,7 @@ export function LoginForm() {
         {tocado.email && errores.email ? (
           <span className="mt-1 block text-xs font-medium text-red-500">{errores.email}</span>
         ) : (
-          <span className="mt-1 block text-xs text-muted">Si tu docente te registró, entra con tu RU y tu CI como contraseña.</span>
+          <span className="mt-1 block text-xs text-muted">Estudiante: tu usuario es tu <b className="text-fg">primer nombre_CI</b> (ej. Alvaro_12929098) y tu contraseña inicial, tu <b className="text-fg">CI</b>.</span>
         )}
       </motion.label>
 

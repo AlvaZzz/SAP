@@ -16,6 +16,7 @@ import { useSearchParams } from 'next/navigation';
 import { Solicitudes } from '@/components/docente/solicitudes';
 import { api, ApiError } from '@/lib/api';
 import { Badge, Card, PageHeader, Skeleton } from '@/components/ui';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import {
   AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle, Download, FileText, Plus, Search, Sparkles, Trash2, Upload, Users,
 } from '@/components/icons';
@@ -147,7 +148,7 @@ export default function RegistroEstudiantesPage() {
     <div className="animate-fade-up">
       <PageHeader
         title="Registro de estudiantes"
-        subtitle="Crea las cuentas de tu curso desde la lista que ya tienes. Cada estudiante entrará con su RU y su CI."
+        subtitle="Crea las cuentas de tu curso desde la lista que ya tienes. Cada estudiante entrará con su primer nombre y su CI (ej. Alvaro_12929098) y su CI como contraseña."
         action={<Link href="/docente/estudiantes" className="btn-ghost"><Users className="h-4 w-4" /> Ver estudiantes</Link>}
       />
 
@@ -370,7 +371,7 @@ function PasoCargar({ materia, ocupado, onArchivo, onManual, onAtras }: {
           <Download className="mt-0.5 h-5 w-5 shrink-0 text-prexi-blue-deep" />
           <span>
             <span className="block font-semibold text-fg">¿No tienes una lista? Descarga la plantilla</span>
-            <span className="block text-sm text-muted">Excel con las columnas AP. PATERNO, AP. MATERNO, NOMBRES, CI, RU y PARALELO.</span>
+            <span className="block text-sm text-muted">Excel con las columnas AP. PATERNO, AP. MATERNO, NOMBRES, CI y PARALELO (el RU es opcional).</span>
           </span>
         </a>
         <button onClick={onManual} className="flex items-start gap-3 rounded-2xl border border-line p-4 text-left transition hover:bg-subtle">
@@ -396,7 +397,7 @@ function PasoColumnas({ analisis, mapeo, setMapeo, materia, paraleloDefecto, set
 }) {
   const muestra = analisis.filas.slice(analisis.fila_encabezado + 1, analisis.fila_encabezado + 4);
   const hayNombre = mapeo.nombreCompleto !== null || (mapeo.apellidoPaterno !== null && mapeo.nombres !== null);
-  const faltan = [!hayNombre && 'el nombre', mapeo.ci === null && 'el CI', mapeo.ru === null && 'el RU'].filter(Boolean) as string[];
+  const faltan = [!hayNombre && 'el nombre', mapeo.ci === null && 'el CI'].filter(Boolean) as string[];
   const faltaParalelo = mapeo.paralelo === null && !paraleloDefecto.trim();
 
   return (
@@ -474,7 +475,7 @@ const COLUMNAS: { clave: keyof Fila; etiqueta: string; ancho: string }[] = [
   { clave: 'apellidoMaterno', etiqueta: 'Ap. materno', ancho: 'min-w-[130px]' },
   { clave: 'nombres', etiqueta: 'Nombres', ancho: 'min-w-[150px]' },
   { clave: 'ci', etiqueta: 'CI', ancho: 'min-w-[110px]' },
-  { clave: 'ru', etiqueta: 'RU', ancho: 'min-w-[120px]' },
+  { clave: 'ru', etiqueta: 'RU (opcional)', ancho: 'min-w-[120px]' },
   { clave: 'paralelo', etiqueta: 'Paralelo', ancho: 'min-w-[90px]' },
 ];
 
@@ -545,7 +546,7 @@ function PasoPreview({ materia, inicial, soyDocente, onAtras, onListo, setError 
   async function registrar() {
     if (!puedeRegistrar) return;
     const detalle = `${resumen.nuevos} estudiante(s) nuevo(s)` + (resumen.existentes ? ` y ${existentes === 'actualizar' ? 'actualizar' : 'omitir'} ${resumen.existentes} que ya existen` : '');
-    if (!confirm(`Vas a registrar ${detalle} en ${materia.nombre} (${materia.gestion}).\n\nCada estudiante entrará con su RU y su CI como contraseña inicial. ¿Continuar?`)) return;
+    if (!confirm(`Vas a registrar ${detalle} en ${materia.nombre} (${materia.gestion}).\n\nCada estudiante entrará con su usuario PrimerNombre_CI (ej. Alvaro_12929098) y su CI como contraseña inicial. ¿Continuar?`)) return;
     setOcupado(true); setError('');
     try {
       onListo(await api.post<Resultado>('/docente/registro/registrar', { materiaId: materia.id, filas: filas.map(soloDatos), existentes, soyDocente }));
@@ -579,7 +580,7 @@ function PasoPreview({ materia, inicial, soyDocente, onAtras, onListo, setError 
         )}
         {resumen.existentes > 0 && (
           <div className="mt-4 rounded-2xl border border-line p-3 text-sm">
-            <p className="mb-2 font-semibold text-fg">{resumen.existentes} estudiante(s) ya tienen cuenta (mismo RU). ¿Qué hago con ellos?</p>
+            <p className="mb-2 font-semibold text-fg">{resumen.existentes} estudiante(s) ya tienen cuenta (mismo CI). ¿Qué hago con ellos?</p>
             <label className="mr-5 inline-flex cursor-pointer items-center gap-2 text-fg">
               <input type="radio" name="existentes" checked={existentes === 'omitir'} onChange={() => setExistentes('omitir')} className="accent-prexi-blue" /> Dejarlos como están
             </label>
@@ -633,12 +634,13 @@ function PasoPreview({ materia, inicial, soyDocente, onAtras, onListo, setError 
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
                 <th className="w-10 px-3 py-3"><input type="checkbox" checked={todasMarcadas} onChange={alternarTodas} aria-label="Seleccionar todos" className="h-4 w-4 accent-prexi-blue" /></th>
                 {COLUMNAS.map((c) => <th key={c.clave} className={`px-2 py-3 ${c.ancho}`}>{c.etiqueta}</th>)}
+                <th className="min-w-[150px] px-3 py-3">Usuario</th>
                 <th className="min-w-[200px] px-3 py-3">Estado</th>
               </tr>
             </thead>
             <tbody>
               {visibles.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-muted">No hay estudiantes que coincidan con el filtro.</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-muted">No hay estudiantes que coincidan con el filtro.</td></tr>
               )}
               {visibles.map((f) => (
                 <tr key={f.k} className={`border-b border-line last:border-0 ${f.estado === 'error' ? 'bg-red-500/5' : ''}`}>
@@ -656,6 +658,7 @@ function PasoPreview({ materia, inicial, soyDocente, onAtras, onListo, setError 
                       </td>
                     );
                   })}
+                  <td className="px-3 py-1.5 font-mono text-xs text-muted">{usuarioDeAcceso({ nombres: f.nombres, ci: f.ci }) || '—'}</td>
                   <td className="px-3 py-1.5">
                     {f.estado === 'nuevo' && <Badge tone="green">Nuevo</Badge>}
                     {f.estado === 'existe' && <Badge tone="amber">Ya existe</Badge>}
@@ -689,7 +692,7 @@ function PasoResultado({ r, materia, onOtra }: { r: Resultado; materia: Materia 
   function descargar() {
     const esc = (s: string) => (/[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
     const lineas = [
-      ['Nombre', 'Paralelo', 'Usuario (RU)', 'Contraseña inicial', 'Resultado'].join(','),
+      ['Nombre', 'Paralelo', 'Usuario', 'Contraseña inicial', 'Resultado'].join(','),
       ...r.reporte.map((f) => [f.nombre, f.paralelo, f.usuario, f.contrasena_inicial, f.resultado].map(esc).join(',')),
     ];
     // BOM para que Excel abra los acentos correctamente.
@@ -718,7 +721,7 @@ function PasoResultado({ r, materia, onOtra }: { r: Resultado; materia: Materia 
         <div className="mt-5 rounded-2xl border border-prexi-blue/30 bg-prexi-blue/10 p-4 text-sm">
           <p className="font-semibold text-fg">Cómo entran tus estudiantes</p>
           <p className="mt-1 text-muted">
-            Usuario: su <b className="text-fg">RU</b> · Contraseña inicial: su <b className="text-fg">CI</b>. La primera vez el sistema les pide crear su propia contraseña.
+            Usuario: su <b className="text-fg">primer nombre_CI</b> (ej. Alvaro_12929098) · Contraseña inicial: su <b className="text-fg">CI</b>. La primera vez el sistema les pide crear su propia contraseña.
           </p>
         </div>
 
@@ -726,7 +729,7 @@ function PasoResultado({ r, materia, onOtra }: { r: Resultado; materia: Materia 
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card">
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
-                <th className="px-3 py-2.5">Estudiante</th><th className="px-3 py-2.5">Paralelo</th><th className="px-3 py-2.5">Usuario (RU)</th><th className="px-3 py-2.5">Resultado</th>
+                <th className="px-3 py-2.5">Estudiante</th><th className="px-3 py-2.5">Paralelo</th><th className="px-3 py-2.5">Usuario</th><th className="px-3 py-2.5">Resultado</th>
               </tr>
             </thead>
             <tbody>

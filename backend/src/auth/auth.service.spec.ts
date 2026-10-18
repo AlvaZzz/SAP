@@ -43,7 +43,7 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
       prisma.usuario.findUnique
         .mockResolvedValueOnce(null) // email libre
         .mockResolvedValueOnce({ id: 9 }); // cédula tomada
-      await expect(service.register(dto as never)).rejects.toThrow('Ya existe un usuario con esa cédula');
+      await expect(service.register(dto as never)).rejects.toThrow('Ya existe una cuenta con ese CI');
     });
   });
 
@@ -63,6 +63,30 @@ describe('AuthService (registro, login y bloqueo de cuenta)', () => {
       expect(prisma.usuario.update).toHaveBeenCalledWith(
         expect.objectContaining({ data: { failedLoginCount: 0, lockedUntil: null } }),
       );
+    });
+
+    it('el estudiante entra con su usuario PrimerNombre_CI (sin importar mayúsculas ni tildes)', async () => {
+      const estudiante = { ...usuario, email: null, cedula: '12929098', nombres: 'Álvaro Daniel', nombre: 'Veizaga Acarapi Álvaro Daniel' };
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce(estudiante)
+        .mockResolvedValueOnce({ id: 7, nombre: estudiante.nombre, rol: 'estudiante' });
+      const r = await service.login({ email: 'alvaro_12929098', password: 'correcta' });
+      expect(r.token).toBeTruthy();
+      expect(prisma.usuario.findUnique.mock.calls[0][0]).toEqual({ where: { cedula: '12929098' } });
+    });
+
+    it('con el CI correcto pero OTRO nombre no entra (mismo mensaje genérico)', async () => {
+      prisma.usuario.findUnique.mockResolvedValue({ ...usuario, cedula: '12929098', nombres: 'Álvaro Daniel' });
+      await expect(service.login({ email: 'Pedro_12929098', password: 'correcta' }))
+        .rejects.toThrow('Usuario o contraseña incorrectos');
+    });
+
+    it('quien ya entraba con su RU puede seguir haciéndolo', async () => {
+      prisma.usuario.findUnique
+        .mockResolvedValueOnce({ ...usuario, ru: '200012345' })
+        .mockResolvedValueOnce({ id: 7, nombre: 'Ana', rol: 'estudiante' });
+      await service.login({ email: '200012345', password: 'correcta' });
+      expect(prisma.usuario.findUnique.mock.calls[0][0]).toEqual({ where: { ru: '200012345' } });
     });
 
     it('correo inexistente y contraseña incorrecta dan el MISMO mensaje (sin filtrar cuáles existen)', async () => {

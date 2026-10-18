@@ -21,7 +21,8 @@ export interface RegistroData {
   apellidoMaterno?: string;
   nombres: string;
   cedula: string;
-  ru: string;
+  // RU (matrícula): opcional. El estudiante entra con su usuario PrimerNombre_CI.
+  ru?: string;
   /** Paralelo al que pide inscribirse; su docente debe aceptarlo. */
   paraleloId: number;
   email?: string;

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { NivelDificultad } from '@/lib/types';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import { Badge, Card, Modal, SectionTitle, Skeleton, Textarea } from '@/components/ui';
 import { EstadoChip, FilaCurso, NivelChip, PromedioChip, fechaCorta } from '@/components/docente/curso';
 import { AlertTriangle, ArrowLeft, CheckCircle, Edit, KeyRound, Power, Save } from '@/components/icons';
@@ -113,7 +114,7 @@ export default function FichaEstudiantePage() {
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-prexi-blue text-2xl font-extrabold text-accent-on">{e.nombre.charAt(0)}</div>
             <div>
               <h1 className="font-display text-2xl font-extrabold text-fg">{e.nombre}</h1>
-              <p className="text-sm text-muted">CI <b className="text-fg">{e.ci ?? '—'}</b> · RU <b className="text-fg">{e.ru ?? '—'}</b>{e.email ? ` · ${e.email}` : ''}</p>
+              <p className="text-sm text-muted">Usuario <b className="font-mono text-fg">{usuarioDeAcceso({ nombres: e.nombres, nombre: e.nombre, ci: e.ci }) || '—'}</b> · CI <b className="text-fg">{e.ci ?? '—'}</b>{e.ru ? <> · RU <b className="text-fg">{e.ru}</b></> : null}{e.email ? ` · ${e.email}` : ''}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {e.activo ? <EstadoChip estado={e.estado} /> : <Badge tone="slate">Dado de baja</Badge>}
                 <NivelChip nivel={e.nivel} />
@@ -381,7 +382,7 @@ function EditarDatos({ estudiante, onCerrar, onGuardado }: { estudiante: Ficha['
         {campo('apellidoMaterno', 'Apellido materno')}
         <div className="sm:col-span-2">{campo('nombres', 'Nombres')}</div>
         {campo('ci', 'CI')}
-        {campo('ru', 'RU')}
+        {campo('ru', 'RU (opcional)')}
         <label className="block sm:col-span-2">
           <span className="mb-1.5 block text-sm font-medium text-fg">Paralelo</span>
           <select className="input" value={form.paraleloId} onChange={(e) => setForm({ ...form, paraleloId: e.target.value })}>

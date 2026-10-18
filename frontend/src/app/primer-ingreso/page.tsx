@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
 import { Usuario } from '@/lib/types';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 
 const REGLA = /^(?=.*[A-Za-zÁÉÍÓÚáéíóúÑñ])(?=.*\d).{8,}$/;
 
@@ -85,7 +86,7 @@ export default function PrimerIngresoPage() {
 
         <p className="mb-4 text-sm leading-relaxed text-muted">
           Entraste con una contraseña temporal{esEstudiante ? ' (tu CI)' : ''}. Por seguridad debes cambiarla ahora;
-          la próxima vez entrarás con {usuario.ru ? <>tu RU <b className="text-fg">{usuario.ru}</b></> : 'tu usuario'} y la contraseña que elijas.
+          la próxima vez entrarás con {usuarioDeAcceso(usuario) ? <>tu usuario <b className="font-mono text-fg">{usuarioDeAcceso(usuario)}</b></> : usuario.email ? <>tu correo <b className="text-fg">{usuario.email}</b></> : 'tu usuario'} y la contraseña que elijas.
         </p>
 
         <label className="mb-3 block">

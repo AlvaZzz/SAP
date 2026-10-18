@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
+import { usuarioDeAcceso } from '../../common/usuario/usuario-acceso';
 import {
   CAMPOS, FilaEstudiante, FilaValidada, Mapeo,
   aplicarMapeo, capitalizar, detectarColumnas, faltantesDe, limpiarCi, limpiarParalelo, limpiarRu,
@@ -139,6 +140,7 @@ export class DocenteRegistroService {
     hoja.addRow({ paterno: 'Mamani', materno: 'Quispe', nombres: 'Juan Carlos', ci: '1234567', ru: '200012345', paralelo: 'A' });
     hoja.getRow(2).font = { italic: true, color: { argb: 'FF888888' } };
     hoja.getCell('A2').note = 'Fila de EJEMPLO: bórrala o reemplázala por tu primer estudiante.';
+    hoja.getCell('E1').note = 'RU opcional: si no lo tienes, deja la columna vacía. El estudiante entra con su primer nombre y su CI (Juan_1234567) y su CI como contraseña.';
 
     // CI y RU como TEXTO: Excel no les quita ceros ni los pasa a notación científica.
     for (const col of ['D', 'E']) hoja.getColumn(col).numFmt = '@';
@@ -395,7 +397,7 @@ export class DocenteRegistroService {
     const nuevos = filas.filter((f) => f.estado === 'nuevo');
     // La contraseña inicial es el CI. Se hashea ANTES de abrir la transacción (bcrypt es lento a propósito).
     const hashes = new Map<string, string>();
-    for (const f of nuevos) hashes.set(f.ru, await bcrypt.hash(f.ci, 10));
+    for (const f of nuevos) hashes.set(f.ci, await bcrypt.hash(f.ci, 10));
 
     const reporte = await this.prisma.$transaction(async (tx) => {
       // 1) Paralelos: se crean los que falten, con este docente a cargo si así lo indicó.
@@ -413,8 +415,10 @@ export class DocenteRegistroService {
         paralelos.set(nombre, p.id);
       }
 
-      const out: { nombre: string; ru: string; paralelo: string; resultado: string; usuario: string; contrasena_inicial: string }[] = [];
+      const out: { nombre: string; ci: string; ru: string; paralelo: string; resultado: string; usuario: string; contrasena_inicial: string }[] = [];
       for (const f of filas) {
+        const usuario = usuarioDeAcceso({ nombres: f.nombres, cedula: f.ci });
+        const fila = { nombre: f.nombreCompleto, ci: f.ci, ru: f.ru, paralelo: f.paralelo, usuario };
         const base = {
           nombre: f.nombreCompleto,
           apellidoPaterno: f.apellidoPaterno,
@@ -427,21 +431,21 @@ export class DocenteRegistroService {
           await tx.usuario.create({
             data: {
               ...base,
-              cedula: f.ci, ru: f.ru, rol: 'estudiante',
+              cedula: f.ci, ru: f.ru || null, rol: 'estudiante',
               carrera: 'Ingeniería de Sistemas',
               institucion: cfg?.institucion ?? 'UPEA',
-              passwordHash: hashes.get(f.ru)!,
+              passwordHash: hashes.get(f.ci)!,
               mustChangePassword: true,
               ranking: { create: { xpTotal: 0, rachaDias: 0 } },
             },
           });
-          out.push({ nombre: f.nombreCompleto, ru: f.ru, paralelo: f.paralelo, resultado: 'Registrado', usuario: f.ru, contrasena_inicial: 'Su CI' });
+          out.push({ ...fila, resultado: 'Registrado', contrasena_inicial: f.ci });
         } else if (modo === 'actualizar' && f.existenteId) {
           // Solo datos de identificación y paralelo: NUNCA se toca su contraseña ni su avance.
-          await tx.usuario.update({ where: { id: f.existenteId }, data: { ...base, activo: true } });
-          out.push({ nombre: f.nombreCompleto, ru: f.ru, paralelo: f.paralelo, resultado: 'Actualizado', usuario: f.ru, contrasena_inicial: '(conserva la suya)' });
+          await tx.usuario.update({ where: { id: f.existenteId }, data: { ...base, ...(f.ru ? { ru: f.ru } : {}), activo: true } });
+          out.push({ ...fila, resultado: 'Actualizado', contrasena_inicial: '(conserva la suya)' });
         } else {
-          out.push({ nombre: f.nombreCompleto, ru: f.ru, paralelo: f.paralelo, resultado: 'Ya existía (omitido)', usuario: f.ru, contrasena_inicial: '(conserva la suya)' });
+          out.push({ ...fila, resultado: 'Ya existía (omitido)', contrasena_inicial: '(conserva la suya)' });
         }
       }
 
@@ -461,7 +465,7 @@ export class DocenteRegistroService {
       registrados: reporte.filter((r) => r.resultado === 'Registrado').length,
       actualizados: reporte.filter((r) => r.resultado === 'Actualizado').length,
       omitidos: reporte.filter((r) => r.resultado.startsWith('Ya')).length,
-      acceso: 'Cada estudiante entra con su RU como usuario y su CI como contraseña. En su primer ingreso deberá cambiarla.',
+      acceso: 'Cada estudiante entra con su primer nombre y su CI como usuario (por ejemplo, Alvaro_12929098) y su CI como contraseña. En su primer ingreso deberá cambiarla.',
       reporte,
     };
   }
@@ -500,11 +504,12 @@ export class DocenteRegistroService {
       data.cedula = ci;
     }
     if (dto.ru !== undefined) {
+      // El RU es opcional: vacío lo borra; si viene, debe tener formato de RU.
       const ru = limpiarRu(dto.ru);
-      if (!/^\d{4,12}$/.test(ru)) throw new BadRequestException('El RU debe tener entre 4 y 12 dígitos.');
-      const otro = await this.prisma.usuario.findFirst({ where: { ru, id: { not: id } }, select: { id: true } });
+      if (ru && !/^\d{4,12}$/.test(ru)) throw new BadRequestException('El RU debe tener entre 4 y 12 dígitos (o déjalo vacío).');
+      const otro = ru ? await this.prisma.usuario.findFirst({ where: { ru, id: { not: id } }, select: { id: true } }) : null;
       if (otro) throw new ConflictException('Ese RU ya está registrado en otra cuenta.');
-      data.ru = ru;
+      data.ru = ru || null;
     }
     if (dto.paraleloId !== undefined) {
       const p = await this.prisma.paralelo.findUnique({ where: { id: dto.paraleloId } });
@@ -539,7 +544,8 @@ export class DocenteRegistroService {
     await this.prisma.logAuditoria.create({
       data: { actorId: docenteId, accion: 'password_reset', entidad: 'usuario', entidadId: id, detalle: 'El docente restableció el acceso (contraseña = CI, cambio obligatorio)' },
     });
-    return { ok: true, mensaje: 'El estudiante puede entrar con su RU y su CI; deberá elegir una contraseña nueva.' };
+    const usuario = usuarioDeAcceso(u);
+    return { ok: true, usuario, mensaje: `El estudiante puede entrar con su usuario ${usuario} y su CI como contraseña; deberá elegir una nueva.` };
   }
   // ── Solicitudes de inscripción (estudiantes que se registraron solos) ──
 

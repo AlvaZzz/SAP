@@ -97,7 +97,7 @@ export function faltantesDe(mapeo: Mapeo): string[] {
   const hayNombre = mapeo.nombreCompleto !== null || (mapeo.apellidoPaterno !== null && mapeo.nombres !== null);
   if (!hayNombre) faltan.push('Nombre (apellidos y nombres)');
   if (mapeo.ci === null) faltan.push('CI');
-  if (mapeo.ru === null) faltan.push('RU');
+  // El RU (matrícula) es opcional: el estudiante entra con su primer nombre y su CI.
   return faltan;
 }
 
@@ -258,7 +258,7 @@ export interface FilaValidada extends FilaEstudiante {
   errores: string[];
   /** Campos con problema, para pintarlos en rojo. */
   camposConError: string[];
-  /** id del usuario que ya existe con ese RU o CI (si aplica). */
+  /** id del estudiante que ya existe con ese CI (si aplica). */
   existenteId: number | null;
 }
 
@@ -272,7 +272,7 @@ export interface Existente { id: number; ci: string | null; ru: string | null; r
  * y coincidencias con cuentas que ya existen en la base.
  *
  *  · error  → no se puede registrar hasta corregirlo.
- *  · existe → el RU ya está registrado (el docente decide: actualizar u omitir).
+ *  · existe → ese CI ya es de un estudiante registrado (el docente decide: actualizar u omitir).
  *  · nuevo  → se creará la cuenta.
  */
 export function validarFilas(filas: FilaEstudiante[], existentes: Existente[]): FilaValidada[] {
@@ -295,20 +295,21 @@ export function validarFilas(filas: FilaEstudiante[], existentes: Existente[]): 
     if (!f.nombres) falla('nombres', 'Faltan los nombres.');
     if (!f.ci) falla('ci', 'Falta el CI.');
     else if (!/^\d{5,10}(-?[0-9A-Z]{1,3})?$/.test(f.ci)) falla('ci', 'El CI no tiene un formato válido (5 a 10 dígitos).');
-    if (!f.ru) falla('ru', 'Falta el RU.');
-    else if (!/^\d{4,12}$/.test(f.ru)) falla('ru', 'El RU debe tener entre 4 y 12 dígitos.');
+    // RU opcional: si viene, debe tener formato de RU.
+    if (f.ru && !/^\d{4,12}$/.test(f.ru)) falla('ru', 'El RU debe tener entre 4 y 12 dígitos (o déjalo vacío).');
     if (!f.paralelo) falla('paralelo', 'Falta el paralelo.');
 
     if (f.ci && (ciEnArchivo.get(f.ci) ?? 0) > 1) falla('ci', 'CI repetido en la lista.');
     if (f.ru && (ruEnArchivo.get(f.ru) ?? 0) > 1) falla('ru', 'RU repetido en la lista.');
 
-    const mismoRu = f.ru ? porRu.get(f.ru) : undefined;
+    // La cuenta se reconoce por el CI (con él se arma el usuario "Nombre_CI").
     const mismoCi = f.ci ? porCi.get(f.ci) : undefined;
-    if (mismoRu && mismoRu.rol !== 'estudiante') falla('ru', 'Ese RU pertenece a una cuenta que no es de estudiante.');
-    // El CI ya está en otra cuenta distinta de la que tiene este RU: conflicto real.
-    if (mismoCi && (!mismoRu || mismoCi.id !== mismoRu.id)) falla('ci', 'Ese CI ya está registrado en otra cuenta.');
+    const mismoRu = f.ru ? porRu.get(f.ru) : undefined;
+    if (mismoCi && mismoCi.rol !== 'estudiante') falla('ci', 'Ese CI pertenece a una cuenta que no es de estudiante.');
+    // El RU ya está en una cuenta distinta de la que tiene este CI: conflicto real.
+    if (mismoRu && (!mismoCi || mismoRu.id !== mismoCi.id)) falla('ru', 'Ese RU ya está registrado en otra cuenta.');
 
-    const existente = mismoRu && mismoRu.rol === 'estudiante' ? mismoRu : null;
+    const existente = mismoCi && mismoCi.rol === 'estudiante' ? mismoCi : null;
     return {
       ...f,
       nombreCompleto: nombreCompletoDe(f),

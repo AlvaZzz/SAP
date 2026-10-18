@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/providers/auth-provider';
 import { Usuario } from '@/lib/types';
+import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import { PrexiLogo } from '@/components/login/prexi-logo';
 import { Clock, CheckCircle, AlertTriangle, RotateCcw, LogOut, ArrowRight } from '@/components/icons';
 
@@ -91,7 +92,7 @@ export default function InscripcionPage() {
                 <RotateCcw className="h-4 w-4" /> {consultando ? 'Consultando…' : 'Ver si ya me aceptaron'}
               </button>
               {sinCambios && <p className="mt-2 text-sm text-muted" role="status">Todavía no. Avísale a tu docente que ya te registraste.</p>}
-              <p className="mt-3 text-xs text-muted">Puedes cerrar esta página: tu solicitud queda guardada. Para volver, entra con tu RU <b className="text-fg">{usuario.ru}</b> y tu contraseña.</p>
+              <p className="mt-3 text-xs text-muted">Puedes cerrar esta página: tu solicitud queda guardada. Para volver, entra con tu usuario <b className="font-mono text-fg">{usuarioDeAcceso(usuario) || usuario.email}</b> y tu contraseña.</p>
             </>
           )}
 
