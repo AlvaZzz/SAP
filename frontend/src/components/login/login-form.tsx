@@ -13,6 +13,9 @@ import {
   ArrowRight,
   GraduationCap,
   Clock,
+  User,
+  UserPlus,
+  Briefcase,
 } from '@/components/icons';
 import { PrexiLogo } from './prexi-logo';
 import { useLogin } from './use-login';
@@ -69,6 +72,9 @@ export function LoginForm() {
   const [recordar, setRecordar] = useState(true);
   const [tocado, setTocado] = useState<{ email?: boolean; password?: boolean }>({});
   const [errores, setErrores] = useState<LoginErrores>({});
+  // Quién entra: solo cambia la ayuda y el ejemplo del primer campo.
+  const [perfil, setPerfil] = useState<'estudiante' | 'docente'>('estudiante');
+  const esEstudiante = perfil === 'estudiante';
   // "Tu sesión expiró": llega por ?motivo=expirada (lo pone Shell al redirigir
   // tras un refresh silencioso fallido). Se lee del URL directamente (sin
   // useSearchParams) para no exigir un límite de Suspense en esta página.
@@ -169,11 +175,24 @@ export function LoginForm() {
         </motion.p>
       )}
 
+      {/* ¿Quién entra? Cambia solo la ayuda y el ejemplo: el backend acepta usuario o correo en ambos casos. */}
+      <motion.div variants={item} role="tablist" aria-label="¿Quién eres?" className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border border-line bg-app/60 p-1">
+        {([['estudiante', 'Estudiante', GraduationCap], ['docente', 'Docente', Briefcase]] as const).map(([clave, texto, Icono]) => (
+          <button key={clave} type="button" role="tab" aria-selected={perfil === clave}
+            onClick={() => { setPerfil(clave); setErrores({}); setTocado({}); }}
+            className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-2 py-2.5 text-sm font-semibold transition ${perfil === clave ? 'bg-prexi-blue text-accent-on shadow-soft' : 'text-muted hover:bg-subtle hover:text-fg'}`}>
+            <Icono className="h-4 w-4 shrink-0" /> {texto}
+          </button>
+        ))}
+      </motion.div>
+
       {/* Usuario (PrimerNombre_CI) o correo: los estudiantes entran con su usuario; docentes y admin, con su correo. */}
       <motion.label variants={item} className="mb-4 block sm:mb-5">
-        <span className="mb-1.5 block text-sm font-medium text-fg">Usuario o correo electrónico</span>
+        <span className="mb-1.5 block text-sm font-medium text-fg">{esEstudiante ? 'Tu usuario' : 'Correo electrónico'}</span>
         <div className="relative">
-          <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+          {esEstudiante
+            ? <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+            : <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />}
           <input
             type="text"
             autoComplete="username"
@@ -187,9 +206,11 @@ export function LoginForm() {
               revalidar();
             }}
             aria-invalid={!!tocado.email && !!errores.email}
-            aria-label="Usuario o correo electrónico"
+            aria-label={esEstudiante ? 'Tu usuario' : 'Correo electrónico'}
+            autoCapitalize="none"
+            spellCheck={false}
             className={campo(!!tocado.email && !!errores.email) + ' pr-12'}
-            placeholder="Alvaro_12929098 o tucorreo@ejemplo.com"
+            placeholder={esEstudiante ? 'Alvaro_12929098' : 'docente@upea.edu.bo'}
           />
           {emailValido && (
             <CheckCircle
@@ -200,8 +221,14 @@ export function LoginForm() {
         </div>
         {tocado.email && errores.email ? (
           <span className="mt-1 block text-xs font-medium text-red-500">{errores.email}</span>
+        ) : esEstudiante ? (
+          // Cómo se arma el usuario, a la vista y con un ejemplo.
+          <span className="mt-2 block rounded-xl border border-prexi-blue/25 bg-prexi-blue/10 px-3 py-2 text-xs leading-relaxed text-muted">
+            Tu usuario es <b className="text-fg">tu primer nombre</b>, un guion bajo <b className="text-fg">_</b> y <b className="text-fg">tu CI</b>.
+            <span className="mt-0.5 block">Ejemplo: Álvaro, CI 12929098 → <b className="font-mono text-fg">Alvaro_12929098</b></span>
+          </span>
         ) : (
-          <span className="mt-1 block text-xs text-muted">Estudiante: tu usuario es tu <b className="text-fg">primer nombre_CI</b> (ej. Alvaro_12929098) y tu contraseña inicial, tu <b className="text-fg">CI</b>.</span>
+          <span className="mt-1 block text-xs text-muted">El correo con el que te dio de alta el administrador.</span>
         )}
       </motion.label>
 
@@ -236,9 +263,11 @@ export function LoginForm() {
             {verPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
-        {tocado.password && errores.password && (
+        {tocado.password && errores.password ? (
           <span className="mt-1 block text-xs font-medium text-red-500">{errores.password}</span>
-        )}
+        ) : esEstudiante ? (
+          <span className="mt-1 block text-xs text-muted">La primera vez es tu <b className="text-fg">CI</b>; luego, la que tú elijas.</span>
+        ) : null}
       </motion.label>
 
       {/* Recordarme + olvidaste */}
@@ -261,12 +290,15 @@ export function LoginForm() {
         <BotonIngresar loading={isLoading} bloqueado={bloqueoSeg > 0} />
       </motion.div>
 
-      <motion.p variants={item} className="mt-7 border-t border-line/70 pt-5 text-center text-sm text-muted sm:mt-8 sm:pt-6">
-        ¿No tienes cuenta?{' '}
-        <Link href="/registro" className="font-semibold text-prexi-blue-deep hover:underline">
-          Regístrate
-        </Link>
-      </motion.p>
+      {/* Crear cuenta: solo para estudiantes que su docente aún no registró. */}
+      {esEstudiante && (
+        <motion.div variants={item} className="mt-6 border-t border-line/70 pt-5 sm:mt-7 sm:pt-6">
+          <p className="mb-2.5 text-center text-sm text-muted">¿Es tu primera vez y tu docente aún no te registró?</p>
+          <Link href="/registro" className="btn-ghost h-12 w-full justify-center rounded-2xl text-base">
+            <UserPlus className="h-5 w-5" /> Crear mi cuenta de estudiante
+          </Link>
+        </motion.div>
+      )}
     </motion.form>
   );
 }

@@ -6,6 +6,8 @@
  * para no romper los imports existentes (`@/components/icons`).
  */
 import {
+  UserPlus,
+  Briefcase,
   LayoutDashboard,
   Code2,
   TrendingUp,
@@ -99,6 +101,8 @@ const Edit = Pencil;
 
 export {
   Bug,
+  UserPlus,
+  Briefcase,
   LayoutDashboard,
   Volume2,
   VolumeX,
