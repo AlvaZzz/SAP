@@ -122,8 +122,8 @@ export class DocenteRegistroController {
   }
 
   @Get('materias')
-  async materias(@CurrentUser('sub') docenteId: number) {
-    return { materias: await this.service.materias(docenteId) };
+  async materias(@CurrentUser('sub') docenteId: number, @CurrentUser('rol') rol: string) {
+    return { materias: await this.service.materias(docenteId, rol) };
   }
 
   @Post('materias')
@@ -132,8 +132,8 @@ export class DocenteRegistroController {
   }
 
   @Post('paralelos')
-  crearParalelo(@CurrentUser('sub') docenteId: number, @Body() dto: CrearParaleloDto) {
-    return this.service.crearParalelo(docenteId, dto);
+  crearParalelo(@CurrentUser('sub') docenteId: number, @CurrentUser('rol') rol: string, @Body() dto: CrearParaleloDto) {
+    return this.service.crearParalelo(docenteId, dto, rol);
   }
 
   @Patch('paralelos/:id/docente')
@@ -176,8 +176,8 @@ export class DocenteRegistroController {
   }
 
   @Post('registrar')
-  registrar(@CurrentUser('sub') docenteId: number, @Body() dto: RegistrarDto) {
-    return this.service.registrar(docenteId, dto);
+  registrar(@CurrentUser('sub') docenteId: number, @CurrentUser('rol') rol: string, @Body() dto: RegistrarDto) {
+    return this.service.registrar(docenteId, dto, rol);
   }
 
   @Patch('estudiantes/:id')

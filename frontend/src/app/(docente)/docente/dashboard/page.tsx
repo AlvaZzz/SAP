@@ -73,7 +73,7 @@ export default function DocenteDashboardPage() {
       {cargando ? <Skeleton className="h-48" /> : !d || d.paralelos.length === 0 ? (
         <Card>
           <EmptyState icon={<Users className="h-7 w-7" />} title="Todavía no tienes paralelos"
-            hint="Empieza registrando a tus estudiantes: se crean los paralelos y quedas como su docente." />
+            hint="Aquí solo aparecen los paralelos donde tú eres el docente. Registra a tus estudiantes (se crean los paralelos a tu cargo) o pide al administrador que te asigne a un paralelo." />
           <div className="mt-4 text-center"><Link href="/docente/estudiantes/registro" className="btn-primary">Registrar estudiantes <ArrowRight className="h-4 w-4" /></Link></div>
         </Card>
       ) : !paralelo ? (

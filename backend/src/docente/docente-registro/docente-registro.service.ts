@@ -18,22 +18,20 @@ export const MAX_LISTA_BYTES = 5 * 1024 * 1024;
 export type ModoExistentes = 'actualizar' | 'omitir';
 
 /**
- * Filtro Prisma con los estudiantes que un docente puede ver: los de SUS
- * paralelos, más los que aún no tienen docente asignado (paralelos sin docente
- * o estudiantes sin paralelo), para que nadie quede invisible. El admin ve todo.
+ * Filtro Prisma con los estudiantes que un docente puede ver: SOLO los de los
+ * paralelos donde él es el docente. Los paralelos sin docente y los estudiantes
+ * sin paralelo los ve y los asigna únicamente el admin, que ve todo.
  */
 export function estudiantesDelDocente(docenteId: number, rol: string): Prisma.UsuarioWhereInput {
   // Quien se registró solo y aún no fue aceptado NO es todavía estudiante del
   // curso: aparece en Solicitudes, no en las listas.
   if (rol === 'admin') return { rol: 'estudiante', estadoInscripcion: 'aprobada' };
-  return {
-    rol: 'estudiante', estadoInscripcion: 'aprobada',
-    OR: [
-      { paraleloRef: { docenteId } },
-      { paraleloRef: { docenteId: null } },
-      { paraleloId: null },
-    ],
-  };
+  return { rol: 'estudiante', estadoInscripcion: 'aprobada', paraleloRef: { docenteId } };
+}
+
+/** Paralelos que un docente puede ver: solo aquellos de los que es el docente. El admin, todos. */
+export function paralelosDelDocente(docenteId: number, rol: string): Prisma.ParaleloWhereInput {
+  return rol === 'admin' ? {} : { docenteId };
 }
 
 /**
@@ -58,11 +56,13 @@ export class DocenteRegistroService {
   // ══════════════════ Materias y paralelos ══════════════════
 
   /** Materias con sus paralelos, el docente de cada uno y cuántos estudiantes tiene. */
-  async materias(docenteId: number) {
+  async materias(docenteId: number, rol: string) {
     const materias = await this.prisma.materia.findMany({
       orderBy: [{ gestion: 'desc' }, { nombre: 'asc' }],
       include: {
         paralelos: {
+          // El docente ve solo sus paralelos; los sin docente los asigna el admin.
+          where: paralelosDelDocente(docenteId, rol),
           orderBy: { nombre: 'asc' },
           include: {
             docente: { select: { id: true, nombre: true } },
@@ -90,7 +90,10 @@ export class DocenteRegistroService {
     return this.prisma.materia.create({ data: { nombre, gestion, sigla: dto.sigla?.trim() || null } });
   }
 
-  async crearParalelo(docenteId: number, dto: { materiaId: number; nombre: string; soyDocente?: boolean }) {
+  async crearParalelo(docenteId: number, dto: { materiaId: number; nombre: string; soyDocente?: boolean }, rol = 'docente') {
+    // Un docente que crea un paralelo queda como su docente: si no, el paralelo
+    // nacería invisible para él. Solo el admin puede dejarlo sin docente.
+    if (rol !== 'admin') dto = { ...dto, soyDocente: true };
     const materia = await this.prisma.materia.findUnique({ where: { id: dto.materiaId } });
     if (!materia) throw new NotFoundException('Materia no encontrada.');
     const nombre = limpiarParalelo(dto.nombre);
@@ -382,7 +385,10 @@ export class DocenteRegistroService {
   async registrar(
     docenteId: number,
     dto: { materiaId: number; filas: FilaEstudiante[]; existentes?: ModoExistentes; soyDocente?: boolean },
+    rol = 'docente',
   ) {
+    // El docente queda a cargo de los paralelos de su lista; solo el admin puede dejarlos sin docente.
+    if (rol !== 'admin') dto = { ...dto, soyDocente: true };
     const materia = await this.prisma.materia.findUnique({ where: { id: dto.materiaId } });
     if (!materia) throw new NotFoundException('Elige primero la materia.');
     const modo: ModoExistentes = dto.existentes === 'actualizar' ? 'actualizar' : 'omitir';
@@ -408,6 +414,10 @@ export class DocenteRegistroService {
           create: { materiaId: materia.id, nombre, docenteId: dto.soyDocente === false ? null : docenteId },
           update: {},
         });
+        // Un docente no puede cargar estudiantes en el paralelo de otro docente.
+        if (rol !== 'admin' && p.docenteId !== null && p.docenteId !== docenteId) {
+          throw new ConflictException(`El paralelo ${nombre} de ${materia.nombre} ya tiene otro docente. Pide al administrador que lo revise.`);
+        }
         // Paralelo que existía sin docente: el docente que carga la lista se lo asigna.
         if (p.docenteId === null && dto.soyDocente !== false) {
           await tx.paralelo.update({ where: { id: p.id }, data: { docenteId } });
@@ -516,6 +526,7 @@ export class DocenteRegistroService {
     if (dto.paraleloId !== undefined) {
       const p = await this.prisma.paralelo.findUnique({ where: { id: dto.paraleloId } });
       if (!p) throw new NotFoundException('Paralelo no encontrado.');
+      if (rol !== 'admin' && p.docenteId !== docenteId) throw new BadRequestException('Solo puedes mover estudiantes a tus propios paralelos.');
       data.paraleloId = p.id;
       data.paralelo = p.nombre;
     }
@@ -551,11 +562,11 @@ export class DocenteRegistroService {
   }
   // ── Solicitudes de inscripción (estudiantes que se registraron solos) ──
 
-  /** Solicitudes que le toca resolver a este docente: las de sus paralelos y las de paralelos sin docente. */
+  /** Solicitudes que le toca resolver a este docente: solo las de sus paralelos. Las demás, el admin. */
   private solicitudesDe(docenteId: number, rol: string): Prisma.UsuarioWhereInput {
     return {
       rol: 'estudiante', estadoInscripcion: 'pendiente',
-      ...(rol === 'admin' ? {} : { OR: [{ paraleloRef: { docenteId } }, { paraleloRef: { docenteId: null } }, { paraleloId: null }] }),
+      ...(rol === 'admin' ? {} : { paraleloRef: { docenteId } }),
     };
   }
 
@@ -571,7 +582,7 @@ export class DocenteRegistroService {
       }),
       // Paralelos a los que el docente puede enviar al estudiante, con cuántos tiene ya.
       this.prisma.paralelo.findMany({
-        where: rol === 'admin' ? {} : { OR: [{ docenteId }, { docenteId: null }] },
+        where: paralelosDelDocente(docenteId, rol),
         orderBy: [{ materia: { gestion: 'desc' } }, { nombre: 'asc' }],
         select: {
           id: true, nombre: true, materia: { select: { nombre: true, gestion: true } },
@@ -607,7 +618,7 @@ export class DocenteRegistroService {
     if (!destino) throw new BadRequestException('Elige el paralelo en el que queda el estudiante');
     const paralelo = await this.prisma.paralelo.findUnique({ where: { id: destino }, select: { id: true, nombre: true, docenteId: true } });
     if (!paralelo) throw new BadRequestException('El paralelo elegido no existe');
-    if (rol !== 'admin' && paralelo.docenteId !== null && paralelo.docenteId !== docenteId) {
+    if (rol !== 'admin' && paralelo.docenteId !== docenteId) {
       throw new BadRequestException('Solo puedes aceptar estudiantes en tus propios paralelos');
     }
     await this.prisma.usuario.update({

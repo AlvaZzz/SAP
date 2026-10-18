@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { DocenteEstudiantesService, FilaCurso } from '../docente-estudiantes/docente-estudiantes.service';
+import { paralelosDelDocente } from '../docente-registro/docente-registro.service';
 import { DocenteRevisionesService } from '../docente-revisiones/docente-revisiones.service';
 import { ETIQUETA_NIVEL, NIVELES } from '../../common/niveles/nivel-dificultad';
 
@@ -39,7 +40,7 @@ export class DocenteDashboardService {
     const [paralelosBd, resueltosHoy, actividad, entregasPendientes] = await Promise.all([
       // Incluye los paralelos del docente aunque todavía no tengan estudiantes.
       this.prisma.paralelo.findMany({
-        where: rol === 'admin' ? {} : { OR: [{ docenteId }, { docenteId: null }] },
+        where: paralelosDelDocente(docenteId, rol),
         orderBy: [{ materia: { gestion: 'desc' } }, { nombre: 'asc' }],
         include: { materia: true, docente: { select: { id: true, nombre: true } } },
       }),
