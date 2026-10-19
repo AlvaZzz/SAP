@@ -6,6 +6,7 @@ import { CodeViewer } from '@/components/code-viewer';
 import { useSound } from '@/components/use-sound';
 import { CheckCircle, AlertCircle } from '@/components/icons';
 import type { ExerciseProps } from './index';
+import { useAtajosOpciones } from './atajos';
 
 /**
  * TIPO 1 — Opción múltiple con MANIPULACIÓN DIRECTA. Tarjetas grandes "elige":
@@ -40,6 +41,9 @@ export function MultipleChoice({ ejercicio, resultado, onChange }: ExerciseProps
     if (enviado) return;
     setSel(id); onChange(id); playClick();
   };
+
+  // A–D o 1–4 desde cualquier parte de la página (ritmo de juego).
+  useAtajosOpciones(ejercicio.opciones.map((o) => o.id), !enviado, elegir, refs);
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (enviado) return;
@@ -113,6 +117,7 @@ export function MultipleChoice({ ejercicio, resultado, onChange }: ExerciseProps
                 {o.id}
               </span>
               <span className="relative flex-1 whitespace-pre-line font-medium text-fg">{o.texto}</span>
+              {!enviado && <kbd className="relative hidden shrink-0 rounded border border-line px-1.5 py-0.5 font-mono text-2xs text-muted lg:inline" aria-hidden>{i + 1}</kbd>}
               {esCorrecta && <CheckCircle className="relative h-5 w-5 shrink-0 text-[#22C55E]" />}
               {malaElegida && <AlertCircle className="relative h-5 w-5 shrink-0 text-amber-500" />}
             </motion.button>

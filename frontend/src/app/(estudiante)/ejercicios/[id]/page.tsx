@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -14,7 +14,10 @@ import { TutorPanel } from '@/components/tutor-panel';
 import { RangoIcon } from '@/components/rango-icon';
 import { useLogros } from '@/components/logro-toast';
 import { useSound } from '@/components/use-sound';
-import { CheckCircle, ArrowRight, ChevronLeft, Layers, X, Zap, Bot } from '@/components/icons';
+import { Zap, Bot } from '@/components/icons';
+import { HudEjercicio } from '@/components/ejercicios/hud';
+import { BarraAccion, fraseAcierto, fraseFallo } from '@/components/ejercicios/barra-accion';
+import { escribiendo } from '@/components/ejercicios/atajos';
 import { NivelBadge } from '@/components/nivel-badge';
 
 interface RangoInfo { clave: string; nombre: string; svgKey: string; color: string }
@@ -32,9 +35,8 @@ export default function DetallePage() {
   // lo que decide el "Siguiente": la lista `ejercicios` trae los resueltos al
   // final y navegar por ella hacía reaparecer ejercicios ya hechos.
   const [ruta, setRuta] = useState<RutaTema | null>(null);
-  const [orden, setOrden] = useState<{ idx: number; total: number }>({ idx: 0, total: 1 });
   // La racha vive por TEMA y sobrevive al cambio de página (sessionStorage).
-  const { racha, registrar, reiniciar, enRacha, atascado } = useRachaSesion(ej?.temaId ?? null);
+  const { racha, registrar, reiniciar, atascado } = useRachaSesion(ej?.temaId ?? null);
   const [avisoOculto, setAvisoOculto] = useState(false);
   // Respuesta actual reportada por el componente de tipo (null = aún sin responder).
   const [respuesta, setRespuesta] = useState<string | null>(null);
@@ -46,27 +48,21 @@ export default function DetallePage() {
   const [pidiendoIa, setPidiendoIa] = useState(false);
   const [iaPedida, setIaPedida] = useState(false);
   const [ultimaRespuesta, setUltimaRespuesta] = useState('');
-  const [xpVuela, setXpVuela] = useState<number | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [inicio, setInicio] = useState(() => Date.now());
 
   useEffect(() => {
     setResultado(null); setParcial(null); setRetro(null); setPidiendoIa(false); setIaPedida(false); setUltimaRespuesta('');
-    setRespuesta(null); setXpVuela(null); setInicio(Date.now());
+    setRespuesta(null); setInicio(Date.now());
     api.get<{ ejercicio: Ejercicio }>(`/ejercicios/${id}`).then((r) => {
       setEj(r.ejercicio);
       // Progreso y ORDEN ADAPTATIVO: la ruta del backend decide la secuencia
       // según el nivel del estudiante (tema si lo tiene; si no, nivel).
       const q = r.ejercicio.temaId ? `tema=${r.ejercicio.temaId}` : `nivel=${r.ejercicio.nivel?.numero ?? ''}`;
-      api.get<RutaTema>(`/ejercicios/ruta?${q}`).then((lr) => {
-        setRuta(lr);
-        // El contador se lee de la RUTA COMPLETA (posición real dentro del nivel),
-        // pero la navegación usa `pendientes_ids`: son dos cosas distintas y
-        // mezclarlas era el origen de los ejercicios repetidos.
-        const ids = lr.ejercicios.map((e) => e.id);
-        const i = ids.indexOf(r.ejercicio.id);
-        setOrden({ idx: i < 0 ? 0 : i, total: ids.length || 1 });
-      }).catch(() => undefined);
+      // El contador del HUD se lee de la RUTA COMPLETA (posición real dentro del
+      // nivel), pero la navegación usa `pendientes_ids`: son dos cosas distintas
+      // y mezclarlas era el origen de los ejercicios repetidos.
+      api.get<RutaTema>(`/ejercicios/ruta?${q}`).then(setRuta).catch(() => undefined);
     }).catch(() => undefined);
   }, [id]);
 
@@ -89,10 +85,17 @@ export default function DetallePage() {
       registrar(r.correcto);   // racha de sesión: aciertos seguidos vs fallos seguidos
       setAvisoOculto(false);
       if (r.correcto) {
-        setXpVuela(r.xp.xpOtorgado);
         // Sonido MUY sutil de acierto (si el usuario tiene los sonidos activados).
         playCorrect();
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 }, colors: ['#3B82F6', '#10B981', '#F59E0B'] });
+        // Hitos del combo (3, 5, 10 seguidas): una ráfaga extra desde los lados.
+        const combo = racha.aciertos + 1;
+        if (combo === 3 || combo === 5 || combo % 10 === 0) {
+          setTimeout(() => {
+            confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: 0.75 }, colors: ['#F97316', '#F59E0B', '#EF4444'] });
+            confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.75 }, colors: ['#F97316', '#F59E0B', '#EF4444'] });
+          }, 250);
+        }
         if (r.nivel.nivelDesbloqueadoNumero) {
           setTimeout(() => confetti({ particleCount: 140, spread: 100, origin: { y: 0.5 } }), 300);
         }
@@ -132,6 +135,38 @@ export default function DetallePage() {
     } finally { setPidiendoIa(false); }
   }
 
+  // Continuar tras el resultado: al siguiente pendiente, al cierre del tema o a la lista.
+  function continuar() {
+    if (!ej) return;
+    const siguiente = (ruta?.pendientes_ids ?? []).find((x) => x !== ej.id);
+    if (siguiente) { router.push(`/ejercicios/${siguiente}`); return; }
+    const cierre = document.getElementById('cierre-tema');
+    if (cierre) { cierre.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    router.push('/ejercicios');
+  }
+
+  // ENTER: comprueba la respuesta y, ya corregida, pasa a la siguiente. Ritmo de
+  // juego en escritorio. Mientras se escribe en un campo (p. ej. el chat de
+  // PREXI) Enter es del campo; con Ctrl/⌘+Enter se comprueba igual.
+  const enviarRef = useRef(enviar);
+  const continuarRef = useRef(continuar);
+  enviarRef.current = enviar;
+  continuarRef.current = continuar;
+  useEffect(() => {
+    const alPulsar = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.shiftKey || e.altKey || e.isComposing) return;
+      const forzado = e.ctrlKey || e.metaKey;
+      if (!forzado && escribiendo(e.target)) return;
+      // Un botón enfocado ya responde a Enter por su cuenta: no duplicar.
+      if (!forzado && (e.target as HTMLElement | null)?.closest?.('button, a')) return;
+      e.preventDefault();
+      if (resultado) continuarRef.current();
+      else enviarRef.current();
+    };
+    window.addEventListener('keydown', alPulsar);
+    return () => window.removeEventListener('keydown', alPulsar);
+  }, [resultado]);
+
   if (!ej) return (
     <div className="space-y-4">
       <div className="skeleton h-16" />
@@ -139,7 +174,6 @@ export default function DetallePage() {
     </div>
   );
 
-  const progreso = Math.round(((orden.idx + 1) / orden.total) * 100);
   // SIGUIENTE = el próximo PENDIENTE, excluyendo el actual (que acaba de
   // resolverse y todavía figura como pendiente en la ruta cargada al entrar).
   // Antes era `ids[idx + 1]` sobre la lista `[...pendientes, ...resueltos]`: en
@@ -151,56 +185,47 @@ export default function DetallePage() {
   const temaCerrado = !!resultado?.correcto && !sig && !!ej.temaId && !!progNivel;
   const unidadTema = ej.tema ? `U${ej.tema.unidad.numero} · ${ej.tema.numero} ${ej.tema.titulo}` : ej.nivel ? `Nivel ${ej.nivel.numero}` : null;
 
+  // Lo que el estudiante ve avanzar. Al acertar un pendiente, el segmento y la
+  // meta del nivel suman YA (sin esperar a recargar la ruta).
+  const eraPendiente = (ruta?.pendientes_ids ?? []).includes(ej.id);
+  const sumaAhora = resultado?.correcto && eraPendiente ? 1 : 0;
+  const resueltos = new Set<number>([...(ruta?.resueltos_ids ?? []), ...(sumaAhora ? [ej.id] : [])]);
+  const idsRuta = ruta?.ejercicios.map((e) => e.id) ?? [ej.id];
+  const meta = progNivel ? { ...progNivel, resueltosAhora: progNivel.resueltos + sumaAhora } : null;
+  const faltanMeta = meta ? Math.max(0, meta.minimo - meta.resueltosAhora) : null;
+
+  const estadoBarra = !resultado ? 'pendiente' : resultado.correcto ? 'correcto' : 'incorrecto';
+  const textoContinuar = !resultado ? '' : sig ? 'Continuar' : temaCerrado ? 'Ver mi siguiente paso' : 'Finalizar';
+  const lineaMeta = resultado?.correcto && meta
+    ? (faltanMeta === 0
+        ? `🎯 Meta del nivel ${meta.nivel_label} cumplida: ya puedes subir de nivel`
+        : `🎯 Meta del nivel ${meta.nivel_label}: ${meta.resueltosAhora}/${meta.minimo} · ${faltanMeta === 1 ? '¡te falta 1!' : `te faltan ${faltanMeta}`}`)
+    : null;
+
   return (
     <div className="animate-fade-up">
-      {/* Header: barra superior con salir + progreso del tema + rango */}
-      <div className="mb-5 flex items-center gap-4 rounded-2xl border border-line bg-card px-5 py-4 shadow-soft">
-        <button onClick={() => router.push('/ejercicios')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-muted transition hover:bg-subtle hover:text-fg" title="Salir"><X className="h-4 w-4" /></button>
-        <div className="min-w-0 flex-1">
-          <p className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-fg">
-            <span>Ejercicio {orden.idx + 1} de {orden.total}</span>
-            {/* Progreso DENTRO del nivel: es el que habilita el mini-diagnóstico,
-                así que el estudiante tiene que poder verlo mientras practica. */}
-            {progNivel && (
-              <span className="text-xs font-medium text-muted">
-                · nivel {progNivel.nivel_label}: {progNivel.resueltos}/{progNivel.minimo} resueltos
-                {progNivel.cumplido ? ' · ya puedes subir de nivel' : ` · faltan ${progNivel.faltan}`}
-              </span>
-            )}
-          </p>
-          {/* Progreso VIVO por segmentos (uno por ejercicio de la ruta) que se llenan
-              con animación; si la ruta es muy larga, cae a una barra continua. */}
-          {orden.total <= 30 ? (
-            <div className="flex gap-1" role="progressbar" aria-valuenow={orden.idx + 1} aria-valuemin={1} aria-valuemax={orden.total} aria-label="Progreso del cuestionario">
-              {Array.from({ length: orden.total }).map((_, i) => (
-                <div key={i} className="h-2 flex-1 overflow-hidden rounded-full bg-subtle">
-                  <motion.div className="h-full rounded-full bg-gradient-to-r from-prexi-blue to-prexi-blue-hover"
-                    initial={false} animate={{ width: i <= orden.idx ? '100%' : '0%' }} transition={{ duration: 0.4, ease: 'easeOut' }} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="h-2 w-full overflow-hidden rounded-full bg-subtle"><motion.div className="h-full rounded-full bg-gradient-to-r from-prexi-blue to-prexi-blue-hover" initial={false} animate={{ width: `${progreso}%` }} transition={{ duration: 0.4 }} /></div>
-          )}
-        </div>
-        {rango && (
-          <div className="hidden shrink-0 items-center gap-2 rounded-xl bg-subtle px-3 py-1.5 sm:flex" title={`Tu rango: ${rango.nombre}`}>
+      <HudEjercicio
+        ids={idsRuta}
+        actualId={ej.id}
+        resueltos={resueltos}
+        combo={racha.aciertos}
+        meta={meta}
+        onSalir={() => router.push('/ejercicios')}
+        derecha={rango && (
+          <div className="flex items-center gap-2 rounded-xl bg-subtle px-3 py-1.5" title={`Tu rango: ${rango.nombre}`}>
             <RangoIcon svgKey={rango.svgKey} color={rango.color} className="h-7 w-7" />
             <span className="text-xs font-semibold text-fg">{rango.nombre}</span>
           </div>
         )}
-      </div>
+      />
 
       {/* Escritorio amplio (xl+): 2 columnas PROPORCIONADAS (~57% ejercicio /
-          ~43% PREXI). El ancho fijo de 340px se quedaba corto al crecer la
-          pantalla (PREXI caía a ~28% y el chat quedaba estrecho); 1.35fr/1fr
-          mantiene la proporción a cualquier ancho.
-          El corte va en xl y no en lg a propósito: en lg el sidebar (w-64) deja
-          ~575px útiles, y partirlos en dos dejaba el ejercicio en ~210px. Por
-          debajo de xl, PREXI se apila DEBAJO a todo el ancho. */}
+          ~43% PREXI). El corte va en xl y no en lg a propósito: en lg el sidebar
+          deja ~575px útiles y partirlos en dos dejaba el ejercicio en ~210px.
+          Por debajo de xl, PREXI se apila DEBAJO a todo el ancho. */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <div className="min-w-0">
-          <div className={`card ${resultado && !resultado.correcto ? 'animate-shake' : ''}`}>
+          <div className={`card transition-shadow ${resultado && !resultado.correcto ? 'animate-shake' : ''} ${resultado?.correcto ? 'ring-2 ring-prexi-green/40' : ''}`}>
             <CabeceraPregunta tipo={ej.tipo} tema={unidadTema ?? ej.categoria}
               extra={<>
                 <NivelBadge nivel={ej.nivelDificultad} estrellas={ej.estrellas} />
@@ -223,80 +248,62 @@ export default function DetallePage() {
               </div>
             )}
 
-            {resultado && (
-              <div className="mt-6">
-                {resultado.correcto ? (
-                  <div className="relative flex items-start gap-3 overflow-hidden rounded-2xl border border-prexi-green/40 bg-emerald-500/10 p-4 animate-fade-up" role="status">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-prexi-green text-white"><CheckCircle className="h-6 w-6" /></span>
-                    <div>
-                      <p className="font-bold text-prexi-green">¡Correcto! <span className="ml-1 text-prexi-amber">+{resultado.xp.xpOtorgado} XP</span></p>
-                      <p className="text-sm text-muted">base × {resultado.xp.multiplicador} por racha de {resultado.xp.rachaDias} días.</p>
-                      {resultado.nivel.nivelDesbloqueadoNumero && <p className="mt-1 text-sm font-semibold text-prexi-blue-deep">Desbloqueaste el Nivel {resultado.nivel.nivelDesbloqueadoNumero}</p>}
-                    </div>
-                    {/* XP que "vuela" hacia arriba */}
-                    {xpVuela != null && <span className="xp-fly pointer-events-none absolute right-6 top-4 font-display text-2xl font-extrabold text-prexi-amber">+{xpVuela}</span>}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 animate-fade-up" role="status">
-                    <p className="flex items-center gap-2 font-bold text-red-500"><span className="grid h-8 w-8 place-items-center rounded-full bg-red-500 text-white"><X className="h-5 w-5" /></span> No es correcta esta vez. Mira por qué:</p>
-                    {retro && (
-                      <p className="mt-1 text-sm text-muted">
-                        <span className="font-semibold text-fg">{iaPedida ? 'PREXI:' : 'Explicación:'}</span> {retro}
-                      </p>
-                    )}
-                    {/* La IA (PREXI) solo se invoca si el estudiante quiere una
-                        explicación personalizada: ahorra tokens en cada fallo. */}
-                    {!iaPedida && (
-                      <button
-                        onClick={pedirRetroIa}
-                        disabled={pidiendoIa}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-prexi-blue px-3 py-1.5 text-xs font-semibold text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-50"
-                      >
-                        <Bot className="h-3.5 w-3.5" />
-                        {pidiendoIa ? 'PREXI está pensando…' : 'Explícame más con tu tutor PREXI'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+            {/* Desbloqueos de nivel: un momento grande, merece su propio aviso. */}
+            {resultado?.correcto && resultado.nivel.nivelDesbloqueadoNumero && (
+              <p className="mt-5 rounded-xl bg-prexi-blue/10 px-4 py-3 text-sm font-semibold text-prexi-blue-deep animate-fade-up">
+                🔓 Desbloqueaste el Nivel {resultado.nivel.nivelDesbloqueadoNumero}
+              </p>
             )}
 
-            {/* RACHA (arreglo de la lógica invertida): con aciertos seguidos se
-                anima a CONTINUAR; solo con fallos seguidos se ofrece pausa o
-                repaso. Antes era al revés: proponía terminar tras 3 aciertos. */}
-            {resultado && !avisoOculto && !temaCerrado && enRacha && (
-              <AvisoRacha tipo="racha" aciertos={racha.aciertos} temaId={ej.temaId ?? null}
-                onSeguir={() => { setAvisoOculto(true); if (sig) router.push(`/ejercicios/${sig}`); }} />
-            )}
+            {/* Con fallos seguidos se ofrece pausa o repaso (sin obligar). Los
+                aciertos seguidos ya se celebran en la barra (combo 🔥). */}
             {resultado && !avisoOculto && !temaCerrado && atascado && (
               <AvisoRacha tipo="atasco" aciertos={racha.aciertos} temaId={ej.temaId ?? null}
                 onSeguir={() => { setAvisoOculto(true); reiniciar(); }} />
             )}
-
-            <div className="mt-7 flex items-center justify-between border-t border-line pt-5">
-              <button onClick={() => router.push('/ejercicios')} className="btn-ghost"><ChevronLeft className="h-4 w-4" /> Volver</button>
-              {!resultado ? (
-                <button onClick={enviar} disabled={!respuestaLista || enviando} className="btn-primary disabled:opacity-50">{enviando ? 'Comprobando…' : 'Comprobar'}</button>
-              ) : sig ? (
-                <button onClick={() => router.push(`/ejercicios/${sig}`)} className="btn-primary">Siguiente <ArrowRight className="h-4 w-4" /></button>
-              ) : temaCerrado ? (
-                // El cierre del tema se resuelve en la tarjeta de abajo, que ya
-                // ofrece subir de nivel o pasar al siguiente tema.
-                <span className="text-sm font-semibold text-prexi-green">Tema completado en tu nivel</span>
-              ) : (
-                <button onClick={() => router.push('/ejercicios')} className="btn-primary">Finalizar <CheckCircle className="h-4 w-4" /></button>
-              )}
-            </div>
           </div>
 
           {/* CIERRE DE TEMA: felicita indicando el nivel alcanzado y ofrece de
               forma activa el paso siguiente (repetir en nivel superior, o el
               siguiente tema si ya está en Avanzado). */}
           {temaCerrado && ej.temaId != null && (
-            <div className="mt-6">
+            <div id="cierre-tema" className="mt-6 scroll-mt-24">
               <CierreTema temaId={ej.temaId} tituloTema={ej.tema?.titulo ?? 'este tema'} progreso={progNivel} />
             </div>
           )}
+
+          {/* La acción principal, siempre a la mano (fija abajo). */}
+          <BarraAccion
+            estado={estadoBarra}
+            puedeComprobar={respuestaLista}
+            enviando={enviando}
+            onComprobar={enviar}
+            onContinuar={continuar}
+            textoContinuar={textoContinuar}
+            xp={resultado?.correcto ? resultado.xp.xpOtorgado : undefined}
+            combo={racha.aciertos}
+            titulo={!resultado ? undefined : resultado.correcto
+              ? (temaCerrado ? '¡Tema completado!' : fraseAcierto(racha.aciertos, ej.id))
+              : fraseFallo(ej.id)}
+            meta={lineaMeta}
+            detalle={resultado && !resultado.correcto ? (
+              <div>
+                {retro
+                  ? <p><span className="font-semibold">{iaPedida ? 'PREXI:' : 'Por qué:'}</span> {retro}</p>
+                  : <p className="text-muted">Compara tu respuesta con la que quedó marcada como correcta.</p>}
+                {/* La IA (PREXI) solo se invoca si el estudiante la pide: ahorra tokens en cada fallo. */}
+                {!iaPedida && (
+                  <button onClick={pedirRetroIa} disabled={pidiendoIa}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-prexi-blue px-3 py-1.5 text-xs font-semibold text-accent-on transition hover:bg-prexi-blue-hover disabled:opacity-50">
+                    <Bot className="h-3.5 w-3.5" />
+                    {pidiendoIa ? 'PREXI está pensando…' : 'Explícamelo, PREXI'}
+                  </button>
+                )}
+              </div>
+            ) : resultado?.correcto && resultado.xp.multiplicador > 1 ? (
+              <p className="text-muted">XP × {resultado.xp.multiplicador} por tu racha de {resultado.xp.rachaDias} días seguidos.</p>
+            ) : null}
+          />
         </div>
 
         <div className="min-w-0">

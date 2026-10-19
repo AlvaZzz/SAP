@@ -6,6 +6,7 @@ import { CodeViewer } from '@/components/code-viewer';
 import { useSound } from '@/components/use-sound';
 import { CheckCircle, AlertCircle, Terminal } from '@/components/icons';
 import type { ExerciseProps } from './index';
+import { useAtajosOpciones } from './atajos';
 
 /**
  * TIPO 2 — Predecir la salida. Arriba el código (entrada) con estética de editor;
@@ -78,6 +79,7 @@ function ConsolaOpciones({ ejercicio, resultado, onChange }: ExerciseProps) {
   const opCorrecta = ejercicio.opciones.find((o) => o.id.trim().toUpperCase() === correcta);
 
   const elegir = (id: string) => { if (enviado) return; setSel(id); onChange(id); playClick(); };
+  useAtajosOpciones(ejercicio.opciones.map((o) => o.id), !enviado, elegir, refs);
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (enviado) return;
     const ids = ejercicio.opciones.map((o) => o.id);
