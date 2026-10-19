@@ -20,7 +20,11 @@ const XP_POR_NIVEL: Record<NivelDificultad, number> = { basico: 10, intermedio: 
 /** Dónde se guarda el ejercicio: un tema (práctica) o el examen de una unidad. */
 export type DestinoEjercicio =
   | { tipo: 'tema'; temaId: number; etiqueta: string }
-  | { tipo: 'examen'; unidadId: number; etiqueta: string; temas: { id: number; etiqueta: string }[] };
+  | {
+    tipo: 'examen'; unidadId: number; etiqueta: string; temas: { id: number; etiqueta: string }[];
+    /** Nombres de los temas de otras unidades: una pregunta puede integrar contenidos anteriores. */
+    otrosTemas?: { id: number; etiqueta: string }[];
+  };
 
 interface FormState {
   titulo: string; categoria: string; nivel: NivelDificultad; tipo: TipoEjercicio;

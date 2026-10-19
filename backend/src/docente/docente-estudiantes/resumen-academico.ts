@@ -50,7 +50,7 @@ export function motivosDeRiesgo(
   const dias = (d: Date) => Math.floor((ahora - d.getTime()) / MS_DIA);
 
   if (!e.yaIngreso) {
-    motivos.push({ clave: 'nunca_entro', detalle: 'Todavía no ingresó al sistema con su RU y su CI.', gravedad: 'alta' });
+    motivos.push({ clave: 'nunca_entro', detalle: 'Todavía no ingresó al sistema con su usuario y su CI.', gravedad: 'alta' });
     return motivos;
   }
   if (!e.tieneDiagnostico) {

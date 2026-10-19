@@ -125,7 +125,8 @@ export default function UnidadAsistentePage() {
         <>
           <Intro titulo="Paso 4 · Examen de la unidad"
             texto={`El examen tiene ${META} preguntas de nivel intermedio y cada una combina 2 o 3 temas de la unidad. El estudiante lo aprueba con 80 sobre 100 y recién entonces pasa a la unidad siguiente.`} />
-          <BancoEjercicios destino={{ tipo: 'examen', unidadId: unidad.id, etiqueta: `Examen de la Unidad ${unidad.numero}`, temas: temas.map(({ tema }) => ({ id: tema.id, etiqueta: `${tema.numero} ${tema.titulo}` })) }} onCambio={cargar} />
+          <BancoEjercicios destino={{ tipo: 'examen', unidadId: unidad.id, etiqueta: `Examen de la Unidad ${unidad.numero}`, temas: temas.map(({ tema }) => ({ id: tema.id, etiqueta: `${tema.numero} ${tema.titulo}` })),
+            otrosTemas: unidades.filter((u) => u.id !== unidad.id).flatMap((u) => aplanar(u.temas)).map(({ tema }) => ({ id: tema.id, etiqueta: `${tema.numero} ${tema.titulo}` })) }} onCambio={cargar} />
           <Publicacion unidad={unidad} onCambio={cargar} />
           {navegacion(2, null)}
         </>

@@ -41,7 +41,7 @@ export function paralelosDelDocente(docenteId: number, rol: string): Prisma.Para
  * tiene (Excel o CSV), el sistema reconoce las columnas, le muestra una vista
  * previa con los problemas marcados y recién entonces crea las cuentas.
  *
- * Cada estudiante registrado entra con su RU como usuario y su CI como
+ * Cada estudiante registrado entra con su usuario PrimerNombre_CI y su CI como
  * contraseña inicial, y el sistema lo obliga a cambiarla en el primer ingreso.
  */
 @Injectable()
@@ -160,12 +160,12 @@ export class DocenteRegistroService {
       'CÓMO LLENAR LA PLANTILLA',
       '',
       '1. Escribe un estudiante por fila en la hoja "Estudiantes".',
-      '2. AP. PATERNO, NOMBRES, CI y RU son obligatorios. AP. MATERNO puede quedar vacío.',
+      '2. AP. PATERNO, NOMBRES y CI son obligatorios. AP. MATERNO y RU pueden quedar vacíos.',
       '3. PARALELO: la letra o nombre del paralelo (A, B, C…). Si todos van al mismo, puedes dejarlo vacío y elegirlo en PREXI.',
       '4. No importa el orden de las columnas ni si usas mayúsculas: PREXI las reconoce.',
       '5. Si ya tienes tu lista en otro Excel, no hace falta copiarla aquí: súbela tal como está.',
       '',
-      'Cada estudiante entrará a PREXI con su RU como usuario y su CI como contraseña inicial.',
+      'Cada estudiante entrará a PREXI con su primer nombre y su CI como usuario (ej. Alvaro_12929098) y su CI como contraseña inicial.',
       'En su primer ingreso el sistema le pedirá cambiarla.',
     ].forEach((linea, i) => {
       ayuda.getCell(`A${i + 1}`).value = linea;

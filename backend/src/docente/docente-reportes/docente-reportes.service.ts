@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ETIQUETA_NIVEL, ORDEN_NIVEL, nivelDominioAgregado } from '../../common/niveles/nivel-dificultad';
+import { estudiantesDelDocente } from '../docente-registro/docente-registro.service';
 
 interface CatEval { categoria: string; aciertos: number; total: number; porcentaje: number }
 
 /**
  * Reportes del curso (rol docente).
- * Todo se calcula sobre datos reales de pretest/postest e intentos.
+ * Todo se calcula sobre datos reales de pretest/postest e intentos, y solo con
+ * los estudiantes del docente (los mismos que ve en Seguimiento); el admin ve a todos.
  */
 @Injectable()
 export class DocenteReportesService {
@@ -18,9 +20,9 @@ export class DocenteReportesService {
   }
 
   // ── Reporte Pretest vs Postest ──
-  async pretestPostest() {
+  async pretestPostest(docenteId: number, rol: string) {
     const estudiantes = await this.prisma.usuario.findMany({
-      where: { rol: 'estudiante' },
+      where: estudiantesDelDocente(docenteId, rol),
       orderBy: { nombre: 'asc' },
       include: { evaluaciones: true },
     });
@@ -111,15 +113,16 @@ export class DocenteReportesService {
      Básico, igual que en el gate del examen de unidad: no haber empezado no
      puede valer lo mismo que haber trabajado hasta Intermedio.
      ══════════════════════════════════════════════════════════════════════ */
-  async progresoNiveles() {
+  async progresoNiveles(docenteId: number, rol: string) {
+    const suyos = estudiantesDelDocente(docenteId, rol);
     const [estudiantes, intentos] = await Promise.all([
       this.prisma.usuario.findMany({
-        where: { rol: 'estudiante' },
+        where: suyos,
         select: { id: true, progresoTemas: { select: { nivelActual: true } } },
       }),
       // Tiempo invertido por nivel ADAPTATIVO del ejercicio (no por su nivelId).
       this.prisma.intento.findMany({
-        where: { correcto: true, tiempoSeg: { gt: 0 } },
+        where: { correcto: true, tiempoSeg: { gt: 0 }, usuario: suyos },
         select: { tiempoSeg: true, ejercicio: { select: { nivelDificultad: true } } },
       }),
     ]);
@@ -155,21 +158,24 @@ export class DocenteReportesService {
   }
 
   // ── Actividad semanal del grupo (últimos 7 días) ──
-  async actividadSemanal() {
-    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-    const desde = new Date(hoy); desde.setDate(hoy.getDate() - 6);
+  async actividadSemanal(docenteId: number, rol: string) {
+    // Los días se cortan a la medianoche de Bolivia (UTC−4, sin horario de verano),
+    // no a la del servidor: en UTC, lo que se practica de noche caería en el día siguiente.
+    const DIA = 86_400_000, BOLIVIA = 4 * 3_600_000;
+    const hoyBo = Math.floor((Date.now() - BOLIVIA) / DIA) * DIA;
+    const desde = new Date(hoyBo - 6 * DIA + BOLIVIA);
     const intentos = await this.prisma.intento.findMany({
-      where: { fecha: { gte: desde } },
+      where: { fecha: { gte: desde }, usuario: estudiantesDelDocente(docenteId, rol) },
       select: { usuarioId: true, correcto: true, fecha: true },
     });
 
     const dias: { dia: string; intentos: number; aciertos: number; estudiantes_activos: number }[] = [];
     for (let i = 0; i < 7; i++) {
-      const d = new Date(desde); d.setDate(desde.getDate() + i);
-      const sig = new Date(d); sig.setDate(d.getDate() + 1);
+      const d = new Date(desde.getTime() + i * DIA);
+      const sig = new Date(d.getTime() + DIA);
       const delDia = intentos.filter((it) => it.fecha >= d && it.fecha < sig);
       dias.push({
-        dia: d.toISOString().slice(0, 10),
+        dia: new Date(d.getTime() - BOLIVIA).toISOString().slice(0, 10),
         intentos: delDia.length,
         aciertos: delDia.filter((it) => it.correcto).length,
         estudiantes_activos: new Set(delDia.map((it) => it.usuarioId)).size,

@@ -182,7 +182,8 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: {
   // tamaño. En móvil ocupa casi todo el ancho con márgenes (p-3).
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-6" onMouseDown={onClose}>
-      <div className={`flex max-h-[calc(100dvh-1.5rem)] w-full ${max} animate-fade-up flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-lift sm:max-h-[calc(100dvh-3rem)]`} onMouseDown={(e) => e.stopPropagation()}>
+      <div className={`flex max-h-[calc(100dvh-1.5rem)] w-full ${max} animate-fade-up flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-lift sm:max-h-[calc(100dvh-3rem)]`} onMouseDown={(e) => e.stopPropagation()}
+        role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}>
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
           <h2 className="min-w-0 truncate font-display text-lg font-bold text-fg sm:text-xl">{title}</h2>
           <button onClick={onClose} aria-label="Cerrar" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg"><X className="h-5 w-5" /></button>

@@ -125,7 +125,7 @@ export default function DocenteRevisionesPage() {
 
             <div>
               <p className="mb-1.5 text-sm font-medium text-fg">Enunciado del reto</p>
-              <p className="rounded-xl bg-prexi-blue/10 px-4 py-2.5 text-sm text-fg">{revisar.enunciado}</p>
+              <p className="max-h-60 overflow-y-auto whitespace-pre-line rounded-xl bg-prexi-blue/10 px-4 py-2.5 text-sm leading-relaxed text-fg">{revisar.enunciado}</p>
             </div>
 
             <div>

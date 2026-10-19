@@ -41,9 +41,11 @@ export function BancoEjercicios({ destino, onCambio }: { destino: DestinoEjercic
     await api.del(`/docente/ejercicios/${e.id}`).catch(() => undefined); await refrescar();
   }
 
-  const nombreTema = useMemo(() => new Map(destino.tipo === 'examen' ? destino.temas.map((t) => [t.id, t.etiqueta]) : []), [destino]);
+  const nombreTema = useMemo(() => new Map(destino.tipo === 'examen' ? [...(destino.otrosTemas ?? []), ...destino.temas].map((t) => [t.id, t.etiqueta]) : []), [destino]);
   const activosDe = (n: NivelDificultad) => ejercicios.filter((e) => e.nivel_dificultad === n && e.activo).length;
-  const visibles = esExamen ? ejercicios : ejercicios.filter((e) => e.nivel_dificultad === nivel);
+  // Los que ven los estudiantes van primero; los ocultos quedan al final.
+  const visibles = (esExamen ? ejercicios : ejercicios.filter((e) => e.nivel_dificultad === nivel))
+    .slice().sort((a, b) => Number(b.activo) - Number(a.activo));
   // En el examen solo cuentan las preguntas que combinan 2 o más temas.
   const activosVisibles = visibles.filter((e) => e.activo && (!esExamen || e.temas_integrados.length >= 2)).length;
   const faltan = META - activosVisibles;
