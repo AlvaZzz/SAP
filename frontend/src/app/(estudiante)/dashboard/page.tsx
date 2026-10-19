@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { nombreDePila } from '@/lib/prexi-amable';
 import { TarjetaEvaluarPrexi } from '@/components/cuestionario-instrumento';
 import { MiCurso } from '@/components/mi-curso';
 import { useAuth } from '@/providers/auth-provider';
@@ -71,7 +72,7 @@ export default function DashboardPage() {
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0 flex-1 basis-64">
             <p className="inline-flex items-center gap-2 text-sm font-bold text-amber-400"><span className="h-1.5 w-6 rounded-full bg-amber-500" /> Tu panel</p>
-            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
+            <h1 className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">Hola, {nombreDePila(usuario)}</h1>
             <p className="mt-1 text-base text-blue-100/90">Este es tu avance en Programación I. El verde significa que avanzaste; el ámbar, que vas en camino.</p>
           </div>
           <button onClick={() => router.push('/ejercicios')} className="btn-accion w-full sm:w-auto">Seguir aprendiendo <ArrowRight className="h-5 w-5" /></button>

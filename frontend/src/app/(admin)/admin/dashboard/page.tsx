@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { nombreDePila } from '@/lib/prexi-amable';
 import { useAuth } from '@/providers/auth-provider';
 import { Card, StatCard, StatGrid, SectionTitle, Skeleton, Badge, EmptyState } from '@/components/ui';
 import {
@@ -64,7 +65,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {nombreDePila(usuario)}</h1>
       <p className="mb-6 mt-1 text-base text-muted">
         Así está PREXI hoy{d?.salud.institucion ? ` en ${d.salud.institucion}` : ''}{d?.salud.periodo ? ` · gestión ${d.salud.periodo}` : ''}. Empieza por lo que requiere tu atención.
       </p>

@@ -11,6 +11,7 @@
 import { ComponentType, ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { nombreDePila } from '@/lib/prexi-amable';
 import { useAuth } from '@/providers/auth-provider';
 import { Badge, Card, ProgressBar, SectionTitle, Skeleton } from '@/components/ui';
 import {
@@ -148,7 +149,7 @@ export default function InicioInvestigadorPage() {
   return (
     <div className="animate-fade-up">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">
-        Hola, {usuario?.nombre.split(' ')[0]}
+        Hola, {nombreDePila(usuario)}
       </h1>
       <p className="mb-6 mt-1 text-base text-muted">
         Aquí ves en qué punto está tu estudio y qué falta para cerrarlo. Todo es de solo lectura y con datos anónimos.

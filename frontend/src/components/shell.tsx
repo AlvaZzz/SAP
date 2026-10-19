@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/auth-provider';
 import { LogoPinguino } from '@/components/logo-pinguino';
 import { api } from '@/lib/api';
+import { nombreDePila } from '@/lib/prexi-amable';
 import { ThemeToggle } from './theme-toggle';
 import { SonidoToggle } from './sonido-toggle';
 import { NotificacionesBell } from './notificaciones-bell';
@@ -337,7 +338,7 @@ export function Shell({ children, area = 'estudiante' }: { children: ReactNode; 
             {(area === 'estudiante' || area === 'docente') && <NotificacionesBell />}
             <Link href={homeHref} className="flex items-center gap-2.5 rounded-xl py-1 pl-1 pr-2.5 transition hover:bg-subtle">
               <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-prexi-navy to-prexi-blue text-sm font-bold text-white">{inicial}</div>
-              <div className="hidden text-left leading-tight sm:block"><p className="text-sm font-semibold text-fg">{usuario.nombre.split(' ')[0]}</p><p className="text-2xs text-muted">{rolTexto}</p></div>
+              <div className="hidden text-left leading-tight sm:block"><p className="text-sm font-semibold text-fg">{nombreDePila(usuario)}</p><p className="text-2xs text-muted">{rolTexto}</p></div>
             </Link>
           </div>
         </header>

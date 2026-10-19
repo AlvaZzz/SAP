@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { nombreDePila } from '@/lib/prexi-amable';
 import { AvisoSolicitudes } from '@/components/docente/aviso-solicitudes';
 import { NivelDificultad, NIVEL_COLOR } from '@/lib/types';
 import { useAuth } from '@/providers/auth-provider';
@@ -52,7 +53,7 @@ export default function DocenteDashboardPage() {
 
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {usuario?.nombre.split(' ')[0]}</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl lg:text-4xl">Hola, {nombreDePila(usuario)}</h1>
       <p className="mb-6 mt-1 text-base text-muted">Estos son tus paralelos. Entra a uno para ver a tus estudiantes por nivel.</p>
 
       <AvisoSolicitudes />

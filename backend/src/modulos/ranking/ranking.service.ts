@@ -83,10 +83,12 @@ export class RankingService {
         activo: true,
         ...(ambito === 'paralelo' && paraleloDisponible ? { paralelo: yo!.paralelo! } : {}),
       },
-      select: { id: true, nombre: true },
+      select: { id: true, nombre: true, nombres: true, apellidoPaterno: true },
     });
     const ids = estudiantes.map((e) => e.id);
-    const nombres = new Map(estudiantes.map((e) => [e.id, e.nombre]));
+    // «Juan Mamani» y no «Mamani Quispe Juan»: en el ranking cada uno se reconoce por
+    // su nombre de pila (los registros del docente guardan el apellido primero).
+    const nombres = new Map(estudiantes.map((e) => [e.id, nombreVisible(e)]));
 
     const inicio = this.inicioTemporada();
 
@@ -181,4 +183,10 @@ export class RankingService {
       xp_para_subir: xpParaSubir,
     };
   }
+}
+
+/** «Primer nombre + apellido paterno»; las cuentas antiguas sin campos separados quedan como están. */
+export function nombreVisible(e: { nombre: string; nombres?: string | null; apellidoPaterno?: string | null }): string {
+  const pila = e.nombres?.trim().split(/\s+/)[0];
+  return pila ? [pila, e.apellidoPaterno?.trim()].filter(Boolean).join(' ') : e.nombre;
 }
