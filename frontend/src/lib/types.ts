@@ -1,3 +1,5 @@
+import type { FuentePracticaInfo } from '@/components/fuente-practica';
+
 export type Rol = 'estudiante' | 'docente' | 'admin' | 'investigador';
 
 export interface Usuario {
@@ -219,6 +221,8 @@ export interface RetoEstudiante {
   completado?: boolean;
   /** Ejercicio del banco del que se derivó (trazabilidad). */
   origen_ejercicio?: { id: number; codigo: string | null } | null;
+  /** «Práctica Nro. 1 · Secuenciales, ejercicio 4» si el reto sale de una práctica. */
+  fuente_practica?: FuentePracticaInfo | null;
   unidad: { id: number; numero: number; titulo: string } | null;
   tema: RefAcademica | null;
   subtema: RefAcademica | null;
@@ -307,6 +311,7 @@ export interface PreguntaIa {
 
 export interface DocenteReto {
   id: number;
+  fuente_practica?: FuentePracticaInfo | null;
   titulo: string;
   categoria: string;
   nivel: number | null;

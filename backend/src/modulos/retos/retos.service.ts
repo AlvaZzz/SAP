@@ -1,3 +1,4 @@
+import { fuentePractica } from './fuente-practica';
 import { Injectable } from '@nestjs/common';
 import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -98,6 +99,8 @@ export class RetosService {
         origen_ejercicio: r.origenEjercicioId
           ? { id: r.origenEjercicioId, codigo: fd.codigo ?? null }
           : null,
+        // «Práctica Nro. 1 · Secuenciales, ejercicio 4»: para estudiarlo con la práctica impresa.
+        fuente_practica: fuentePractica(r.fuenteDoc),
         completado: entrega?.estado === 'aprobado',
         estado: estadoTarjeta(entrega?.estado),
         xp_obtenido: entrega?.xpObtenido ?? 0,

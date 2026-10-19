@@ -1,3 +1,4 @@
+import { fuentePractica } from './fuente-practica';
 import { Body, Controller, Get, Post, Param, ParseIntPipe, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { IsString, MinLength } from 'class-validator';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -118,6 +119,7 @@ export class RetosController {
       reto: {
         ...publico,
         contextoTema,
+        fuente_practica: fuentePractica(publico.fuenteDoc),
         // Trazabilidad visible: "este reto se basa en el ejercicio E1.5.I.06".
         // Se manda lo necesario para MOSTRAR el ejercicio origen (enunciado
         // completo, tipo, snippet y opciones), nunca su respuesta correcta.

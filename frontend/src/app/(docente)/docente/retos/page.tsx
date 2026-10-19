@@ -8,6 +8,7 @@ import { DocenteReto, OpcionTema, NIVEL_LABEL } from '@/lib/types';
 import { PageHeader, Card, Badge, Skeleton, Select } from '@/components/ui';
 import { Plus, Edit, Trash2, Eye, EyeOff, ClipboardList, CheckCircle, Lock } from '@/components/icons';
 import { TIPOS_RETO, TipoReto, tipoDe } from '@/components/docente/retos/tipos';
+import { FuentePractica } from '@/components/fuente-practica';
 
 interface UnidadRetos { id: number; numero: number; titulo: string; temas: OpcionTema[] }
 
@@ -215,6 +216,7 @@ export default function DocenteRetosPage() {
                     <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-line px-3 py-2.5">
                       <div className="min-w-[200px] flex-1">
                         <p className="text-sm font-semibold text-fg">{r.titulo}</p>
+                        <FuentePractica fuente={r.fuente_practica} className="my-1" />
                         <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
                           <Badge tone="slate">{NIVEL_LABEL[r.nivel_dificultad]}</Badge>
                           {r.activo ? <Badge tone="green">Publicado</Badge> : <Badge tone="slate">Borrador</Badge>}

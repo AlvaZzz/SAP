@@ -12,6 +12,7 @@ import { useAnimo } from '@/components/animo-tutor';
 import { TIPOS_RETO } from '@/components/docente/retos/tipos';
 import { NIVEL_COLOR, NIVEL_LABEL } from '@/lib/types';
 import { Play, RotateCcw, Upload, CheckCircle, Clock, AlertTriangle, ChevronLeft, Layers } from '@/components/icons';
+import { FuentePractica, FuentePracticaInfo } from '@/components/fuente-practica';
 
 type EstadoEntrega = 'sin_entregar' | 'pendiente_revision' | 'aprobado' | 'necesita_mejorar';
 interface Entrega { estado: EstadoEntrega; xp_obtenido: number; feedback: string | null; codigo?: string | null }
@@ -19,6 +20,7 @@ interface Reto {
   titulo: string; enunciado: string; codigoInicial: string | null;
   ejemploEntrada: string | null; ejemploSalida: string | null; fechaLimite: string | null;
   esBugHunt?: boolean; autoCalificable?: boolean; contextoTema?: string;
+  fuente_practica?: FuentePracticaInfo | null;
   nivelDificultad?: 'basico' | 'intermedio' | 'avanzado';
   /** Ejercicio del banco del que se derivó este reto (trazabilidad). */
   origen?: OrigenReto | null;
@@ -180,6 +182,7 @@ export default function RetoEditorPage() {
           )}
         </div>
         <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{reto.titulo}</h1>
+        <FuentePractica fuente={reto.fuente_practica} className="mt-2" />
 
         {/* Qué hay que hacer */}
         <div className="mt-3 grid items-start gap-3 lg:grid-cols-[1.6fr_1fr]">

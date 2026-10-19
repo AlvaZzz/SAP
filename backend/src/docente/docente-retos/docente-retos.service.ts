@@ -1,3 +1,4 @@
+import { fuentePractica } from '../../modulos/retos/fuente-practica';
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TutorIaService } from '../../tutor-ia/tutor-ia.service';
@@ -84,6 +85,7 @@ export class DocenteRetosService {
       ejemploEntrada: r.ejemploEntrada, ejemploSalida: r.ejemploSalida,
       xp: r.xp, fechaLimite: r.fechaLimite, activo: r.activo, esBugHunt: r.esBugHunt,
       resueltos: r._count.resueltos, pendientes: pendMap.get(r.id) ?? 0, creadoEn: r.creadoEn,
+      fuente_practica: fuentePractica(r.fuenteDoc),
     }));
   }
 

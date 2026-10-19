@@ -9,6 +9,7 @@ import { PageHeader, Skeleton } from '@/components/ui';
 import { nivelDesdeEstrellas } from '@/components/nivel-badge';
 import { Target, CheckCircle, ArrowRight, Clock, AlertTriangle, Lock, Search, X, Circle } from '@/components/icons';
 import { TIPOS_RETO, TipoReto } from '@/components/docente/retos/tipos';
+import { FuentePractica } from '@/components/fuente-practica';
 
 interface Acceso { acceso: boolean; nivel: string; nivel_label: string; motivo: string | null }
 type Filtro = 'todos' | EstadoReto;
@@ -225,6 +226,7 @@ function FilaReto({ r, numero }: { r: RetoEstudiante; numero: number }) {
       </span>
       <div className="min-w-[200px] flex-1">
         <p className="font-semibold text-fg">{r.titulo}</p>
+        <FuentePractica fuente={r.fuente_practica} className="my-1" />
         <p className="line-clamp-1 text-sm text-muted">{r.enunciado}</p>
         <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <span className="font-bold" style={{ color: e.color }}>{e.nombre}</span>
