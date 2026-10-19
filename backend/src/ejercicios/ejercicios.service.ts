@@ -6,7 +6,7 @@ import { ResponderDto } from './dto/responder.dto';
 import { corregirGraduado } from './correccion';
 import { EmblemasService } from '../gamificacion/emblemas.service';
 import { RangosService } from '../gamificacion/rangos.service';
-import { factorXpNivel } from '../common/niveles/nivel-dificultad';
+import { factorXpNivel, valorXpEjercicio, XP_MINIMO_ACIERTO } from '../common/niveles/nivel-dificultad';
 import { desbloqueoSecuencial, requeridosTema } from '../common/niveles/desbloqueo';
 import { estimarTheta, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
 import { msDesde } from '../mediciones/motor/motor';
@@ -84,6 +84,36 @@ export class EjerciciosService {
     });
     if (!ej) throw new NotFoundException('Ejercicio no encontrado');
     return ej;
+  }
+
+  /**
+   * Cuánto XP está EN JUEGO en este ejercicio para este estudiante, con las
+   * pistas que ya abrió desde su último intento (mismo conteo que al
+   * calificar). Lo ve mientras resuelve: cada pista lo baja en vivo.
+   * No incluye el multiplicador de racha, que se conoce al acertar.
+   */
+  async valorXp(usuarioId: number, ej: { id: number; xp: number; nivelDificultad: NivelDificultad }) {
+    const [cfg, ultimoIntento] = await Promise.all([
+      this.prisma.configuracionSistema.findUnique({ where: { id: 1 } }),
+      this.prisma.intento.findFirst({ where: { usuarioId, ejercicioId: ej.id }, orderBy: { fecha: 'desc' }, select: { fecha: true } }),
+    ]);
+    const pistasUsadas = await this.prisma.consultaIa.count({
+      where: { usuarioId, ejercicioId: ej.id, tipo: 'pista', ...(ultimoIntento ? { fecha: { gt: ultimoIntento.fecha } } : {}) },
+    });
+    const penalizacion = cfg?.penalizacionPista ?? 5;
+    const factor = factorXpNivel(ej.nivelDificultad, {
+      xpFactorIntermedio: cfg?.xpFactorIntermedio ?? 125,
+      xpFactorAvanzado: cfg?.xpFactorAvanzado ?? 150,
+    });
+    return {
+      base: ej.xp,
+      penalizacion_pista: penalizacion,
+      factor_nivel: factor,
+      minimo: XP_MINIMO_ACIERTO,
+      pistas_usadas: pistasUsadas,
+      sin_pistas: valorXpEjercicio(ej.xp, penalizacion, 0, factor),
+      actual: valorXpEjercicio(ej.xp, penalizacion, pistasUsadas, factor),
+    };
   }
 
   /**
@@ -327,12 +357,11 @@ export class EjerciciosService {
         // XP base menos penalización por pistas usadas, escalado por el NIVEL del
         // ejercicio: estar en un nivel más alto otorga MÁS XP (incentivo a subir
         // de nivel → acelera el rango; hipótesis de la tesis).
-        const penal = (cfg?.penalizacionPista ?? 5) * pistasUsadas;
         const factorNivel = factorXpNivel(ej.nivelDificultad, {
           xpFactorIntermedio: cfg?.xpFactorIntermedio ?? 125,
           xpFactorAvanzado: cfg?.xpFactorAvanzado ?? 150,
         });
-        const xpBase = Math.max(5, Math.round((ej.xp - penal) * factorNivel));
+        const xpBase = valorXpEjercicio(ej.xp, cfg?.penalizacionPista ?? 5, pistasUsadas, factorNivel);
 
         // Racha.
         const rk = await tx.ranking.findUnique({ where: { usuarioId } });

@@ -6,6 +6,7 @@ import {
   nivelAlMenos,
   nivelDominioAgregado,
   factorXpNivel,
+  valorXpEjercicio,
   ORDEN_NIVEL,
 } from './nivel-dificultad';
 
@@ -112,5 +113,14 @@ describe('nivel-dificultad (lógica pura de niveles adaptativos)', () => {
   it('ORDEN_NIVEL es ascendente', () => {
     expect(ORDEN_NIVEL.basico).toBeLessThan(ORDEN_NIVEL.intermedio);
     expect(ORDEN_NIVEL.intermedio).toBeLessThan(ORDEN_NIVEL.avanzado);
+  });
+});
+
+describe('valor XP de un ejercicio (Tabla 46)', () => {
+  it('base menos penalización por pista, escalado por el nivel, con mínimo 5', () => {
+    expect(valorXpEjercicio(20, 5, 0, 1.5)).toBe(30);
+    expect(valorXpEjercicio(20, 5, 1, 1.5)).toBe(23);
+    expect(valorXpEjercicio(20, 5, 3, 1)).toBe(5);
+    expect(valorXpEjercicio(10, 5, 5, 1.25)).toBe(5);
   });
 });

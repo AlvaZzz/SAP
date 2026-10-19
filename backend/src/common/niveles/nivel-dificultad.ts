@@ -127,6 +127,19 @@ export function clasificarDominio(dominioPct: number): NivelDificultad {
 }
 
 /** Factor de XP (porcentaje) según el nivel del ejercicio. Básico = 100%. */
+/** XP mínimo que da un acierto, por muchas pistas que se hayan usado. */
+export const XP_MINIMO_ACIERTO = 5;
+
+/**
+ * XP que vale un ejercicio ANTES del multiplicador de racha (Tabla 46 de la
+ * tesis): (valor base − penalización × pistas) × factor del nivel, con mínimo 5.
+ * La usan el cálculo del intento y lo que se le muestra al estudiante, para que
+ * lo que ve «en juego» sea exactamente lo que se le otorga.
+ */
+export function valorXpEjercicio(base: number, penalizacionPista: number, pistasUsadas: number, factorNivel: number): number {
+  return Math.max(XP_MINIMO_ACIERTO, Math.round((base - penalizacionPista * pistasUsadas) * factorNivel));
+}
+
 export function factorXpNivel(
   nivel: NivelDificultad,
   cfg: { xpFactorIntermedio: number; xpFactorAvanzado: number },

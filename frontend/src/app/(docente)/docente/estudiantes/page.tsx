@@ -13,7 +13,8 @@ import { api } from '@/lib/api';
 import { AvisoSolicitudes } from '@/components/docente/aviso-solicitudes';
 import { Card, EmptyState, PageHeader, Skeleton } from '@/components/ui';
 import { FilaCurso, NivelChip, PromedioChip } from '@/components/docente/curso';
-import { Search, UserCheck, Users, Download, ArrowRight, CheckCircle, AlertTriangle } from '@/components/icons';
+import { Search, UserCheck, UserPlus, Users, Download, ArrowRight, CheckCircle, AlertTriangle } from '@/components/icons';
+import { AgregarEstudiante } from '@/components/docente/agregar-estudiante';
 
 interface Respuesta {
   estudiantes: FilaCurso[];
@@ -65,9 +66,13 @@ function Contenido() {
   // El panel del docente enlaza aquí con `?estado=sin_ingresar|atencion|activos`.
   const [filtro, setFiltro] = useState<Filtro>(FILTRO_DE_ENLACE[params.get('estado') ?? ''] ?? '');
 
-  useEffect(() => {
-    api.get<Respuesta>('/docente/estudiantes').then(setD).catch(() => undefined).finally(() => setCargando(false));
-  }, []);
+  const [agregando, setAgregando] = useState(false);
+  const cargar = () => api.get<Respuesta>('/docente/estudiantes').then(setD).catch(() => undefined).finally(() => setCargando(false));
+  useEffect(() => { cargar(); }, []);
+  const modalAgregar = <AgregarEstudiante open={agregando} onClose={() => setAgregando(false)} onListo={cargar} />;
+  const botonAgregar = (
+    <button onClick={() => setAgregando(true)} className="btn-primary !py-2 text-sm"><UserPlus className="h-4 w-4" /> Agregar estudiante</button>
+  );
 
   const activos = useMemo(
     () => (d?.estudiantes ?? []).filter((e) => e.activo && (!paralelo || e.paralelo.nombre === paralelo)),
@@ -115,7 +120,8 @@ function Contenido() {
   if (!d || d.estudiantes.length === 0) {
     return (
       <div className="animate-fade-up">
-        <PageHeader title="Seguimiento" subtitle="Cómo va cada uno de tus estudiantes." />
+        <PageHeader title="Seguimiento" subtitle="Cómo va cada uno de tus estudiantes." action={botonAgregar} />
+        {modalAgregar}
         <AvisoSolicitudes />
         <Card>
           <EmptyState icon={<Users className="h-7 w-7" />} title="Aún no tienes estudiantes" hint="Regístralos desde tu lista de Excel: quedan en su paralelo y contigo como docente." />
@@ -133,12 +139,18 @@ function Contenido() {
   return (
     <div className="animate-fade-up">
       <PageHeader title="Seguimiento" subtitle="Cómo va cada uno de tus estudiantes. Toca a uno para ver su ficha."
-        action={d.paralelos.length > 1 ? (
-          <select className="input !w-auto !py-2 text-sm" value={paralelo} onChange={(e) => setParalelo(e.target.value)} aria-label="Paralelo">
-            <option value="">Todos mis paralelos</option>
-            {d.paralelos.map((p) => <option key={`${p.id}-${p.nombre}`} value={p.nombre}>{p.id === null ? p.nombre : `Paralelo ${p.nombre}`}</option>)}
-          </select>
-        ) : undefined} />
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            {d.paralelos.length > 1 && (
+              <select className="input !w-auto !py-2 text-sm" value={paralelo} onChange={(e) => setParalelo(e.target.value)} aria-label="Paralelo">
+                <option value="">Todos mis paralelos</option>
+                {d.paralelos.map((p) => <option key={`${p.id}-${p.nombre}`} value={p.nombre}>{p.id === null ? p.nombre : `Paralelo ${p.nombre}`}</option>)}
+              </select>
+            )}
+            {botonAgregar}
+          </div>
+        } />
+      {modalAgregar}
 
       <AvisoSolicitudes />
 

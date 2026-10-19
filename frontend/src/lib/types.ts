@@ -386,3 +386,9 @@ export interface RutaTema {
   pendientes_ids: number[]; resueltos_ids: number[];
   progreso_nivel: ProgresoNivel | null;
 }
+
+/** XP en juego de un ejercicio (GET /ejercicios/:id → valor_xp). Sin el multiplicador de racha. */
+export interface ValorXp {
+  base: number; penalizacion_pista: number; factor_nivel: number; minimo: number;
+  pistas_usadas: number; sin_pistas: number; actual: number;
+}

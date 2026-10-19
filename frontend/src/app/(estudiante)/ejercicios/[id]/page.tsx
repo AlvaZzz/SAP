@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { api, ApiError } from '@/lib/api';
-import { Ejercicio, ResultadoIntento, RutaTema } from '@/lib/types';
+import { Ejercicio, ResultadoIntento, RutaTema, ValorXp } from '@/lib/types';
 import { VistaEjercicio } from '@/components/ejercicios';
 import { CabeceraPregunta, Enunciado } from '@/components/ejercicios/pregunta';
 import { useRachaSesion } from '@/components/ejercicios/racha-sesion';
@@ -18,6 +18,7 @@ import { Zap, Bot } from '@/components/icons';
 import { HudEjercicio } from '@/components/ejercicios/hud';
 import { BarraAccion, fraseAcierto, fraseFallo } from '@/components/ejercicios/barra-accion';
 import { escribiendo } from '@/components/ejercicios/atajos';
+import { XpEnJuego } from '@/components/ejercicios/xp-en-juego';
 import { NivelBadge } from '@/components/nivel-badge';
 
 interface RangoInfo { clave: string; nombre: string; svgKey: string; color: string }
@@ -50,12 +51,25 @@ export default function DetallePage() {
   const [ultimaRespuesta, setUltimaRespuesta] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [inicio, setInicio] = useState(() => Date.now());
+  // XP EN JUEGO: el valor que da el servidor más las pistas abiertas en esta
+  // visita. Se recalcula con la MISMA fórmula que usa el servidor al calificar.
+  const [valorXp, setValorXp] = useState<ValorXp | null>(null);
+  const [pistasNuevas, setPistasNuevas] = useState(0);
+  const valorCon = (pistas: number) => valorXp
+    ? Math.max(valorXp.minimo, Math.round((valorXp.base - valorXp.penalizacion_pista * pistas) * valorXp.factor_nivel))
+    : null;
+  const pistasTotales = (valorXp?.pistas_usadas ?? 0) + pistasNuevas;
+  const xpJuego = valorCon(pistasTotales);
+  const siguiente = valorCon(pistasTotales + 1);
+  const costoPista = xpJuego != null && siguiente != null ? xpJuego - siguiente : null;
 
   useEffect(() => {
     setResultado(null); setParcial(null); setRetro(null); setPidiendoIa(false); setIaPedida(false); setUltimaRespuesta('');
     setRespuesta(null); setInicio(Date.now());
-    api.get<{ ejercicio: Ejercicio }>(`/ejercicios/${id}`).then((r) => {
+    api.get<{ ejercicio: Ejercicio; valor_xp?: ValorXp }>(`/ejercicios/${id}`).then((r) => {
       setEj(r.ejercicio);
+      setValorXp(r.valor_xp ?? null);
+      setPistasNuevas(0);
       // Progreso y ORDEN ADAPTATIVO: la ruta del backend decide la secuencia
       // según el nivel del estudiante (tema si lo tiene; si no, nivel).
       const q = r.ejercicio.temaId ? `tema=${r.ejercicio.temaId}` : `nivel=${r.ejercicio.nivel?.numero ?? ''}`;
@@ -229,7 +243,9 @@ export default function DetallePage() {
             <CabeceraPregunta tipo={ej.tipo} tema={unidadTema ?? ej.categoria}
               extra={<>
                 <NivelBadge nivel={ej.nivelDificultad} estrellas={ej.estrellas} />
-                <span className="inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-2xs font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>
+                {xpJuego != null && valorXp
+                  ? <XpEnJuego actual={xpJuego} sinPistas={valorXp.sin_pistas} />
+                  : <span className="inline-flex items-center gap-1 rounded-full bg-prexi-green/10 px-2.5 py-1 text-2xs font-bold text-prexi-green"><Zap className="h-3.5 w-3.5" /> +{ej.xp} XP</span>}
               </>} />
             <Enunciado tipo={ej.tipo}>{ej.enunciado}</Enunciado>
 
@@ -300,14 +316,24 @@ export default function DetallePage() {
                   </button>
                 )}
               </div>
-            ) : resultado?.correcto && resultado.xp.multiplicador > 1 ? (
-              <p className="text-muted">XP × {resultado.xp.multiplicador} por tu racha de {resultado.xp.rachaDias} días seguidos.</p>
+            ) : resultado?.correcto && (pistasTotales > 0 || resultado.xp.multiplicador > 1) ? (
+              <div className="space-y-0.5 text-muted">
+                {pistasTotales > 0 && valorXp && xpJuego != null && (
+                  <p>
+                    {pistasTotales === 1 ? 'Usaste 1 pista' : `Usaste ${pistasTotales} pistas`}: <b className="text-amber-700 dark:text-amber-300">−{valorXp.sin_pistas - xpJuego} XP</b>.
+                    {' '}Sin pistas habrías ganado {valorXp.sin_pistas}.
+                  </p>
+                )}
+                {resultado.xp.multiplicador > 1 && <p>XP × {resultado.xp.multiplicador} por tu racha de {resultado.xp.rachaDias} días seguidos.</p>}
+              </div>
             ) : null}
           />
         </div>
 
         <div className="min-w-0">
-          <TutorPanel ejercicioId={ej.id} contextoTema={ej.categoria} maxPistas={ej.maxPistas} tipo={ej.tipo} resultado={resultado} />
+          <TutorPanel ejercicioId={ej.id} contextoTema={ej.categoria} maxPistas={ej.maxPistas} tipo={ej.tipo} resultado={resultado}
+            costoPista={resultado ? null : costoPista} xpMinimo={valorXp?.minimo}
+            onPistaAbierta={() => setPistasNuevas((n) => n + 1)} />
         </div>
       </div>
 

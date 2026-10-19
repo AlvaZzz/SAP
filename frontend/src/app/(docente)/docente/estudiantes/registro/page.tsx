@@ -15,11 +15,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Solicitudes } from '@/components/docente/solicitudes';
 import { Recuperaciones } from '@/components/recuperaciones';
+import { AgregarEstudiante } from '@/components/docente/agregar-estudiante';
 import { api, ApiError } from '@/lib/api';
 import { Badge, Card, PageHeader, Skeleton } from '@/components/ui';
 import { usuarioDeAcceso } from '@/lib/usuario-acceso';
 import {
-  AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle, Download, FileText, Plus, Search, Sparkles, Trash2, Upload, Users,
+  AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle, Download, FileText, Plus, Search, Sparkles, Trash2, Upload, UserPlus, Users,
 } from '@/components/icons';
 
 interface ParaleloInfo { id: number; nombre: string; docente: { id: number; nombre: string } | null; es_mio: boolean; estudiantes: number }
@@ -54,6 +55,7 @@ const mensaje = (e: unknown, porDefecto: string) => (e instanceof ApiError ? e.m
 
 export default function RegistroEstudiantesPage() {
   const [paso, setPaso] = useState(0);
+  const [agregando, setAgregando] = useState(false);
   // Dos caminos para que un estudiante entre al curso, en la misma pantalla:
   // registrarlo desde la lista, o aceptar la solicitud del que se registró solo.
   const vista = useSearchParams().get('ver') === 'solicitudes' ? 'solicitudes' : 'lista';
@@ -153,10 +155,29 @@ export default function RegistroEstudiantesPage() {
       <PageHeader
         title="Registro de estudiantes"
         subtitle="Crea las cuentas de tu curso desde la lista que ya tienes. Cada estudiante entrará con su primer nombre y su CI (ej. Alvaro_12929098) y su CI como contraseña."
-        action={<Link href="/docente/estudiantes" className="btn-ghost"><Users className="h-4 w-4" /> Ver estudiantes</Link>}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setAgregando(true)} className="btn-primary"><UserPlus className="h-4 w-4" /> Agregar un estudiante</button>
+            <Link href="/docente/estudiantes" className="btn-ghost"><Users className="h-4 w-4" /> Ver estudiantes</Link>
+          </div>
+        }
       />
+      <AgregarEstudiante open={agregando} onClose={() => setAgregando(false)} />
 
       {pestanas}
+
+      {/* El caso más común después de la primera carga: uno que se inscribió tarde. */}
+      {paso === 0 && (
+        <button onClick={() => setAgregando(true)}
+          className="mb-6 flex w-full items-center gap-4 rounded-2xl border-2 border-dashed border-prexi-blue/40 bg-prexi-blue/5 p-4 text-left transition hover:border-prexi-blue hover:bg-prexi-blue/10">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-prexi-blue text-accent-on"><UserPlus className="h-5 w-5" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold text-fg">¿Se inscribió alguien tarde?</span>
+            <span className="block text-sm text-muted">Agrégalo en un solo paso: paralelo, apellidos, nombres y CI. Sin subir ninguna lista.</span>
+          </span>
+          <span className="hidden shrink-0 text-sm font-semibold text-prexi-blue-deep sm:block">Agregar un estudiante →</span>
+        </button>
+      )}
 
       {/* Indicador de pasos */}
       <ol className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4">

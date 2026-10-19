@@ -23,9 +23,14 @@ interface Mensaje { id: number; de: 'tutor' | 'tu'; texto: string }
  * reales /tutor-ia/asistente(/stream) y /tutor-ia/pista (las pistas penalizan XP).
  * PREXI GUÍA, no resuelve — comunicado de forma amable.
  */
-export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resultado }: {
+export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resultado, costoPista, xpMinimo, onPistaAbierta }: {
   ejercicioId: number; contextoTema?: string; maxPistas: number;
   tipo?: TipoEjercicio; resultado?: ResultadoIntento | null;
+  /** XP exacto que restaría la siguiente pista (null = desconocido). */
+  costoPista?: number | null;
+  xpMinimo?: number;
+  /** Avisa a la página que se abrió una pista nueva (para bajar el XP en juego). */
+  onPistaAbierta?: () => void;
 }) {
   const { usuario } = useAuth();
   const saludo = nombreDePila(usuario);
@@ -128,6 +133,7 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
     try {
       const r = await api.post<{ pista: string }>('/tutor-ia/pista', { ejercicio_id: ejercicioId, nivel_pista: nivel });
       setPistas((p) => ({ ...p, [nivel]: r.pista })); setAbierta(nivel);
+      onPistaAbierta?.();
     } catch (err) { setError(avisoPrexi(err)); }
     finally { setCargando(false); }
   }
@@ -203,14 +209,18 @@ export function TutorPanel({ ejercicioId, contextoTema, maxPistas, tipo, resulta
                     </span>
                     {desbloqueada
                       ? <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
-                      : <span className="shrink-0 rounded-full bg-prexi-amber/15 px-2 py-0.5 text-2xs font-bold text-prexi-amber">resta algo de XP</span>}
+                      : <span className="shrink-0 rounded-full bg-prexi-amber/15 px-2 py-0.5 text-2xs font-bold text-prexi-amber">
+                          {costoPista == null ? 'resta algo de XP' : costoPista > 0 ? `−${costoPista} XP` : 'ya no resta XP'}
+                        </span>}
                   </button>
                   {open && <div className="border-t border-line px-3 py-2.5 text-sm leading-relaxed text-fg"><Markdown content={pistas[nivel]} /></div>}
                 </div>
               );
             })}
           </div>
-          <p className="mt-1.5 px-1 text-2xs leading-snug text-muted">Cada pista que abras reduce un poco el XP del ejercicio. Úsalas cuando de verdad lo necesites.</p>
+          <p className="mt-1.5 px-1 text-2xs leading-snug text-muted">
+            Cada pista que abras le resta XP a este ejercicio (nunca baja de {xpMinimo ?? 5}). Preguntarle a PREXI en el chat no resta nada.
+          </p>
         </div>
 
         {error && (

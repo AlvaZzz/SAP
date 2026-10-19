@@ -88,7 +88,7 @@ export class EjerciciosController {
   ) {
     const ejercicio = await this.ejercicios.detalle(id);
     await this.adaptatividad.verificarAccesoEjercicio(usuarioId, ejercicio, rol);
-    return { ejercicio };
+    return { ejercicio, valor_xp: await this.ejercicios.valorXp(usuarioId, ejercicio) };
   }
 
   @Post('intentos')
