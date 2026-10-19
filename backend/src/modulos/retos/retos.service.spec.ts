@@ -109,6 +109,17 @@ describe('RetosService.disponibles (nivel POR TEMA)', () => {
     expect(retos[0].origen_ejercicio).toEqual({ id: 99, codigo: 'E1.5.I.06' });
   });
 
+  it('no muestra retos de una unidad que el estudiante aún no abrió (como en Ejercicios)', async () => {
+    conNivelEnTema('basico', [reto({ id: 1 }), reto({ id: 2, tema: { ...reto().tema, unidad: { id: 1, numero: 1, titulo: 'U1' } } })]);
+    prisma.unidad.findMany.mockResolvedValue([{ id: 1, institucion: 'UPEA' }, { id: 2, institucion: 'UPEA' }]);
+    prisma.examenUnidad.findMany.mockResolvedValue([]);
+    expect((await service.disponibles(7)).retos.map((r) => r.id)).toEqual([2]);
+
+    // Al aprobar el examen de la Unidad 1 se abren los retos de la Unidad 2.
+    prisma.examenUnidad.findMany.mockResolvedValue([{ unidadId: 1 }]);
+    expect((await service.disponibles(7)).retos.map((r) => r.id).sort()).toEqual([1, 2]);
+  });
+
   it('moduloHabilitado refleja el interruptor del docente', async () => {
     prisma.configuracionSistema.findUnique.mockResolvedValue({ retosHabilitado: true });
     expect(await service.moduloHabilitado()).toBe(true);

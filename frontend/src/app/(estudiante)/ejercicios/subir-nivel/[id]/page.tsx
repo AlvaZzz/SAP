@@ -194,7 +194,7 @@ export default function SubirNivelPage() {
       </div>
 
       <div className="sticky bottom-4 mt-6 flex items-center justify-between gap-3 rounded-2xl border border-line bg-card px-5 py-4 shadow-soft">
-        <span className="text-sm text-muted">{todasListas ? '¡Listo para enviar!' : `Faltan ${diag.total - respondidas} preguntas`}</span>
+        <span className="text-sm text-muted">{todasListas ? '¡Listo para enviar!' : diag.total - respondidas === 1 ? 'Falta 1 pregunta' : `Faltan ${diag.total - respondidas} preguntas`}</span>
         <button onClick={enviar} disabled={!todasListas || enviando} className="btn-primary disabled:opacity-50">
           {enviando ? 'Evaluando…' : <>Enviar y evaluar <CheckCircle className="h-4 w-4" /></>}
         </button>

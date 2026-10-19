@@ -43,14 +43,45 @@ export class RetosService {
   }
 
   /**
+   * Unidades que el estudiante tiene abiertas, con la misma regla que Ejercicios
+   * (EjerciciosService.unidadDesbloqueada): la primera de la secuencia publicada
+   * siempre; cualquier otra, solo si aprobó el examen de la anterior. Una unidad
+   * fuera de la secuencia publicada no se bloquea.
+   */
+  async unidadesAbiertas(usuarioId: number): Promise<(unidadId: number) => boolean> {
+    const [unidades, aprobados] = await Promise.all([
+      this.prisma.unidad.findMany({
+        where: { temas: { some: { publicado: true, padreId: null } } },
+        orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+        select: { id: true, institucion: true },
+      }),
+      this.prisma.examenUnidad.findMany({ where: { usuarioId, aprobado: true }, select: { unidadId: true } }),
+    ]);
+    const conExamen = new Set((aprobados ?? []).map((e) => e.unidadId));
+    const anterior = new Map<number, number | null>();
+    const ultimaPorInstitucion = new Map<string, number>();
+    for (const u of unidades ?? []) {
+      const clave = String(u.institucion ?? '');
+      anterior.set(u.id, ultimaPorInstitucion.get(clave) ?? null);
+      ultimaPorInstitucion.set(clave, u.id);
+    }
+    return (unidadId) => {
+      if (!anterior.has(unidadId)) return true;
+      const previa = anterior.get(unidadId);
+      return previa == null || conExamen.has(previa);
+    };
+  }
+
+  /**
    * Retos disponibles para el estudiante, agrupables por Unidad → Tema → Subtema.
    * Filtra por el nivel que tiene en cada tema. Los retos ya aprobados se
    * devuelven marcados (`completado`) en vez de ocultarse: el estudiante ve su
    * avance del tema completo, igual que en la lista de ejercicios.
    */
   async disponibles(usuarioId: number, filtros: { unidad?: number; temaCodigo?: string } = {}) {
-    const [niveles, retos] = await Promise.all([
+    const [niveles, abiertas, retos] = await Promise.all([
       this.nivelesPorTema(usuarioId),
+      this.unidadesAbiertas(usuarioId),
       this.prisma.reto.findMany({
         where: {
           activo: true,
@@ -75,6 +106,8 @@ export class RetosService {
     const visibles = retos.filter((r) => {
       // Sin tema no hay nivel del que colgarse: se muestra siempre ("General").
       if (!r.temaId) return true;
+      // Igual que en Ejercicios: los retos de una unidad aún cerrada no se muestran.
+      if (r.tema && !abiertas(r.tema.unidad.id)) return false;
       const nivelEnTema = niveles.get(r.temaId) ?? 'basico';
       return r.nivelDificultad === nivelEnTema;
     });

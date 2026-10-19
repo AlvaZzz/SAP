@@ -198,11 +198,18 @@ export class ExamenUnidadService {
   async repaso(unidadId: number) {
     await this.unidadOrThrow(unidadId);
     const temas = await this.prisma.tema.findMany({
-      where: { unidadId },
-      orderBy: [{ orden: 'asc' }, { numero: 'asc' }],
+      where: { unidadId, publicado: true },
       select: { id: true, numero: true, titulo: true, repaso: true, descripcion: true },
     });
-    return temas;
+    // En el orden del temario: 1.2 antes que 1.10, y cada subtema (1.5.1) justo después de su tema.
+    const partes = (n: string) => n.split('.').map((x) => Number(x) || 0);
+    return temas.sort((a, b) => {
+      const pa = partes(a.numero), pb = partes(b.numero);
+      for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        if ((pa[i] ?? -1) !== (pb[i] ?? -1)) return (pa[i] ?? -1) - (pb[i] ?? -1);
+      }
+      return 0;
+    });
   }
 
   /** Marca el repaso de la unidad como revisado (habilita el examen). */

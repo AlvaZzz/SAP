@@ -98,8 +98,8 @@ export default function DashboardPage() {
               label="Rango actual" value={rangos?.global.rango.nombre ?? '—'}
               sub={rangos?.global.siguiente ? <><b style={{ color: VIOLETA }}>{rangos.global.siguiente.faltan} pts</b> para {rangos.global.siguiente.nombre}</> : '¡Rango máximo alcanzado!'} />
             <SparkStat color={AMBAR} icon={<Flame className="h-5 w-5" />} label="Racha"
-              value={<><CountUp value={r?.racha_dias ?? 0} /> días</>}
-              sub={r && r.racha_dias >= 3 ? 'Tu constancia multiplica tu XP' : 'Resuelve hoy para encenderla'} />
+              value={<><CountUp value={r?.racha_dias ?? 0} /> {r?.racha_dias === 1 ? 'día' : 'días'}</>}
+              sub={r && r.racha_dias >= 3 ? 'Tu constancia multiplica tu XP' : r && r.racha_dias > 0 ? 'Vuelve mañana para mantenerla' : 'Resuelve hoy para encenderla'} />
           </>
         )}
       </StatGrid>

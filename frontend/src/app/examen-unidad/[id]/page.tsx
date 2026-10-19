@@ -10,6 +10,8 @@ import { BotonVoz } from '@/components/boton-voz';
 import { Mazo } from '@/components/flashcards/mazo';
 import { CabeceraPregunta, Enunciado } from '@/components/ejercicios/pregunta';
 import { OptionCard } from '@/components/pretest/option-card';
+import { VistaEjercicio } from '@/components/ejercicios';
+import type { Ejercicio } from '@/lib/types';
 import { QuestionNavigator } from '@/components/pretest/question-navigator';
 import { fetchFlashcardsExamen, mostrarRepasoPrevio, type Flashcard } from '@/lib/flashcards';
 import { colorUnidad } from '@/lib/types';
@@ -317,13 +319,22 @@ export default function ExamenUnidadPage() {
               <CabeceraPregunta numero={idx + 1} total={total} tipo={p.tipo} tema={p.categoria} />
               <Enunciado tipo={p.tipo}>{p.enunciado}</Enunciado>
               {p.codigoPython && <div className="mb-5"><CodeBlock code={p.codigoPython} /></div>}
-              <div role="radiogroup" aria-label="Opciones de respuesta" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {p.opciones.map((o, i) => (
-                  <OptionCard key={o.id} letra={o.id} texto={o.texto} selected={resp[p.id] === o.id}
-                    tabbable={resp[p.id] ? resp[p.id] === o.id : i === 0}
-                    onSelect={() => setResp((r) => ({ ...r, [p.id]: o.id }))} />
-                ))}
-              </div>
+              {/* Las preguntas sin opciones (completar u ordenar) se responden como en la práctica. */}
+              {p.tipo === 'completar_codigo' ? (
+                <input value={resp[p.id] ?? ''} onChange={(e) => setResp((r) => ({ ...r, [p.id]: e.target.value }))}
+                  placeholder="Escribe la línea o el valor que falta" aria-label="Tu respuesta" className="input font-mono text-sm" />
+              ) : p.tipo === 'ordenar_lineas' ? (
+                <VistaEjercicio key={p.id} ejercicio={p as unknown as Ejercicio} resultado={null}
+                  onChange={(v) => setResp((r) => ({ ...r, [p.id]: v ?? '' }))} />
+              ) : (
+                <div role="radiogroup" aria-label="Opciones de respuesta" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {p.opciones.map((o, i) => (
+                    <OptionCard key={o.id} letra={o.id} texto={o.texto} selected={resp[p.id] === o.id}
+                      tabbable={resp[p.id] ? resp[p.id] === o.id : i === 0}
+                      onSelect={() => setResp((r) => ({ ...r, [p.id]: o.id }))} />
+                  ))}
+                </div>
+              )}
               <div className="mt-6 flex items-center justify-between border-t border-line pt-5">
                 <button onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0} className="btn-ghost disabled:opacity-40"><ChevronLeft className="h-4 w-4" /> Anterior</button>
                 {idx < total - 1
