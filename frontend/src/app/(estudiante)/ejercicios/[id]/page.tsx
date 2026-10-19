@@ -14,7 +14,7 @@ import { TutorPanel } from '@/components/tutor-panel';
 import { RangoIcon } from '@/components/rango-icon';
 import { useLogros } from '@/components/logro-toast';
 import { useSound } from '@/components/use-sound';
-import { Zap, Bot } from '@/components/icons';
+import { Zap, Bot, Target, Sparkles } from '@/components/icons';
 import { HudEjercicio } from '@/components/ejercicios/hud';
 import { BarraAccion, fraseAcierto, fraseFallo } from '@/components/ejercicios/barra-accion';
 import { escribiendo } from '@/components/ejercicios/atajos';
@@ -206,15 +206,25 @@ export default function DetallePage() {
   const resueltos = new Set<number>([...(ruta?.resueltos_ids ?? []), ...(sumaAhora ? [ej.id] : [])]);
   const idsRuta = ruta?.ejercicios.map((e) => e.id) ?? [ej.id];
   const meta = progNivel ? { ...progNivel, resueltosAhora: progNivel.resueltos + sumaAhora } : null;
-  const faltanMeta = meta ? Math.max(0, meta.minimo - meta.resueltosAhora) : null;
+  // Dos metas: con `minimo` (8) se pide la subida de nivel; con los 10 del nivel
+  // (o todos los cargados) se completa el tema y se abre el siguiente.
+  const paraTema = meta ? Math.max(1, Math.min(10, meta.total || 10)) : 10;
+  const faltanTema = meta ? Math.max(0, paraTema - meta.resueltosAhora) : null;
+  const puedeSubirNivel = !!meta && meta.nivel !== 'avanzado' && meta.resueltosAhora >= meta.minimo;
 
   const estadoBarra = !resultado ? 'pendiente' : resultado.correcto ? 'correcto' : 'incorrecto';
   const textoContinuar = !resultado ? '' : sig ? 'Continuar' : temaCerrado ? 'Ver mi siguiente paso' : 'Finalizar';
-  const lineaMeta = resultado?.correcto && meta
-    ? (faltanMeta === 0
-        ? `🎯 Meta del nivel ${meta.nivel_label} cumplida: ya puedes subir de nivel`
-        : `🎯 Meta del nivel ${meta.nivel_label}: ${meta.resueltosAhora}/${meta.minimo} · ${faltanMeta === 1 ? '¡te falta 1!' : `te faltan ${faltanMeta}`}`)
-    : null;
+  const lineaMeta = resultado?.correcto && meta ? (
+    <span className="inline-flex items-start gap-1.5">
+      <Target className="mt-px h-3.5 w-3.5 shrink-0" />
+      <span>
+        {faltanTema === 0
+          ? `Completaste los ${paraTema} ejercicios de nivel ${meta.nivel_label}: se abre el siguiente tema`
+          : `Nivel ${meta.nivel_label}: ${meta.resueltosAhora}/${paraTema} · ${faltanTema === 1 ? '¡te falta 1 para completar el tema!' : `te faltan ${faltanTema} para completar el tema`}` +
+            (puedeSubirNivel ? ' · ya puedes intentar subir de nivel' : '')}
+      </span>
+    </span>
+  ) : null;
 
   return (
     <div className="animate-fade-up">
@@ -266,8 +276,8 @@ export default function DetallePage() {
 
             {/* Desbloqueos de nivel: un momento grande, merece su propio aviso. */}
             {resultado?.correcto && resultado.nivel.nivelDesbloqueadoNumero && (
-              <p className="mt-5 rounded-xl bg-prexi-blue/10 px-4 py-3 text-sm font-semibold text-prexi-blue-deep animate-fade-up">
-                🔓 Desbloqueaste el Nivel {resultado.nivel.nivelDesbloqueadoNumero}
+              <p className="mt-5 flex items-center gap-2 rounded-xl bg-prexi-blue/10 px-4 py-3 text-sm font-semibold text-prexi-blue-deep animate-fade-up">
+                <Sparkles className="h-4 w-4 shrink-0" /> Desbloqueaste el Nivel {resultado.nivel.nivelDesbloqueadoNumero}
               </p>
             )}
 

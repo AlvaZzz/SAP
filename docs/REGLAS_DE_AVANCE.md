@@ -14,6 +14,8 @@ reglas se calculan en el backend; las constantes están en
 | Nota para aprobar / subir de nivel | 80 |
 | "Cerca de aprobar" (lo ve el docente) | 70 a 79 |
 | Ejercicios que cada tema necesita por nivel | 10 en Básico, 10 en Intermedio, 10 en Avanzado |
+| Resueltos del nivel para pedir la subida | 8 |
+| Resueltos del nivel para completar el tema | 10 (todos los del nivel) |
 
 ## Diagnóstico inicial
 
@@ -24,10 +26,13 @@ No desbloquea temas ni unidades: un diagnóstico alto no permite saltarse nada.
 ## Dentro de una unidad
 
 1. Los temas y subtemas se abren **en orden**: el siguiente se desbloquea al completar el
-   anterior (`common/niveles/desbloqueo.ts`). Un tema se completa con **10 ejercicios
-   resueltos** (su umbral entero).
-2. En cada tema el estudiante practica en su nivel. Al resolver 10 ejercicios de su nivel
-   (o todos, si el tema tiene menos) se abre la **prueba de nivel**: 10 preguntas del nivel
+   anterior (`common/niveles/desbloqueo.ts`). Un tema se completa al resolver **los 10
+   ejercicios del nivel en que está** el estudiante en ese tema (o todos los de ese nivel,
+   si el docente aún no cargó 10). Cuentan ejercicios distintos: repetir uno no suma. Si
+   sube de nivel antes de completarlo, el avance pasa a medirse en el nivel nuevo; una vez
+   completo, el tema no vuelve a cerrarse.
+2. En cada tema el estudiante practica en su nivel. Al resolver **8 ejercicios** de su nivel
+   (o todos, si el tema tiene menos; configurable en `minPractica*`) se abre la **prueba de nivel**: 10 preguntas del nivel
    siguiente y **80 sobre 100** para subir. Si el nivel siguiente tiene menos de 10
    ejercicios, la prueba se completa hasta 10 con los más difíciles del nivel actual.
    Solo cuentan los ejercicios del banco de práctica.

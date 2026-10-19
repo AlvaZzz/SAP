@@ -11,6 +11,7 @@ import {
   nivelInferior,
 } from '../common/niveles/nivel-dificultad';
 import { estimarTheta, informacionItem, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
+import { avanceTemaGuardado } from '../common/niveles/desbloqueo';
 
 // Campos públicos del ejercicio (sin la respuesta correcta) — igual que el listado.
 // Incluye `dificultadB` (parámetro b de Rasch) para la selección adaptativa por IRT.
@@ -297,9 +298,9 @@ export class AdaptatividadService {
       umbral: cfg?.subirNivelUmbral ?? UMBRAL_APROBACION,
       esperaHoras: cfg?.subirNivelEsperaHoras ?? 0,
       minimos: {
-        basico: cfg?.minPracticaBasico ?? 10,
-        intermedio: cfg?.minPracticaIntermedio ?? 10,
-        avanzado: cfg?.minPracticaAvanzado ?? 10,
+        basico: cfg?.minPracticaBasico ?? 8,
+        intermedio: cfg?.minPracticaIntermedio ?? 8,
+        avanzado: cfg?.minPracticaAvanzado ?? 8,
       } as Record<NivelDificultad, number>,
     };
   }
@@ -505,10 +506,22 @@ export class AdaptatividadService {
     }
 
     if (aprobado) {
+      // El avance del tema pasa a medirse en el NIVEL NUEVO (los 10 de ese nivel
+      // completan el tema), salvo que el tema ya estuviera completo: eso no se pierde.
+      const previo = await this.prisma.progresoTema.findUnique({ where: { usuarioId_temaId: { usuarioId, temaId } } });
+      const [tema, delNivel, resueltos] = await Promise.all([
+        this.prisma.tema.findUnique({ where: { id: temaId }, select: { umbral: true } }),
+        this.prisma.ejercicio.count({ where: { temaId, banco: 'practica', activo: true, nivelDificultad: objetivo } }),
+        this.prisma.intento.findMany({
+          where: { usuarioId, correcto: true, ejercicio: { temaId, banco: 'practica', nivelDificultad: objetivo } },
+          distinct: ['ejercicioId'], select: { ejercicioId: true },
+        }),
+      ]);
+      const avance = avanceTemaGuardado(previo?.ejerciciosCompletados ?? 0, resueltos.length, delNivel, tema?.umbral ?? 10);
       await this.prisma.progresoTema.upsert({
         where: { usuarioId_temaId: { usuarioId, temaId } },
-        create: { usuarioId, temaId, nivelActual: objetivo, desbloqueado: true },
-        update: { nivelActual: objetivo },
+        create: { usuarioId, temaId, nivelActual: objetivo, desbloqueado: true, ejerciciosCompletados: avance },
+        update: { nivelActual: objetivo, ejerciciosCompletados: avance },
       });
     }
 

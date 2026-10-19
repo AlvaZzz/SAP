@@ -28,8 +28,14 @@ export function HudEjercicio({ ids, actualId, resueltos, combo, meta, onSalir, d
   const idx = Math.max(0, ids.indexOf(actualId));
   const total = Math.max(1, ids.length);
   const hechos = ids.filter((x) => resueltos.has(x)).length;
-  const faltanMeta = meta ? Math.max(0, meta.minimo - meta.resueltosAhora) : null;
-  const pctMeta = meta ? Math.min(100, Math.round((meta.resueltosAhora / Math.max(1, meta.minimo)) * 100)) : 0;
+  // Dos metas distintas: SUBIR de nivel (mínimo configurable, 8) y COMPLETAR el
+  // tema (los 10 de su nivel, o todos los cargados si son menos).
+  const paraTema = meta ? Math.max(1, Math.min(10, meta.total || 10)) : 10;
+  const enAvanzado = meta?.nivel === 'avanzado';
+  const puedeSubir = !!meta && !enAvanzado && meta.resueltosAhora >= meta.minimo;
+  const temaHecho = !!meta && meta.resueltosAhora >= paraTema;
+  const pctMeta = meta ? Math.min(100, Math.round((meta.resueltosAhora / paraTema) * 100)) : 0;
+  const marcaSubir = meta && !enAvanzado ? Math.min(100, Math.round((meta.minimo / paraTema) * 100)) : null;
 
   return (
     <div className="mb-5 rounded-2xl border border-line bg-card px-4 py-3.5 shadow-soft sm:px-5">
@@ -83,17 +89,24 @@ export function HudEjercicio({ ids, actualId, resueltos, combo, meta, onSalir, d
         {derecha && <div className="hidden shrink-0 sm:block">{derecha}</div>}
       </div>
 
-      {/* Meta del nivel: lo que abre la evaluación para subir de nivel. */}
+      {/* Metas del nivel: con 8 se puede pedir la subida; con los 10 se completa el tema. */}
       {meta && (
         <div className="mt-3 flex items-center gap-3 border-t border-line pt-3">
-          <Target className={`h-4 w-4 shrink-0 ${faltanMeta === 0 ? 'text-prexi-green' : 'text-prexi-blue-deep'}`} />
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-subtle">
-            <motion.div className={`h-full rounded-full ${faltanMeta === 0 ? 'bg-prexi-green' : 'bg-prexi-blue'}`} initial={false} animate={{ width: `${pctMeta}%` }} transition={{ duration: 0.6, ease: 'easeOut' }} />
+          <Target className={`h-4 w-4 shrink-0 ${temaHecho ? 'text-prexi-green' : 'text-prexi-blue-deep'}`} />
+          <div className="relative h-1.5 flex-1 rounded-full bg-subtle">
+            <motion.div className={`h-full rounded-full ${temaHecho ? 'bg-prexi-green' : 'bg-prexi-blue'}`} initial={false} animate={{ width: `${pctMeta}%` }} transition={{ duration: 0.6, ease: 'easeOut' }} />
+            {/* Marca donde se habilita la subida de nivel (8). */}
+            {marcaSubir != null && marcaSubir < 100 && (
+              <span className={`absolute -top-1 h-3.5 w-0.5 rounded ${puedeSubir ? 'bg-prexi-green' : 'bg-muted'}`} style={{ left: `${marcaSubir}%` }} title={`Con ${meta.minimo} puedes pedir la subida de nivel`} />
+            )}
           </div>
           <span className="shrink-0 text-xs font-semibold text-fg">
-            Meta {meta.nivel_label}: {Math.min(meta.resueltosAhora, meta.minimo)}/{meta.minimo}
+            {meta.nivel_label}: {Math.min(meta.resueltosAhora, paraTema)}/{paraTema}
             <span className="hidden font-medium text-muted sm:inline">
-              {faltanMeta === 0 ? ' · ¡ya puedes subir de nivel!' : ` · faltan ${faltanMeta}`}
+              {temaHecho ? ' · ¡tema completado!'
+                : puedeSubir ? ` · ya puedes subir de nivel · faltan ${paraTema - meta.resueltosAhora} para completar el tema`
+                : enAvanzado ? ` · faltan ${paraTema - meta.resueltosAhora} para completar el tema`
+                : ` · subir de nivel con ${meta.minimo}`}
             </span>
           </span>
         </div>

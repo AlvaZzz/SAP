@@ -7,7 +7,7 @@ import { corregirGraduado } from './correccion';
 import { EmblemasService } from '../gamificacion/emblemas.service';
 import { RangosService } from '../gamificacion/rangos.service';
 import { factorXpNivel, valorXpEjercicio, XP_MINIMO_ACIERTO } from '../common/niveles/nivel-dificultad';
-import { desbloqueoSecuencial, requeridosTema } from '../common/niveles/desbloqueo';
+import { avanceTemaGuardado, desbloqueoSecuencial, requeridosTema } from '../common/niveles/desbloqueo';
 import { estimarTheta, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
 import { msDesde } from '../mediciones/motor/motor';
 import type { DecisionMotor } from './log-adaptacion.service';
@@ -176,14 +176,27 @@ export class EjerciciosService {
     temaId: number,
     umbralPct: number,
     nivelInicial: NivelDificultad,
+    ejercicioId: number,
   ): Promise<void> {
     const tema = await tx.tema.findUnique({ where: { id: temaId } });
     if (!tema) return;
 
-    const completados = await tx.intento.count({
-      where: { usuarioId, correcto: true, ejercicio: { temaId } },
-    });
-    const completadosTotal = completados + 1; // incluye el intento que se inserta después
+    // Avance = ejercicios DISTINTOS resueltos en el NIVEL ACTUAL del estudiante
+    // en este tema (más el que se está resolviendo, cuyo intento se inserta
+    // después). Ver `avanceTemaGuardado`: completar el tema exige los 10 de su
+    // nivel (o todos los cargados), y una vez completo no vuelve a bajar.
+    const previo = await tx.progresoTema.findUnique({ where: { usuarioId_temaId: { usuarioId, temaId } } });
+    const nivel = previo?.nivelActual ?? nivelInicial;
+    const [delNivel, resueltosAntes] = await Promise.all([
+      tx.ejercicio.findMany({ where: { temaId, banco: 'practica', activo: true, nivelDificultad: nivel }, select: { id: true } }),
+      tx.intento.findMany({
+        where: { usuarioId, correcto: true, ejercicio: { temaId, banco: 'practica', nivelDificultad: nivel } },
+        distinct: ['ejercicioId'], select: { ejercicioId: true },
+      }),
+    ]);
+    const resueltos = new Set(resueltosAntes.map((r) => r.ejercicioId));
+    if (delNivel.some((e) => e.id === ejercicioId)) resueltos.add(ejercicioId);
+    const completadosTotal = avanceTemaGuardado(previo?.ejerciciosCompletados ?? 0, resueltos.size, delNivel.length, tema.umbral);
     // Al crear la fila por primera vez, se siembra el nivel actual del tema con la
     // clasificación inicial del estudiante (no degradar a básico).
     await tx.progresoTema.upsert({
@@ -410,7 +423,7 @@ export class EjerciciosService {
         // en paralelo al progreso por nivel. Solo si el ejercicio pertenece a un tema.
         if (ej.temaId) {
           const u = await tx.usuario.findUnique({ where: { id: usuarioId }, select: { nivelInicialAdaptativo: true } });
-          await this.avanzarProgresoTema(tx, usuarioId, ej.temaId, cfg?.umbralPorcentaje ?? 80, u?.nivelInicialAdaptativo ?? 'basico');
+          await this.avanzarProgresoTema(tx, usuarioId, ej.temaId, cfg?.umbralPorcentaje ?? 80, u?.nivelInicialAdaptativo ?? 'basico', ej.id);
         }
       }
 

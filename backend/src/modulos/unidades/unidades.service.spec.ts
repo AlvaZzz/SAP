@@ -148,7 +148,7 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
       expect(include.subtemas.include.ejercicios.where).toEqual({ activo: true, banco: 'practica' });
     });
 
-    it('con 9 ejercicios de su nivel y los 9 resueltos, ya puede rendir la prueba (no exige 10)', async () => {
+    it('con 8 ejercicios resueltos de su nivel ya puede rendir la prueba (el mínimo es 8, no 10)', async () => {
       prisma.usuario.findUnique.mockResolvedValue({ nivelInicialAdaptativo: 'basico' });
       const ejercicios = [
         ...Array.from({ length: 9 }, (_, i) => ({ id: i + 1, nivelDificultad: 'basico' })),
@@ -157,12 +157,12 @@ describe('UnidadesService (coherencia nivel por tema ↔ dominio de unidad)', ()
       prisma.unidad.findMany.mockResolvedValue(unidadCon(tema(1, {
         ejercicios, progreso: [{ nivelActual: 'basico', ejerciciosCompletados: 9 }],
       })));
-      prisma.intento.findMany.mockResolvedValue(ejercicios.slice(0, 9).map((e) => ({ ejercicioId: e.id })));
+      prisma.intento.findMany.mockResolvedValue(ejercicios.slice(0, 8).map((e) => ({ ejercicioId: e.id })));
 
       const [u] = await service.listar(7);
       const t = u.temas[0];
-      expect(t.minimo_nivel).toBe(9);
-      expect(t.resueltos_nivel).toBe(9);
+      expect(t.minimo_nivel).toBe(8);
+      expect(t.resueltos_nivel).toBe(8);
       expect(t.faltan_nivel).toBe(0);
       expect(t.puede_subir).toBe(true);
     });

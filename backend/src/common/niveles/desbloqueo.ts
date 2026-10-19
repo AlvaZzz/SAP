@@ -28,6 +28,26 @@ export function requeridosTema(umbral: number, umbralPct?: number): number {
   return umbral;
 }
 
+/**
+ * Cuánto avance de un tema se GUARDA en `ProgresoTema.ejerciciosCompletados`.
+ *
+ * Regla (acordada para la recolección): un tema se completa al resolver los 10
+ * ejercicios DEL NIVEL EN QUE ESTÁ el estudiante en ese tema —o todos los de
+ * ese nivel, si el docente aún no cargó 10, para que nadie quede atrapado—.
+ * Subir de nivel exige menos (ver `minPractica*`, 8 por defecto), así que quien
+ * sube con 8 sigue practicando y cierra el tema con los 10 del nivel nuevo.
+ *
+ * Se cuentan ejercicios DISTINTOS (repetir uno no suma). Al completarse se
+ * guarda el umbral y ya NO baja: subir de nivel después no vuelve a cerrar el
+ * tema siguiente. Así todos los que comparan `ejerciciosCompletados >= umbral`
+ * siguen funcionando sin cambios.
+ */
+export function avanceTemaGuardado(previo: number, resueltosNivel: number, totalNivel: number, umbral: number): number {
+  if (previo >= umbral) return previo; // completo para siempre
+  const requeridos = totalNivel > 0 ? Math.min(umbral, totalNivel) : umbral;
+  return resueltosNivel >= requeridos ? umbral : resueltosNivel;
+}
+
 export function temaCompleto(completados: number, umbral: number, umbralPct: number): boolean {
   return completados >= requeridosTema(umbral, umbralPct);
 }

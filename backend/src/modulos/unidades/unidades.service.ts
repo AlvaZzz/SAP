@@ -66,9 +66,9 @@ export class UnidadesService {
     ]);
     const resueltosIds = new Set(resueltos.map((r) => r.ejercicioId));
     const minimos: Record<NivelDificultad, number> = {
-      basico: cfg?.minPracticaBasico ?? 10,
-      intermedio: cfg?.minPracticaIntermedio ?? 10,
-      avanzado: cfg?.minPracticaAvanzado ?? 10,
+      basico: cfg?.minPracticaBasico ?? 8,
+      intermedio: cfg?.minPracticaIntermedio ?? 8,
+      avanzado: cfg?.minPracticaAvanzado ?? 8,
     };
 
     const nivelInicial: NivelDificultad = usuario?.nivelInicialAdaptativo ?? 'basico';
