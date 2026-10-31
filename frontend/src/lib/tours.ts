@@ -74,7 +74,7 @@ export const TOURS: Tour[] = [
     pasos: [
       { titulo: 'Dos tipos de reto', texto: 'En «Encuentra el bug» recibes un programa con un error y lo corriges: sabes al instante si lo lograste. En «Escribe tu código» programas la solución y tu docente la revisa.' },
       { titulo: 'Cómo vas', texto: 'Los recuadros de arriba cuentan cuántos te faltan, cuántos tienes que corregir, cuántos están en revisión y cuántos ya aprobaste. Tócalos para ver solo esos.' },
-      { titulo: 'Ordenados por tema', texto: 'Abajo están en lista, por unidad y tema. Cada fila dice su estado, los puntos y la fecha límite si tiene. Ves los retos de tu nivel en cada tema.' },
+      { titulo: 'Ordenados por tema', texto: 'Abajo están en lista, por unidad y tema. Cada fila lleva su sello (Completado, Pendiente, Incompleto, En revisión o Sin empezar) y los puntos. En cada tema ves los de tu nivel y los del nivel siguiente.' },
     ],
   },
   {

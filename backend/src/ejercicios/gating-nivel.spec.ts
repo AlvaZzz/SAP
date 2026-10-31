@@ -49,7 +49,8 @@ describe('AdaptatividadService · gating estricto por nivel', () => {
         .rejects.toThrow(ForbiddenException);
     });
 
-    it('rechaza un reto de otro nivel', async () => {
+    it('rechaza un reto DOS niveles por encima del suyo', async () => {
+      prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'basico' });
       await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'avanzado' })))
         .rejects.toThrow(ForbiddenException);
     });
@@ -121,14 +122,14 @@ describe('AdaptatividadService · gating estricto por nivel', () => {
      * `ProgresoTema.nivelActual` a secas. El gate replica esa diferencia a
      * propósito, para no abrir una grieta entre listado y acceso directo.
      */
-    it('en retos no hay caída de nivel: se compara contra el nivel del tema tal cual', async () => {
-      prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'avanzado' });
-      prisma.ejercicio.count.mockResolvedValue(0);
+    it('en retos valen su nivel, los anteriores y el siguiente (igual que el listado)', async () => {
+      prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'basico' });
+      await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'basico' }))).resolves.toBeUndefined();
+      await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'intermedio' }))).resolves.toBeUndefined();
+      await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'avanzado' }))).rejects.toThrow(ForbiddenException);
 
-      await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'intermedio' })))
-        .rejects.toThrow(ForbiddenException);
-      await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'avanzado' })))
-        .resolves.toBeUndefined();
+      prisma.progresoTema.findUnique.mockResolvedValue({ nivelActual: 'avanzado' });
+      await expect(service.verificarAccesoReto(7, reto({ nivelDificultad: 'intermedio' }))).resolves.toBeUndefined();
     });
 
     it('sin ProgresoTema se usa la clasificación inicial del pretest', async () => {

@@ -9,6 +9,7 @@ import {
   ETIQUETA_NIVEL,
   siguienteNivel,
   nivelInferior,
+  retoAlAlcance,
 } from '../common/niveles/nivel-dificultad';
 import { estimarTheta, informacionItem, redondearTheta, RespuestaIrt } from '../mediciones/irt/irt';
 import { avanceTemaGuardado } from '../common/niveles/desbloqueo';
@@ -121,7 +122,10 @@ export class AdaptatividadService {
   ): Promise<void> {
     if (rol && AdaptatividadService.ROLES_SIN_GATING.has(rol)) return;
     if (reto.temaId == null) return;
-    this.rechazarSiNoCoincide(reto.nivelDificultad, await this.nivelDeTema(usuarioId, reto.temaId), 'reto');
+    // Retos: su nivel, uno anterior o el siguiente (ver retoAlAlcance), igual que el listado.
+    const nivel = await this.nivelDeTema(usuarioId, reto.temaId);
+    if (retoAlAlcance(reto.nivelDificultad, nivel)) return;
+    throw new ForbiddenException(`Este reto está por encima de tu nivel actual en este tema (${ETIQUETA_NIVEL[nivel]}). Sube de nivel para abrirlo.`);
   }
 
   /** Nivel ACTUAL del estudiante en un tema: su ProgresoTema o, si aún no existe, su nivel inicial del pretest. */

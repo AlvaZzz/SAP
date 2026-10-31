@@ -32,26 +32,27 @@ describe('RetosService.disponibles (nivel POR TEMA)', () => {
     prisma.reto.findMany.mockResolvedValue(retos);
   }
 
-  it('muestra SOLO los retos del nivel que el estudiante tiene en ese tema', async () => {
-    conNivelEnTema('intermedio', [
-      reto({ id: 1, nivelDificultad: 'basico' }),
-      reto({ id: 2, nivelDificultad: 'intermedio' }),
-      reto({ id: 3, nivelDificultad: 'avanzado' }),
-    ]);
-    const { retos } = await service.disponibles(7);
-    expect(retos.map((r) => r.id)).toEqual([2]);
-  });
-
-  it('al subir de nivel en el tema, cambian los retos visibles', async () => {
+  it('muestra los retos de su nivel, de los anteriores y del siguiente; no dos por encima', async () => {
     const banco = [
       reto({ id: 1, nivelDificultad: 'basico' }),
       reto({ id: 2, nivelDificultad: 'intermedio' }),
+      reto({ id: 3, nivelDificultad: 'avanzado' }),
     ];
     conNivelEnTema('basico', banco);
-    expect((await service.disponibles(7)).retos.map((r) => r.id)).toEqual([1]);
+    expect((await service.disponibles(7)).retos.map((r) => r.id)).toEqual([1, 2]);
 
     conNivelEnTema('intermedio', banco);
+    expect((await service.disponibles(7)).retos.map((r) => r.id)).toEqual([1, 2, 3]);
+  });
+
+  it('BÁSICO ve los retos intermedios aunque el tema no tenga retos básicos', async () => {
+    conNivelEnTema('basico', [reto({ id: 2, nivelDificultad: 'intermedio' })]);
     expect((await service.disponibles(7)).retos.map((r) => r.id)).toEqual([2]);
+  });
+
+  it('al subir de nivel no se esconden los retos que ya completó', async () => {
+    conNivelEnTema('avanzado', [reto({ id: 1, nivelDificultad: 'basico', resueltos: [{ estado: 'aprobado', xpObtenido: 10 }] })]);
+    expect((await service.disponibles(7)).retos.map((r) => r.id)).toEqual([1]);
   });
 
   it('BÁSICO ve retos (la regla anterior lo excluía por completo)', async () => {

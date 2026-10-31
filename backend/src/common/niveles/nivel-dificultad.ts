@@ -63,6 +63,18 @@ export function nivelInferior(n: NivelDificultad): NivelDificultad | null {
   return null;
 }
 
+/**
+ * ¿Un reto de nivel `nivelReto` está al alcance de quien va en `nivelTema`?
+ * Sí si es de su nivel, de uno anterior o del SIGUIENTE. Los retos son práctica
+ * extra: un estudiante en Básico ve también los de Intermedio (los bancos de las
+ * prácticas solo traen retos Intermedio y Avanzado, y con la regla de «solo tu
+ * nivel» un estudiante en Básico no veía ninguno), y al subir de nivel no se le
+ * esconden los que ya completó.
+ */
+export function retoAlAlcance(nivelReto: NivelDificultad, nivelTema: NivelDificultad): boolean {
+  return ORDEN_NIVEL[nivelReto] <= ORDEN_NIVEL[nivelTema] + 1;
+}
+
 /** ¿`a` es de igual o mayor dificultad que `b`? */
 export function nivelAlMenos(a: NivelDificultad, b: NivelDificultad): boolean {
   return ORDEN_NIVEL[a] >= ORDEN_NIVEL[b];

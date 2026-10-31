@@ -116,7 +116,7 @@ export default function RetosPage() {
 
   return (
     <div className="animate-fade-up">
-      <PageHeader title="Retos" subtitle="Desafíos de programación para practicar lo que vas aprendiendo. Ves los de tu nivel en cada tema." />
+      <PageHeader title="Retos" subtitle="Desafíos de programación para practicar lo que vas aprendiendo. En cada tema ves los de tu nivel y los del nivel siguiente." />
 
       {/* 1 · Tipo de reto */}
       <div className="mb-5 grid gap-3 sm:grid-cols-2" role="tablist" aria-label="Tipo de reto">

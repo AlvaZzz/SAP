@@ -2,7 +2,7 @@ import { fuentePractica } from './fuente-practica';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { NivelDificultad } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { ETIQUETA_NIVEL } from '../../common/niveles/nivel-dificultad';
+import { ETIQUETA_NIVEL, retoAlAlcance } from '../../common/niveles/nivel-dificultad';
 
 /**
  * RETOS — selección por NIVEL REAL DEL ESTUDIANTE EN CADA TEMA.
@@ -151,9 +151,10 @@ export class RetosService {
    * avance del tema completo, igual que en la lista de ejercicios.
    */
   async disponibles(usuarioId: number, filtros: { unidad?: number; temaCodigo?: string } = {}) {
-    const [niveles, abiertas, retos] = await Promise.all([
+    const [niveles, abiertas, yo, retos] = await Promise.all([
       this.nivelesPorTema(usuarioId),
       this.unidadesAbiertas(usuarioId),
+      this.prisma.usuario.findUnique({ where: { id: usuarioId }, select: { nivelInicialAdaptativo: true } }),
       this.prisma.reto.findMany({
         where: {
           activo: true,
@@ -180,8 +181,9 @@ export class RetosService {
       if (!r.temaId) return true;
       // Igual que en Ejercicios: los retos de una unidad aún cerrada no se muestran.
       if (r.tema && !abiertas(r.tema.unidad.id)) return false;
-      const nivelEnTema = niveles.get(r.temaId) ?? 'basico';
-      return r.nivelDificultad === nivelEnTema;
+      // Sin progreso en el tema vale el nivel inicial del diagnóstico (igual que el acceso directo).
+      const nivelEnTema = niveles.get(r.temaId) ?? yo?.nivelInicialAdaptativo ?? 'basico';
+      return retoAlAlcance(r.nivelDificultad, nivelEnTema);
     });
 
     const salida = visibles.map((r) => {
