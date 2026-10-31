@@ -1007,6 +1007,10 @@ model RetoUsuario {
   entregadoEn     DateTime?     @map("entregado_en")
   revisadoEn      DateTime?     @map("revisado_en")
   fecha           DateTime      @default(now())
+  // Seguimiento para el sello de cada reto: cuándo lo abrió por primera vez
+  // («Pendiente» si no lo terminó) y cuántas comprobaciones fallaron («Incompleto»).
+  iniciadoEn       DateTime? @map("iniciado_en")
+  intentosFallidos Int       @default(0) @map("intentos_fallidos")
 
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   reto    Reto    @relation(fields: [retoId], references: [id], onDelete: Cascade)

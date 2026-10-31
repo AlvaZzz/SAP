@@ -14,7 +14,7 @@ describe('RetosController.detalle · trazabilidad sin filtrar soluciones', () =>
     prisma = crearPrismaMock();
     // El gating por nivel se prueba aparte; aquí se deja pasar para aislar la trazabilidad.
     const adaptatividad = { verificarAccesoReto: jest.fn().mockResolvedValue(undefined) };
-    controller = new RetosController(prisma as never, {} as never, {} as never, {} as never, adaptatividad as never);
+    controller = new RetosController(prisma as never, {} as never, {} as never, { registrarApertura: jest.fn() } as never, adaptatividad as never);
     prisma.retoUsuario.findUnique.mockResolvedValue(null);
   });
 

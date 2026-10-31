@@ -7,21 +7,17 @@ import { api } from '@/lib/api';
 import { RetoEstudiante, EstadoReto, NIVEL_LABEL, NIVEL_COLOR } from '@/lib/types';
 import { PageHeader, Skeleton } from '@/components/ui';
 import { nivelDesdeEstrellas } from '@/components/nivel-badge';
-import { Target, CheckCircle, ArrowRight, Clock, AlertTriangle, Lock, Search, X, Circle } from '@/components/icons';
+import { Target, ArrowRight, Clock, Lock, Search, X } from '@/components/icons';
+import { SELLO, ORDEN_SELLOS, SelloReto } from '@/components/retos/sello-reto';
 import { TIPOS_RETO, TipoReto } from '@/components/docente/retos/tipos';
 import { FuentePractica } from '@/components/fuente-practica';
 
 interface Acceso { acceso: boolean; nivel: string; nivel_label: string; motivo: string | null }
 type Filtro = 'todos' | EstadoReto;
 
-/** Qué significa cada estado para el estudiante y qué hace el botón. */
-const ESTADO: Record<EstadoReto, { nombre: string; plural: string; accion: string; color: string; Icono: typeof Circle }> = {
-  nuevo: { nombre: 'Por resolver', plural: 'Por resolver', accion: 'Resolver', color: '#64748B', Icono: Circle },
-  necesita_mejorar: { nombre: 'Por corregir', plural: 'Por corregir', accion: 'Corregir', color: '#F59E0B', Icono: AlertTriangle },
-  pendiente: { nombre: 'En revisión', plural: 'En revisión', accion: 'Ver entrega', color: '#3B82F6', Icono: Clock },
-  aprobado: { nombre: 'Aprobado', plural: 'Aprobados', accion: 'Ver', color: '#10B981', Icono: CheckCircle },
-};
-const ORDEN_ESTADO: EstadoReto[] = ['nuevo', 'necesita_mejorar', 'pendiente', 'aprobado'];
+/** Qué significa cada sello para el estudiante y qué hace el botón (ver SelloReto). */
+const ESTADO = SELLO;
+const ORDEN_ESTADO = ORDEN_SELLOS;
 
 interface Grupo { clave: string; titulo: string; temas: { clave: string; titulo: string | null; retos: RetoEstudiante[] }[]; total: number; hechos: number }
 
@@ -63,7 +59,7 @@ export default function RetosPage() {
 
   const delTipo = useMemo(() => retos.filter((r) => tipoDe(r) === tipo), [retos, tipo]);
   const porEstado = useMemo(() => {
-    const c: Record<EstadoReto, number> = { nuevo: 0, necesita_mejorar: 0, pendiente: 0, aprobado: 0 };
+    const c: Record<EstadoReto, number> = { nuevo: 0, en_curso: 0, incompleto: 0, revision: 0, aprobado: 0 };
     for (const r of delTipo) c[r.estado] += 1;
     return c;
   }, [delTipo]);
@@ -155,7 +151,7 @@ export default function RetosPage() {
       ) : (
         <>
           {/* 2 · Cómo voy: también filtra la lista */}
-          <div className="mb-4 grid grid-cols-2 gap-2 lg:grid-cols-5" role="group" aria-label="Filtrar por estado">
+          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" role="group" aria-label="Filtrar por estado">
             <BotonEstado activo={filtro === 'todos'} onClick={() => setFiltro('todos')} numero={delTipo.length} texto="Todos" color="#6366F1" />
             {ORDEN_ESTADO.map((e) => (
               <BotonEstado key={e} activo={filtro === e} onClick={() => setFiltro(filtro === e ? 'todos' : e)} numero={porEstado[e]} texto={ESTADO[e].plural} color={ESTADO[e].color} />
@@ -183,7 +179,7 @@ export default function RetosPage() {
                 <section key={g.clave} className="card !p-0">
                   <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
                     <h2 className="font-display text-lg font-bold text-fg">{g.titulo}</h2>
-                    <span className="text-xs font-semibold text-muted">{g.hechos} de {g.total} aprobados</span>
+                    <span className="text-xs font-semibold text-muted">{g.hechos} de {g.total} completados</span>
                   </header>
                   {g.temas.map((t) => (
                     <div key={t.clave}>
@@ -225,11 +221,16 @@ function FilaReto({ r, numero }: { r: RetoEstudiante; numero: number }) {
         {r.estado === 'nuevo' ? <span className="text-sm font-bold">{numero}</span> : <e.Icono className="h-[18px] w-[18px]" />}
       </span>
       <div className="min-w-[200px] flex-1">
-        <p className="font-semibold text-fg">{r.titulo}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-semibold text-fg">{r.titulo}</p>
+          <SelloReto estado={r.estado} />
+        </div>
         <FuentePractica fuente={r.fuente_practica} className="my-1" />
         <p className="line-clamp-1 text-sm text-muted">{r.enunciado}</p>
         <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          <span className="font-bold" style={{ color: e.color }}>{e.nombre}</span>
+          {r.estado === 'incompleto' && (r.intentos_fallidos ?? 0) > 0 && (
+            <span className="font-semibold" style={{ color: e.color }}>{r.intentos_fallidos} {r.intentos_fallidos === 1 ? 'intento' : 'intentos'}</span>
+          )}
           <span className="font-semibold" style={{ color: NIVEL_COLOR[nivel] }}>Nivel {NIVEL_LABEL[nivel]}</span>
           <span className="text-muted">{r.estado === 'aprobado' ? `+${r.xp_obtenido} XP ganados` : `+${r.xp} XP`}</span>
           {limite && (
@@ -238,11 +239,11 @@ function FilaReto({ r, numero }: { r: RetoEstudiante; numero: number }) {
             </span>
           )}
         </p>
-        {r.feedback && r.estado === 'necesita_mejorar' && (
+        {r.feedback && r.estado === 'incompleto' && (
           <p className="mt-1.5 rounded-lg bg-prexi-amber/10 px-3 py-1.5 text-xs text-fg"><b>Tu docente dice:</b> {r.feedback}</p>
         )}
       </div>
-      <Link href={`/retos/${r.id}`} className={`${r.estado === 'nuevo' || r.estado === 'necesita_mejorar' ? 'btn-primary' : 'btn-ghost'} shrink-0 !py-1.5 text-sm`}>
+      <Link href={`/retos/${r.id}`} className={`${r.estado === 'nuevo' || r.estado === 'en_curso' || r.estado === 'incompleto' ? 'btn-primary' : 'btn-ghost'} shrink-0 !py-1.5 text-sm`}>
         {e.accion} <ArrowRight className="h-4 w-4" />
       </Link>
     </li>

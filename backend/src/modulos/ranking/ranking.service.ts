@@ -44,14 +44,29 @@ export class RankingService {
     return d;
   }
 
-  /** XP por usuario acumulado en los intentos dentro del rango de fechas. */
+  /**
+   * XP por usuario ganado dentro del rango de fechas: el de los ejercicios
+   * (`Intento.xpOtorgado`) más el de los retos completados en ese rango
+   * (`RetoUsuario.xpObtenido`, fechado por su aprobación). Sin lo segundo, un
+   * reto resuelto no movía el marcador semanal.
+   */
   private async xpPorIntentos(desde?: Date, hasta?: Date): Promise<Map<number, number>> {
-    const filas = await this.prisma.intento.groupBy({
-      by: ['usuarioId'],
-      where: { ...(desde || hasta ? { fecha: { ...(desde ? { gte: desde } : {}), ...(hasta ? { lt: hasta } : {}) } } : {}) },
-      _sum: { xpOtorgado: true },
-    });
-    return new Map(filas.map((f) => [f.usuarioId, f._sum.xpOtorgado ?? 0]));
+    const rango = desde || hasta ? { ...(desde ? { gte: desde } : {}), ...(hasta ? { lt: hasta } : {}) } : undefined;
+    const [filas, retos] = await Promise.all([
+      this.prisma.intento.groupBy({
+        by: ['usuarioId'],
+        where: { ...(rango ? { fecha: rango } : {}) },
+        _sum: { xpOtorgado: true },
+      }),
+      this.prisma.retoUsuario.groupBy({
+        by: ['usuarioId'],
+        where: { estado: 'aprobado', xpObtenido: { gt: 0 }, ...(rango ? { revisadoEn: rango } : {}) },
+        _sum: { xpObtenido: true },
+      }),
+    ]);
+    const xp = new Map((filas ?? []).map((f) => [f.usuarioId, f._sum.xpOtorgado ?? 0]));
+    for (const r of retos ?? []) xp.set(r.usuarioId, (xp.get(r.usuarioId) ?? 0) + (r._sum.xpObtenido ?? 0));
+    return xp;
   }
 
   /** Posiciones a partir de un mapa de XP (empate → id menor primero). */

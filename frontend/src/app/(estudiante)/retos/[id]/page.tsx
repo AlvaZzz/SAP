@@ -10,12 +10,21 @@ import { TutorRetoPanel } from '@/components/tutor-reto-panel';
 import { OrigenEjercicio, type OrigenReto } from '@/components/origen-ejercicio';
 import { useAnimo } from '@/components/animo-tutor';
 import { TIPOS_RETO } from '@/components/docente/retos/tipos';
-import { NIVEL_COLOR, NIVEL_LABEL } from '@/lib/types';
+import { NIVEL_COLOR, NIVEL_LABEL, type EstadoReto } from '@/lib/types';
+import { SelloReto } from '@/components/retos/sello-reto';
 import { Play, RotateCcw, Upload, CheckCircle, Clock, AlertTriangle, ChevronLeft, Layers } from '@/components/icons';
 import { FuentePractica, FuentePracticaInfo } from '@/components/fuente-practica';
 
 type EstadoEntrega = 'sin_entregar' | 'pendiente_revision' | 'aprobado' | 'necesita_mejorar';
-interface Entrega { estado: EstadoEntrega; xp_obtenido: number; feedback: string | null; codigo?: string | null }
+interface Entrega { estado: EstadoEntrega; xp_obtenido: number; feedback: string | null; codigo?: string | null; intentos_fallidos?: number }
+
+/** Sello del reto mientras el estudiante está dentro (mismo criterio que la lista). */
+function selloDe(e: Entrega | null): EstadoReto {
+  if (e?.estado === 'aprobado') return 'aprobado';
+  if (e?.estado === 'pendiente_revision') return 'revision';
+  if (e?.estado === 'necesita_mejorar' || (e?.intentos_fallidos ?? 0) > 0) return 'incompleto';
+  return 'en_curso';
+}
 interface Reto {
   titulo: string; enunciado: string; codigoInicial: string | null;
   ejemploEntrada: string | null; ejemploSalida: string | null; fechaLimite: string | null;
@@ -134,13 +143,19 @@ export default function RetoEditorPage() {
       const salidaObtenida = ej.sandboxError
         || (ej.timeout ? 'Tu código tardó demasiado (posible bucle infinito).' : '')
         || (ej.ok ? ej.stdout : ej.stderr || ej.stdout);
-      const r = await api.post<{ correcto: boolean; salida: string; esperado: string; xp: number; emblemas_nuevos: Emblema[] }>('/practica/verificar-reto', { retoId, salida: salidaObtenida });
+      // El servidor compara la salida y, si coincide, deja el reto Completado y suma su XP (una vez).
+      const r = await api.post<{ correcto: boolean; salida: string; esperado: string; xp: number; ya_aprobado: boolean; sin_cambios: boolean; emblemas_nuevos: Emblema[] }>(`/retos/${retoId}/comprobar`, { salida: salidaObtenida, codigo });
       setVerif({ correcto: r.correcto, salida: r.salida, esperado: r.esperado, xp: r.xp, emblemas: r.emblemas_nuevos });
       if (r.correcto) {
-        setEntrega({ estado: 'aprobado', xp_obtenido: r.xp, feedback: null });
-        alentar(`Bug corregido. ${r.xp > 0 ? `+${r.xp} XP. ` : ''}Cazaste el error tú mismo; así se aprende a depurar.`, 'felicitacion');
+        setEntrega((e) => ({ estado: 'aprobado', xp_obtenido: r.ya_aprobado ? (e?.xp_obtenido ?? 0) : r.xp, feedback: null, intentos_fallidos: e?.intentos_fallidos ?? 0 }));
+        alentar(r.ya_aprobado
+          ? 'Correcto otra vez. Este reto ya lo tenías completado, así que no suma XP de nuevo.'
+          : `Bug corregido. ${r.xp > 0 ? `+${r.xp} XP para tu ranking. ` : ''}Cazaste el error tú mismo; así se aprende a depurar.`, 'felicitacion');
       } else {
-        alentar('Todavía no coincide. Compara tu salida con la esperada y revisa la lógica con calma.');
+        setEntrega((e) => (e?.estado === 'aprobado' ? e : { estado: e?.estado ?? 'sin_entregar', xp_obtenido: e?.xp_obtenido ?? 0, feedback: e?.feedback ?? null, intentos_fallidos: (e?.intentos_fallidos ?? 0) + 1 }));
+        alentar(r.sin_cambios
+          ? 'Aún no cambiaste el código. Busca el error, corrígelo y vuelve a comprobar.'
+          : 'Todavía no coincide. Compara tu salida con la esperada y revisa la lógica con calma.');
       }
     } catch (err) {
       setAvisoEntrega(err instanceof ApiError ? err.message : 'No se pudo verificar');
@@ -181,7 +196,10 @@ export default function RetoEditorPage() {
             </span>
           )}
         </div>
-        <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{reto.titulo}</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">{reto.titulo}</h1>
+          <SelloReto estado={selloDe(entrega)} grande />
+        </div>
         <FuentePractica fuente={reto.fuente_practica} className="mt-2" />
 
         {/* Qué hay que hacer */}

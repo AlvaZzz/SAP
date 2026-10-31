@@ -1,17 +1,24 @@
 import { fuentePractica } from './fuente-practica';
 import { Body, Controller, Get, Post, Param, ParseIntPipe, Query, UseGuards, BadRequestException } from '@nestjs/common';
-import { IsString, MinLength } from 'class-validator';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JwtAuthGuard } from '../../common/auth/jwt.guard';
 import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { RetosAccessService } from './retos-access.service';
 import { RetosAccessGuard } from './retos-access.guard';
-import { RetosService } from './retos.service';
+import { RetosService, estadoTarjeta } from './retos.service';
 import { AdaptatividadService } from '../../ejercicios/adaptatividad.service';
 
 class EntregarRetoDto {
   @IsString() @MinLength(1) codigo!: string;
+}
+
+class ComprobarRetoDto {
+  /** Salida que produjo el programa en el NAVEGADOR. */
+  @IsString() @MaxLength(20000) salida!: string;
+  /** Código del estudiante: se guarda con la entrega para que el docente pueda verlo. */
+  @IsString() @MinLength(1) @MaxLength(20000) codigo!: string;
 }
 
 /**
@@ -104,6 +111,8 @@ export class RetosController {
     // GATING POR NIVEL: el listado ya filtra, pero el acceso directo por id no lo
     // hacía. Se comprueba después de resolver el reto y antes de devolver nada suyo.
     await this.adaptatividad.verificarAccesoReto(usuarioId, r, rol);
+    // Entró al reto: deja de estar «Sin empezar» (sello «Pendiente» si no lo termina).
+    if (rol === 'estudiante') await this.retos.registrarApertura(usuarioId, id);
     const e = await this.prisma.retoUsuario.findUnique({ where: { usuarioId_retoId: { usuarioId, retoId: id } } });
     // Contexto académico legible para el tutor PREXI (ej. "U2 · 2.4 Bucles").
     const contextoTema = r.tema
@@ -139,9 +148,31 @@ export class RetosController {
         total_pistas: Array.isArray(r.pistas) ? r.pistas.length : 0,
       },
       entrega: e
-        ? { estado: e.estado, xp_obtenido: e.xpObtenido, feedback: e.feedbackDocente, codigo: e.codigoEntregado, entregado_en: e.entregadoEn, revisado_en: e.revisadoEn }
+        ? { estado: e.estado, xp_obtenido: e.xpObtenido, feedback: e.feedbackDocente, codigo: e.codigoEntregado, entregado_en: e.entregadoEn, revisado_en: e.revisadoEn, intentos_fallidos: e.intentosFallidos, sello: estadoTarjeta(e) }
         : null,
     };
+  }
+
+  /**
+   * «Comprobar» de un reto «Encuentra el bug»: si la salida coincide, el reto queda
+   * Completado y suma su XP al ranking (una sola vez). Si no, cuenta como intento.
+   */
+  @Post(':id/comprobar')
+  @UseGuards(RetosAccessGuard)
+  async comprobar(
+    @CurrentUser('sub') usuarioId: number,
+    @CurrentUser('rol') rol: string,
+    @Param('id', ParseIntPipe) retoId: number,
+    @Body() dto: ComprobarRetoDto,
+  ) {
+    const reto = await this.prisma.reto.findFirst({
+      where: { id: retoId, activo: true },
+      select: { id: true, temaId: true, nivelDificultad: true },
+    });
+    if (!reto) throw new BadRequestException('El reto no existe o no está disponible');
+    // Mismo gating por nivel que al abrirlo: no se suma XP de un reto ajeno a su ruta.
+    await this.adaptatividad.verificarAccesoReto(usuarioId, reto, rol);
+    return this.retos.comprobar(usuarioId, retoId, dto.salida, dto.codigo);
   }
 
   /** Entrega el reto para revisión del docente. No otorga XP todavía. */

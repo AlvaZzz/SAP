@@ -1,4 +1,4 @@
-import { RetosService } from './retos.service';
+import { RetosService, estadoTarjeta } from './retos.service';
 import { crearPrismaMock, PrismaMock } from '../../test-utils/prisma.mock';
 
 /** Reto mínimo con los campos que consume el servicio. */
@@ -125,5 +125,58 @@ describe('RetosService.disponibles (nivel POR TEMA)', () => {
     expect(await service.moduloHabilitado()).toBe(true);
     prisma.configuracionSistema.findUnique.mockResolvedValue(null);
     expect(await service.moduloHabilitado()).toBe(false);
+  });
+});
+
+describe('RetosService.comprobar · «Encuentra el bug» con XP', () => {
+  let prisma: PrismaMock;
+  let service: RetosService;
+  const bug = { id: 9, esBugHunt: true, autoCalificable: false, ejemploSalida: 'Residuo: 1', codigoInicial: 'r = a - (a / b) * b', xp: 25 };
+
+  beforeEach(() => {
+    prisma = crearPrismaMock();
+    service = new RetosService(prisma as never);
+    prisma.reto.findFirst.mockResolvedValue(bug);
+    prisma.ranking.findMany.mockResolvedValue([{ usuarioId: 7 }]);
+  });
+
+  it('con la salida correcta lo deja Completado y suma su XP al ranking', async () => {
+    prisma.retoUsuario.findUnique.mockResolvedValue(null);
+    const r = await service.comprobar(7, 9, 'Residuo: 1\n', 'r = a - (a // b) * b');
+    expect(r).toMatchObject({ correcto: true, xp: 25 });
+    expect(prisma.retoUsuario.upsert).toHaveBeenCalledWith(expect.objectContaining({ create: expect.objectContaining({ estado: 'aprobado', xpObtenido: 25 }) }));
+    expect(prisma.ranking.upsert).toHaveBeenCalledWith(expect.objectContaining({ update: { xpTotal: { increment: 25 } } }));
+  });
+
+  it('no vuelve a sumar XP si el reto ya estaba completado', async () => {
+    prisma.retoUsuario.findUnique.mockResolvedValue({ estado: 'aprobado' });
+    const r = await service.comprobar(7, 9, 'Residuo: 1', 'r = a - (a // b) * b');
+    expect(r).toMatchObject({ correcto: true, xp: 0, ya_aprobado: true });
+    expect(prisma.ranking.upsert).not.toHaveBeenCalled();
+  });
+
+  it('el código sin cambios no cuenta como resuelto aunque la salida coincida', async () => {
+    prisma.retoUsuario.findUnique.mockResolvedValue(null);
+    const r = await service.comprobar(7, 9, 'Residuo: 1', '  r = a - (a / b) * b ');
+    expect(r).toMatchObject({ correcto: false, sin_cambios: true, xp: 0 });
+  });
+
+  it('una comprobación fallida se cuenta como intento', async () => {
+    prisma.retoUsuario.findUnique.mockResolvedValue({ estado: 'sin_entregar', iniciadoEn: new Date() });
+    await service.comprobar(7, 9, 'Residuo: 0.0', 'r = a - (a / b) * b + 0');
+    expect(prisma.retoUsuario.upsert).toHaveBeenCalledWith(expect.objectContaining({ update: expect.objectContaining({ intentosFallidos: { increment: 1 } }) }));
+    expect(prisma.ranking.upsert).not.toHaveBeenCalled();
+  });
+});
+
+describe('estadoTarjeta · sello de cada reto', () => {
+  it('distingue sin empezar, pendiente, incompleto, en revisión y completado', () => {
+    expect(estadoTarjeta(undefined)).toBe('nuevo');
+    expect(estadoTarjeta({ estado: 'sin_entregar' })).toBe('nuevo');
+    expect(estadoTarjeta({ estado: 'sin_entregar', iniciadoEn: new Date() })).toBe('en_curso');
+    expect(estadoTarjeta({ estado: 'sin_entregar', iniciadoEn: new Date(), intentosFallidos: 2 })).toBe('incompleto');
+    expect(estadoTarjeta({ estado: 'necesita_mejorar' })).toBe('incompleto');
+    expect(estadoTarjeta({ estado: 'pendiente_revision' })).toBe('revision');
+    expect(estadoTarjeta({ estado: 'aprobado', intentosFallidos: 3 })).toBe('aprobado');
   });
 });

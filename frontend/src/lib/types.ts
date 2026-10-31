@@ -195,7 +195,11 @@ export interface Habitos {
 /** Referencia académica de un documento (deriva del tema asociado). */
 export interface RefAcademica { id: number; numero: string; titulo: string }
 
-export type EstadoReto = 'nuevo' | 'pendiente' | 'aprobado' | 'necesita_mejorar';
+/**
+ * Sello del reto para el estudiante: sin empezar, pendiente (entró y lo dejó a
+ * medias), incompleto (lo intentó y no le salió), en revisión y completado.
+ */
+export type EstadoReto = 'nuevo' | 'en_curso' | 'incompleto' | 'revision' | 'aprobado';
 
 export interface RetoEstudiante {
   id: number;
@@ -212,6 +216,8 @@ export interface RetoEstudiante {
   autor: string;
   fecha: string;
   estado: EstadoReto;
+  /** Veces que comprobó sin lograrlo. */
+  intentos_fallidos?: number;
   xp_obtenido: number;
   feedback: string | null;
   es_bug_hunt: boolean;

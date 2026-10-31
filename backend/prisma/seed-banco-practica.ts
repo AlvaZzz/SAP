@@ -226,7 +226,9 @@ async function main() {
     return;
   }
 
-  await prisma.$transaction(escribir, { timeout: 180_000 });
+  // Todo o nada. Contra una base remota (Neon) son cientos de idas y vueltas por
+  // la red: el límite es amplio para que no se corte a medias.
+  await prisma.$transaction(escribir, { timeout: 30 * 60_000, maxWait: 60_000 });
   console.log('✔ Bancos cargados (nada se borró):');
   console.log(`  Práctica: ${cuenta.practica.nuevos} nuevos, ${cuenta.practica.actualizados} actualizados`);
   console.log(`  Examen de unidad: ${cuenta.examen.nuevos} nuevos, ${cuenta.examen.actualizados} actualizados, ${cuenta.examen.desactivados} anteriores desactivados`);
